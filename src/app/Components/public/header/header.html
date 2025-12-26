@@ -1,0 +1,15 @@
+<nav class="nav">
+      <div class="logo">📱 Job Center</div>
+      
+      <div class="hamburger" [class.active]="menuOpen" (click)="menuOpen = !menuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      
+      <ul class="nav-links" [class.active]="menuOpen">
+        <li><a href="#features" (click)="menuOpen = false">Features</a></li>
+        <li><a href="#pricing" (click)="menuOpen = false">Pricing</a></li>
+        <li><a href="#how-it-works" (click)="menuOpen = false">How It Works</a></li>
+      </ul>
+</nav>
