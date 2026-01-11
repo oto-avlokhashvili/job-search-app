@@ -1,5 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../../Core/Services/auth-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth',
@@ -8,7 +10,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
   styleUrl: './auth.scss',
 })
 export class Auth {
+  authService = inject(AuthService)
   fb = inject(FormBuilder);
+  router = inject(Router);
   validators = signal(false);
   form = this.fb.group({
         email:['', Validators.required],
@@ -20,7 +24,7 @@ export class Auth {
     this.validators.set(true);
     if(this.form.valid){
       this.validators.set(false);
-      console.log(this.form.value);
+      this.authService.login(this.form.get('email')?.value!, this.form.get('password')?.value!).then(() => this.router.navigate(['/home']));
     }
     
   }

@@ -1,5 +1,17 @@
-@if (!isAuthorized()) {
-    <router-outlet />
-}@else {
+<loading/>
 
-}
+<div class="landing-page">
+    <header class="header">
+        <app-header/>
+        
+        <div class="hero">
+          <h1>Never Miss Your Dream Job</h1>
+          <p class="subtitle">Get instant job alerts delivered to your Telegram. Smart, fast, and tailored to your career.</p>
+          <button class="cta-button">Get Started Free</button>
+          <button class="cta-button secondary-button">View Plans</button>
+        </div>
+    </header>
+    <router-outlet />
+
+    <app-footer/>
+</div>

@@ -1,3 +1,65 @@
 input[required]{
     border-left: 2px solid red;
 }
+
+.header {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+  color: white;
+  padding: 30px 20px 120px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+// Navigation
+
+// Hero Section
+.hero {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+h1 {
+  font-size: 56px;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 22px;
+  opacity: 0.95;
+  margin-bottom: 40px;
+}
+
+.cta-button {
+  background: white;
+  color: #1e3c72;
+  padding: 16px 40px;
+  border: none;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  margin: 5px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  &.secondary-button {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+
+    &:hover {
+      background: white;
+      color: #1e3c72;
+    }
+  }
+}
