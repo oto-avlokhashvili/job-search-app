@@ -1,11 +1,13 @@
 input[required]{
     border-left: 2px solid red;
 }
-
+/* .body{
+  height: calc(100vh - 189.17px);
+} */
 .header {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
   color: white;
-  padding: 30px 20px 120px;
+  padding: 20px 20px 20px;
   text-align: center;
   position: relative;
   overflow: hidden;

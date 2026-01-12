@@ -5,12 +5,19 @@ import { HomeComponent } from './Components/private/home/home';
 
 export const routes: Routes = [
   {
-    path: 'landing',
+    path: '',
+    pathMatch: 'full',
+    redirectTo: '',
+  },
+  {
+    path: '',
     component: Home,
+    data: { showHeroSection: true }
   },
   {
     path: 'auth',
     component: Auth,
+    data: { hideLayout: true }
   },
   {
     path: 'home',
