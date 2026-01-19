@@ -31,4 +31,10 @@ export class AuthService {
     const profile  = await firstValueFrom(profile$);
     return profile;
   }
+
+  async logOut(){
+    const message$ = this.http.get(this.url+"/auth/logout")
+    const msg  = await firstValueFrom(message$);
+    return msg;
+  }
 }
