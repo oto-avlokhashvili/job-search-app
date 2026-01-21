@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterModule } from '@angular/router';
+import { AuthService } from '../../../Core/Services/auth-service';
 
 @Component({
   selector: 'app-header',
@@ -9,4 +10,5 @@ import { RouterLink, RouterModule } from '@angular/router';
 })
 export class Header {
     menuOpen = false;
+    authService = inject(AuthService);
 }

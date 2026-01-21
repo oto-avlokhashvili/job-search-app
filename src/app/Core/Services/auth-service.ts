@@ -20,7 +20,9 @@ export class AuthService {
   }
 
   async refreshToken(){
-    const refresh$ = this.http.post(this.url+"/auth/refresh", null)
+    const refresh$ = this.http.post(this.url+"/auth/refresh", null, {
+      withCredentials: true
+    })
     const user:any  = await firstValueFrom(refresh$);
     this.#tokenSignal.set(user.token);
     return user;
@@ -35,6 +37,7 @@ export class AuthService {
   async logOut(){
     const message$ = this.http.get(this.url+"/auth/logout")
     const msg  = await firstValueFrom(message$);
+    this.#tokenSignal.set(null);
     return msg;
   }
 }
