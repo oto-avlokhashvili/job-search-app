@@ -1,0 +1,63 @@
+<div class="stats-grid">
+  <div class="stat-card" *ngFor="let stat of stats">
+    <div class="stat-header">
+      <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
+    </div>
+    <div class="stat-value">{{ stat.value }}</div>
+    <div class="stat-label">{{ stat.label }}</div>
+  </div>
+</div>
+
+<!-- Content Grid -->
+<div class="content-grid">
+  <!-- Latest Jobs -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Latest Job Matches</h2>
+      <a href="#" class="view-all">View All →</a>
+    </div>
+    
+    <div class="job-item" *ngFor="let job of jobs">
+      <div class="job-header">
+        <div>
+          <div class="job-title">{{ job.title }}</div>
+          <div class="job-company">{{ job.company }}</div>
+        </div>
+        <span *ngIf="job.badge" class="job-badge" [ngClass]="job.badge.class">
+          {{ job.badge.text }}
+        </span>
+      </div>
+      <div class="job-details">
+        <span>📍 {{ job.location }}</span>
+        <span>💼 {{ job.type }}</span>
+        <span>🕐 {{ job.postedTime }}</span>
+      </div>
+      <div class="job-footer">
+        <span class="job-salary">{{ job.salary }}</span>
+        <button class="btn btn-primary" (click)="applyJob(job)">
+          Apply Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Recent Activity</h2>
+    </div>
+    
+    <div class="activity-item" *ngFor="let activity of activities">
+      <div class="activity-icon" 
+           [style.background]="activity.iconBg" 
+           [style.color]="activity.iconColor">
+        {{ activity.icon }}
+      </div>
+      <div class="activity-content">
+        <h4>{{ activity.title }}</h4>
+        <p>{{ activity.description }}</p>
+        <div class="activity-time">{{ activity.time }}</div>
+      </div>
+    </div>
+  </div>
+</div>

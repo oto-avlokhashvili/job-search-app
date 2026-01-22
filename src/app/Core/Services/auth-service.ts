@@ -13,7 +13,7 @@ export class AuthService {
   isLoggedIn = computed(() => !!this.token());
   
   async login(email:string, password:string){
-    const login$ = this.http.post(this.url+"/auth/login", {email, password})
+    const login$ = this.http.post(this.url+"/auth/login", {email, password}, { withCredentials: true })
     const user:any  = await firstValueFrom(login$);
     this.#tokenSignal.set(user.token);
     return user;
@@ -29,13 +29,13 @@ export class AuthService {
   }
 
   async getUserProfile(){
-    const profile$ = this.http.get(this.url+"/auth/profile")
+    const profile$ = this.http.get(this.url+"/auth/profile", { withCredentials: true })
     const profile  = await firstValueFrom(profile$);
     return profile;
   }
 
   async logOut(){
-    const message$ = this.http.get(this.url+"/auth/logout")
+    const message$ = this.http.get(this.url+"/auth/logout", { withCredentials: true })
     const msg  = await firstValueFrom(message$);
     this.#tokenSignal.set(null);
     return msg;

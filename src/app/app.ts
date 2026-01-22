@@ -21,7 +21,6 @@ export class App {
   showHeroSection = signal(false);
   constructor(private router: Router, private route: ActivatedRoute){
     this.isAuthorized.set(this.authService.isLoggedIn())
-    console.log(this.authService.isLoggedIn());
     
 
     this.router.events

@@ -1,0 +1,109 @@
+<button class="menu-toggle" [class.active]="isSidebarOpen()" (click)="toggleSidebar()">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
+<div class="overlay" [class.active]="isSidebarOpen()" (click)="closeSidebar()"></div>
+
+<div class="dashboard-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.active]="isSidebarOpen()">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">JC</div>
+        <span>Job Center</span>
+      </div>
+      <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+        <span>☰</span>
+      </button>
+    </div>
+    
+    <nav>
+      <ul class="nav-menu">
+        <li class="nav-item" *ngFor="let item of navItems()">
+          <a [routerLink]="item.route" 
+             class="nav-link" 
+             routerLinkActive="active"
+             (click)="closeSidebar()">
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-link theme-toggle" (click)="toggleDarkMode()">
+        <span class="nav-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
+        <span>{{ isDarkMode() ? 'Light Mode' : 'Dark Mode' }}</span>
+      </button>
+      <button class="nav-link logout-btn" (click)="logout()">
+        <span class="nav-icon">🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-title">
+          <h1>Welcome Back!</h1>
+          <p>Here's what's happening with your job search today</p>
+        </div>
+        <div class="user-profile">
+          <div class="user-info">
+            <h3>{{ profile().firstName + " " + profile().lastName }}</h3>
+            <p>{{ profile().subscription }}</p>
+          </div>
+          <div class="user-avatar">{{ initials() }}</div>
+        </div>
+      </header>
+
+      <!-- Router Outlet for Page Content -->
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Job Center</h3>
+          <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">How It Works</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <div class="social-links">
+            <a href="#" class="social-icon">🐦</a>
+            <a href="#" class="social-icon">💼</a>
+            <a href="#" class="social-icon">📘</a>
+            <a href="#" class="social-icon">📧</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear() }} Job Center. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+</div>

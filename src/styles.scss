@@ -53,3 +53,152 @@ html {
 .is-invalid{
   border-left: 3px solid rgb(248, 77, 77) !important;
 }
+
+
+// 🎨 Color variables
+$bg-main: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+$surface: rgba(30, 30, 46, 0.95);
+$border: #2d3748;
+
+$text-main: #e5e7eb;     // brighter than before
+$text-muted: #d5d9df;   // still muted, but readable
+$accent: #a78bfa;
+$white: #ffffff;
+
+body.dark-mode {
+  background: $bg-main;
+  color: $text-main;
+  .dashboard-wrapper {
+  background: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+}
+  // 🔤 Global typography fix
+  h1, h2, h3, h4, h5, h6 {
+    color: $text-main !important;
+  }
+
+  p, span, li, a {
+    color: $text-muted;
+  }
+
+  // 🧱 Common surfaces
+  .sidebar,
+  .header,
+  .footer,
+  .menu-toggle,
+  .stat-card,
+  .card {
+    background: $surface;
+    border: 1px solid $border;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  // 🧭 Sidebar
+  .logo {
+    color: $accent;
+
+    &-icon {
+      background: $accent;
+    }
+  }
+
+  .nav-link {
+    color: $text-main;
+
+    &:hover,
+    &.active {
+      background: $accent;
+      color: $white;
+    }
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid $border;
+  }
+
+  // 🧠 Header
+  .header-title,
+  .user-info {
+    h1, h3 {
+      color: $text-main !important;
+    }
+
+    p {
+      color: $text-muted !important;
+    }
+  }
+  .job-title{
+    color: $text-main !important;
+  }
+  .job-company{
+    color: $text-main !important;
+  }
+  // 📊 Stat cards
+  .stat-card {
+    h3 {
+      color: $text-main;
+    }
+
+    p {
+      color: $text-muted;
+    }
+
+    .stat-value {
+      color: $accent;
+    }
+  }
+
+  // 🗂 Cards
+  .card {
+    color: $text-main;
+
+    &-header {
+      border-bottom: 1px solid $border;
+      color: $accent;
+    }
+
+    &-body {
+      color: $text-main;
+    }
+
+    &-footer {
+      border-top: 1px solid $border;
+      color: $text-muted;
+    }
+  }
+
+  // 🔗 Footer
+  .footer-section {
+    h3 {
+      color: $accent;
+    }
+
+    h4 {
+      color: $text-main;
+    }
+
+    a {
+      color: $text-muted;
+
+      &:hover {
+        color: $accent;
+      }
+    }
+  }
+
+  .footer-bottom {
+    border-top: 1px solid $border;
+
+    p {
+      color: $text-muted;
+    }
+  }
+
+  // 🌐 Social icons
+  .social-icon {
+    background: rgba(255, 255, 255, 0.06);
+
+    &:hover {
+      background: $accent;
+    }
+  }
+}

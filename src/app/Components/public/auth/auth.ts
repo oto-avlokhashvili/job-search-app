@@ -24,7 +24,7 @@ export class Auth {
     this.validators.set(true);
     if(this.form.valid){
       this.validators.set(false);
-      this.authService.login(this.form.get('email')?.value!, this.form.get('password')?.value!).then(() => this.router.navigate(['/home']));
+      this.authService.login(this.form.get('email')?.value!, this.form.get('password')?.value!).then(() => this.router.navigate(['/private']));
     }
     
   }
