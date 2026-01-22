@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 import { Home } from './Components/public/home/home';
 import { Auth } from './Components/public/auth/auth';
-import { HomeComponent } from './Components/private/home/home';
 import { PrivateLayout } from './Components/private/private-layout/private-layout';
 import { Dashboard } from './Components/private/dashboard/dashboard';
+import { Profile } from './Components/private/profile/profile';
 
 export const routes: Routes = [
   {
@@ -30,6 +30,11 @@ export const routes: Routes = [
       component: Dashboard,
       data: { showHeroSection: true, hideLayout: true  },
 
+    },
+    {
+      path: 'profile',
+      component: Profile,
+      data: { showHeroSection: true, hideLayout: true  },
     },
     {
       path: '',

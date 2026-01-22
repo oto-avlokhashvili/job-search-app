@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { JobsService } from '../../../Core/Services/jobs-service';
+import { AuthService } from '../../../Core/Services/auth-service';
+import { firstValueFrom } from 'rxjs';
 interface StatCard {
   icon: string;
   value: number;
@@ -36,12 +39,17 @@ interface Activity {
 })
 
 export class Dashboard {
-  stats: StatCard[] = [
-    { icon: '⚡', value: 24, label: 'Active Alerts', colorClass: 'blue' },
-    { icon: '✓', value: 15, label: 'Applications Sent', colorClass: 'green' },
-    { icon: '📧', value: 8, label: 'Responses', colorClass: 'orange' },
-    { icon: '🎯', value: 3, label: 'Interviews', colorClass: 'purple' }
-  ];
+  jobsService = inject(JobsService);
+  authService = inject(AuthService);
+  profile = signal<any>({});
+  allJobs = signal<any>([]);
+  userMatchedJobs = signal<any>([]);
+  stats = computed(() => [
+    { icon: '⚡', value: this.allJobs().count, label: 'Active Jobs', colorClass: 'blue' },
+    { icon: '✓', value: 0, label: 'Applications Sent', colorClass: 'green' },
+    { icon: '📧', value: 0, label: 'Responses', colorClass: 'orange' },
+    { icon: '🎯', value: this.userMatchedJobs().count, label: 'Matched Jobs', colorClass: 'purple' }
+  ]);
 
   jobs: Job[] = [
     {
@@ -115,10 +123,23 @@ export class Dashboard {
       time: '2 days ago'
     }
   ];
-
+  
   constructor() { }
-
-  ngOnInit(): void {
+  async getJobs(){
+    this.allJobs.set(await this.jobsService.getJobs());
+  }
+  async getUserMatchedJobs(id:number){
+    this.userMatchedJobs.set(await this.jobsService.getUserMatchedJobs(id));
+  }
+  async getProfile(){
+    const profile = await firstValueFrom(this.authService.getUserProfile());
+    this.profile.set(profile); 
+  }
+  
+  async ngOnInit() {
+    await this.getProfile();
+    this.getJobs();
+    this.getUserMatchedJobs(this.profile().id);
   }
 
   applyJob(job: Job): void {

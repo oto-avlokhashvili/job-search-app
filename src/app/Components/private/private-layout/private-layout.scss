@@ -25,10 +25,14 @@
   border-radius: 12px;
   margin: 1.5rem;
   height: calc(100vh - 3rem);
-  transition: transform 0.3s ease;
+
+  position: sticky;
+  top: 1.5rem;
+
   display: flex;
   flex-direction: column;
 }
+
 
 .sidebar-header {
   display: flex;
@@ -309,7 +313,7 @@ body.dark-mode .nav-link {
 
 body.dark-mode .nav-link:hover,
 body.dark-mode .nav-link.active {
-  background: #a78bfa;
+  background: #b49ff3;
   color: white;
 }
 

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable, shareReplay } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -27,12 +27,22 @@ export class AuthService {
     this.#tokenSignal.set(user.token);
     return user;
   }
+  private profile$?: Observable<any>;
 
-  async getUserProfile(){
+getUserProfile(): Observable<any> {
+  if (!this.profile$) {
+    this.profile$ = this.http
+      .get(this.url + '/auth/profile', { withCredentials: true })
+      .pipe(shareReplay(1));
+  }
+  return this.profile$;
+}
+
+  /* async getUserProfile(){
     const profile$ = this.http.get(this.url+"/auth/profile", { withCredentials: true })
     const profile  = await firstValueFrom(profile$);
     return profile;
-  }
+  } */
 
   async logOut(){
     const message$ = this.http.get(this.url+"/auth/logout", { withCredentials: true })

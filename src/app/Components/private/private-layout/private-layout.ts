@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-private-layout',
@@ -20,19 +21,19 @@ export class PrivateLayout {
   currentYear = signal(new Date().getFullYear());
   isDarkMode = signal<boolean>(false);
   navItems= signal([
-    { icon: '📊', label: 'Dashboard', route: '/dashboard', active: true },
-    { icon: '🔍', label: 'Job Search', route: '/job-search' },
-    { icon: '💼', label: 'Applications', route: '/applications' },
-    { icon: '🔔', label: 'Alerts', route: '/alerts' },
-    { icon: '📈', label: 'Analytics', route: '/analytics' },
-    { icon: '⚙️', label: 'Settings', route: '/settings' }
+    { icon: '📊', label: 'Dashboard', route: 'dashboard', active: true },
+    { icon: '🔍', label: 'Job Search', route: 'job-search' },
+    { icon: '💼', label: 'Applications', route: 'applications' },
+    { icon: '🔔', label: 'Alerts', route: 'alerts' },
+    { icon: '📈', label: 'Analytics', route: 'analytics' },
+    { icon: '⚙️', label: 'Profile', route: 'profile' }
   ]);
 
   
   authService = inject(AuthService)
 
   async getProfile(){
-    const profile = await this.authService.getUserProfile()
+    const profile = await firstValueFrom(this.authService.getUserProfile());
     this.profile.set(profile); 
   }
   ngOnInit() {
