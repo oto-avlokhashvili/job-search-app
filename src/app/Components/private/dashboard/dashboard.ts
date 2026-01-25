@@ -45,41 +45,35 @@ export class Dashboard {
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
   stats = computed(() => [
-    { icon: '⚡', value: this.allJobs().count, label: 'Active Jobs', colorClass: 'blue' },
+    { icon: '⚡', value: this.allJobs().count || 0, label: 'Active Jobs', colorClass: 'blue' },
     { icon: '✓', value: 0, label: 'Applications Sent', colorClass: 'green' },
     { icon: '📧', value: 0, label: 'Responses', colorClass: 'orange' },
-    { icon: '🎯', value: this.userMatchedJobs().count, label: 'Matched Jobs', colorClass: 'purple' }
+    { icon: '🎯', value: this.userMatchedJobs().count || 0, label: 'Matched Jobs', colorClass: 'purple' }
   ]);
 
-  jobs: Job[] = [
+    jobs = signal([
     {
-      title: 'Senior Frontend Developer',
-      company: 'Tech Corp Inc.',
-      location: 'San Francisco, CA',
-      type: 'Full-time',
-      postedTime: '2 hours ago',
-      salary: '$120k - $160k/year',
-      badge: { text: 'New', class: 'badge-new' }
+      vacancy: '--------',
+      company: '--------',
+      link:'--------',
+      deadline:"--------",
+      publishDate:"--------",
     },
     {
-      title: 'Product Manager',
-      company: 'Innovation Labs',
-      location: 'Remote',
-      type: 'Full-time',
-      postedTime: '5 hours ago',
-      salary: '$130k - $180k/year',
-      badge: { text: 'Urgent', class: 'badge-urgent' }
+      vacancy: '--------',
+      company: '--------',
+      link:'--------',
+      deadline:"--------",
+      publishDate:"--------",
     },
     {
-      title: 'UX Designer',
-      company: 'Creative Studio',
-      location: 'New York, NY',
-      type: 'Full-time',
-      postedTime: '1 day ago',
-      salary: '$90k - $120k/year',
-      badge: { text: 'New', class: 'badge-new' }
-    }
-  ];
+      vacancy: '--------',
+      company: '--------',
+      link:'--------',
+      deadline:"--------",
+      publishDate:"--------",
+    },
+  ]);
 
   activities: Activity[] = [
     {
@@ -129,7 +123,12 @@ export class Dashboard {
     this.allJobs.set(await this.jobsService.getJobs());
   }
   async getUserMatchedJobs(id:number){
-    this.userMatchedJobs.set(await this.jobsService.getUserMatchedJobs(id));
+    const userJobs:any = await this.jobsService.getUserMatchedJobs(id)
+    this.userMatchedJobs.set(userJobs);
+    const userJobsTable = userJobs.sentJobs.map((el:any) => el.job);
+    console.log(userJobsTable);
+    
+    this.jobs.set(userJobsTable);
   }
   async getProfile(){
     const profile = await firstValueFrom(this.authService.getUserProfile());
@@ -142,10 +141,9 @@ export class Dashboard {
     this.getUserMatchedJobs(this.profile().id);
   }
 
-  applyJob(job: Job): void {
-    console.log('Applying to:', job.title);
-    // Implement application logic
-  }
+  applyJob(job: string): void {
+  window.open(`${job}`, '_blank');
+}
 
   saveJob(job: Job): void {
     console.log('Saving job:', job.title);

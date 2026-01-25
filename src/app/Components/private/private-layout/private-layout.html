@@ -51,8 +51,8 @@
       <!-- Header -->
       <header class="header">
         <div class="header-title">
-          <h1>Welcome Back!</h1>
-          <p>Here's what's happening with your job search today</p>
+          <h3>Welcome Back {{profile().firstName}}!</h3>
+          <p>You are looking for <span class="text-primary fw-bold">{{profile().searchQuery}}</span> jobs</p>
         </div>
         <div class="user-profile">
           <div class="user-info">

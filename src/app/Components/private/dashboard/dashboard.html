@@ -17,24 +17,24 @@
       <a href="#" class="view-all">View All →</a>
     </div>
     
-    <div class="job-item" *ngFor="let job of jobs">
+    <div class="job-item" *ngFor="let job of jobs()">
       <div class="job-header">
         <div>
-          <div class="job-title">{{ job.title }}</div>
+          <div class="job-title">{{ job.vacancy }}</div>
           <div class="job-company">{{ job.company }}</div>
         </div>
-        <span *ngIf="job.badge" class="job-badge" [ngClass]="job.badge.class">
-          {{ job.badge.text }}
+        <span  class="job-badge badge-new">
+          {{ "ახალი" }}
         </span>
       </div>
       <div class="job-details">
-        <span>📍 {{ job.location }}</span>
-        <span>💼 {{ job.type }}</span>
-        <span>🕐 {{ job.postedTime }}</span>
+        <span>📍 {{ "თბილისი" }}</span>
+        <span>💼 {{ "Full-Time" }}</span>
+        <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
       </div>
       <div class="job-footer">
-        <span class="job-salary">{{ job.salary }}</span>
-        <button class="btn btn-primary" (click)="applyJob(job)">
+        <span class="job-salary">{{ "1000-1500 GEL" }}</span>
+        <button class="btn btn-primary" (click)="applyJob(job.link)">
           Apply Now
         </button>
       </div>
