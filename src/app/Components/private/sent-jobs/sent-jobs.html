@@ -1,0 +1,87 @@
+<div class="content-grid">
+  <!-- Latest Jobs -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">შემოთავაზებული ვაკანსიები</h2>
+      <span class="job-count">სულ: {{ stateStore.matchedJobsCount() }}</span>
+    </div>
+
+    <!-- Job listings -->
+    <div class="job-list">
+      <div class="job-item" *ngFor="let job of stateStore.matchedJobs()">
+        <div class="job-header">
+          <div>
+            <div class="job-title">{{ job.vacancy }}</div>
+            <div class="job-company">{{ job.company }}</div>
+          </div>
+          <span class="job-badge badge-new">
+            {{ "ახალი" }}
+          </span>
+        </div>
+        <div class="job-details">
+          <span>📍 {{ "თბილისი" }}</span>
+          <span>💼 {{ "Full-Time" }}</span>
+          <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
+        </div>
+        <div class="job-footer">
+          <span class="job-salary">{{ "1000-1500 GEL" }}</span>
+          <button class="btn btn-primary" (click)="applyJob(job.link)">
+            ნახვა
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="stateStore.matchedJobs().length === 0">
+      <p>ვაკანსიები არ მოიძებნა</p>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination" *ngIf="stateStore.totalPages() > 1">
+      <button 
+        class="pagination-btn" 
+        (click)="previousPage()" 
+        [disabled]="this.page() === 1"
+        >
+        ← წინა
+      </button>
+      
+      <div class="pagination-numbers">
+        <button          
+          class="pagination-number"          
+          [class.ellipsis]="stateStore.totalPages() === -1"
+          [disabled]="stateStore.totalPages() === -1"
+          >
+          {{ stateStore.totalPages() === -1 ? '...' : this.page() }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn" 
+        (click)="nextPage()" 
+        [disabled]="this.page() === stateStore.totalPages()"
+        >
+        შემდეგი →
+      </button>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">ბოლო აქტივობები</h2>
+    </div>
+
+    <div class="activity-item" *ngFor="let activity of activities">
+      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
+        {{ activity.icon }}
+      </div>
+      <div class="activity-content">
+        <h4>{{ activity.title }}</h4>
+        <p>{{ activity.description }}</p>
+        <div class="activity-time">{{ activity.time }}</div>
+      </div>
+    </div>
+  </div>
+</div>

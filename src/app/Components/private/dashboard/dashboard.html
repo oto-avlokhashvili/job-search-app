@@ -13,17 +13,17 @@
   <!-- Latest Jobs -->
   <div class="card">
     <div class="card-header">
-      <h2 class="card-title">Latest Job Matches</h2>
-      <a href="#" class="view-all">View All →</a>
+      <h2 class="card-title">შემოთავაზებული ვაკანსიები</h2>
+      <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
-    
-    <div class="job-item" *ngFor="let job of jobs()">
+
+    <div class="job-item" *ngFor="let job of stateStore.matchedJobs() | slice:0:3">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>
           <div class="job-company">{{ job.company }}</div>
         </div>
-        <span  class="job-badge badge-new">
+        <span class="job-badge badge-new">
           {{ "ახალი" }}
         </span>
       </div>
@@ -35,7 +35,7 @@
       <div class="job-footer">
         <span class="job-salary">{{ "1000-1500 GEL" }}</span>
         <button class="btn btn-primary" (click)="applyJob(job.link)">
-          Apply Now
+          ნახვა
         </button>
       </div>
     </div>
@@ -44,13 +44,11 @@
   <!-- Recent Activity -->
   <div class="card">
     <div class="card-header">
-      <h2 class="card-title">Recent Activity</h2>
+      <h2 class="card-title">ბოლო აქტივობები</h2>
     </div>
-    
+
     <div class="activity-item" *ngFor="let activity of activities">
-      <div class="activity-icon" 
-           [style.background]="activity.iconBg" 
-           [style.color]="activity.iconColor">
+      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
         {{ activity.icon }}
       </div>
       <div class="activity-content">

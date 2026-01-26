@@ -14,7 +14,7 @@ let pendingRequests = signal<Array<{
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const authToken = authService.token();
-
+  
   // Skip auth for login, refresh, and logout endpoints
   if (isAuthEndpoint(req.url)) {
     return next(req);

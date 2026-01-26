@@ -4,6 +4,7 @@ import { Auth } from './Components/public/auth/auth';
 import { PrivateLayout } from './Components/private/private-layout/private-layout';
 import { Dashboard } from './Components/private/dashboard/dashboard';
 import { Profile } from './Components/private/profile/profile';
+import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 
 export const routes: Routes = [
   {
@@ -34,6 +35,11 @@ export const routes: Routes = [
     {
       path: 'profile',
       component: Profile,
+      data: { showHeroSection: true, hideLayout: true  },
+    },
+    {
+      path: 'jobs',
+      component: SentJobs,
       data: { showHeroSection: true, hideLayout: true  },
     },
     {

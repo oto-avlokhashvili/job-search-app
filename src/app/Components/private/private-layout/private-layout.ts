@@ -3,6 +3,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
+import { StateStore } from '../../../Store/state.store';
+import { User } from '../../../Core/Interfaces/user';
 
 @Component({
   selector: 'app-private-layout',
@@ -12,32 +14,35 @@ import { firstValueFrom } from 'rxjs';
 })
 export class PrivateLayout {
   isSidebarOpen = signal<boolean>(false);
-  profile = signal<any>({});
-  initials = computed(() => {
-  const u = this.profile();
-  if (!u) return '';
-  return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
-});
   currentYear = signal(new Date().getFullYear());
   isDarkMode = signal<boolean>(false);
-  navItems= signal([
+  navItems = signal([
     { icon: '📊', label: 'Dashboard', route: 'dashboard', active: true },
-    { icon: '🔍', label: 'Job Search', route: 'job-search' },
+    { icon: '🔍', label: 'Jobs', route: 'jobs' },
     { icon: '💼', label: 'Applications', route: 'applications' },
     { icon: '🔔', label: 'Alerts', route: 'alerts' },
     { icon: '📈', label: 'Analytics', route: 'analytics' },
     { icon: '⚙️', label: 'Profile', route: 'profile' }
   ]);
 
-  
-  authService = inject(AuthService)
 
-  async getProfile(){
-    const profile = await firstValueFrom(this.authService.getUserProfile());
-    this.profile.set(profile); 
+  authService = inject(AuthService);
+  stateStore = inject(StateStore);
+  async getProfile() {
+   await this.stateStore.loadProfile();
+   this.stateStore.loadMatchedJobs(this.stateStore.profile().id);
   }
-  ngOnInit() {
+  initials = computed(() => {
+    const u = this.stateStore.profile();
+    if (!u) return '';
+    return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
+  });
+
+
+
+  async ngOnInit() {
     this.getProfile();
+    this.getJobs();
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       this.isDarkMode.set(true);
@@ -52,10 +57,13 @@ export class PrivateLayout {
   closeSidebar() {
     this.isSidebarOpen.set(false);
   }
+  async getJobs() {
+    this.stateStore.loadJobs();
+  }
 
   toggleDarkMode() {
-    this.isDarkMode.set(!this.isDarkMode()) ;
-    
+    this.isDarkMode.set(!this.isDarkMode());
+
     if (this.isDarkMode()) {
       document.body.classList.add('dark-mode');
       localStorage.setItem('theme', 'dark');

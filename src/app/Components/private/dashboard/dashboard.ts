@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
+import { StateStore } from '../../../Store/state.store';
 interface StatCard {
   icon: string;
   value: number;
@@ -44,11 +45,13 @@ export class Dashboard {
   profile = signal<any>({});
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
+  stateStore = inject(StateStore);
+  profileId = computed(() => this.stateStore.profile()?.id);
   stats = computed(() => [
-    { icon: '⚡', value: this.allJobs().count || 0, label: 'Active Jobs', colorClass: 'blue' },
-    { icon: '✓', value: 0, label: 'Applications Sent', colorClass: 'green' },
-    { icon: '📧', value: 0, label: 'Responses', colorClass: 'orange' },
-    { icon: '🎯', value: this.userMatchedJobs().count || 0, label: 'Matched Jobs', colorClass: 'purple' }
+    { icon: '⚡', value: this.stateStore.jobsCount(), label: 'აქტიური ვაკასნია', colorClass: 'blue' },
+    { icon: '✓', value: 0, label: 'გაგზავნილი აპლიკაციები', colorClass: 'green' },
+    { icon: '📧', value: 0, label: 'მიღებული შეტყობინებები', colorClass: 'orange' },
+    { icon: '🎯', value: this.stateStore.matchedJobsCount(), label: 'მიღებული ვაკასნიები', colorClass: 'purple' }
   ]);
 
     jobs = signal([
@@ -119,27 +122,6 @@ export class Dashboard {
   ];
   
   constructor() { }
-  async getJobs(){
-    this.allJobs.set(await this.jobsService.getJobs());
-  }
-  async getUserMatchedJobs(id:number){
-    const userJobs:any = await this.jobsService.getUserMatchedJobs(id)
-    this.userMatchedJobs.set(userJobs);
-    const userJobsTable = userJobs.sentJobs.map((el:any) => el.job);
-    console.log(userJobsTable);
-    
-    this.jobs.set(userJobsTable);
-  }
-  async getProfile(){
-    const profile = await firstValueFrom(this.authService.getUserProfile());
-    this.profile.set(profile); 
-  }
-  
-  async ngOnInit() {
-    await this.getProfile();
-    this.getJobs();
-    this.getUserMatchedJobs(this.profile().id);
-  }
 
   applyJob(job: string): void {
   window.open(`${job}`, '_blank');
