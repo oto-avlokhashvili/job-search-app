@@ -18,14 +18,11 @@
         <span>☰</span>
       </button>
     </div>
-    
+
     <nav>
       <ul class="nav-menu">
         <li class="nav-item" *ngFor="let item of navItems()">
-          <a [routerLink]="item.route" 
-             class="nav-link" 
-             routerLinkActive="active"
-             (click)="closeSidebar()">
+          <a [routerLink]="item.route" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
             <span class="nav-icon">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </a>
@@ -51,13 +48,14 @@
       <!-- Header -->
       <header class="header">
         <div class="header-title">
-          <h3>Welcome Back {{profile().firstName}}!</h3>
-          <p>You are looking for <span class="text-primary fw-bold">{{profile().searchQuery}}</span> jobs</p>
+          <h3>გამარჯობა {{profile().firstName}}!</h3>
+          <p>თქვენ ეძებთ <span class="text-primary fw-bold">{{profile().searchQuery}}</span> ვაკანსიას</p>
         </div>
         <div class="user-profile">
           <div class="user-info">
             <h3>{{ profile().firstName + " " + profile().lastName }}</h3>
-            <p>{{ profile().subscription }}</p>
+            <p>{{ profile().subscription === 'BASIC' ? 'სტანდარტული' : profile().subscription === 'PRO' ? 'პრო' :
+              'პრემიუმ' }}</p>
           </div>
           <div class="user-avatar">{{ initials() }}</div>
         </div>
