@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class SentJobs {
   stateStore = inject(StateStore);
-  page = signal<number>(this.stateStore.matchedJobsPage());
+  page = signal<number>(this.stateStore.matchedJobsPage() || 1);
   limit = signal<number>(10);
   
 

@@ -17,7 +17,7 @@
       <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
 
-    <div class="job-item" *ngFor="let job of stateStore.matchedJobs() | slice:0:3">
+    <div class="job-item" *ngFor="let job of stateStore.matchedJobsDashboard() | slice:0:3">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>

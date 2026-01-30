@@ -4,6 +4,7 @@ import { JobsService } from '../../../Core/Services/jobs-service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
+import { RouterModule } from '@angular/router';
 interface StatCard {
   icon: string;
   value: number;
@@ -34,7 +35,7 @@ interface Activity {
 }
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

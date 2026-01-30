@@ -8,10 +8,13 @@ import { Job } from '../Core/Interfaces/jobs';
 type State = {
     profile: User;
     jobsCount:number | 0;
+    
     matchedJobsCount:number | 0;
     matchedJobs:Job[];
+    matchedJobsDashboard:Job[];
     matchedJobsPage:number | 0;
     matchedJobsLimit:number | 0;
+    
     totalPages:number | 0;
     totalJobs:number | 0;
 }
@@ -20,10 +23,13 @@ type State = {
 const initialState: State = {
     profile: {id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: '---', createdAt: ''},
     jobsCount:0,
+    
     matchedJobsCount:0,
     matchedJobs:[],
+    matchedJobsDashboard:[],
     matchedJobsPage:1,
     matchedJobsLimit:10,
+    
     totalPages:0,
     totalJobs:0
 }
@@ -44,7 +50,7 @@ export const StateStore = signalStore(
         },
         async loadMatchedJobs(id:number, page?:number) {
             const res = await jobsService.getUserMatchedJobs(id, page);            
-            patchState(store, { matchedJobsCount: res.count, matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
+            patchState(store, { matchedJobsCount: res.count, matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(), matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
         },
     })),
 )
