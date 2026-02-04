@@ -1,0 +1,31 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay">
+    <!-- Modal Container -->
+    <div class="modal-container" [ngClass]="isDarkMode() ? 'bg-dark' : 'bg-light'">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">QR კოდი</h2>
+            <button class="close-btn" title="დახურვა" (click)="close()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="d-flex justify-content-center align-items-center flex-column my-4">
+            <h4 class="text-center mb-4">დაასკანერეთ QR კოდი</h4>
+            <qrcode  [qrdata]="data.telegramLink" [width]="280" errorCorrectionLevel="M">
+            </qrcode>
+            <h4 class="text-center mt-4">ტელეგრამის დასაკავშირებლად</h4>
+        </div>
+
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" (click)="close()">
+                დახურვა
+            </button>
+        </div>
+    </div>
+</div>

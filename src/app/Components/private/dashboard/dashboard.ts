@@ -5,7 +5,8 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
 import { RouterModule } from '@angular/router';
-import { QRCodeComponent } from 'angularx-qrcode';
+import { MatDialog } from '@angular/material/dialog';
+import { QrModal } from './qr-modal/qr-modal';
 
 interface StatCard {
   icon: string;
@@ -124,7 +125,7 @@ export class Dashboard {
     }
   ];
   
-  constructor() {}
+  constructor(private dialog: MatDialog) {}
 
   applyJob(job: string): void {
   window.open(`${job}`, '_blank');
@@ -135,12 +136,36 @@ export class Dashboard {
     // Implement save logic
   }
   telegramLink = signal<string>("");
-  async generateTelegramToken() {
-    const res  = await this.authService.generateTelegramToken()
-    this.telegramLink.set("https://t.me/job_notifcation_bot?start=" + res);
+async generateTelegramToken() {
+  const res = await this.authService.generateTelegramToken();
+  this.telegramLink.set("https://t.me/job_notifcation_bot?start=" + res);
+  
+  if (res) {
+    // Check if the user is on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (res) {
-      window.location.href = "https://t.me/job_notifcation_bot?start=" + res;
+    if (isMobile) {
+      // Redirect on mobile
+      window.location.href = this.telegramLink();
+    } else {
+      // Show dialog on desktop
+      this.openDialog(this.telegramLink());
     }
   }
+}
+
+  openDialog(link:string) {
+  const dialogRef = this.dialog.open(QrModal, {
+    width: '400px',
+    disableClose: true,
+    autoFocus: false,
+    data: { telegramLink: link }
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      // user clicked OK
+    }
+  });
+}
 }

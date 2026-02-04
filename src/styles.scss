@@ -70,6 +70,9 @@ body.dark-mode {
   color: $text-main;
   .dashboard-wrapper {
   background: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+  .modal-container{
+    background-color: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+}
 }
   // 🔤 Global typography fix
   h1, h2, h3, h4, h5, h6 {
@@ -202,3 +205,5 @@ body.dark-mode {
     }
   }
 }
+
+

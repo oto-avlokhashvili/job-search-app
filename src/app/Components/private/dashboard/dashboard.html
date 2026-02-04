@@ -57,7 +57,7 @@
         <div class="activity-time">{{ activity.time }}</div>
       </div>
     </div>
-    <div class="row mt-4">
+    <div class="row mt-4 gy-2">
       @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
         <div class="col-md-6">
           <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
