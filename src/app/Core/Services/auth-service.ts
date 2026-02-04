@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom, Observable, shareReplay } from 'rxjs';
 import { UserRegistration } from '../Interfaces/user';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   http = inject(HttpClient);
-  url = "http://localhost:3000"
+  url = environment.apiUrl;
   #tokenSignal = signal<string | null>(null);
   token = this.#tokenSignal.asReadonly();
   isLoggedIn = computed(() => !!this.token());

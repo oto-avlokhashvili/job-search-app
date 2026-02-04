@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class JobsService {
   http = inject(HttpClient);
-  url = "http://localhost:3000"
+  url = environment.apiUrl;
   async getJobs():Promise<JobsResponse> {
     const jobs$ = this.http.get<JobsResponse>(this.url + "/job/all")
     const jobs = await firstValueFrom(jobs$);
