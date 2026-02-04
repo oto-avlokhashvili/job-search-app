@@ -17,7 +17,7 @@
       <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
 
-    <div class="job-item" *ngFor="let job of stateStore.matchedJobsDashboard() | slice:0:3">
+    <div class="job-item" *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>
@@ -57,5 +57,28 @@
         <div class="activity-time">{{ activity.time }}</div>
       </div>
     </div>
+    <div class="row mt-4">
+      @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
+        <div class="col-md-6">
+          <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
+            <img src="/icons/telegram.png" alt="Telegram" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+            <span>დაკავშირება</span>
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button class="btn btn-primary" style="width: 100%;">
+            <img src="/icons/gmail.png" alt="Gmail" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+            <span>დაკავსირება</span>
+          </button>
+        </div>
+      }
+  </div>
+
+<!--   <qrcode
+  *ngIf="telegramLink()"
+  [qrdata]="telegramLink()"
+  [width]="280"
+  errorCorrectionLevel="M">
+</qrcode> -->
   </div>
 </div>

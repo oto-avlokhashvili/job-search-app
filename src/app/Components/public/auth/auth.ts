@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { Router } from '@angular/router';
+import { UserRegistration } from '../../../Core/Interfaces/user';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 @Component({
   selector: 'app-auth',
@@ -10,27 +12,54 @@ import { Router } from '@angular/router';
   styleUrl: './auth.scss',
 })
 export class Auth {
-  authService = inject(AuthService)
+  authService = inject(AuthService);
+  alertify = inject(AlertifyService);
   fb = inject(FormBuilder);
   router = inject(Router);
   validators = signal(false);
-  form = this.fb.group({
-        email:['', Validators.required],
-        password:['', Validators.required],
-        rememberMe:[false]
+  loginMode = signal(true);
+
+  loginForm = this.fb.group({
+    email: ['', Validators.required],
+    password: ['', Validators.required],
+    rememberMe: [false]
+  })
+  registerForm = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    email: ['', Validators.required],
+    password: ['', Validators.required],
+    confirmPassword: ['', Validators.required],
   })
 
-  logIn(){
+  logIn() {
     this.validators.set(true);
-    if(this.form.valid){
+    if (this.loginForm.valid) {
       this.validators.set(false);
-      this.authService.login(this.form.get('email')?.value!, this.form.get('password')?.value!).then(() => this.router.navigate(['/private']));
+      this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).then(() => {
+        this.router.navigate(['/private'])
+        this.alertify.success("ავტორიზაცია წარმატებით დასრულდა")});
+
     }
-    
+
+  }
+  register() {
+    this.validators.set(true);
+    if (this.registerForm.valid && this.registerForm.get('password')?.value === this.registerForm.get('confirmPassword')?.value) {
+      console.log(this.registerForm.value);
+      this.authService.userRegistration(this.registerForm.value as UserRegistration).then(() => {
+        this.loginMode.set(true)});
+        this.registerForm.reset();
+        this.alertify.success("რეგისტრაცია წარმატებით დასრულდა");
+    }
+  }
+  isInvalid(name: string) {
+    const control = this.loginMode() ? this.loginForm.get(name) : this.registerForm.get(name);
+    return !!(control && control.invalid && (control.touched || this.validators()));
   }
 
-  isInvalid(name: string) {
-  const control = this.form.get(name);
-  return !!(control && control.invalid && (control.touched || this.validators()));
-}
+
+  modeChanger() {
+    this.loginMode.set(!this.loginMode());
+  }
 }

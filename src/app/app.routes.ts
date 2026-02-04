@@ -10,10 +10,10 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: '',
+    redirectTo: 'home',
   },
   {
-    path: '',
+    path: 'home',
     component: Home,
     data: { showHeroSection: true }
   },

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { Job } from '../Core/Interfaces/jobs';
 type State = {
     profile: User;
+    profileLoaded:boolean;
     jobsCount:number | 0;
     
     matchedJobsCount:number | 0;
@@ -22,6 +23,7 @@ type State = {
 
 const initialState: State = {
     profile: {id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: '---', createdAt: ''},
+    profileLoaded:false,
     jobsCount:0,
     
     matchedJobsCount:0,
@@ -41,7 +43,7 @@ export const StateStore = signalStore(
         async loadProfile() {
             const profile = await firstValueFrom(authService.getUserProfile());
             patchState(store, { 
-                profile 
+                profile, profileLoaded: true
             })
         },
         async loadJobs() {

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom, Observable, shareReplay } from 'rxjs';
+import { UserRegistration } from '../Interfaces/user';
 
 @Injectable({
   providedIn: 'root',
@@ -62,11 +63,24 @@ export class AuthService {
     return profile;
   } */
 
+
+  async userRegistration(obj: UserRegistration){
+    const user$ = this.http.post(this.url + "/user", obj, { withCredentials: true })
+    const user = await firstValueFrom(user$);
+    return user;
+  }
+
   async logOut() {
     const message$ = this.http.get(this.url + "/auth/logout", { withCredentials: true })
     const msg = await firstValueFrom(message$);
     this.#tokenSignal.set(null);
     sessionStorage.removeItem("token");
     return msg;
+  }
+
+  async generateTelegramToken(){
+    const telegramToken$ = this.http.get(this.url + "/telegram/generate-link-token")
+    const res:any = await firstValueFrom(telegramToken$)
+    return res.token;
   }
 }

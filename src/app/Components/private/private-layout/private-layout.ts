@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
@@ -16,6 +16,7 @@ export class PrivateLayout {
   isSidebarOpen = signal<boolean>(false);
   currentYear = signal(new Date().getFullYear());
   isDarkMode = signal<boolean>(false);
+  router = inject(Router);
   navItems = signal([
     { icon: '📊', label: 'Dashboard', route: 'dashboard', active: true },
     { icon: '🔍', label: 'Jobs', route: 'jobs' },
@@ -74,10 +75,9 @@ export class PrivateLayout {
   }
 
   logout() {
-    console.log('Logging out...');
-    // Implement logout logic here
-    // e.g., clear tokens, redirect to login page
-    // this.router.navigate(['/login']);
-    alert('Logout functionality - Implement your logout logic here');
+    /* this.authService.logOut().then(() => {
+      this.router.navigate(['/auth']);
+    }); */
+    
   }
 }

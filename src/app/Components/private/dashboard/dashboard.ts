@@ -5,6 +5,8 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
 import { RouterModule } from '@angular/router';
+import { QRCodeComponent } from 'angularx-qrcode';
+
 interface StatCard {
   icon: string;
   value: number;
@@ -50,9 +52,9 @@ export class Dashboard {
   profileId = computed(() => this.stateStore.profile()?.id);
   stats = computed(() => [
     { icon: '⚡', value: this.stateStore.jobsCount(), label: 'აქტიური ვაკასნია', colorClass: 'blue' },
+    { icon: '🎯', value: this.stateStore.matchedJobsCount(), label: 'მიღებული ვაკასნიები', colorClass: 'purple' },
     { icon: '✓', value: 0, label: 'გაგზავნილი აპლიკაციები', colorClass: 'green' },
     { icon: '📧', value: 0, label: 'მიღებული შეტყობინებები', colorClass: 'orange' },
-    { icon: '🎯', value: this.stateStore.matchedJobsCount(), label: 'მიღებული ვაკასნიები', colorClass: 'purple' }
   ]);
 
     jobs = signal([
@@ -122,7 +124,7 @@ export class Dashboard {
     }
   ];
   
-  constructor() { }
+  constructor() {}
 
   applyJob(job: string): void {
   window.open(`${job}`, '_blank');
@@ -131,5 +133,14 @@ export class Dashboard {
   saveJob(job: Job): void {
     console.log('Saving job:', job.title);
     // Implement save logic
+  }
+  telegramLink = signal<string>("");
+  async generateTelegramToken() {
+    const res  = await this.authService.generateTelegramToken()
+    this.telegramLink.set("https://t.me/job_notifcation_bot?start=" + res);
+    
+    if (res) {
+      window.location.href = "https://t.me/job_notifcation_bot?start=" + res;
+    }
   }
 }
