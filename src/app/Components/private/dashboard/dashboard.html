@@ -17,7 +17,8 @@
       <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
 
-    <div class="job-item" *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3">
+    <div class="job-item"
+      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>
@@ -29,12 +30,12 @@
       </div>
       <div class="job-details">
         <span>📍 {{ "თბილისი" }}</span>
-        <span>💼 {{ "Full-Time" }}</span>
+        <span>💼 {{ "სრული" }}</span>
         <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
       </div>
       <div class="job-footer">
-        <span class="job-salary">{{ "1000-1500 GEL" }}</span>
-        <button class="btn btn-primary" (click)="applyJob(job.link)">
+        <span class="job-salary">{{ "1000-1500 ₾" }}</span>
+        <button class="btn btn-primary" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
           ნახვა
         </button>
       </div>
@@ -47,10 +48,18 @@
       <h2 class="card-title">ბოლო აქტივობები</h2>
     </div>
 
-    <div class="activity-item" *ngFor="let activity of activities">
-      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
-        {{ activity.icon }}
-      </div>
+    <div class="activity-item" *ngFor="let activity of activities()">
+      @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
+        <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
+          {{ activity.icon }}
+        </div>
+      }
+      @if(activity.title == "ტელეგრამი"){
+        <img class="activity-icon" [src]="activity.icon" alt="Telegram">
+      }
+      @if(activity.title == "ელ-ფოსტა"){
+        <img class="activity-icon"  [src]="activity.icon" alt="Gmail">
+      }
       <div class="activity-content">
         <h4>{{ activity.title }}</h4>
         <p>{{ activity.description }}</p>
@@ -59,26 +68,14 @@
     </div>
     <div class="row mt-4 gy-2">
       @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
-        <div class="col-md-6">
-          <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
-            <img src="/icons/telegram.png" alt="Telegram" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-            <span>დაკავშირება</span>
-          </button>
-        </div>
-        <div class="col-md-6">
-          <button class="btn btn-primary" style="width: 100%;">
-            <img src="/icons/gmail.png" alt="Gmail" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-            <span>დაკავსირება</span>
-          </button>
-        </div>
+      <div class="col-md-12">
+        <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
+          <img src="/icons/telegram.png" alt="Telegram"
+            style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+          <span>დაკავშირება</span>
+        </button>
+      </div>
       }
-  </div>
-
-<!--   <qrcode
-  *ngIf="telegramLink()"
-  [qrdata]="telegramLink()"
-  [width]="280"
-  errorCorrectionLevel="M">
-</qrcode> -->
+    </div>
   </div>
 </div>

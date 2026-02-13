@@ -30,8 +30,9 @@ export class PrivateLayout {
   authService = inject(AuthService);
   stateStore = inject(StateStore);
   async getProfile() {
-   await this.stateStore.loadProfile();
-   this.stateStore.loadMatchedJobs(this.stateStore.profile().id);
+    await this.stateStore.loadProfile();
+    this.stateStore.loadMatchedJobs(this.stateStore.profile().id);
+    this.stateStore.findJobsByQuery(this.stateStore.profile().searchQuery)
   }
   initials = computed(() => {
     const u = this.stateStore.profile();
@@ -58,10 +59,9 @@ export class PrivateLayout {
   closeSidebar() {
     this.isSidebarOpen.set(false);
   }
-  async getJobs() {
+  getJobs() {
     this.stateStore.loadJobs();
   }
-
   toggleDarkMode() {
     this.isDarkMode.set(!this.isDarkMode());
 
@@ -78,6 +78,6 @@ export class PrivateLayout {
     /* this.authService.logOut().then(() => {
       this.router.navigate(['/auth']);
     }); */
-    
+
   }
 }

@@ -68,4 +68,7 @@ export class SentJobs {
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
   }
+  saveViewedVacancy(title:string){
+    localStorage.setItem("recently_viewed",title);
+  }
 }

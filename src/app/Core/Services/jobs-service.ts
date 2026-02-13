@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
-import { JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
+import { firstValueFrom, Observable } from 'rxjs';
+import { Job, JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,22 +10,13 @@ import { environment } from '../../../environments/environment';
 export class JobsService {
   http = inject(HttpClient);
   url = environment.apiUrl;
-  async getJobs():Promise<JobsResponse> {
-    const jobs$ = this.http.get<JobsResponse>(this.url + "/job/all")
-    const jobs = await firstValueFrom(jobs$);
-    return jobs;
+  getJobs():Observable<JobsResponse> {
+    return this.http.get<JobsResponse>(this.url + "/job/all")
   }
-  async getUserMatchedJobs(
-  id: number,
-  page: number = 1,
-  pageSize: number = 10
-): Promise<SentJobsResponse> {
-  const url = `${this.url}/sent-jobs/${id}?page=${page}&pageSize=${pageSize}`;
-
-  const jobs$ = this.http.get<SentJobsResponse>(url);
-  const jobs = await firstValueFrom(jobs$);
-
-  return jobs;
-}
-
+  getUserMatchedJobs(id: number,page: number = 1,pageSize: number = 10): Observable<SentJobsResponse> {
+    return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs/${id}?page=${page}&pageSize=${pageSize}`);
+  }
+  findByQuery(query:string):Observable<Job[]>{
+    return this.http.get<Job[]>(`${this.url}/job/search?query=${query}`);
+  }
 }

@@ -9,6 +9,7 @@ type State = {
     profile: User;
     profileLoaded:boolean;
     jobsCount:number | 0;
+    searchedJobsCount:number | 0;
     
     matchedJobsCount:number | 0;
     matchedJobs:Job[];
@@ -25,6 +26,7 @@ const initialState: State = {
     profile: {id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: '---', createdAt: ''},
     profileLoaded:false,
     jobsCount:0,
+    searchedJobsCount:0,
     
     matchedJobsCount:0,
     matchedJobs:[],
@@ -41,18 +43,27 @@ export const StateStore = signalStore(
     withState(initialState),
     withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService)) => ({
         async loadProfile() {
-            const profile = await firstValueFrom(authService.getUserProfile());
+            const profile = await authService.getUserProfile()
             patchState(store, { 
                 profile, profileLoaded: true
             })
         },
-        async loadJobs() {
-            const res = await jobsService.getJobs();
-            patchState(store, { jobsCount: res.count })
+        loadJobs() {
+            jobsService.getJobs().subscribe(res => {
+                patchState(store, { jobsCount: res.count })
+            })
         },
-        async loadMatchedJobs(id:number, page?:number) {
-            const res = await jobsService.getUserMatchedJobs(id, page);            
-            patchState(store, { matchedJobsCount: res.count, matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(), matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
+       loadMatchedJobs(id:number, page?:number) {
+            jobsService.getUserMatchedJobs(id, page).subscribe(res => {
+                patchState(store, { matchedJobsCount: res.count, matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(), matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
+            })          
         },
+        findJobsByQuery(query:string){
+            jobsService.findByQuery(query).subscribe(res => {
+                patchState(store, { 
+                searchedJobsCount:res?.length
+            })
+            })
+        }
     })),
 )

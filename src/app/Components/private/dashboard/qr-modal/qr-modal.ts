@@ -18,6 +18,6 @@ export class QrModal {
   ) {}
 
   close() {
-    this.dialogRef.close();
+    this.dialogRef.close(true);
   }
 }

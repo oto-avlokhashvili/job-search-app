@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom, Observable, shareReplay } from 'rxjs';
-import { UserRegistration } from '../Interfaces/user';
+import { firstValueFrom, Observable, shareReplay, tap } from 'rxjs';
+import { User, UserRegistration } from '../Interfaces/user';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -30,14 +30,17 @@ export class AuthService {
       this.#tokenSignal.set(user);
     }
   }
-  async login(email: string, password: string) {
-    const login$ = this.http.post(this.url + "/auth/login", { email, password }, { withCredentials: true })
-    const user: any = await firstValueFrom(login$);
-    this.#tokenSignal.set(user.token);
-    sessionStorage.setItem("token", user.token);
-    return user;
+  login(email: string, password: string):Observable<{token:string}> {
+    return this.http.post<{token:string}>(this.url + "/auth/login", { email, password }, { withCredentials: true }).pipe(
+      tap((res:{token:string}) => {
+        this.#tokenSignal.set(res.token);
+        sessionStorage.setItem("token", res.token);
+      })
+    )
   }
-
+  userRegistration(obj: UserRegistration):Observable<User>{
+    return this.http.post<User>(this.url + "/user", obj, { withCredentials: true })
+  }
   async refreshToken() {
     const refresh$ = this.http.post(this.url + "/auth/refresh", null, {
       withCredentials: true
@@ -47,15 +50,11 @@ export class AuthService {
     sessionStorage.setItem("token", user.token);
     return user;
   }
-  private profile$?: Observable<any>;
 
-  getUserProfile(): Observable<any> {
-    if (!this.profile$) {
-      this.profile$ = this.http
-        .get(this.url + '/auth/profile', { withCredentials: true })
-        .pipe(shareReplay(1));
-    }
-    return this.profile$;
+  async getUserProfile(): Promise<any> {
+    const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true })
+    const profile = firstValueFrom(profile$)
+    return profile;
   }
 
   /* async getUserProfile(){
@@ -65,11 +64,7 @@ export class AuthService {
   } */
 
 
-  async userRegistration(obj: UserRegistration){
-    const user$ = this.http.post(this.url + "/user", obj, { withCredentials: true })
-    const user = await firstValueFrom(user$);
-    return user;
-  }
+  
 
   async logOut() {
     const message$ = this.http.get(this.url + "/auth/logout", { withCredentials: true })

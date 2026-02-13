@@ -25,7 +25,7 @@
         </div>
         <div class="job-footer">
           <span class="job-salary">{{ "1000-1500 GEL" }}</span>
-          <button class="btn btn-primary" (click)="applyJob(job.link)">
+          <button class="btn btn-primary" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
             ნახვა
           </button>
         </div>
@@ -68,20 +68,5 @@
   </div>
 
   <!-- Recent Activity -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">ბოლო აქტივობები</h2>
-    </div>
 
-    <div class="activity-item" *ngFor="let activity of activities">
-      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
-        {{ activity.icon }}
-      </div>
-      <div class="activity-content">
-        <h4>{{ activity.title }}</h4>
-        <p>{{ activity.description }}</p>
-        <div class="activity-time">{{ activity.time }}</div>
-      </div>
-    </div>
-  </div>
 </div>

@@ -6,11 +6,11 @@
     <header class="header">
           <app-header/>
           @if(showHeroSection()){
-            <div class="hero" style="margin-top: 60px;">
+            <div class="hero" style="margin-top: 60px; margin-bottom: 60px;">
               <h1>Never Miss Your Dream Job</h1>
               <p class="subtitle">Get instant job alerts delivered to your Telegram. Smart, fast, and tailored to your career.</p>
-              <button class="cta-button">Get Started Free</button>
-              <button class="cta-button secondary-button">View Plans</button>
+              <button [routerLink]="'/auth'" class="cta-button">Get Started Free</button>
+              <button (click)="scroll('pricing')" class="cta-button secondary-button">View Plans</button>
             </div>
           }
       </header>

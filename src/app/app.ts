@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { LoadingIndicatorComponent } from "./Core/loading/loading.component";
 import { AuthService } from './Core/Services/auth-service';
 import { Footer } from './Components/public/footer/footer';
@@ -9,7 +9,7 @@ import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header],
+  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -32,5 +32,7 @@ export class App {
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
     });
   }
-
+  scroll(target: string) {
+    document.querySelector(`#${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }

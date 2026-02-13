@@ -36,9 +36,14 @@ export class Auth {
     this.validators.set(true);
     if (this.loginForm.valid) {
       this.validators.set(false);
-      this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).then(() => {
-        this.router.navigate(['/private'])
-        this.alertify.success("ავტორიზაცია წარმატებით დასრულდა")});
+      this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
+        next: () => {
+          this.router.navigate(['/private'])
+        },
+        error: (err) => {
+          this.alertify.error(err);
+        }
+      })
 
     }
 
@@ -47,10 +52,20 @@ export class Auth {
     this.validators.set(true);
     if (this.registerForm.valid && this.registerForm.get('password')?.value === this.registerForm.get('confirmPassword')?.value) {
       console.log(this.registerForm.value);
-      this.authService.userRegistration(this.registerForm.value as UserRegistration).then(() => {
-        this.loginMode.set(true)});
-        this.registerForm.reset();
-        this.alertify.success("რეგისტრაცია წარმატებით დასრულდა");
+      this.authService.userRegistration(this.registerForm.value as UserRegistration).subscribe({
+        next: () => {
+          this.alertify.success("რეგისტრაცია წარმატებით დასრულდა");
+          this.validators.set(false);
+          this.registerForm.reset();
+          this.loginForm.reset();
+        },
+        error: (err) => {
+          this.loginMode.set(false)
+          this.alertify.error(err);
+        },
+        complete: () => { this.loginMode.set(true) }
+      });
+
     }
   }
   isInvalid(name: string) {

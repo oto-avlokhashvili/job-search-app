@@ -9,6 +9,9 @@ import { AuthService } from '../../../Core/Services/auth-service';
   styleUrl: './header.scss',
 })
 export class Header {
-    menuOpen = false;
-    authService = inject(AuthService);
+  menuOpen = false;
+  authService = inject(AuthService);
+  scroll(target: string) {
+    document.querySelector(`#${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
