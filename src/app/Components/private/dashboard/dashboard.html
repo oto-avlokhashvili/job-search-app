@@ -58,7 +58,7 @@
         <img class="activity-icon" [src]="activity.icon" alt="Telegram">
       }
       @if(activity.title == "ელ-ფოსტა"){
-        <img class="activity-icon"  [src]="activity.icon" alt="Gmail">
+        <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
       }
       <div class="activity-content">
         <h4>{{ activity.title }}</h4>

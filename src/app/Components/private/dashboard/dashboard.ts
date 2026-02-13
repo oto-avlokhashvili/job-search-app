@@ -92,63 +92,53 @@ export class Dashboard implements OnInit{
     },
   ]);
 
-  activities = signal<Activity[]>(
-    [
-      {
-        icon: '✓',
-        iconBg: '#c6f6d5',
-        iconColor: '#22543d',
-        title: ' ბოლოს ნანახი ვაკანსა',
-        description: 'არ არის ხელმისაწვდომი',
-        time: '2 hours ago'
-      },
-      {
-        icon: '⚡',
-        iconBg: '#bee3f8',
-        iconColor: '#2c5282',
-        title: 'ნანახი ვაკანსიების ჯამი',
-        description: 'არ არის ხელმისაწვდომი',
-        time: '4 hours ago'
-      },
-      {
-        icon: '📅',
-        iconBg: '#e9d8fd',
-        iconColor: '#553c9a',
-        title: 'ჩანიშნული გასაუბრებები',
-        description: 'არ არის ხელმისაწვდომი',
-        time: '1 day ago'
-      },
-      {
-        icon: '/icons/telegram.png',
-        iconBg: '#fed7d7',
-        iconColor: '#742a2a',
-        title: 'ტელეგრამი',
-        description: 'არ არის დაკავშირებული',
-        time: '2 days ago'
-      },
-      {
-        icon: '/icons/gmail.png',
-        iconBg: '#feebc8',
-        iconColor: '#7c2d12',
-        title: 'ელ-ფოსტა',
-        description: 'არ არის დაკავშირებული',
-        time: '6 hours ago'
-      },
-    ]
-  ) 
+  activities = computed<Activity[]>(() => [
+  {
+    icon: '✓',
+    iconBg: '#c6f6d5',
+    iconColor: '#22543d',
+    title: 'ბოლოს ნანახი ვაკანსია',
+    description: localStorage.getItem("recently_viewed") || "არ არის ხელმისაწვდომი",
+    time: '2 hours ago'
+  },
+  {
+    icon: '⚡',
+    iconBg: '#bee3f8',
+    iconColor: '#2c5282',
+    title: 'ნანახი ვაკანსიების ჯამი',
+    description: 'არ არის ხელმისაწვდომი',
+    time: '4 hours ago'
+  },
+  {
+    icon: '📅',
+    iconBg: '#e9d8fd',
+    iconColor: '#553c9a',
+    title: 'ჩანიშნული გასაუბრებები',
+    description: 'არ არის ხელმისაწვდომი',
+    time: '1 day ago'
+  },
+  {
+    icon: '/icons/telegram.png',
+    iconBg: '#fed7d7',
+    iconColor: '#742a2a',
+    title: 'ტელეგრამი',
+    description: this.stateStore.profile()?.telegramChatId
+      ? 'დაკავშირებული'
+      : 'არ არის დაკავშირებული',
+    time: '2 days ago'
+  },
+  {
+    icon: '/icons/gmail.png',
+    iconBg: '#f1f0eeff',
+    iconColor: '#7c2d12',
+    title: 'ელ-ფოსტა',
+    description: 'არ არის დაკავშირებული',
+    time: '6 hours ago'
+  }
+]);
 
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
-    const recent = localStorage.getItem('recently_viewed');
-    if (recent) {
-      this.activities.update(list =>
-        list.map((item, index) =>
-          index === 0
-            ? { ...item, description: recent }
-            : item
-        )
-      );
-    }
   }
 
   applyJob(job: string): void {
@@ -195,15 +185,6 @@ export class Dashboard implements OnInit{
 
   saveViewedVacancy(title:string){
     localStorage.setItem("recently_viewed",title);
-    const recent = localStorage.getItem('recently_viewed');
-    if (recent) {
-      this.activities.update(list =>
-        list.map((item, index) =>
-          index === 0
-            ? { ...item, description: recent }
-            : item
-        )
-      );
-    }
+
   }
 }
