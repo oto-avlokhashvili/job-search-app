@@ -49,7 +49,7 @@
       <header class="header">
         <div class="header-title">
           <h3>გამარჯობა {{stateStore.profile().firstName}}!</h3>
-          <p>თქვენ ეძებთ <span class="text-primary fw-bold">{{stateStore.profile().searchQuery}}</span> ვაკანსიას</p>
+          <p>თქვენ ეძებთ <span class="text-primary fw-bold">{{"(" + stateStore.profile().searchQuery + ")"}}</span>-ის ვაკანსიას</p>
         </div>
         <div class="user-profile">
           <div class="user-info">

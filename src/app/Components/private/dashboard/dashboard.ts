@@ -7,6 +7,7 @@ import { StateStore } from '../../../Store/state.store';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { QrModal } from './qr-modal/qr-modal';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 interface StatCard {
   icon: string;
@@ -38,7 +39,7 @@ interface Activity {
 }
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -46,6 +47,8 @@ interface Activity {
 export class Dashboard implements OnInit{
   jobsService = inject(JobsService);
   authService = inject(AuthService);
+  searchQuery = new FormControl<string>('');
+
   profile = signal<any>({});
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
@@ -108,14 +111,6 @@ export class Dashboard implements OnInit{
     title: 'ნანახი ვაკანსიების ჯამი',
     description: 'არ არის ხელმისაწვდომი',
     time: '4 hours ago'
-  },
-  {
-    icon: '📅',
-    iconBg: '#e9d8fd',
-    iconColor: '#553c9a',
-    title: 'ჩანიშნული გასაუბრებები',
-    description: 'არ არის ხელმისაწვდომი',
-    time: '1 day ago'
   },
   {
     icon: '/icons/telegram.png',
@@ -187,4 +182,25 @@ export class Dashboard implements OnInit{
     localStorage.setItem("recently_viewed",title);
 
   }
+  updateUser() {
+  const currentProfile = this.stateStore.profile();
+  const newQuery = this.searchQuery.value?.trim();
+
+  if (!newQuery) return;
+
+  // ensure existing array
+  const existingQueries = currentProfile.searchQuery ?? [];
+
+  // avoid duplicates
+  const updatedQueries = [...new Set([...existingQueries, newQuery])];
+
+  // update user in backend
+  this.stateStore.updateProfile(currentProfile.id, {
+    searchQuery: updatedQueries
+  });
+
+  // search using full array
+  this.stateStore.findJobsByQuery(updatedQueries);
+}
+
 }

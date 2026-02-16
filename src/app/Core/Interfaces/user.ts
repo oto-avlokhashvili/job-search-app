@@ -5,7 +5,7 @@ export interface User {
   email: string;
   subscription: 'BASIC' | 'PREMIUM' | 'PRO';
   createdAt: string;
-  searchQuery: string;
+  searchQuery: string[];
   telegramChatId?:string
 }
 

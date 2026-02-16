@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Job, JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
@@ -16,7 +16,13 @@ export class JobsService {
   getUserMatchedJobs(id: number,page: number = 1,pageSize: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs/${id}?page=${page}&pageSize=${pageSize}`);
   }
-  findByQuery(query:string):Observable<Job[]>{
-    return this.http.get<Job[]>(`${this.url}/job/search?query=${query}`);
-  }
+  findByQuery(queries: string[]): Observable<Job[]> {
+  let params = new HttpParams();
+
+  queries.forEach(q => {
+    params = params.append('query', q);
+  });
+
+  return this.http.get<Job[]>(`${this.url}/job/search`, { params });
+}
 }

@@ -52,6 +52,7 @@ export class AuthService {
   }
 
   async getUserProfile(): Promise<any> {
+    
     const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true })
     const profile = firstValueFrom(profile$)
     return profile;

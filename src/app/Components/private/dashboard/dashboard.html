@@ -40,6 +40,10 @@
         </button>
       </div>
     </div>
+    <div class="empty-state" *ngIf="stateStore.matchedJobs().length === 0">
+      <p>ვაკანსიები არ მოიძებნა</p>
+    </div>
+
   </div>
 
   <!-- Recent Activity -->
@@ -48,17 +52,26 @@
       <h2 class="card-title">ბოლო აქტივობები</h2>
     </div>
 
+    <label for="searchQuery">დაამატე საძიებელი პარამეტრი</label>
+    <div class="activity-item">
+      <button class="activity-icon" (click)="updateUser()"
+        [style.background]="'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'" [style.color]="'white'">
+        {{ "+" }}
+      </button>
+      <input [formControl]="searchQuery" type="text" class="form-control" id="searchQuery" placeholder="ვაკანსია"
+        required>
+    </div>
     <div class="activity-item" *ngFor="let activity of activities()">
       @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
-        <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
-          {{ activity.icon }}
-        </div>
+      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
+        {{ activity.icon }}
+      </div>
       }
       @if(activity.title == "ტელეგრამი"){
-        <img class="activity-icon" [src]="activity.icon" alt="Telegram">
+      <img class="activity-icon" [src]="activity.icon" alt="Telegram">
       }
       @if(activity.title == "ელ-ფოსტა"){
-        <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
+      <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
       }
       <div class="activity-content">
         <h4>{{ activity.title }}</h4>

@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000'  // Change port to match your backend
+  apiUrl: 'https://scenes-citizenship-colored-patches.trycloudflare.com'  // Change port to match your backend
 };
