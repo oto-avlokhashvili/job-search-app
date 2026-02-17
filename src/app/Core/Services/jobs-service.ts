@@ -16,9 +16,9 @@ export class JobsService {
   getUserMatchedJobs(id: number,page: number = 1,pageSize: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs/${id}?page=${page}&pageSize=${pageSize}`);
   }
-  findByQuery(queries: string[]): Observable<Job[]> {
+  findByQuery(queries: string[] = []): Observable<Job[]> {
   let params = new HttpParams();
-
+    
   queries.forEach(q => {
     params = params.append('query', q);
   });

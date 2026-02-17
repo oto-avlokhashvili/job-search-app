@@ -71,4 +71,25 @@ export class SentJobs {
   saveViewedVacancy(title:string){
     localStorage.setItem("recently_viewed",title);
   }
+
+getJobBadgeByProgress(publishDate: string, deadline: string) {
+  const today = new Date();
+  const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
+  const end = new Date(deadline.split('/').reverse().join('-'));
+
+  const totalMs = end.getTime() - start.getTime();
+  const elapsedMs = today.getTime() - start.getTime();
+  
+  const progress = elapsedMs / totalMs;
+
+  if (progress <= 1/3) {
+    return { class: 'badge-new', text: 'ცხელ-ცხელი' };
+  } else if (progress <= 2/3) {
+    return { class: 'badge-average', text: 'ახალი' };
+  } else {
+    return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
+  }
+}
+
+
 }

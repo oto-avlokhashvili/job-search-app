@@ -24,8 +24,8 @@
           <div class="job-title">{{ job.vacancy }}</div>
           <div class="job-company">{{ job.company }}</div>
         </div>
-        <span class="job-badge badge-new">
-          {{ "ახალი" }}
+        <span [ngClass]="'job-badge ' + getJobBadgeByProgress(job.publishDate, job.deadline).class">
+          {{ getJobBadgeByProgress(job.publishDate, job.deadline).text }}
         </span>
       </div>
       <div class="job-details">

@@ -32,7 +32,9 @@ export class PrivateLayout {
   async getProfile() {
     await this.stateStore.loadProfile();
     this.stateStore.loadMatchedJobs(this.stateStore.profile().id);
-    this.stateStore.findJobsByQuery(this.stateStore.profile().searchQuery)
+    if(this.stateStore.profile().searchQuery?.length > 0){
+      this.stateStore.findJobsByQuery(this.stateStore.profile().searchQuery)
+    }
   }
   initials = computed(() => {
     const u = this.stateStore.profile();
