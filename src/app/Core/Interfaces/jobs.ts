@@ -5,6 +5,7 @@ export interface JobsResponse {
 export interface Job {
   id: number;
   vacancy: string;
+  location:string;
   company: string;
   link: string;
   publishDate: string; // or Date if you plan to parse it

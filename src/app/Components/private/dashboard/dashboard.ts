@@ -63,8 +63,7 @@ export class Dashboard implements OnInit{
       jobs > 0 ? ((searched / jobs) * 100).toFixed(2) : '0';
 
     return [
-      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue' },
-      { icon: '🎯', value: searched, label: `ნაპოვვნი ${this.stateStore.profile()?.searchQuery ?? ''}-ის ვაკანსია`, colorClass: 'purple' },
+      { icon: '🎯', value: searched, label: `ნაპოვვნი (${this.stateStore.profile()?.searchQuery ?? ''}) -ის ვაკანსია`, colorClass: 'purple' },
       { icon: '✓', value: this.stateStore.matchedJobsCount() ?? 0, label: 'მიღებული ვაკასნიები', colorClass: 'green' },
       { icon: '📧', value: percentage+"%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange' },
     ];
@@ -74,6 +73,7 @@ export class Dashboard implements OnInit{
   jobs = signal([
     {
       vacancy: '--------',
+      location:'--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -81,6 +81,7 @@ export class Dashboard implements OnInit{
     },
     {
       vacancy: '--------',
+      location:'--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -88,6 +89,7 @@ export class Dashboard implements OnInit{
     },
     {
       vacancy: '--------',
+      location:'--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -102,15 +104,15 @@ export class Dashboard implements OnInit{
     iconColor: '#22543d',
     title: 'ბოლოს ნანახი ვაკანსია',
     description: localStorage.getItem("recently_viewed") || "არ არის ხელმისაწვდომი",
-    time: '2 hours ago'
+    time: ''
   },
   {
     icon: '⚡',
     iconBg: '#bee3f8',
     iconColor: '#2c5282',
-    title: 'ნანახი ვაკანსიების ჯამი',
-    description: 'არ არის ხელმისაწვდომი',
-    time: '4 hours ago'
+    title: 'ხელმისაწვდომი ვაკანსიების ჯამი',
+    description: this.stateStore.jobsCount().toString() + ' ვაკანსია',
+    time: ''
   },
   {
     icon: '/icons/telegram.png',
@@ -120,7 +122,7 @@ export class Dashboard implements OnInit{
     description: this.stateStore.profile()?.telegramChatId
       ? 'დაკავშირებული'
       : 'არ არის დაკავშირებული',
-    time: '2 days ago'
+    time: ''
   },
   {
     icon: '/icons/gmail.png',
@@ -128,7 +130,7 @@ export class Dashboard implements OnInit{
     iconColor: '#7c2d12',
     title: 'ელ-ფოსტა',
     description: 'არ არის დაკავშირებული',
-    time: '6 hours ago'
+    time: ''
   }
 ]);
 
@@ -193,7 +195,8 @@ export class Dashboard implements OnInit{
 
   // avoid duplicates
   const updatedQueries = [...new Set([...existingQueries, newQuery])];
-
+  console.log(updatedQueries);
+  
   // update user in backend
   this.stateStore.updateProfile(currentProfile.id, {
     searchQuery: updatedQueries

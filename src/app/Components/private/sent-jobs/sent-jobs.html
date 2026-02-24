@@ -19,8 +19,8 @@
         </span>
         </div>
         <div class="job-details">
-          <span>📍 {{ "თბილისი" }}</span>
-          <span>💼 {{ "Full-Time" }}</span>
+          <span>📍 {{ job.location ? job.location : "თბილისი"  }}</span>
+          <span>💼 {{ "სრული" }}</span>
           <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
         </div>
         <div class="job-footer">
