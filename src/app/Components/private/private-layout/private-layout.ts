@@ -18,12 +18,12 @@ export class PrivateLayout {
   isDarkMode = signal<boolean>(false);
   router = inject(Router);
   navItems = signal([
-    { icon: '📊', label: 'Dashboard', route: 'dashboard', active: true },
-    { icon: '🔍', label: 'Jobs', route: 'jobs' },
-    { icon: '💼', label: 'Applications', route: 'applications' },
+    { icon: '📊', label: 'მთავარი', route: 'dashboard', active: true },
+    { icon: '🔍', label: 'ნაპოვნი ვაკანსიები', route: 'found-jobs' },
+    { icon: '💼', label: 'მიღებული ვაკანსიები', route: 'jobs' },
     { icon: '🔔', label: 'Alerts', route: 'alerts' },
-    { icon: '📈', label: 'Analytics', route: 'analytics' },
-    { icon: '⚙️', label: 'Profile', route: 'profile' }
+    { icon: '📈', label: 'ანალიტიკა', route: 'analytics' },
+    { icon: '⚙️', label: 'პროფილი', route: 'profile' }
   ]);
 
 

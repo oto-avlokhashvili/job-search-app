@@ -1,10 +1,12 @@
 <div class="stats-grid">
   <div class="stat-card" *ngFor="let stat of stats()">
-    <div class="stat-header">
-      <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
-    </div>
-    <div class="stat-value">{{ stat.value }}</div>
-    <div class="stat-label">{{ stat.label }}</div>
+    <a style="text-decoration: none;" [routerLink]="stat.redirectTo">
+      <div class="stat-header">
+        <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
+      </div>
+      <div class="stat-value">{{ stat.value }}</div>
+      <div class="stat-label">{{ stat.label }}</div>
+    </a>
   </div>
 </div>
 

@@ -5,6 +5,8 @@ import { PrivateLayout } from './Components/private/private-layout/private-layou
 import { Dashboard } from './Components/private/dashboard/dashboard';
 import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
+import { Analytics } from './Components/private/analytics/analytics';
+import { FoundJobs } from './Components/private/found-jobs/found-jobs';
 
 export const routes: Routes = [
   {
@@ -40,6 +42,16 @@ export const routes: Routes = [
     {
       path: 'jobs',
       component: SentJobs,
+      data: { showHeroSection: true, hideLayout: true  },
+    },
+    {
+      path: 'analytics',
+      component: Analytics,
+      data: { showHeroSection: true, hideLayout: true  },
+    },
+    {
+      path: 'found-jobs',
+      component: FoundJobs,
       data: { showHeroSection: true, hideLayout: true  },
     },
     {
