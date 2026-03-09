@@ -63,7 +63,7 @@ export class Dashboard implements OnInit{
       jobs > 0 ? ((searched / jobs) * 100).toFixed(2) : '0';
 
     return [
-      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo:''},
+      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo:'/private/all-jobs'},
       { icon: '🎯', value: searched, label: `ნაპოვვნი (${this.stateStore.profile()?.searchQuery ?? ''}) -ის ვაკანსია`, colorClass: 'purple', redirectTo:'/private/found-jobs' },
       { icon: '✓', value: this.stateStore.matchedJobsCount() ?? 0, label: 'მიღებული ვაკასნიები', colorClass: 'green', redirectTo:'/private/jobs'},
       { icon: '📧', value: percentage+"%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo:'/private/analytics' },
@@ -204,7 +204,7 @@ export class Dashboard implements OnInit{
   });
 
   // search using full array
-  this.stateStore.findJobsByQuery(updatedQueries);
+  //this.stateStore.findJobsByQuery(updatedQueries);
 }
 getJobBadgeByProgress(publishDate: string, deadline: string) {
   const today = new Date();

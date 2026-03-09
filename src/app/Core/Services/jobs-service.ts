@@ -10,8 +10,13 @@ import { environment } from '../../../environments/environment';
 export class JobsService {
   http = inject(HttpClient);
   url = environment.apiUrl;
-  getJobs():Observable<JobsResponse> {
-    return this.http.get<JobsResponse>(this.url + "/job/all")
+  getJobs(vacancy:string[] = [], page:number = 1):Observable<JobsResponse> {
+    let params = new HttpParams();
+    
+  vacancy?.forEach(q => {
+    params = params.append('query', q);
+  });
+    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params })
   }
   getUserMatchedJobs(id: number,page: number = 1,pageSize: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs/${id}?page=${page}&pageSize=${pageSize}`);

@@ -13,7 +13,9 @@ type State = {
     searchedJobsCount: number | 0;
 
     matchedJobsCount: number | 0;
+    activeJobs: Job[];
     matchedJobs: Job[];
+    searchedJobs: Job[];
     matchedJobsDashboard: Job[];
     matchedJobsPage: number | 0;
     matchedJobsLimit: number | 0;
@@ -30,7 +32,9 @@ const initialState: State = {
     searchedJobsCount: 0,
 
     matchedJobsCount: 0,
+    activeJobs: [],
     matchedJobs: [],
+    searchedJobs:[],
     matchedJobsDashboard: [],
     matchedJobsPage: 1,
     matchedJobsLimit: 10,
@@ -49,9 +53,9 @@ export const StateStore = signalStore(
                 profile, profileLoaded: true
             })
         },
-        loadJobs() {
-            jobsService.getJobs().subscribe(res => {
-                patchState(store, { jobsCount: res.count })
+        loadJobs(vacancy?:string[], page?:number) {
+            jobsService.getJobs(vacancy, page).subscribe(res => {
+                patchState(store, { jobsCount: res.counts.totalRecords, searchedJobsCount: res.counts.filteredRecords, searchedJobs:res.jobs })
             })
         },
         loadMatchedJobs(id: number, page?: number) {
@@ -59,14 +63,18 @@ export const StateStore = signalStore(
                 patchState(store, { matchedJobsCount: res.count, matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(), matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
             })
         },
-        findJobsByQuery(queries: string[]) {
+        /* findJobsByQuery(queries: string[]) {
             jobsService.findByQuery(queries).subscribe(res => {
                 patchState(store, {
-                    searchedJobsCount: res?.length
+                    searchedJobsCount: res?.length,
                 });
             });
+        }, */
+        loadAllJobs(vacancy?:string[], page?:number) {
+            jobsService.getJobs(vacancy, page).subscribe(res => {
+                patchState(store, { activeJobs:res.jobs })
+            })
         },
-
         updateProfile(id: number, data: any) {
             userService.getUserById(id, data).subscribe(res => {
                 patchState(store, {

@@ -3,12 +3,12 @@
   <div class="card">
     <div class="card-header">
       <h2 class="card-title">ნაპოვნი ვაკანსიები</h2>
-      <span class="job-count">სულ: {{ stateStore.searchedJobsCount() }}</span>
+      <span class="job-count">სულ: {{ this.stateStore.jobsCount() }}</span>
     </div>
 
     <!-- Job listings -->
     <div class="job-list">
-      <div class="job-item" *ngFor="let job of stateStore.searchedJobs()">
+      <div class="job-item" *ngFor="let job of stateStore.activeJobs()">
         <div class="job-header">
           <div>
             <div class="job-title">{{ job.vacancy }}</div>
@@ -60,7 +60,7 @@
       <button 
         class="pagination-btn" 
         (click)="nextPage()" 
-        [disabled]="this.page() === stateStore.searchedJobsCount()/10"
+        [disabled]="this.page() === this.stateStore.jobsCount()/10"
         >
         შემდეგი →
       </button>

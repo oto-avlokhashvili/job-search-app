@@ -1,6 +1,6 @@
 export interface JobsResponse {
   jobs: Job[];
-  count: number;
+  counts: any;
 }
 export interface Job {
   id: number;

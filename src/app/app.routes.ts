@@ -7,6 +7,7 @@ import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { FoundJobs } from './Components/private/found-jobs/found-jobs';
+import { AllJobs } from './Components/private/all-jobs/all-jobs';
 
 export const routes: Routes = [
   {
@@ -52,6 +53,11 @@ export const routes: Routes = [
     {
       path: 'found-jobs',
       component: FoundJobs,
+      data: { showHeroSection: true, hideLayout: true  },
+    },
+    {
+      path: 'all-jobs',
+      component: AllJobs,
       data: { showHeroSection: true, hideLayout: true  },
     },
     {

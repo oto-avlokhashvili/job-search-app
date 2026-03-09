@@ -1,14 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { StateStore } from '../../../Store/state.store';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-found-jobs',
+  selector: 'app-all-jobs',
   imports: [CommonModule],
-  templateUrl: './found-jobs.html',
-  styleUrl: './found-jobs.scss',
+  templateUrl: './all-jobs.html',
+  styleUrl: './all-jobs.scss',
 })
-export class FoundJobs {
+export class AllJobs implements OnInit{
+  ngOnInit(): void {
+    
+  }
   stateStore = inject(StateStore);
   page = signal<number>(this.stateStore.matchedJobsPage() || 1);
   limit = signal<number>(10);
@@ -59,11 +62,11 @@ export class FoundJobs {
 
   nextPage() {
     this.page.set(this.page() + 1);
-    this.stateStore.loadJobs( this.stateStore.profile().searchQuery,this.page());
+    this.stateStore.loadAllJobs( [],this.page());
   }
   previousPage() {
     this.page.set(this.page() - 1);
-    this.stateStore.loadJobs( this.stateStore.profile().searchQuery,this.page());
+    this.stateStore.loadAllJobs( [],this.page());
   }
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
