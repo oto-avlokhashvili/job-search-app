@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './found-jobs.scss',
 })
 export class FoundJobs {
+[x: string]: any;
   stateStore = inject(StateStore);
   page = signal<number>(this.stateStore.matchedJobsPage() || 1);
   limit = signal<number>(10);
@@ -65,6 +66,9 @@ export class FoundJobs {
     this.page.set(this.page() - 1);
     this.stateStore.loadJobs( this.stateStore.profile().searchQuery,this.page());
   }
+  totalPages(): number {
+  return Math.ceil(this.stateStore.searchedJobsCount() / 10);
+}
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
   }

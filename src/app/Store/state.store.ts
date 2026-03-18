@@ -19,6 +19,7 @@ type State = {
     matchedJobsDashboard: Job[];
     matchedJobsPage: number | 0;
     matchedJobsLimit: number | 0;
+    matchedPercentage: number | 0;
 
     totalPages: number | 0;
     totalJobs: number | 0;
@@ -34,10 +35,11 @@ const initialState: State = {
     matchedJobsCount: 0,
     activeJobs: [],
     matchedJobs: [],
-    searchedJobs:[],
+    searchedJobs: [],
     matchedJobsDashboard: [],
     matchedJobsPage: 1,
     matchedJobsLimit: 10,
+    matchedPercentage: 0,
 
     totalPages: 0,
     totalJobs: 0
@@ -53,14 +55,36 @@ export const StateStore = signalStore(
                 profile, profileLoaded: true
             })
         },
-        loadJobs(vacancy?:string[], page?:number) {
+        loadJobs(vacancy?: string[], page?: number) {
             jobsService.getJobs(vacancy, page).subscribe(res => {
-                patchState(store, { jobsCount: res.counts.totalRecords, searchedJobsCount: res.counts.filteredRecords, searchedJobs:res.jobs })
+                patchState(store, { searchedJobs: res.jobs });
+
+                animateValue(0, res.counts.totalRecords, 400, v =>
+                    patchState(store, { jobsCount: v })
+                );
+                animateValue(0, res.counts.filteredRecords, 400, v =>
+                    patchState(store, { searchedJobsCount: v })
+                );
+                animateValue(0, (res.counts.filteredRecords / res.counts.totalRecords) * 100, 400, v =>
+                    patchState(store, { matchedPercentage: Math.round(v) })
+                );
             })
         },
+
         loadMatchedJobs(id: number, page?: number) {
             jobsService.getUserMatchedJobs(id, page).subscribe(res => {
-                patchState(store, { matchedJobsCount: res.count, matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(), matchedJobs: res.sentJobs.map(el => el.job), totalJobs: page, totalPages: res.totalPages, matchedJobsPage: page })
+                patchState(store, {
+                    matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(),
+                    matchedJobs: res.sentJobs.map(el => el.job),
+                    totalJobs: page,
+                    totalPages: res.totalPages,
+                    matchedJobsPage: page
+                });
+
+                animateValue(0, res.count, 400, v =>
+                    patchState(store, { matchedJobsCount: v })
+                );
+                
             })
         },
         /* findJobsByQuery(queries: string[]) {
@@ -70,12 +94,15 @@ export const StateStore = signalStore(
                 });
             });
         }, */
-        loadAllJobs(vacancy?:string[], page?:number) {
+        loadAllJobs(vacancy?: string[], page?: number) {
             jobsService.getJobs(vacancy, page).subscribe(res => {
-                patchState(store, { activeJobs:res.jobs })
+                patchState(store, { activeJobs: res.jobs })
             })
         },
         updateProfile(id: number, data: any) {
+            patchState(store, {
+                profile: { ...store.profile(), ...data }
+            });
             userService.getUserById(id, data).subscribe(res => {
                 patchState(store, {
                     profile: res
@@ -84,3 +111,16 @@ export const StateStore = signalStore(
         }
     })),
 )
+
+export function animateValue(start: number, end: number, duration: number, onUpdate: (val: number) => void) {
+    const startTime = performance.now();
+    const step = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        onUpdate(Math.round(start + (end - start) * eased));
+        if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}

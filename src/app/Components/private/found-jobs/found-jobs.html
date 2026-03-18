@@ -38,7 +38,7 @@
     </div>
 
     <!-- Pagination Controls -->
-    <div class="pagination" *ngIf="stateStore.totalPages() > 1">
+    <div class="pagination" >
       <button 
         class="pagination-btn" 
         (click)="previousPage()" 
@@ -60,9 +60,9 @@
       <button 
         class="pagination-btn" 
         (click)="nextPage()" 
-        [disabled]="this.page() === stateStore.searchedJobsCount()/10"
+        [disabled]="this.page() === totalPages()"
         >
-        შემდეგი →
+        შემდეგი → 
       </button>
     </div>
   </div>

@@ -207,3 +207,24 @@ body.dark-mode {
 }
 
 
+
+
+.btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: #5b9bd5;
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background: #5b9bd5;
+  box-shadow: 0 4px 12px rgba(91, 155, 213, 0.4);
+}

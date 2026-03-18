@@ -44,10 +44,9 @@ interface Activity {
   styleUrl: './dashboard.scss',
 })
 
-export class Dashboard implements OnInit{
+export class Dashboard implements OnInit {
   jobsService = inject(JobsService);
   authService = inject(AuthService);
-  searchQuery = new FormControl<string>('');
 
   profile = signal<any>({});
   allJobs = signal<any>([]);
@@ -59,14 +58,22 @@ export class Dashboard implements OnInit{
     const jobs = this.stateStore.jobsCount() ?? 0;
     const searched = this.stateStore.searchedJobsCount() ?? 0;
 
-    const percentage =
-      jobs > 0 ? ((searched / jobs) * 100).toFixed(2) : '0';
+    const percentage = this.stateStore.matchedPercentage();
 
     return [
-      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo:'/private/all-jobs'},
-      { icon: '🎯', value: searched, label: `ნაპოვვნი (${this.stateStore.profile()?.searchQuery ?? ''}) -ის ვაკანსია`, colorClass: 'purple', redirectTo:'/private/found-jobs' },
-      { icon: '✓', value: this.stateStore.matchedJobsCount() ?? 0, label: 'მიღებული ვაკასნიები', colorClass: 'green', redirectTo:'/private/jobs'},
-      { icon: '📧', value: percentage+"%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo:'/private/analytics' },
+      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
+      {
+        icon: '🎯',
+        value: searched,
+        label: `ნაპოვვნი (${(this.stateStore.profile()?.searchQuery ?? [])
+          .slice(0, 2)
+          .join(', ')}${(this.stateStore.profile()?.searchQuery?.length ?? 0) > 2 ? ' და ა.შ.' : ''
+          }) -ის ვაკანსია`,
+        colorClass: 'purple',
+        redirectTo: '/private/found-jobs'
+      },
+      { icon: '✓', value: this.stateStore.matchedJobsCount() ?? 0, label: 'მიღებული ვაკასნიები', colorClass: 'green', redirectTo: '/private/jobs' },
+      { icon: '📧', value: percentage + "%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo: '/private/analytics' },
     ];
   });
 
@@ -74,7 +81,7 @@ export class Dashboard implements OnInit{
   jobs = signal([
     {
       vacancy: '--------',
-      location:'--------',
+      location: '--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -82,7 +89,7 @@ export class Dashboard implements OnInit{
     },
     {
       vacancy: '--------',
-      location:'--------',
+      location: '--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -90,7 +97,7 @@ export class Dashboard implements OnInit{
     },
     {
       vacancy: '--------',
-      location:'--------',
+      location: '--------',
       company: '--------',
       link: '--------',
       deadline: "--------",
@@ -99,44 +106,45 @@ export class Dashboard implements OnInit{
   ]);
 
   activities = computed<Activity[]>(() => [
-  {
-    icon: '✓',
-    iconBg: '#c6f6d5',
-    iconColor: '#22543d',
-    title: 'ბოლოს ნანახი ვაკანსია',
-    description: localStorage.getItem("recently_viewed") || "არ არის ხელმისაწვდომი",
-    time: ''
-  },
-  {
-    icon: '⚡',
-    iconBg: '#bee3f8',
-    iconColor: '#2c5282',
-    title: 'ხელმისაწვდომი ვაკანსიების ჯამი',
-    description: this.stateStore.jobsCount().toString() + ' ვაკანსია',
-    time: ''
-  },
-  {
-    icon: '/icons/telegram.png',
-    iconBg: '#fed7d7',
-    iconColor: '#742a2a',
-    title: 'ტელეგრამი',
-    description: this.stateStore.profile()?.telegramChatId
-      ? 'დაკავშირებული'
-      : 'არ არის დაკავშირებული',
-    time: ''
-  },
-  {
-    icon: '/icons/gmail.png',
-    iconBg: '#f1f0eeff',
-    iconColor: '#7c2d12',
-    title: 'ელ-ფოსტა',
-    description: 'არ არის დაკავშირებული',
-    time: ''
-  }
-]);
+    {
+      icon: '✓',
+      iconBg: '#c6f6d5',
+      iconColor: '#22543d',
+      title: 'ბოლოს ნანახი ვაკანსია',
+      description: this.recentlyViewed(),
+      time: ''
+    },
+    {
+      icon: '⚡',
+      iconBg: '#bee3f8',
+      iconColor: '#2c5282',
+      title: 'ხელმისაწვდომი ვაკანსიების ჯამი',
+      description: this.stateStore.jobsCount().toString() + ' ვაკანსია',
+      time: ''
+    },
+    {
+      icon: '/icons/telegram.png',
+      iconBg: '#fed7d7',
+      iconColor: '#742a2a',
+      title: 'ტელეგრამი',
+      description: this.stateStore.profile()?.telegramChatId
+        ? 'დაკავშირებული'
+        : 'არ არის დაკავშირებული',
+      time: ''
+    },
+    {
+      icon: '/icons/gmail.png',
+      iconBg: '#f1f0eeff',
+      iconColor: '#7c2d12',
+      title: 'ელ-ფოსტა',
+      description: 'არ არის დაკავშირებული',
+      time: ''
+    }
+  ]);
 
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
+    this.recentlyViewed.set(localStorage.getItem('recently_viewed') || 'არ არის ხელმისაწვდომი');
   }
 
   applyJob(job: string): void {
@@ -181,49 +189,63 @@ export class Dashboard implements OnInit{
     });
   }
 
-  saveViewedVacancy(title:string){
-    localStorage.setItem("recently_viewed",title);
-
+  saveViewedVacancy(title: string) {
+    localStorage.setItem("recently_viewed", title);
+    this.recentlyViewed.set(title);
   }
-  updateUser() {
-  const currentProfile = this.stateStore.profile();
-  const newQuery = this.searchQuery.value?.trim();
+  addKeyword(input: HTMLInputElement) {
+    const value = input.value?.trim();
+    if (!value) return;
 
-  if (!newQuery) return;
+    const currentProfile = this.stateStore.profile();
+    if (!currentProfile) return;
 
-  // ensure existing array
-  const existingQueries = currentProfile.searchQuery ?? [];
-
-  // avoid duplicates
-  const updatedQueries = [...new Set([...existingQueries, newQuery])];
-  console.log(updatedQueries);
-  
-  // update user in backend
-  this.stateStore.updateProfile(currentProfile.id, {
-    searchQuery: updatedQueries
-  });
-
-  // search using full array
-  //this.stateStore.findJobsByQuery(updatedQueries);
-}
-getJobBadgeByProgress(publishDate: string, deadline: string) {
-  const today = new Date();
-  const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
-  const end = new Date(deadline.split('/').reverse().join('-'));
-
-  const totalMs = end.getTime() - start.getTime();
-  const elapsedMs = today.getTime() - start.getTime();
-  
-  const progress = elapsedMs / totalMs;
-
-  if (progress <= 1/3) {
-    return { class: 'badge-new', text: 'ცხელ-ცხელი' };
-  } else if (progress <= 2/3) {
-    return { class: 'badge-average', text: 'ახალი' };
-  } else {
-    return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
+    const existingQueries = currentProfile.searchQuery ?? [];
+    if (!existingQueries.includes(value)) {
+      const updatedQueries = [...existingQueries, value];
+      this.stateStore.updateProfile(currentProfile.id, {
+        searchQuery: updatedQueries
+      });
+      this.stateStore.loadJobs(updatedQueries);
+    }
+    input.value = '';
   }
+
+  removeKeyword(index: number) {
+    const currentProfile = this.stateStore.profile();
+    if (!currentProfile) return;
+
+    const existingQueries = currentProfile.searchQuery ?? [];
+    const updatedQueries = existingQueries.filter((_: any, i: number) => i !== index);
+
+    this.stateStore.updateProfile(currentProfile.id, {
+      searchQuery: updatedQueries
+    });
+    this.stateStore.loadJobs(updatedQueries);
+  }
+  getJobBadgeByProgress(publishDate: string, deadline: string) {
+    const today = new Date();
+    const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
+    const end = new Date(deadline.split('/').reverse().join('-'));
+
+    // Check if expired first
+    if (today > end) {
+      return { class: 'badge-expired', text: 'ვადა ამოიწურა' };
+    }
+
+    const totalMs = end.getTime() - start.getTime();
+    const elapsedMs = today.getTime() - start.getTime();
+
+    const progress = elapsedMs / totalMs;
+
+    if (progress <= 1 / 3) {
+      return { class: 'badge-new', text: 'ცხელ-ცხელი' };
+    } else if (progress <= 2 / 3) {
+      return { class: 'badge-average', text: 'ახალი' };
+    } else {
+      return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
+    }
+  }
+
 }
 
-
-}

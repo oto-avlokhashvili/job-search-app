@@ -1,1 +1,64 @@
-<p>profile works!</p>
+<div class="content-grid">
+    <!-- Latest Jobs -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">პროფილი</h2>
+        </div>
+        <div class="profile-form">
+            <form class="login-form" [formGroup]="profileForm">
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label for="firstName" class="form-label">სახელი</label>
+                        <input formControlName="firstName" type="text" class="form-control" id="firstName"
+                            placeholder="შეიყვანეთ სახელი" required [class.is-invalid]="isInvalid('firstName')">
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="lastName" class="form-label">გვარი</label>
+                        <input formControlName="lastName" type="text" class="form-control" id="lastName"
+                            placeholder="შეიყვანეთ გვარი" required [class.is-invalid]="isInvalid('lastName')">
+                    </div>
+                    <div class="mb-3 col-md-12">
+                        <label for="searchQuery" class="form-label">საძიებო სიტყვები</label>
+                        <div class="chips-input-container form-control" [class.is-invalid]="isInvalid('searchQuery')">
+                            <div class="chips-list">
+                                @for (keyword of profileForm.get('searchQuery')?.value; track $index) {
+                                <div class="chip">
+                                    <span>{{ keyword }}</span>
+                                    <button type="button" class="chip-remove" (click)="removeKeyword($index)">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                </div>
+                                }
+                                <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..."
+                                    (keydown.enter)="$event.preventDefault(); addKeyword($event)"
+                                    (blur)="addKeyword($event)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="email" class="form-label">ელ-ფოსტა</label>
+                        <input formControlName="email" type="email" class="form-control" id="email"
+                            placeholder="შეიყვანეთ ელ-ფოსტა" readonly required [class.is-invalid]="isInvalid('email')">
+                    </div>
+
+                    <div class="mb-3 col-md-6">
+                        <label for="subscription" class="form-label">გამოწერა</label>
+                        <input formControlName="subscription" type="text" class="form-control" id="subscription"
+                            placeholder="გამოწერა" readonly required [class.is-invalid]="isInvalid('subscription')">
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="telegramChatId" class="form-label">ტელეგრამ ID</label>
+                        <input formControlName="telegramChatId" type="text" class="form-control" id="telegramChatId"
+                            placeholder="ტელეგრამ ID" required readonly [class.is-invalid]="isInvalid('telegramChatId')">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="button" (click)="save()" class="btn btn-primary mt-2">შენახვა</button>
+                </div>
+
+
+
+            </form>
+        </div>
+    </div>
+</div>

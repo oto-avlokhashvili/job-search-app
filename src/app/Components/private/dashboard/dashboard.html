@@ -1,5 +1,5 @@
 <div class="stats-grid">
-  <div class="stat-card" *ngFor="let stat of stats()">
+  <div class="stat-card" [ngClass]="'colored-' + stat.colorClass" *ngFor="let stat of stats()">
     <a style="text-decoration: none;" [routerLink]="stat.redirectTo">
       <div class="stat-header">
         <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
@@ -48,22 +48,39 @@
 
   </div>
 
-  <!-- Recent Activity -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">ბოლო აქტივობები</h2>
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <!-- Search Query Card -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom: 0.5rem;">
+        <h2 class="card-title">საძიებელი პარამეტრები</h2>
+      </div>
+      <div class="chips-input-container form-control" style="width: 100%;">
+        <div class="chips-list">
+          @for (keyword of stateStore.profile().searchQuery; track $index) {
+          <div class="chip">
+            <span>{{ keyword }}</span>
+            <button type="button" class="chip-remove" (click)="removeKeyword($index)">
+              <i class="material-icons">close</i>
+            </button>
+          </div>
+          }
+          <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..."
+            #queryInput (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
+            
+          <button class="btn btn-primary" (click)="addKeyword(queryInput)" style="white-space: nowrap; padding: 0.25rem 0.75rem; border-radius: 4px; margin-left: auto;">
+            დამატება
+          </button>
+        </div>
+      </div>
     </div>
 
-    <label for="searchQuery">დაამატე საძიებელი პარამეტრი</label>
-    <div class="activity-item">
-      <button class="activity-icon" (click)="updateUser()"
-        [style.background]="'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'" [style.color]="'white'">
-        {{ "+" }}
-      </button>
-      <input [formControl]="searchQuery" type="text" class="form-control" id="searchQuery" placeholder="ვაკანსია"
-        required>
-    </div>
-    <div class="activity-item" *ngFor="let activity of activities()">
+    <!-- Recent Activity -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">ბოლო აქტივობები</h2>
+      </div>
+
+      <div class="activity-item" *ngFor="let activity of activities()">
       @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
       <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
         {{ activity.icon }}
@@ -91,6 +108,7 @@
         </button>
       </div>
       }
+    </div>
     </div>
   </div>
 </div>

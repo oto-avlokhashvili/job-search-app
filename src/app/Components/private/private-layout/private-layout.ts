@@ -22,7 +22,7 @@ export class PrivateLayout implements OnInit{
     { icon: '🔍', label: 'ნაპოვნი ვაკანსიები', route: 'found-jobs' },
     { icon: '💼', label: 'მიღებული ვაკანსიები', route: 'jobs' },
     { icon: '🔔', label: 'აქტიური ვაკანსიები', route: 'all-jobs' },
-    { icon: '📈', label: 'ანალიტიკა', route: 'analytics' },
+    //{ icon: '📈', label: 'ანალიტიკა', route: 'analytics' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' }
   ]);
 
@@ -79,9 +79,9 @@ export class PrivateLayout implements OnInit{
   }
 
   logout() {
-    /* this.authService.logOut().then(() => {
+    this.authService.logOut().then(() => {
       this.router.navigate(['/auth']);
-    }); */
+    });
 
   }
 }

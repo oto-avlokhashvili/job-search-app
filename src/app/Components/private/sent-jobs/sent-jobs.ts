@@ -77,6 +77,11 @@ getJobBadgeByProgress(publishDate: string, deadline: string) {
   const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
   const end = new Date(deadline.split('/').reverse().join('-'));
 
+  // Check if expired first
+  if (today > end) {
+    return { class: 'badge-expired', text: 'ვადა ამოიწურა' };
+  }
+
   const totalMs = end.getTime() - start.getTime();
   const elapsedMs = today.getTime() - start.getTime();
   
@@ -90,6 +95,5 @@ getJobBadgeByProgress(publishDate: string, deadline: string) {
     return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
   }
 }
-
 
 }

@@ -1,0 +1,151 @@
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  color: #2d3748;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+
+.chips-input-container {
+  height: auto !important;
+  min-height: 45px;
+  padding: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+
+  &.is-invalid {
+    border-color: #dc3545 !important;
+    border-left: 3px solid #dc3545 !important;
+  }
+}
+
+:host-context(body.dark-mode) {
+
+  .chips-input-container,
+  .form-control {
+    background-color: #1e1e2e !important;
+    border-color: #2d3748 !important;
+    color: #e5e7eb !important;
+
+    &.is-invalid {
+      border-color: #dc3545 !important;
+      border-left: 3px solid #dc3545 !important;
+      background-position: right calc(0.375em + 0.1875rem) center !important;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+      background-repeat: no-repeat !important;
+    }
+
+    &:focus {
+      border-color: #5b9bd5 !important;
+      box-shadow: 0 0 0 0.2rem rgba(91, 155, 213, 0.25) !important;
+    }
+
+    &[readonly] {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      color: #9ca3af !important;
+    }
+  }
+
+  .form-label {
+    color: #e5e7eb;
+  }
+
+  .chip {
+    background: #2d3748;
+    color: #e5e7eb;
+    border-color: #4a5568;
+
+    .chip-remove {
+      color: #9ca3af;
+
+      &:hover {
+        color: #f87171;
+      }
+    }
+  }
+
+  .chip-input {
+    color: #e5e7eb;
+
+    &::placeholder {
+      color: #718096;
+    }
+  }
+}
+
+.chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
+}
+
+.chip {
+  background: #edf2f7;
+  color: #2d3748;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+
+  .chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #718096;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 50%;
+
+    &:hover {
+      color: #e53e3e;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    i {
+      font-size: 16px;
+      line-height: 1;
+    }
+  }
+}
+
+.chip-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  min-width: 150px;
+  padding: 0.25rem;
+  font-size: 0.9rem;
+  color: #2d3748;
+
+  &::placeholder {
+    color: #a0aec0;
+  }
+}
