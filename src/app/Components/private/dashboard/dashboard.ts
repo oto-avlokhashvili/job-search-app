@@ -48,6 +48,8 @@ export class Dashboard implements OnInit {
   jobsService = inject(JobsService);
   authService = inject(AuthService);
 
+  salaryMap = signal<Map<string, string>>(new Map());
+
   profile = signal<any>({});
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
@@ -246,6 +248,25 @@ export class Dashboard implements OnInit {
       return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
     }
   }
+  analyzingJobKey = signal<string | null>(null);
 
+  analyzeJob(job: any) {
+    const key = job.link;
+    this.analyzingJobKey.set(key);
+    this.jobsService.analyzeJob(job).subscribe({
+      next: (res) => {
+        const updated = new Map(this.salaryMap());
+        updated.set(key, res.salaryRange ?? 'N/A');
+        this.salaryMap.set(updated);
+        this.analyzingJobKey.set(null);
+      },
+      error: () => {
+        this.analyzingJobKey.set(null);
+      }
+    });
+  }
+
+  getSalary(job: any): string {
+    return this.salaryMap().get(job.link) ?? '';
+  }
 }
-
