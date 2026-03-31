@@ -180,6 +180,7 @@ body.dark-mode .card-title {
 
 .job-details {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
   color: #718096;
   font-size: 0.85rem;
@@ -429,4 +430,21 @@ body.dark-mode .card-title {
   &::placeholder {
     color: #a0aec0;
   }
+}
+
+.analyze-with-ai {
+  color: #5b9bd5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 3px 5px;
+}
+
+.analyze-with-ai:hover {
+  color: white;
+  background-color: #5b9bd5;
+  border-radius: 4px;
 }

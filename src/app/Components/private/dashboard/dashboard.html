@@ -20,7 +20,7 @@
     </div>
 
     <div class="job-item"
-      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3">
+      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3;let i = index">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>
@@ -34,9 +34,16 @@
         <span>📍 {{ job.location ? job.location : "თბილისი" }}</span>
         <span>💼 {{ "სრული" }}</span>
         <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
+        @if (salary().index === i) {
+        <span class="job-salary">{{salary().minSalary + " - " + salary().maxSalary + "₾"}}</span>
+        } @else {
+        <button class="analyze-with-ai" (click)="analyzeJob(job, i); saveViewedVacancy(job.vacancy)">
+          საშუალო საბაზრო ხელფასის გამოთვლა AI-თ
+        </button>
+        }
       </div>
       <div class="job-footer">
-        <span class="job-salary">{{ "1000-1500 ₾" }}</span>
+        <div></div>
         <button class="btn btn-primary" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
           ნახვა
         </button>

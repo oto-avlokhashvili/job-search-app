@@ -20,7 +20,7 @@ export class PrivateLayout implements OnInit{
   navItems = signal([
     { icon: '📊', label: 'მთავარი', route: 'dashboard', active: true },
     { icon: '🔍', label: 'ნაპოვნი ვაკანსიები', route: 'found-jobs' },
-    { icon: '💼', label: 'მიღებული ვაკანსიები', route: 'jobs' },
+    { icon: '💼', label: 'ვაკანსიების ისტორია', route: 'jobs' },
     { icon: '🔔', label: 'აქტიური ვაკანსიები', route: 'all-jobs' },
     //{ icon: '📈', label: 'ანალიტიკა', route: 'analytics' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' }
