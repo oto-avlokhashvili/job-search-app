@@ -10,7 +10,9 @@ export interface Job {
   link: string;
   publishDate: string; // or Date if you plan to parse it
   deadline: string;    // or Date
-  page: number;
+  page?: number;
+  salaryRange?: string;
+  match?:number;
 }
 
 export interface SentJob {

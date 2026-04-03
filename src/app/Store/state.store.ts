@@ -6,6 +6,7 @@ import { User } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
 import { Job } from '../Core/Interfaces/jobs';
 import { Users } from '../Core/Services/users';
+import { Ai } from '../Core/Services/ai';
 type State = {
     profile: User;
     profileLoaded: boolean;
@@ -48,7 +49,7 @@ const initialState: State = {
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
-    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users)) => ({
+    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai)) => ({
         async loadProfile() {
             const profile = await authService.getUserProfile()
             patchState(store, {
@@ -84,7 +85,7 @@ export const StateStore = signalStore(
                 animateValue(0, res.count, 400, v =>
                     patchState(store, { matchedJobsCount: v })
                 );
-                
+
             })
         },
         /* findJobsByQuery(queries: string[]) {
@@ -108,6 +109,21 @@ export const StateStore = signalStore(
                     profile: res
                 })
             })
+        },
+        addMatchedJobs(jobs: Job[]) {
+            patchState(store, {
+                matchedJobs: [...store.matchedJobs(), ...jobs]
+            })
+        },
+        analyzeCvAndJobs() {
+            aiService.analyzeCvAndJobs().subscribe({
+                next: (res: any) => {
+                    patchState(store, { matchedJobsDashboard: res.topJobs });
+                },
+                error: (err: any) => {
+                    console.log(err);
+                }
+            });
         }
     })),
 )

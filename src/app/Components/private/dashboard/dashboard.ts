@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { QrModal } from './qr-modal/qr-modal';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Ai } from '../../../Core/Services/ai';
 
 interface StatCard {
   icon: string;
@@ -47,7 +48,7 @@ interface Activity {
 export class Dashboard implements OnInit {
   jobsService = inject(JobsService);
   authService = inject(AuthService);
-
+  aiService = inject(Ai);
   profile = signal<any>({});
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
@@ -78,7 +79,7 @@ export class Dashboard implements OnInit {
   });
 
 
-  jobs = signal([
+  jobs = signal<any>([
     {
       vacancy: '--------',
       location: '--------',
@@ -86,6 +87,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
+      salaryRange:"--------",
+      match:"--------",
     },
     {
       vacancy: '--------',
@@ -94,6 +97,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
+      salaryRange:"--------",
+      match:"--------",
     },
     {
       vacancy: '--------',
@@ -102,6 +107,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
+      salaryRange:"--------",
+      match:"--------",
     },
   ]);
 
@@ -261,5 +268,7 @@ export class Dashboard implements OnInit {
       }
     });
   }
-
+  analyzeCvAndJobs() {
+    this.stateStore.analyzeCvAndJobs();
+  }
 }

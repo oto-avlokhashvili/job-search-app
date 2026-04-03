@@ -18,9 +18,11 @@
       <h2 class="card-title">შემოთავაზებული ვაკანსიები</h2>
       <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
+    <button class="btn btn-primary mb-4" style="width: 400px;" (click)="analyzeCvAndJobs()">მოძებნე ტოპ ვაკანსიები AI ის
+      დახმარებით</button>
 
     <div class="job-item"
-      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:3;let i = index">
+      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:5;let i = index">
       <div class="job-header">
         <div>
           <div class="job-title">{{ job.vacancy }}</div>
@@ -34,13 +36,18 @@
         <span>📍 {{ job.location ? job.location : "თბილისი" }}</span>
         <span>💼 {{ "სრული" }}</span>
         <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
-        @if (salary().index === i) {
-        <span class="job-salary">{{salary().minSalary + " - " + salary().maxSalary + "₾"}}</span>
-        } @else {
-        <button class="analyze-with-ai" (click)="analyzeJob(job, i); saveViewedVacancy(job.vacancy)">
-          საშუალო საბაზრო ხელფასის გამოთვლა AI-თ
-        </button>
+
+        <span class="job-salary">{{job.salaryRange}}</span>
+        @if (job.match) {
+        <span class="job-match" [ngClass]="{
+    'high-match': job.match >= 80,
+    'medium-match': job.match >= 50 && job.match < 80,
+    'low-match': job.match < 50
+  }">
+          {{"შესაბამისობა: " + job.match + "%"}}
+        </span>
         }
+
       </div>
       <div class="job-footer">
         <div></div>
@@ -71,10 +78,11 @@
             </button>
           </div>
           }
-          <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..."
-            #queryInput (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
-            
-          <button class="btn btn-primary" (click)="addKeyword(queryInput)" style="white-space: nowrap; padding: 0.25rem 0.75rem; border-radius: 4px; margin-left: auto;">
+          <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..." #queryInput
+            (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
+
+          <button class="btn btn-primary" (click)="addKeyword(queryInput)"
+            style="white-space: nowrap; padding: 0.25rem 0.75rem; border-radius: 4px; margin-left: auto;">
             დამატება
           </button>
         </div>
@@ -88,34 +96,34 @@
       </div>
 
       <div class="activity-item" *ngFor="let activity of activities()">
-      @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
-      <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
-        {{ activity.icon }}
+        @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
+        <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
+          {{ activity.icon }}
+        </div>
+        }
+        @if(activity.title == "ტელეგრამი"){
+        <img class="activity-icon" [src]="activity.icon" alt="Telegram">
+        }
+        @if(activity.title == "ელ-ფოსტა"){
+        <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
+        }
+        <div class="activity-content">
+          <h4>{{ activity.title }}</h4>
+          <p>{{ activity.description }}</p>
+          <div class="activity-time">{{ activity.time }}</div>
+        </div>
       </div>
-      }
-      @if(activity.title == "ტელეგრამი"){
-      <img class="activity-icon" [src]="activity.icon" alt="Telegram">
-      }
-      @if(activity.title == "ელ-ფოსტა"){
-      <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
-      }
-      <div class="activity-content">
-        <h4>{{ activity.title }}</h4>
-        <p>{{ activity.description }}</p>
-        <div class="activity-time">{{ activity.time }}</div>
+      <div class="row mt-4 gy-2">
+        @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
+        <div class="col-md-12">
+          <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
+            <img src="/icons/telegram.png" alt="Telegram"
+              style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+            <span>დაკავშირება</span>
+          </button>
+        </div>
+        }
       </div>
-    </div>
-    <div class="row mt-4 gy-2">
-      @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
-      <div class="col-md-12">
-        <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
-          <img src="/icons/telegram.png" alt="Telegram"
-            style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-          <span>დაკავშირება</span>
-        </button>
-      </div>
-      }
-    </div>
     </div>
   </div>
 </div>
