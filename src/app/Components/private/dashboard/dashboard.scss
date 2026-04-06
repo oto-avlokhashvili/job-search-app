@@ -463,3 +463,197 @@ body.dark-mode .card-title {
   background-color: #5b9bd5;
   border-radius: 4px;
 }
+
+
+.cv-upload-zone {
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  color: #aaa;
+}
+
+.cv-upload-zone:hover {
+  border-color: #888;
+  color: #555;
+}
+
+.cv-upload-text {
+  text-align: center;
+}
+
+.cv-upload-text span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.cv-upload-text p {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+.cv-file-info {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cv-file-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #e8f0fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #1a73e8;
+}
+
+.cv-file-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cv-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.cv-file-size {
+  font-size: 12px;
+  color: #718096;
+}
+
+.cv-change-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+  color: #2d3748;
+}
+
+.cv-change-btn:hover {
+  border-color: #888;
+}
+
+.cv-delete-btn {
+  cursor: pointer;
+  color: #d32f2f;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s;
+}
+
+.cv-delete-btn:hover {
+  opacity: 0.7;
+}
+
+.cv-loader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 0;
+  font-size: 14px;
+  color: #718096;
+}
+
+.cv-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: cv-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cv-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dark mode ── */
+:host-context(body.dark-mode) {
+  .cv-upload-zone {
+    border-color: #4a5568;
+    color: #718096;
+  }
+
+  .cv-upload-zone:hover {
+    border-color: #a0aec0;
+    color: #a0aec0;
+  }
+
+  .cv-upload-text span {
+    color: #e2e8f0;
+  }
+
+  .cv-upload-text p {
+    color: #718096;
+  }
+
+  .cv-file-info {
+    border-color: #2d3748;
+  }
+
+  .cv-file-icon {
+    background: #1e3a5f;
+    color: #63b3ed;
+  }
+
+  .cv-file-name {
+    color: #e2e8f0;
+  }
+
+  .cv-file-size {
+    color: #718096;
+  }
+
+  .cv-change-btn {
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .cv-change-btn:hover {
+    border-color: #a0aec0;
+  }
+
+  .cv-loader {
+    color: #718096;
+  }
+
+  .cv-spinner {
+    border-color: #2d3748;
+    border-top-color: #63b3ed;
+  }
+}
+
+.cv-analyze-btn {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 13px;
+}

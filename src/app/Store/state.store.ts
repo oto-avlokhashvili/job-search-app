@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { Job } from '../Core/Interfaces/jobs';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
+import { Cv } from '../Core/Services/cv';
 type State = {
     profile: User;
     profileLoaded: boolean;
@@ -24,6 +25,9 @@ type State = {
 
     totalPages: number | 0;
     totalJobs: number | 0;
+
+    userCv: any;
+    cvLoading: boolean;
 }
 
 
@@ -43,13 +47,16 @@ const initialState: State = {
     matchedPercentage: 0,
 
     totalPages: 0,
-    totalJobs: 0
+    totalJobs: 0,
+
+    userCv: null,
+    cvLoading: false
 }
 
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
-    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai)) => ({
+    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv)) => ({
         async loadProfile() {
             const profile = await authService.getUserProfile()
             patchState(store, {
@@ -122,6 +129,42 @@ export const StateStore = signalStore(
                 },
                 error: (err: any) => {
                     console.log(err);
+                }
+            });
+        },
+        getCv() {
+            patchState(store, { cvLoading: true });
+            cvService.getCV().subscribe({
+                next: (res) => {
+                    patchState(store, { userCv: res, cvLoading: false });
+                },
+                error: (err) => {
+                    patchState(store, { cvLoading: false });
+                    console.error('Error fetching CV:', err);
+                }
+            });
+        },
+        deleteCv() {
+            patchState(store, { cvLoading: true });
+            cvService.deleteCV().subscribe({
+                next: () => {
+                    patchState(store, { userCv: null, cvLoading: false });
+                },
+                error: (err) => {
+                    patchState(store, { cvLoading: false });
+                    console.error('Error deleting CV:', err);
+                }
+            });
+        },
+        uploadCv(file: File) {
+            patchState(store, { cvLoading: true });
+            cvService.upload(file).subscribe({
+                next: (res) => {
+                    patchState(store, { userCv: res, cvLoading: false });
+                },
+                error: (err) => {
+                    patchState(store, { cvLoading: false });
+                    console.error('Error uploading CV:', err);
                 }
             });
         }

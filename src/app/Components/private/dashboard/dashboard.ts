@@ -9,6 +9,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { QrModal } from './qr-modal/qr-modal';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Ai } from '../../../Core/Services/ai';
+import { Cv } from '../../../Core/Services/cv';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 interface StatCard {
   icon: string;
@@ -52,6 +54,10 @@ export class Dashboard implements OnInit {
   profile = signal<any>({});
   allJobs = signal<any>([]);
   userMatchedJobs = signal<any>([]);
+  cvService = inject(Cv);
+  alertify = inject(AlertifyService);
+  userCv = signal<any>(null);
+  loadingCv = signal<boolean>(false);
   stateStore = inject(StateStore);
   profileId = computed(() => this.stateStore.profile()?.id);
   recentlyViewed = signal<string>('')
@@ -152,6 +158,27 @@ export class Dashboard implements OnInit {
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
     this.recentlyViewed.set(localStorage.getItem('recently_viewed') || 'არ არის ხელმისაწვდომი');
+    this.getCv();
+  }
+
+  getCv() {
+    this.stateStore.getCv();
+  }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.uploadCv(file);
+    }
+  }
+
+  uploadCv(file: File) {
+    this.stateStore.uploadCv(file);
+  }
+
+  deleteCv() {
+    this.stateStore.deleteCv();
+
   }
 
   applyJob(job: string): void {

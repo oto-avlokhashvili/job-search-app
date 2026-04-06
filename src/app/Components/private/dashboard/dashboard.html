@@ -18,8 +18,7 @@
       <h2 class="card-title">შემოთავაზებული ვაკანსიები</h2>
       <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
     </div>
-    <button class="btn btn-primary mb-4" style="width: 400px;" (click)="analyzeCvAndJobs()">მოძებნე ტოპ ვაკანსიები AI ის
-      დახმარებით</button>
+
 
     <div class="job-item"
       *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:5;let i = index">
@@ -61,9 +60,9 @@
     </div>
 
   </div>
-
+  
   <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-    <!-- Search Query Card -->
+        <!-- Search Query Card -->
     <div class="card">
       <div class="card-header" style="margin-bottom: 0.5rem;">
         <h2 class="card-title">საძიებელი პარამეტრები</h2>
@@ -88,6 +87,72 @@
         </div>
       </div>
     </div>
+    <div class="card cv-card">
+      <div class="card-header">
+        <h2 class="card-title">ჩემი CV</h2>
+        <a *ngIf="stateStore.userCv()" class="cv-delete-btn" (click)="deleteCv()" title="წაშლა">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          </svg>
+        </a>
+      </div>
+      
+      <div class="cv-content-wrapper">
+
+        <!-- STATE 1: No CV -->
+        <div *ngIf="!stateStore.userCv() && !stateStore.cvLoading()" class="cv-upload-zone" (click)="fileInput.click()">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+            style="display: none">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <div class="cv-upload-text">
+            <span>ატვირთეთ CV</span>
+            <p>PDF ან Word ფორმატში</p>
+          </div>
+        </div>
+
+        <!-- STATE 2: CV uploaded -->
+        <div *ngIf="stateStore.userCv() && !stateStore.cvLoading()" class="cv-file-info">
+          <div class="cv-file-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <div class="cv-file-details">
+            <span class="cv-file-name">{{ stateStore.userCv()?.originalName || 'ჩემი CV.pdf' }}</span>
+            <span class="cv-file-size">{{ stateStore.userCv()?.size ? (stateStore.userCv()?.size / 1024 | number:'1.0-2') + ' KB' : ''
+              }}</span>
+          </div>
+          <button class="cv-change-btn" (click)="fileInput2.click()">შეცვლა</button>
+          <input type="file" #fileInput2 (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+            style="display: none">
+        </div>
+        <button *ngIf="stateStore.userCv() && !stateStore.cvLoading()" class="btn btn-primary cv-analyze-btn" (click)="analyzeCvAndJobs()">
+          🚀 გააანალიზე CV და იპოვე ტოპ ვაკანსიები
+        </button>
+        <!-- STATE 3: Loading -->
+        <div *ngIf="stateStore.cvLoading()" class="cv-loader">
+          <div class="cv-spinner"></div>
+          <span>იტვირთება...</span>
+        </div>
+
+      </div>
+    </div>
+
+
 
     <!-- Recent Activity -->
     <div class="card">
