@@ -1,16 +1,33 @@
-<nav class="nav">
-      <div class="logo">📱 Job Center</div>
+<nav class="glass-nav fixed-header">
+  <div class="header-container">
+    <div class="logo-group">
+      <span class="logo-text">Horizon Talent</span>
+      <div class="nav-links-desktop">
+        <a class="nav-link active" (click)="scroll('features')">აღმოაჩინე</a>
+        <a class="nav-link" (click)="scroll('pricing')">ფასები</a>
+        <a class="nav-link" (click)="scroll('how-it-works')">როგორ მუშაობს</a>
+      </div>
+    </div>
+
+    <div class="action-group">
+      <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
+        {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
+      </button>
+      <button class="btn-auth" [routerLink]="'/auth'">ავტორიზაცია</button>
       
       <div class="hamburger" [class.active]="menuOpen" (click)="menuOpen = !menuOpen">
         <span></span>
         <span></span>
         <span></span>
       </div>
-      
-      <ul class="nav-links" [class.active]="menuOpen">
-        <li><a (click)="scroll('features')">რატომ ჩვენ</a></li>
-        <li><a (click)="scroll('pricing')">ფასები</a></li>
-        <li><a (click)="scroll('how-it-works')">როგორ მუშაობს</a></li>
-        <li><a routerLink="/auth" (click)="menuOpen = false">ავტორიზაცია</a></li>
-      </ul>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.active]="menuOpen">
+    <a (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
+    <a (click)="scroll('pricing'); menuOpen = false">ფასები</a>
+    <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
+    <a [routerLink]="'/auth'" (click)="menuOpen = false">ავტორიზაცია</a>
+  </div>
 </nav>

@@ -1,116 +1,148 @@
+<main class="home-main">
+  <!-- Editorial Hero Section -->
+  <section class="hero-section">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <h1 class="display-lg">
+          იპოვე შენი <br />
+          <span class="text-primary">მომავალი კარიერა.</span>
+        </h1>
+        <p class="body-lg text-on-surface-variant">
+          გაიარე გზა ძიებიდან დასაქმებამდე მარტივად. ჩვენ გთავაზობთ მაღალი დონის ვაკანსიებს თანამედროვე, "Fluid"
+          პროფესიონალებისთვის.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-fluid primary" [routerLink]="'/auth'">დაიწყე ახლა</button>
+          <button class="btn-fluid secondary" (click)="scroll('browse-jobs')">ვაკანსიების ძებნა</button>
+        </div>
+      </div>
 
-  <section class="features" id="features">
-    <h2 class="section-title">რატომ ჩვენ?</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>ტელეგრამ შეტყობინებები</h3>
-        <p>მიიღე შეტყობინებები ტელეგრამზე არჩეულ გეგმაზე მორგებულად 24 საათში ერთხელ.</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">📧</div>
-        <h3>შეტყობინებები ელ-ფოსტაზე <span class="coming-soon">მალე</span></h3>
-        <p>მიიღე შეტყობინებები ელ-ფოსტაზე არჩეულ გეგმაზე მორგებულად 24 საათში ერთხელ.</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">🎯</div>
-        <h3>მარტივი ფილტრაცია</h3>
-        <p>იპოვე ვაკანსიები რომლებიც შეესაბამება შენ გამოცდილებას და მოთხოვნილებებს.</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">🔄</div>
-        <h3>რეალურ დროში ვაკანსიების ძიება</h3>
-        <p>ჩვენი პლატფორმა 24/7-ზე ეძებს თქვენთვის შესაბამის ვაკანსიებს და უზრუნველყოფს მათ გამოგზაცნას ყოველდრიურად.</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>ვაკანსიების მართვა</h3>
-        <p>ვაკანსიების მართვა სტატისტიკაზე დატქვენს მოთხოვნებზე დაყრდნობით.</p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>პირადი ინფორმაციის დაცვა</h3>
-        <p>თქვენი პირადი ინფორმაცი არის დაკრიპტული და დაცული. ჩვენ არასდროს ვაზიარებთ ჩვენი მომხმარებლების პირად ინფორმაციას მესამე პირებთან.</p>
+      <div class="hero-visual">
+        <div class="visual-container">
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaxVBd9bVRXD6XIRTKjuLPH4ZEV9S6yamTwh4FKo_7gBpfY891_pyq0OC19ZFJEvg_mJlHECvWrYry31HrFPKavYUwcB5OqbUlQpoYNff8yMBV65OhGfaxxKtOGI6-D48gE20q7PsfQc-gtcJNwctnVT-Qp4vrGeKRnVZkKkgprZ29F1vRtXEMeHH2Orm48K5aN15JOFkaWoy4uKuoOfte9Pg0aNzUQ15cSwyB8qrJwutSCaOErP8X2EFXWIylMK6-FzHGLuZ6fKB9"
+            alt="Team Collaboration" class="hero-img">
+          <div class="visual-overlay"></div>
+          <div class="glass-card hero-badge">
+            <div class="badge-content">
+              <div>
+                <p class="badge-title">1,200+</p>
+                <p class="badge-subtitle">ახალი ვაკანსია ამ კვირაში</p>
+              </div>
+              <div class="user-stack">
+                <div class="user-avatar" style="z-index: 3;"><img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuArOzun2PhNTeJr1L1Z5zS9Rmosq490ndTi4OzFeIapXcKzLlH513GA4q35_xfoa_uAkKhadNQu5VCRPU-ugY5U4TfOIwLaVotbeOZiQjSOi47wEZFmsTXGvtq80idGjD8AvoEwq4ybBcoBozF-lHWsmvqDzTzpYHN06hgq2F4JRcg5tZfpuTm8MBY85_if5OAJJsytwdgSR2v-fiu_iaYjpI5MOsVmcr5UMfebX9USjbK63y1-_FjQGJni1iy4alkwgyln5MlOweV8"
+                    alt="User"></div>
+                <div class="user-avatar" style="z-index: 2;"><img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrhGt2-A9n8LEAWogeOdxI0y3UsEKoYON1iB1UQD4iQBka5gO7VG3UUBLldCILhmAYyf8xk9bb0ZchpWXz2TKJPcZCplpqqStTExABT7lkw-nsFM1gTH2eNWiEc89nqm8YbORgkWfwU13PyETyrlHwGYhMtTUcI7PQ5U7zzt_dndAg6IvuZOVJ6hwbee2MYVzg58xY6HZBha90JeDdmTZoEfLAIRLMfUZpu4gvwQOyL6_ypnbIm0TIadBslSAo5F5U-nU38SlFCsy_"
+                    alt="User"></div>
+                <div class="user-avatar" style="z-index: 1;"><img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWxc9rATUFZhxTJM_oagwUzoLa7Q5pQEY1DxuoCKP2DoZL1r7Yk3ZOABpTZzsFG3-4SDcgb0nnpmj2nvHfqwk4VGCZ8vfLbaSLfgyWpqS1u794KXBZazUGWTy5141Uj-U_C03fU9rECjW5rErTpccrT478aucHH6lEmoZWWOMGGcMmcyFsJkqiktY-OfwHZFRjjPv-soqq2KaPCYFPrVj9ppND4Bca589xm2HUU00nI_zdfsRwmCKwdmRPCHyePUJ-deydeVCzyKKk"
+                    alt="User"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="pricing" id="pricing">
-    <h2 class="section-title">აირჩიე შენი გეგმა</h2>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <div class="plan-name">Basic</div>
-        <div class="plan-price">₾0<span>/თვე</span></div>
-        <ul class="plan-features">
-          <li>4-5 შეტყობინება დღეში</li>
-          <li>ტელეგრამ შეტყობინებები</li>
-          <li>რამდენიმე ვაკანსიის ძიების სასუალება</li>
-          <!-- <li>Basic filtering options</li>
-          <li>5 saved searches</li>
-          <li>Email support</li> -->
-        </ul>
-        <button class="select-plan">დაიწყე უფასოდ</button>
+  <!-- Browse All Jobs Section (REPLACING FEATURES/PRICING) -->
+  <section class="browse-jobs-section" id="browse-jobs">
+    <div class="section-header-flex">
+      <div class="header-text">
+        <h2 class="display-sm">აღმოაჩინე ყველა ვაკანსია</h2>
+        <p class="body-md text-on-surface-variant">იპოვე პოზიციები, რომლებიც შეესაბამება შენს კარიერულ გზას.</p>
       </div>
-      
-      <div class="pricing-card featured">
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">₾5<span>/თვე</span></div>
-        <ul class="plan-features">
-          <li>20 შეტყობინება დღეში</li>
-          <li>ტელეგრამს + ელ-ფოსტის შეტობინებები</li>
-          <li>რამდენიმე ვაკანსიის ძიების სასუალება</li>
-          <li>პრიორიტეტი სხვებთან შედარებით</li>
-        </ul>
-        <button class="select-plan">აირჩიე Pro</button>
+
+      <div class="filter-bar">
+        <div class="filter-input-wrap">
+          <input type="text" placeholder="მდებარეობა..." class="f-input">
+          <span class="material-symbols-outlined f-icon">location_on</span>
+        </div>
+
+        <div class="filter-input-wrap">
+          <select class="f-select">
+            <option>სამუშაოს ტიპი</option>
+            <option>Full-time</option>
+            <option>Contract</option>
+            <option>Remote</option>
+          </select>
+          <span class="material-symbols-outlined f-icon">work</span>
+        </div>
+
+        <div class="filter-input-wrap">
+          <select class="f-select">
+            <option>გამოქვეყნების დრო</option>
+            <option>ბოლო 24სთ</option>
+            <option>ბოლო 7 დღე</option>
+          </select>
+          <span class="material-symbols-outlined f-icon">calendar_today</span>
+        </div>
       </div>
-      
-      <div class="pricing-card">
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">₾10<span>/თვე</span></div>
-        <ul class="plan-features">
-          <li>ყველაფერი ფუნქციონალი Pro-დან</li>
-          <li>რეზიუმეს ატვირთვა</li>
-          <li>რეზიუმეს ოპტიმიზაცია</li>
-          <li>რესურსები ინტერვიუსთვის</li>
-          <li>კარიერის Coach-ის კონსულტაცია</li>
-          <li>VIP მხარდაჭერა</li>
-        </ul>
-        <button class="select-plan">აირჩიე Premium</button>
+    </div>
+
+    @if (isLoading()) {
+    <div class="loading-state">
+      <p>იტვირთება ვაკანსიები...</p>
+    </div>
+    } @else {
+    <div class="job-grid">
+      @for (job of jobs(); track job.id) {
+      <div class="job-card tonal-card">
+        <div class="card-header">
+          <div class="company-logo">
+            <span class="material-symbols-outlined text-primary">work</span>
+          </div>
+          <span class="badge-new">ახალი</span>
+        </div>
+
+        <div class="card-body">
+          <h3 class="title-lg">{{ job.vacancy }}</h3>
+          <p class="company-name">{{ job.company }}</p>
+
+          <div class="metadata-row">
+            <span class="pill-meta">{{ job.location || 'Remote' }}</span>
+            <span class="pill-meta">Full-time</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="salary-box">
+            <span class="label-xs">ხელფასი</span>
+            <span class="salary-value">{{ job.salaryRange || 'შეთანხმებით' }}</span>
+          </div>
+          <button class="btn-fluid btn-sm primary"
+            (click)="applyJob(job.link)">ნახვა</button>
+        </div>
+      </div>
+      }
+
+      <!-- Browse More Card -->
+      <div class="more-card border-dashed">
+        <div class="more-icon-wrap">
+          <span class="material-symbols-outlined text-primary">search</span>
+        </div>
+        <h3 class="title-md">ვერ იპოვე სასურველი?</h3>
+        <p class="body-sm">ჩვენ გვაქვს 500+ სხვა პოზიცია შენი უნიკალური უნარებისთვის.</p>
+        <button class="btn-link" [routerLink]="'/auth'">იხილეთ ყველა 1,200 ვაკანსია</button>
+      </div>
+    </div>
+    }
+  </section>
+
+  <!-- Newsletter CTA -->
+  <section class="newsletter-section">
+    <div class="newsletter-card">
+      <div class="newsletter-content">
+        <h2 class="display-sm">არ გამოტოვო შენი შანსი.</h2>
+        <p class="body-lg">შეუერთდი 45,000+ პროფესიონალს და მიიღე საუკეთესო ვაკანსიები
+          ყოველკვირეულად.</p>
+        <div class="subscribe-form">
+          <input type="email" placeholder="შეიყვანეთ ელ-ფოსტა" class="email-input">
+          <button class="btn-fluid primary">გამოწერა</button>
+        </div>
       </div>
     </div>
   </section>
-
-  <section class="how-it-works" id="how-it-works">
-    <h2 class="section-title text-white">როგორ მუშაობს</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <h5>შექმენი შენი პროფილი</h5>
-        <p>გაიარე ავტორიზაცია და გვითხარი შენი მოთხოვნები, უნარები, და რა ვაკანსიას ეძებ.</p>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">2</div>
-        <h5>დააკავსირე ტელეგრამი ან ელ-ფოსტა</h5>
-        <p>დააკავსირე ტელეგრამი ან ელ-ფოსტა და მიიღე შეტყობინებები ტელეფონზე მარტივად და სწრაფად.</p>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">3</div>
-        <h5>მიიღე შეტყობინებები</h5>
-        <p>მიიღე შეტყობინებები 24 საათსი ერთხელ, შენი კრიტერიუმების მიხედვით</p>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">4</div>
-        <h5>იპოვე და გაგზავნე CV</h5>
-        <p>იპოვნე ვაკანსიები და მარტივად გაგზავნე CV მითითებულ ლინკებზე</p>
-      </div>
-    </div>
-  </section>
-
+</main>

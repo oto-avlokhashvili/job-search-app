@@ -1,13 +1,25 @@
 
+:host {
+  display: block;
+}
+
 .spinner-container {
   position: fixed;
-  height: 100%;
-  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.32);
-  z-index: 10000;
+  background: rgba(16, 47, 80, 0.4); // Using design token-like color with opacity
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  pointer-events: all;
+}
+
+mat-spinner {
+  filter: drop-shadow(0 0 10px rgba(11, 96, 150, 0.3));
 }

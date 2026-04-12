@@ -30,10 +30,28 @@
       </ul>
     </nav>
 
+    <!-- Chat Conversations (visible only on /chat route) -->
+    @if (isOnChatRoute()) {
+      <div class="chat-conversations-panel">
+        <div class="chat-panel-header">
+          <span class="chat-panel-label">ჩატი</span>
+        </div>
+
+        <div class="chat-conv-list">
+            <div class="chat-conv-item active-conv"
+              (click)="selectConversation()">
+              <span class="conv-dot">💬</span>
+              <span class="conv-title-text">AI ასისტენტი</span>
+              
+            </div>
+        </div>
+      </div>
+    }
+
     <div class="sidebar-footer">
-      <button class="nav-link theme-toggle" (click)="toggleDarkMode()">
-        <span class="nav-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
-        <span>{{ isDarkMode() ? 'დღის ხედვა' : 'ღამის ხედვა' }}</span>
+      <button class="nav-link theme-toggle" (click)="themeService.toggle()">
+        <span class="nav-icon">{{ themeService.isDarkMode() ? '☀️' : '🌙' }}</span>
+        <span>{{ themeService.isDarkMode() ? 'დღის ხედვა' : 'ღამის ხედვა' }}</span>
       </button>
       <button class="nav-link logout-btn" (click)="logout()">
         <span class="nav-icon">🚪</span>
@@ -46,62 +64,67 @@
   <div class="main-wrapper">
     <main class="main-content">
       <!-- Header -->
-      <header class="header">
-        <div class="header-title">
-          <h3>გამარჯობა {{stateStore.profile().firstName}}!</h3>
-          <p>თქვენ ეძებთ <span class="text-primary fw-bold">{{"(" + stateStore.profile().searchQuery + ")"}}</span>-ის ვაკანსიას</p>
-        </div>
-        <div class="user-profile">
-          <div class="user-info">
-            <h3>{{ stateStore.profile().firstName + " " + stateStore.profile().lastName }}</h3>
-            <p>{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' : stateStore.profile().subscription === 'PRO' ? 'პრო' :
-              'პრემიუმ' }}</p>
+
+      @if (!hideFooterAndHeader()) {
+        <header class="header">
+          <div class="header-title">
+            <h3>გამარჯობა {{stateStore.profile().firstName}}!</h3>
+           
           </div>
-          <div class="user-avatar">{{ initials() }}</div>
-        </div>
-      </header>
+          <div class="user-profile">
+            <div class="user-info">
+              <h3>{{ stateStore.profile().firstName + " " + stateStore.profile().lastName }}</h3>
+              <p>{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' : stateStore.profile().subscription === 'PRO' ? 'პრო' :
+                'პრემიუმ' }}</p>
+            </div>
+            <div class="user-avatar">{{ initials() }}</div>
+          </div>
+        </header>
+      }
 
       <!-- Router Outlet for Page Content -->
       <router-outlet></router-outlet>
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>Job Center</h3>
-          <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="#">Features</a></li>
-            <li><a href="#">Pricing</a></li>
-            <li><a href="#">How It Works</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Legal</h4>
-          <ul>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Cookie Policy</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Connect</h4>
-          <div class="social-links">
-            <a href="#" class="social-icon">🐦</a>
-            <a href="#" class="social-icon">💼</a>
-            <a href="#" class="social-icon">📘</a>
-            <a href="#" class="social-icon">📧</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; {{ currentYear() }} Job Center. All rights reserved.</p>
-      </div>
-    </footer>
+     @if (!hideFooterAndHeader()) {
+       <footer class="footer">
+         <div class="footer-content">
+           <div class="footer-section">
+             <h3>Job Center</h3>
+             <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
+           </div>
+           <div class="footer-section">
+             <h4>Quick Links</h4>
+             <ul>
+               <li><a href="#">Features</a></li>
+               <li><a href="#">Pricing</a></li>
+               <li><a href="#">How It Works</a></li>
+               <li><a href="#">Contact</a></li>
+             </ul>
+           </div>
+           <div class="footer-section">
+             <h4>Legal</h4>
+             <ul>
+               <li><a href="#">Privacy Policy</a></li>
+               <li><a href="#">Terms of Service</a></li>
+               <li><a href="#">Cookie Policy</a></li>
+             </ul>
+           </div>
+           <div class="footer-section">
+             <h4>Connect</h4>
+             <div class="social-links">
+               <a href="#" class="social-icon">🐦</a>
+               <a href="#" class="social-icon">💼</a>
+               <a href="#" class="social-icon">📘</a>
+               <a href="#" class="social-icon">📧</a>
+             </div>
+           </div>
+         </div>
+         <div class="footer-bottom">
+           <p>&copy; {{ currentYear() }} Job Center. All rights reserved.</p>
+         </div>
+       </footer>
+     }
   </div>
 </div>

@@ -1,0 +1,219 @@
+<div class="chat-page mt-2" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+
+  <!-- Drop Overlay -->
+  @if (isDragOver()) {
+    <div class="drop-overlay">
+      <div class="drop-content">
+        <span class="drop-icon">📂</span>
+        <p>ჩამოაგდეთ ფაილი აქ</p>
+      </div>
+    </div>
+  }
+
+  <!-- Chat Header -->
+  <header class="chat-header">
+    <div class="chat-header-info">
+      <div class="ai-avatar"><span>✦</span></div>
+      <div>
+        <h3>Job Center AI</h3>
+        <p class="ai-status">
+          @if (isTyping()) {
+            <span class="typing-indicator"><span></span><span></span><span></span></span>
+            <span>წერს...</span>
+          } @else {
+            <span class="online-dot"></span>
+            <span>ონლაინ</span>
+          }
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Messages Area -->
+  <div class="messages-area" #messagesContainer>
+
+    @if (messages().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">✦</div>
+        <h2>Job Center AI-ს გამარჯობა!</h2>
+        <p>მე შემიძლია დაგეხმაროთ სამუშაო ძიებაში, CV ანალიზში და კარიერულ რჩევებში.</p>
+        <div class="quick-prompts">
+          <button class="quick-btn" (click)="inputText.set('გამარჯობა! დამეხმარე CV-ს გაუმჯობესებაში')" id="quick-cv">
+            📄 CV ანალიზი
+          </button>
+          <button class="quick-btn" (click)="inputText.set('რა ვაკანსიებია ჩემთვის შესაფერისი?')" id="quick-jobs">
+            🔍 ვაკანსიები
+          </button>
+          <button class="quick-btn" (click)="inputText.set('გამარჯობა! ინტერვიუს მოსამზადებლად დამეხმარე')" id="quick-interview">
+            🎯 ინტერვიუს მომზადება
+          </button>
+          <button class="quick-btn" (click)="inputText.set('რა უნარები სჭირდება Frontend Developer-ს?')" id="quick-skills">
+            💡 უნარები
+          </button>
+        </div>
+      </div>
+    }
+
+    @for (msg of messages(); track trackById($index, msg)) {
+      <div class="message-row" [class.user-row]="msg.role === 'user'" [class.ai-row]="msg.role === 'assistant'">
+
+        @if (msg.role === 'assistant') {
+          <div class="msg-avatar ai-msg-avatar">✦</div>
+        }
+
+        <div class="message-bubble"
+          [class.user-bubble]="msg.role === 'user'"
+          [class.ai-bubble]="msg.role === 'assistant'"
+          [class.error-bubble]="msg.isError"
+          [class.has-data]="msg.data">
+
+          @if (msg.isLoading) {
+            <div class="loading-dots"><span></span><span></span><span></span></div>
+          } @else {
+            @if (msg.attachments && msg.attachments.length > 0) {
+              <div class="msg-attachments">
+                @for (att of msg.attachments; track att.id) {
+                  <div class="msg-attachment-chip">
+                    @if (att.type.startsWith('image/')) {
+                      <img [src]="att.url" [alt]="att.name" class="att-thumbnail" />
+                    } @else {
+                      <span class="att-file-icon">{{ getFileIcon(att.type) }}</span>
+                    }
+                    <span class="att-name">{{ att.name }}</span>
+                    <span class="att-size">{{ formatFileSize(att.size) }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (msg.content) {
+              <div class="msg-content" [innerHTML]="formatMessageContent(msg.content)"></div>
+            }
+
+            @if (msg.data) {
+              <!-- Vacancy Cards Section -->
+              @if (msg.data.topJobs && msg.data.topJobs.length > 0) {
+                <div class="vacancy-cards-container mt-3">
+                  <div class="cards-scroll-wrapper">
+                    @for (job of msg.data.topJobs; track job.id) {
+                      <div class="vacancy-card">
+                        <div class="card-match-badge" 
+                             [class.tier-strong]="job.match >= 85" 
+                             [class.tier-good]="job.match >= 65 && job.match < 85" 
+                             [class.tier-possible]="job.match >= 50 && job.match < 65"
+                             [class.tier-not-possible]="job.match < 50">
+                          {{ job.match }}% Match
+                        </div>
+                        <div class="card-body">
+                          <h4 class="job-title">{{ job.vacancy }}</h4>
+                          <div class="job-company">{{ job.company }}</div>
+                          <div class="job-meta">
+                            <span>📍 {{ job.location }}</span>
+                            @if (job.salaryRange) {
+                              <span>💰 {{ job.salaryRange }}</span>
+                            }
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <a [href]="job.link" target="_blank" class="view-btn">
+                            ნახვა <span>→</span>
+                          </a>
+                        </div>
+                        
+
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Insights Section -->
+              @if (msg.data.strengths || msg.data.skillGaps) {
+                <div class="ai-insights mt-3">
+                  <div class="insights-tabs">
+                    @if (msg.data.strengths && msg.data.strengths.length > 0) {
+                      <div class="insight-group">
+                        <h5>💪 ძლიერი მხარეები</h5>
+                        <ul>
+                          @for (s of msg.data.strengths; track s) {
+                            <li>{{ s }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                    @if (msg.data.skillGaps && msg.data.skillGaps.length > 0) {
+                      <div class="insight-group">
+                        <h5>🎯 გასავითარებელი უნარები</h5>
+                        <ul>
+                          @for (g of msg.data.skillGaps; track g) {
+                            <li>{{ g }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            }
+
+            <div class="msg-meta">
+              <span class="msg-time">{{ formatTime(msg.timestamp) }}</span>
+            </div>
+          }
+        </div>
+
+        @if (msg.role === 'user') {
+          <div class="msg-avatar user-msg-avatar">{{ userInitials() }}</div>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    @if (attachedFiles().length > 0) {
+      <div class="attachments-preview">
+        @for (file of attachedFiles(); track file.id) {
+          <div class="attachment-chip" [id]="'att-' + file.id">
+            @if (file.type.startsWith('image/')) {
+              <img [src]="file.url" [alt]="file.name" class="chip-thumb" />
+            } @else {
+              <span class="chip-icon">{{ getFileIcon(file.type) }}</span>
+            }
+            <span class="chip-name">{{ file.name }}</span>
+            <span class="chip-size">{{ formatFileSize(file.size) }}</span>
+            <button class="chip-remove" (click)="removeAttachment(file.id)" title="წაშლა">✕</button>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="input-row">
+      <button class="attach-btn" (click)="triggerFileInput()" title="ფაილის დამატება" id="attach-file-btn" [disabled]="isTyping()">
+        📎
+      </button>
+
+      <input #fileInput type="file" multiple accept=".pdf,.doc,.docx"
+        (change)="onFileSelected($event)" style="display:none" id="chat-file-input" />
+
+      <textarea #messageInput class="message-input" id="message-input" style="padding-top: 5px;"
+        [value]="inputText()" (input)="onTextInput($event)" (keydown)="onKeyDown($event)"
+        placeholder="შეტყობინება... (Shift+Enter ახალი ხაზი)" rows="1" [disabled]="isTyping()">
+      </textarea>
+
+      <button class="send-btn" id="send-message-btn" (click)="sendMessage()"
+        [disabled]="(!inputText().trim() && attachedFiles().length === 0) || isTyping()"
+        [class.active]="inputText().trim() || attachedFiles().length > 0" title="გაგზავნა">
+        @if (isTyping()) {
+          <span class="btn-spinner"></span>
+        } @else {
+          <span>➤</span>
+        }
+      </button>
+    </div>
+
+    <p class="input-hint">⌨️ Enter გასაგზავნად · Shift+Enter ახალი ხაზი · 📎 ფაილი მაქს. {{ maxFileSizeMB }}MB</p>
+  </div>
+
+</div>

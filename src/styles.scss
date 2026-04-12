@@ -1,230 +1,190 @@
-
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+
+// 💎 Fluid Professional Design Tokens
+$primary: #0b6096;
+$primary-container: #5b9bd5;
+$surface: #f4f6ff;
+$surface-container-low: #ebf1ff;
+$surface-container: #dee9ff;
+$surface-container-highest: #cbdeff;
+$surface-container-lowest: #ffffff;
+$on-surface: #162f50;
+$on-surface-variant: #455c7f;
+$outline-variant: #97aed5;
+$tertiary-container: #bca2ff;
+$error: #b31b25;
+$error-container: #fb5151;
+
+
+
+
+
+$font-family: 'Plus Jakarta Sans', sans-serif;
+$radius-xl: 1.5rem;
+$glass-blur: 24px;
+
+// 🎨 Angular Material Theme Configuration
+$my-primary: mat.m2-define-palette(mat.$m2-indigo-palette, 700);
+$my-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$my-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $my-primary,
+    accent: $my-accent,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($my-theme);
+
+// ─── Light Mode (default) ───────────────────────────────────
+:root,
+[data-theme='light'] {
+  --primary: #0b6096;
+  --primary-container: #5b9bd5;
+  --app-bg: #f4f6ff;
+  --surface: #f4f6ff;
+  --surface-container-low: #ebf1ff;
+  --surface-container: #dee9ff;
+  --surface-container-highest: #cbdeff;
+  --surface-container-lowest: #ffffff;
+  --card-bg: #ffffff;
+  --on-surface: #162f50;
+  --on-surface-variant: #455c7f;
+  --outline-variant: #97aed5;
+  --glass-blur: 24px;
+  --nav-bg: rgba(244, 246, 255, 0.85);
+  --sidebar-bg: rgba(255, 255, 255, 0.97);
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --footer-bg: rgba(255, 255, 255, 0.95);
+  --text-muted: #455c7f;
+  --border-color: rgba(151, 174, 213, 0.2);
+  --shadow: 0 2px 16px rgba(11, 96, 150, 0.08);
+  --input-bg: #dee9ff;
+  --stat-card-1:linear-gradient(135deg, #a8c8e8, #7aafd6);
+  --stat-card-2:linear-gradient(135deg, #c3aae8, #a98ed8);
+  --stat-card-3:linear-gradient(135deg, #96d9b0, #68c090);
+  --stat-card-4:linear-gradient(135deg, #f5c89a, #eeaa70);
+  color-scheme: light;
+}
+
+// ─── Dark Mode ────────────────────────────────────────────────
+[data-theme='dark'] {
+  --primary: #5b9bd5;
+  --primary-container: #0b6096;
+  --app-bg: linear-gradient(135deg, #323253, #1c2849);;
+  --surface: #1e1e2e;
+  --surface-container-low: rgba(30, 30, 46, 0.7);
+  --surface-container: rgba(50, 50, 83, 0.6);
+  --surface-container-highest: rgba(60, 60, 100, 0.8);
+  --surface-container-lowest: #1e1e2e;
+  --card-bg: rgba(30, 30, 46, 0.95);
+  --on-surface: #e2e8f0;
+  --on-surface-variant: #a0b4cc;
+  --outline-variant: rgba(127, 190, 250, 0.25);
+  --glass-blur: 24px;
+  --nav-bg: rgba(28, 28, 48, 0.88);
+  --sidebar-bg: rgba(30, 30, 46, 1);
+  --header-bg: rgba(30, 30, 46, 0.95);
+  --footer-bg: rgba(30, 30, 46, 0.95);
+  --text-muted: #a0b4cc;
+  --border-color: rgba(127, 190, 250, 0.12);
+  --shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  --input-bg: rgba(50, 50, 83, 0.6);
+  --stat-card-1:linear-gradient(135deg, #2f6fa8, #1d4e7a);
+  --stat-card-2:linear-gradient(135deg, #6040a8, #3f2478);
+  --stat-card-3:linear-gradient(135deg, #276f4a, #174d32);
+  --stat-card-4:linear-gradient(135deg, #b5621e, #8a4510);
+  color-scheme: dark;
+}
 
 html {
   height: 100%;
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  scroll-behavior: smooth;
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
   height: 100%;
+  min-height: 100vh;
+  font-family: $font-family;
+  background: var(--surface);
+  color: var(--on-surface);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
 }
+
+// Apply gradient app background on root containers
+[data-theme='dark'] body,
+[data-theme='dark'] .landing-page,
+[data-theme='dark'] .dashboard-wrapper {
+  background: linear-gradient(135deg, #323253, #1c2849) !important;
+  min-height: 100vh;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 .landing-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
+  font-family: $font-family;
 }
 
-.is-invalid{
-  border-left: 3px solid rgb(248, 77, 77) !important;
+.is-invalid {
+  border-left: 3px solid #f84d4d !important;
 }
 
-
-// 🎨 Color variables
-$bg-main: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-$surface: rgba(30, 30, 46, 0.95);
-$border: #2d3748;
-
-$text-main: #e5e7eb;     // brighter than before
-$text-muted: #d5d9df;   // still muted, but readable
-$accent: #9c7ef7;
-$white: #ffffff;
-
-body.dark-mode {
-  background: $bg-main;
-  color: $text-main;
-  .dashboard-wrapper {
-  background: linear-gradient(135deg, #323253 0%, #1c2849 100%);
-  .modal-container{
-    background-color: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+// ✨ Fluid Utility Classes
+.glass-nav {
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
+  background: rgba($surface, 0.8);
 }
+
+.hero-gradient {
+  background: linear-gradient(135deg, $primary 0%, $primary-container 100%);
 }
-  // 🔤 Global typography fix
-  h1, h2, h3, h4, h5, h6 {
-    color: $text-main !important;
-  }
 
-  p, span, li, a {
-    color: $text-muted;
-  }
-
-  // 🧱 Common surfaces
-  .sidebar,
-  .header,
-  .footer,
-  .menu-toggle,
-  .stat-card,
-  .card {
-    background: $surface;
-    border: 1px solid $border;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  }
-
-  // 🧭 Sidebar
-  .logo {
-    color: $accent;
-
-    &-icon {
-      background: $accent;
-    }
-  }
-
-  .nav-link {
-    color: $text-main;
-
-    &:hover,
-    &.active {
-      background: $accent;
-      color: $white;
-    }
-  }
-
-  .sidebar-footer {
-    border-top: 1px solid $border;
-  }
-
-  // 🧠 Header
-  .header-title,
-  .user-info {
-    h1, h3 {
-      color: $text-main !important;
-    }
-
-    p {
-      color: $text-muted !important;
-    }
-  }
-  .job-title{
-    color: $text-main !important;
-  }
-  .job-company{
-    color: $text-main !important;
-  }
-  // 📊 Stat cards
-  .stat-card {
-    h3 {
-      color: $text-main;
-    }
-
-    p {
-      color: $text-muted;
-    }
-
-    .stat-value {
-      color: $accent;
-    }
-  }
-
-  // 🗂 Cards
-  .card {
-    color: $text-main;
-
-    &-header {
-      border-bottom: 1px solid $border;
-      color: $accent;
-    }
-
-    &-body {
-      color: $text-main;
-    }
-
-    &-footer {
-      border-top: 1px solid $border;
-      color: $text-muted;
-    }
-  }
-
-  // 🔗 Footer
-  .footer-section {
-    h3 {
-      color: $accent;
-    }
-
-    h4 {
-      color: $text-main;
-    }
-
-    a {
-      color: $text-muted;
-
-      &:hover {
-        color: $accent;
-      }
-    }
-  }
-
-  .footer-bottom {
-    border-top: 1px solid $border;
-
-    p {
-      color: $text-muted;
-    }
-  }
-
-  // 🌐 Social icons
-  .social-icon {
-    background: rgba(255, 255, 255, 0.06);
-
-    &:hover {
-      background: $accent;
-    }
+.tonal-card {
+  background-color: $surface-container-lowest;
+  border-radius: $radius-xl;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+    background-color: $surface-container-lowest;
   }
 }
 
-
-
-
-.btn {
-  padding: 0.5rem 1.25rem;
+.btn-fluid {
+  padding: 1rem 2rem;
+  border-radius: $radius-xl;
+  font-weight: 700;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s;
-}
-
-.btn-primary {
-  background: #5b9bd5;
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  background: #5b9bd5;
-  box-shadow: 0 4px 12px rgba(91, 155, 213, 0.4);
+  transition: transform 0.2s ease, filter 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+    filter: brightness(1.05);
+  }
+  
+  &.primary {
+    background: linear-gradient(135deg, $primary 0%, $primary-container 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba($primary, 0.2);
+  }
+  
+  &.secondary {
+    background-color: $surface-container-low;
+    color: $primary;
+    
+    &:hover {
+      background-color: $surface-container;
+    }
+  }
+  
 }

@@ -3,17 +3,7 @@
 <div class="landing-page">
     
   @if (!hideLayout()) {
-    <header class="header">
-          <app-header/>
-          @if(showHeroSection()){
-            <div class="hero" style="margin-top: 60px; margin-bottom: 60px;">
-              <h1>იპოვე საოცნებო სამსახური</h1>
-              <p class="subtitle">მიიღე ვაკანსიები შეტყობინებები. სწრაფად, მარტივად, და შენ კარიერაზე მორგებულად.</p>
-              <button [routerLink]="'/auth'" class="cta-button">დაიწყე უფასოდ</button>
-              <button (click)="scroll('pricing')" class="cta-button secondary-button">ნახე ფასები</button>
-            </div>
-          }
-      </header>
+    <app-header />
   } 
   <div class="body">
     <router-outlet />

@@ -158,11 +158,6 @@ export class Dashboard implements OnInit {
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
     this.recentlyViewed.set(localStorage.getItem('recently_viewed') || 'არ არის ხელმისაწვდომი');
-    this.getCv();
-  }
-
-  getCv() {
-    this.stateStore.getCv();
   }
 
   onFileSelected(event: any) {

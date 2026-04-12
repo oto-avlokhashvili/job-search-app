@@ -6,6 +6,7 @@ import { Footer } from './Components/public/footer/footer';
 import { Home } from './Components/public/home/home';
 import { Header } from './Components/public/header/header';
 import { filter } from 'rxjs';
+import { ThemeService } from './Core/Services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +17,12 @@ import { filter } from 'rxjs';
 export class App {
   protected readonly title = signal('job-search-app');
   isAuthorized = signal(false);
-  authService = inject(AuthService)
+  authService = inject(AuthService);
+  themeService = inject(ThemeService);
   hideLayout = signal(false);
   showHeroSection = signal(false);
   constructor(private router: Router, private route: ActivatedRoute){
+    this.themeService.init();
     this.isAuthorized.set(this.authService.isLoggedIn())
     
 
