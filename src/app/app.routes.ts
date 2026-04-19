@@ -6,8 +6,6 @@ import { Dashboard } from './Components/private/dashboard/dashboard';
 import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
-import { FoundJobs } from './Components/private/found-jobs/found-jobs';
-import { AllJobs } from './Components/private/all-jobs/all-jobs';
 import { Chat } from './Components/private/chat/chat';
 
 export const routes: Routes = [
@@ -52,19 +50,14 @@ export const routes: Routes = [
       data: {  hideLayout: true  },
     },
     {
-      path: 'found-jobs',
-      component: FoundJobs,
-      data: {  hideLayout: true  },
-    },
-    {
-      path: 'all-jobs',
-      component: AllJobs,
-      data: {  hideLayout: true  },
-    },
-    {
       path: 'chat',
       component: Chat,
-      data: {  hideLayout: true, hideFooterAndHeader: true  },
+      data: { hideLayout: true, hideFooterAndHeader: true },
+    },
+    {
+      path: 'chat/:id',
+      component: Chat,
+      data: { hideLayout: true, hideFooterAndHeader: true },
     },
     {
       path: '',

@@ -62,25 +62,24 @@ export class Dashboard implements OnInit {
   profileId = computed(() => this.stateStore.profile()?.id);
   recentlyViewed = signal<string>('')
   stats = computed(() => {
-    const jobs = this.stateStore.jobsCount() ?? 0;
-    const searched = this.stateStore.searchedJobsCount() ?? 0;
-
-    const percentage = this.stateStore.matchedPercentage();
+    //const jobs = this.stateStore.jobsCount() ?? 0;
+    const matched = this.stateStore.matchedJobsCount() ?? 0;
+    const sent = this.stateStore.sentJobsCount() ?? 0;
 
     return [
-      { icon: '⚡', value: jobs, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
+      { icon: '⚡', value: 0, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
       {
         icon: '🎯',
-        value: searched,
-        label: `ნაპოვვნი (${(this.stateStore.profile()?.searchQuery ?? [])
+        value: matched,
+        label: `AI-ის მიერ ნაპოვნი (${(this.stateStore.profile()?.searchQuery ?? [])
           .slice(0, 2)
-          .join(', ')}${(this.stateStore.profile()?.searchQuery?.length ?? 0) > 2 ? ' და ა.შ.' : ''
-          }) -ის ვაკანსია`,
+          .join(', ')}${(this.stateStore.matchedJobsDashboard()?.total ?? 0) > 2 ? ' და ა.შ.' : ''
+          }) -ის ვაკანსიები`,
         colorClass: 'purple',
         redirectTo: '/private/found-jobs'
       },
-      { icon: '✓', value: this.stateStore.matchedJobsCount() ?? 0, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
-      { icon: '📧', value: percentage + "%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo: '/private/analytics' },
+      { icon: '✓', value:sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
+      { icon: '📧', value: 0 + "%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo: '/private/analytics' },
     ];
   });
 
@@ -132,7 +131,7 @@ export class Dashboard implements OnInit {
       iconBg: '#bee3f8',
       iconColor: '#2c5282',
       title: 'ხელმისაწვდომი ვაკანსიების ჯამი',
-      description: this.stateStore.jobsCount().toString() + ' ვაკანსია',
+      description: 0 + ' ვაკანსია',
       time: ''
     },
     {
@@ -158,6 +157,19 @@ export class Dashboard implements OnInit {
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
     this.recentlyViewed.set(localStorage.getItem('recently_viewed') || 'არ არის ხელმისაწვდომი');
+    
+  }
+
+  loadMatchedJobs(page: number) {
+    this.stateStore.loadAIMatchedJobs(page, 6);
+  }
+
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.stateStore.matchedJobsDashboard().lastPage) {
+      this.loadMatchedJobs(page);
+      // Scroll to top of the jobs section if needed
+      document.querySelector('.vacancy-cards-container')?.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   onFileSelected(event: any) {
@@ -178,11 +190,6 @@ export class Dashboard implements OnInit {
 
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
-  }
-
-  saveJob(job: Job): void {
-    console.log('Saving job:', job.title);
-    // Implement save logic
   }
   telegramLink = signal<string>("");
   async generateTelegramToken() {
@@ -235,7 +242,7 @@ export class Dashboard implements OnInit {
       this.stateStore.updateProfile(currentProfile.id, {
         searchQuery: updatedQueries
       });
-      this.stateStore.loadJobs(updatedQueries);
+      //this.stateStore.loadJobs(updatedQueries);
     }
     input.value = '';
   }
@@ -250,47 +257,8 @@ export class Dashboard implements OnInit {
     this.stateStore.updateProfile(currentProfile.id, {
       searchQuery: updatedQueries
     });
-    this.stateStore.loadJobs(updatedQueries);
+    //this.stateStore.loadJobs(updatedQueries);
   }
-  getJobBadgeByProgress(publishDate: string, deadline: string) {
-    const today = new Date();
-    const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
-    const end = new Date(deadline.split('/').reverse().join('-'));
 
-    // Check if expired first
-    if (today > end) {
-      return { class: 'badge-expired', text: 'ვადა ამოიწურა' };
-    }
 
-    const totalMs = end.getTime() - start.getTime();
-    const elapsedMs = today.getTime() - start.getTime();
-
-    const progress = elapsedMs / totalMs;
-
-    if (progress <= 1 / 3) {
-      return { class: 'badge-new', text: 'ცხელ-ცხელი' };
-    } else if (progress <= 2 / 3) {
-      return { class: 'badge-average', text: 'ახალი' };
-    } else {
-      return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
-    }
-  }
-  salary = signal<any>({
-    minSalary: "",
-    maxSalary: "",
-    index: -1
-  });
-  analyzeJob(job: any, index: number) {
-    this.jobsService.analyzeJob(job).subscribe({
-      next: (res) => {
-        this.salary.set({ ...res, index });
-      },
-      error: (err) => {
-        console.log(err);
-      }
-    });
-  }
-  analyzeCvAndJobs() {
-    this.stateStore.analyzeCvAndJobs();
-  }
 }

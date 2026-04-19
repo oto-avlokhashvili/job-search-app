@@ -112,7 +112,9 @@
                             @if (job.salaryRange) {
                               <span>💰 {{ job.salaryRange }}</span>
                             }
+                            <span>🕐 {{ job.publishDate }} - {{ job.deadline }}</span>
                           </div>
+
                         </div>
                         <div class="card-footer">
                           <a [href]="job.link" target="_blank" class="view-btn">
@@ -186,11 +188,18 @@
             <button class="chip-remove" (click)="removeAttachment(file.id)" title="წაშლა">✕</button>
           </div>
         }
+        @if (stateStore.cvLoading()) {
+          <div class="attachment-chip loading-chip">
+            <span class="chip-icon"><span class="btn-spinner"></span></span>
+            <span class="chip-name">იტვირთება CV...</span>
+            <span class="chip-size">დაელოდეთ</span>
+          </div>
+        }
       </div>
     }
 
     <div class="input-row">
-      <button class="attach-btn" (click)="triggerFileInput()" title="ფაილის დამატება" id="attach-file-btn" [disabled]="isTyping()">
+      <button class="attach-btn" (click)="triggerFileInput()" title="ფაილის დამატება" id="attach-file-btn" [disabled]="isTyping() || stateStore.cvLoading()">
         📎
       </button>
 
@@ -199,13 +208,13 @@
 
       <textarea #messageInput class="message-input" id="message-input" style="padding-top: 5px;"
         [value]="inputText()" (input)="onTextInput($event)" (keydown)="onKeyDown($event)"
-        placeholder="შეტყობინება... (Shift+Enter ახალი ხაზი)" rows="1" [disabled]="isTyping()">
+        placeholder="შეტყობინება... (Shift+Enter ახალი ხაზი)" rows="1" [disabled]="isTyping() || stateStore.cvLoading()">
       </textarea>
 
       <button class="send-btn" id="send-message-btn" (click)="sendMessage()"
-        [disabled]="(!inputText().trim() && attachedFiles().length === 0) || isTyping()"
+        [disabled]="(!inputText().trim() && attachedFiles().length === 0) || isTyping() || stateStore.cvLoading()"
         [class.active]="inputText().trim() || attachedFiles().length > 0" title="გაგზავნა">
-        @if (isTyping()) {
+        @if (isTyping() || stateStore.cvLoading()) {
           <span class="btn-spinner"></span>
         } @else {
           <span>➤</span>

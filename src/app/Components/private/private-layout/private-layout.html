@@ -30,20 +30,31 @@
       </ul>
     </nav>
 
-    <!-- Chat Conversations (visible only on /chat route) -->
     @if (isOnChatRoute()) {
       <div class="chat-conversations-panel">
         <div class="chat-panel-header">
-          <span class="chat-panel-label">ჩატი</span>
+          <span class="chat-panel-label">ჩატები</span>
+          <button class="new-chat-btn" (click)="createNewChat()" title="ახალი ჩატი">
+            <span>+</span>
+          </button>
         </div>
 
         <div class="chat-conv-list">
-            <div class="chat-conv-item active-conv"
-              (click)="selectConversation()">
+          @if (chatStore.conversations().length === 0) {
+            <div class="conv-empty">ჩატი არ არის</div>
+          }
+          @for (conv of chatStore.conversations(); track conv.id) {
+            <div class="chat-conv-item"
+              [class.active-conv]="isActiveConversation(conv.id)"
+              (click)="selectConversation(conv.id)">
               <span class="conv-dot">💬</span>
-              <span class="conv-title-text">AI ასისტენტი</span>
-              
+              <div class="conv-info">
+                <span class="conv-title-text">{{ conv.title }}</span>
+                <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
+              </div>
+              <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
             </div>
+          }
         </div>
       </div>
     }
@@ -77,7 +88,13 @@
               <p>{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' : stateStore.profile().subscription === 'PRO' ? 'პრო' :
                 'პრემიუმ' }}</p>
             </div>
-            <div class="user-avatar">{{ initials() }}</div>
+            <div class="user-avatar">
+              @if (stateStore.profileLoaded()) {
+                {{ initials() }}
+              } @else {
+                <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
+              }
+            </div>
           </div>
         </header>
       }

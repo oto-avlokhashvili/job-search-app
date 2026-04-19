@@ -4,6 +4,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { Router } from '@angular/router';
 import { UserRegistration } from '../../../Core/Interfaces/user';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { ThemeService } from '../../../Core/Services/theme.service';
 
 @Component({
   selector: 'app-auth',
@@ -16,6 +17,7 @@ export class Auth {
   alertify = inject(AlertifyService);
   fb = inject(FormBuilder);
   router = inject(Router);
+  themeService = inject(ThemeService);
   validators = signal(false);
   loginMode = signal(true);
 

@@ -7,15 +7,16 @@ import {
   computed,
   OnInit,
   signal,
+  OnDestroy,
   effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { StateStore } from '../../../Store/state.store';
-import { environment } from '../../../../environments/environment';
-import { ActivatedRoute } from '@angular/router';
+import { ChatStore, Conversation } from '../../../Store/chat.store';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Ai } from '../../../Core/Services/ai';
+import { Subscription } from 'rxjs';
 
 export interface AttachedFile {
   id: string;
@@ -66,21 +67,63 @@ export interface ChatMessage {
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
 })
-export class Chat implements OnInit, AfterViewChecked {
+export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('messageInput') private messageInput!: ElementRef<HTMLTextAreaElement>;
   @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
 
-  http = inject(HttpClient);
   stateStore = inject(StateStore);
+  chatStore = inject(ChatStore);
   route = inject(ActivatedRoute);
+  router = inject(Router);
   aiService = inject(Ai);
-  messages = signal<ChatMessage[]>([]);
+
   inputText = signal<string>('');
   attachedFiles = signal<AttachedFile[]>([]);
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
   shouldScrollToBottom = false;
+
+  private routeSub?: Subscription;
+
+  constructor() {
+    // Reactively watch userCv from the store — no extra API call needed,
+    // the metadata is already fetched by the layout.
+    effect(() => {
+      const cv = this.stateStore.userCv();
+      if (!cv) {
+        // CV removed — drop the auto-attached entry
+        this.attachedFiles.update(files => files.filter(f => f.id !== '__cv__'));
+        return;
+      }
+      const fileName = cv.originalName ?? 'CV.pdf';
+      const mimeType = cv.mimeType ?? 'application/pdf';
+      // Use a zero-byte placeholder File — the real content lives on the server
+      const placeholder = new File([], fileName, { type: mimeType });
+      const cvAttachment: AttachedFile = {
+        id: '__cv__',
+        name: fileName,
+        size: cv.size ?? 0,
+        type: mimeType,
+        url: '',
+        file: placeholder,
+      };
+      this.attachedFiles.update(files => [
+        cvAttachment,
+        ...files.filter(f => f.id !== '__cv__'),
+      ]);
+    });
+  }
+
+  // Active conversation id from route param
+  activeId = signal<string | null>(null);
+
+  // Messages of current conversation
+  messages = computed<ChatMessage[]>(() => {
+    const id = this.activeId();
+    if (!id) return [];
+    return this.chatStore.getConversation(id)?.messages ?? [];
+  });
 
   userInitials = computed(() => {
     const p = this.stateStore.profile();
@@ -90,43 +133,43 @@ export class Chat implements OnInit, AfterViewChecked {
 
   maxFileSizeMB = 10;
   allowedTypes = [
-    'application/pdf', // PDF
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ];
 
-  constructor() {
-    // Single effect to handle clear/reset from query params
-    effect(() => {
-      this.route.queryParams.subscribe(params => {
-        if (params['reset'] || params['clear']) {
-          this.messages.set([]);
-          this.attachedFiles.set([]);
-          this.inputText.set('');
+  ngOnInit() {
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        // If conversation exists, activate it; otherwise create it
+        const exists = this.chatStore.getConversation(id);
+        if (exists) {
+          this.chatStore.setActiveConversation(id);
+          this.activeId.set(id);
+        } else {
+          // id not found — redirect to /private/chat to create fresh
+          this.router.navigate(['/private/chat']);
         }
-      });
+      } else {
+        // No id param — check if there's an active conversation
+        const activeId = this.chatStore.activeConversationId();
+        if (activeId && this.chatStore.getConversation(activeId)) {
+          this.router.navigate(['/private/chat', activeId]);
+        } else if (this.chatStore.conversations().length > 0) {
+          const first = this.chatStore.conversations()[0];
+          this.router.navigate(['/private/chat', first.id]);
+        } else {
+          // Create the first conversation
+          const newId = this.chatStore.createConversation();
+          this.router.navigate(['/private/chat', newId]);
+        }
+      }
     });
   }
 
-  ngOnInit() {
-    this.messages.set([
-      {
-        id: this.generateId(),
-        role: 'assistant',
-        content: `გამარჯობა 👋
-გთხოვთ მომწეროთ რა ვაკანსიები გაინტერესებთ 💼 და ატვირთოთ რეზიუმე(CV) 📄
-
-მე შემიძლია დაგეხმაროთ:
-
-🔍 თქვენთვის შესაბამისი ვაკანსიების მოძებნაში
-📄 რეზიუმე(CV)-ის ანალიზსა და გაუმჯობესებაში
-🎯 თქვენი უნარების შესაბამისი პოზიციების შერჩევაში
-💡 კარიერული რეკომენდაციების მოცემაში`,
-        timestamp: new Date(),
-      }
-    ]);
-    // Load history from localStorage for single persistent chat if desired, 
-    // or just start fresh. Let's start fresh for now as per "one conversation" request.
+  ngOnDestroy() {
+    this.routeSub?.unsubscribe();
   }
 
   ngAfterViewChecked() {
@@ -179,26 +222,14 @@ export class Chat implements OnInit, AfterViewChecked {
   }
 
   processFiles(files: File[]) {
-  if (!files.length) return;
-
-  const file = files[0]; // only take first file
-
-  // validate
-  if (!this.allowedTypes.includes(file.type)) return;
-  if (file.size > this.maxFileSizeMB * 1024 * 1024) return;
-
-  const newFile: AttachedFile = {
-    id: this.generateId(),
-    name: file.name,
-    size: file.size,
-    type: file.type,
-    url: file.type.startsWith('image/') ? URL.createObjectURL(file) : '',
-    file,
-  };
-
-  // 🔥 replace instead of append
-  this.attachedFiles.set([newFile]);
-}
+    if (!files.length) return;
+    const file = files[0];
+    if (!this.allowedTypes.includes(file.type)) return;
+    if (file.size > this.maxFileSizeMB * 1024 * 1024) return;
+    
+    // Upload CV to profile via StateStore
+    this.stateStore.uploadCv(file);
+  }
 
   removeAttachment(id: string) {
     this.attachedFiles.update(files => files.filter(f => f.id !== id));
@@ -219,9 +250,11 @@ export class Chat implements OnInit, AfterViewChecked {
   }
 
   async sendMessage() {
+    const id = this.activeId();
+    if (!id) return;
+
     const text = this.inputText().trim();
     const files = this.attachedFiles();
-
     if (!text && files.length === 0) return;
     if (this.isTyping()) return;
 
@@ -233,9 +266,9 @@ export class Chat implements OnInit, AfterViewChecked {
       attachments: files.length > 0 ? [...files] : undefined,
     };
 
-    this.messages.update(m => [...m, userMsg]);
+    this.chatStore.addMessage(id, userMsg);
     this.inputText.set('');
-    this.attachedFiles.set([]);
+    //this.attachedFiles.set([]);
     if (this.messageInput?.nativeElement) {
       this.messageInput.nativeElement.style.height = 'auto';
       this.messageInput.nativeElement.value = '';
@@ -252,28 +285,28 @@ export class Chat implements OnInit, AfterViewChecked {
       timestamp: new Date(),
       isLoading: true,
     };
-    this.messages.update(m => [...m, loadingMsg]);
+    this.chatStore.addMessage(id, loadingMsg);
 
     try {
-      const resObj = await this.callAiApi(text, files, this.messages().slice(0, -1));
-      this.messages.update(m => m.filter(msg => msg.id !== loadingMsgId));
-
-      this.messages.update(m => [...m, {
+      const history = this.messages().filter(m => m.id !== loadingMsgId);
+      const resObj = await this.callAiApi(text, files, history);
+      this.chatStore.removeMessage(id, loadingMsgId);
+      this.chatStore.addMessage(id, {
         id: this.generateId(),
         role: 'assistant',
         content: resObj.content,
         data: resObj.data,
         timestamp: new Date(),
-      }]);
+      });
     } catch {
-      this.messages.update(m => m.filter(msg => msg.id !== loadingMsgId));
-      this.messages.update(m => [...m, {
+      this.chatStore.removeMessage(id, loadingMsgId);
+      this.chatStore.addMessage(id, {
         id: this.generateId(),
         role: 'assistant',
         content: 'მოხდა შეცდომა. გთხოვთ სცადოთ თავიდან.',
         timestamp: new Date(),
         isError: true,
-      }]);
+      });
     } finally {
       this.isTyping.set(false);
       this.shouldScrollToBottom = true;
@@ -285,18 +318,17 @@ export class Chat implements OnInit, AfterViewChecked {
     files: AttachedFile[],
     history: ChatMessage[]
   ): Promise<{ content: string; data?: AiStructuredResponse }> {
-
     const cleanedHistory = history
       .filter(m => !m.isLoading && !m.isError)
-      .map(m => ({
-        role: m.role,
-        content: m.content,
-      }));
+      .map(m => ({ role: m.role, content: m.content }));
 
-    const fileList = files.map(f => f.file);
+    // Check if the auto-attached CV (placeholder, zero bytes) is present
+    const hasStoredCv = files.some(f => f.id === '__cv__');
+    // Only send actual user-uploaded files (not the zero-byte CV placeholder)
+    const realFiles = files.filter(f => f.id !== '__cv__').map(f => f.file);
 
     const res: any = await new Promise((resolve, reject) => {
-      this.aiService.chat(text, fileList, cleanedHistory).subscribe({
+      this.aiService.chat(text, realFiles, cleanedHistory, hasStoredCv).subscribe({
         next: resolve,
         error: reject,
       });
@@ -305,12 +337,8 @@ export class Chat implements OnInit, AfterViewChecked {
     const response = res?.response as AiStructuredResponse;
     const comment = res?.comment;
 
-    // If we have a structured response with topJobs, we prioritize that data
     if (response) {
-      return {
-        content: comment || response.summary || '',
-        data: response
-      };
+      return { content: comment || response.summary || '', data: response };
     }
 
     return {
@@ -318,6 +346,7 @@ export class Chat implements OnInit, AfterViewChecked {
       data: undefined
     };
   }
+
   private scrollToBottom() {
     try {
       const el = this.messagesContainer?.nativeElement;

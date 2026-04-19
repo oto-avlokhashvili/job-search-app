@@ -4,6 +4,7 @@ export interface JobsResponse {
 }
 export interface Job {
   id: number;
+  matchId?:number;
   vacancy: string;
   location:string;
   company: string;
@@ -15,16 +16,27 @@ export interface Job {
   match?:number;
 }
 
+export interface AiMatchedJobsResponse {
+  data: Job[];
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
 export interface SentJob {
   id: number;
   userId: number;
   jobId: number;
-  job: Job;
+  vacancy: string;
+  location: string;
+  company: string;
+  match: number; // percentage (0–100)
+  salaryRange: string;
 }
 
 export interface SentJobsResponse {
   sentJobs: SentJob[];
-  count: number;
+  total: number;
   page: number;
-  totalPages: number;
+  lastPage: number;
 }

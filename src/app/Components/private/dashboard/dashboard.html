@@ -13,56 +13,75 @@
 <!-- Content Grid -->
 <div class="content-grid">
   <!-- Latest Jobs -->
-  <div class="card">
+  <div class="card" >
     <div class="card-header">
-      <h2 class="card-title">შემოთავაზებული ვაკანსიები</h2>
-      <a routerLink="/private/jobs" class="view-all">ნახვა →</a>
+      <h2 class="card-title">AI-ის მიერ შემოთავაზებული ვაკანსიები</h2>
     </div>
 
 
-    <div class="job-item"
-      *ngFor="let job of stateStore.matchedJobsDashboard().length < 0 ? jobs()  : stateStore.matchedJobsDashboard() | slice:0:5;let i = index">
-      <div class="job-header">
-        <div>
-          <div class="job-title">{{ job.vacancy }}</div>
-          <div class="job-company">{{ job.company }}</div>
+    <div class="vacancy-cards-container">
+      <div class="cards-scroll-wrapper">
+        @for (job of stateStore.matchedJobsDashboard().data; track job.id) {
+        <div class="vacancy-card clickable-card"
+          [class.card-tier-strong]="(job.match ?? 0) >= 85"
+          [class.card-tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
+          [class.card-tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
+          [class.card-tier-low]="(job.match ?? 0) < 50"
+          (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
+          <div class="card-match-badge"
+            [class.tier-strong]="(job.match ?? 0) >= 85"
+            [class.tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
+            [class.tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
+            [class.tier-not-possible]="(job.match ?? 0) < 50">
+            {{ job.match ?? 0 }}%
+          </div>
+          <div class="card-body">
+            <h4 class="job-title">{{ job.vacancy }}</h4>
+            <div class="job-company">{{ job.company }}</div>
+            <div class="job-meta">
+              <span>📍 {{ job.location || 'თბილისი' }}</span>
+              @if (job.salaryRange) {
+              <span>💰 {{ job.salaryRange }}</span>
+              }
+              <span>🕐 {{ job.publishDate }} – {{ job.deadline }}</span>
+            </div>
+          </div>
+          <div>
+            <button class="view-btn">ნახვა →</button>
+          </div>
         </div>
-        <span [ngClass]="'job-badge ' + getJobBadgeByProgress(job.publishDate, job.deadline).class">
-          {{ getJobBadgeByProgress(job.publishDate, job.deadline).text }}
-        </span>
-      </div>
-      <div class="job-details">
-        <span>📍 {{ job.location ? job.location : "თბილისი" }}</span>
-        <span>💼 {{ "სრული" }}</span>
-        <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
-
-        <span class="job-salary">{{job.salaryRange}}</span>
-        @if (job.match) {
-        <span class="job-match" [ngClass]="{
-    'high-match': job.match >= 80,
-    'medium-match': job.match >= 50 && job.match < 80,
-    'low-match': job.match < 50
-  }">
-          {{"შესაბამისობა: " + job.match + "%"}}
-        </span>
         }
 
+
       </div>
-      <div class="job-footer">
-        <div></div>
-        <button class="btn btn-primary" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
-          ნახვა
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="stateStore.matchedJobsDashboard().lastPage > 1">
+        <button class="pagination-btn" [disabled]="stateStore.matchedJobsDashboard().page === 1"
+          (click)="onPageChange(stateStore.matchedJobsDashboard().page - 1)">
+          ←
+        </button>
+
+        <span class="page-info">
+          გვერდი {{ stateStore.matchedJobsDashboard().page }} / {{ stateStore.matchedJobsDashboard().lastPage }}
+        </span>
+
+        <button class="pagination-btn"
+          [disabled]="stateStore.matchedJobsDashboard().page === stateStore.matchedJobsDashboard().lastPage"
+          (click)="onPageChange(stateStore.matchedJobsDashboard().page + 1)">
+          →
         </button>
       </div>
     </div>
-    <div class="empty-state" *ngIf="stateStore.matchedJobs().length === 0">
+
+    <div class="empty-state" *ngIf="stateStore.matchedJobsDashboard().data.length === 0">
       <p>ვაკანსიები არ მოიძებნა</p>
     </div>
 
   </div>
-  
+
   <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- Search Query Card -->
+    <!-- Search Query Card -->
     <div class="card">
       <div class="card-header" style="margin-bottom: 0.5rem;">
         <h2 class="card-title">საძიებელი პარამეტრები</h2>
@@ -74,13 +93,13 @@
             <span>{{ keyword }}</span>
             <button type="button" class="chip-remove" (click)="removeKeyword($index)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+              </svg>
             </button>
           </div>
           }
@@ -108,7 +127,7 @@
           </svg>
         </a>
       </div>
-      
+
       <div class="cv-content-wrapper">
 
         <!-- STATE 1: No CV -->
@@ -140,16 +159,14 @@
           </div>
           <div class="cv-file-details">
             <span class="cv-file-name">{{ stateStore.userCv()?.originalName || 'ჩემი CV.pdf' }}</span>
-            <span class="cv-file-size">{{ stateStore.userCv()?.size ? (stateStore.userCv()?.size / 1024 | number:'1.0-2') + ' KB' : ''
+            <span class="cv-file-size">{{ stateStore.userCv()?.size ? (stateStore.userCv()?.size / 1024 |
+              number:'1.0-2') + ' KB' : ''
               }}</span>
           </div>
           <button class="cv-change-btn" (click)="fileInput2.click()">შეცვლა</button>
           <input type="file" #fileInput2 (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
             style="display: none">
         </div>
-        <button *ngIf="stateStore.userCv() && !stateStore.cvLoading()" class="btn btn-primary cv-analyze-btn" (click)="analyzeCvAndJobs()">
-          🚀 გააანალიზე CV და იპოვე ტოპ ვაკანსიები
-        </button>
         <!-- STATE 3: Loading -->
         <div *ngIf="stateStore.cvLoading()" class="cv-loader">
           <div class="cv-spinner"></div>

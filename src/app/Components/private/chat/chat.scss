@@ -424,6 +424,19 @@
 
   &:hover { border-color: var(--primary); }
 
+  &.loading-chip {
+    background: var(--surface-container-low);
+    opacity: 0.8;
+    border-style: dashed;
+    cursor: default;
+    &:hover { border-color: var(--border-color); }
+    
+    .btn-spinner {
+      border-width: 1.5px;
+      margin-right: 2px;
+    }
+  }
+
   .chip-thumb { width: 26px; height: 26px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
   .chip-icon { font-size: 1.05rem; flex-shrink: 0; }
   .chip-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--on-surface); }

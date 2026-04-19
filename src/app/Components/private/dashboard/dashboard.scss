@@ -68,7 +68,7 @@
 .stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  
+
   [data-theme='dark'] & {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     border-color: rgba(255, 255, 255, 0.2);
@@ -178,106 +178,206 @@
   transform: translateX(4px);
 }
 
-/* Job List */
-.job-item {
-  padding: 1.25rem;
+/* ─── Premium Vacancy Cards ──────────────────────────────────── */
+.vacancy-cards-container {
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+.cards-scroll-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.vacancy-card {
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
+  border-left: 4px solid transparent;
   border-radius: 12px;
-  margin-bottom: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 20px rgba(11, 96, 150, 0.1);
+    transform: translateX(4px);
+    background: var(--surface-container-low);
+  }
+
+  &.clickable-card {
+    cursor: pointer;
+  }
+  // Left accent border by tier
+  &.card-tier-strong  { border-left-color: #22c55e; }
+  &.card-tier-good    { border-left-color: #eab308; }
+  &.card-tier-possible{ border-left-color: #f97316; }
+  &.card-tier-low     { border-left-color: #ef4444; }
+
+  .card-match-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1;
+    gap: 2px;
+
+    &::after {
+      content: 'match';
+      font-size: 0.55rem;
+      font-weight: 600;
+      opacity: 0.85;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    &.tier-strong     { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    &.tier-good       { background: linear-gradient(135deg, #eab308, #ca8a04); }
+    &.tier-possible   { background: linear-gradient(135deg, #f97316, #ea580c); }
+    &.tier-not-possible { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .job-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 0.2rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .job-company {
+    font-size: 0.82rem;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--on-surface-variant);
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 0.15rem 0.6rem;
+    }
+  }
+
+  .card-footer {
+    flex-shrink: 0;
+  }
+
+  .view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.04);
+      box-shadow: 0 4px 12px rgba(11, 96, 150, 0.25);
+    }
+  }
+}
+
+// Animation
+.vacancy-card {
+  animation: cardIn 0.3s ease both;
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 0.04}s; }
+  }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-btn {
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
   background: var(--surface-container-low);
-}
-
-.job-item:last-child {
-  margin-bottom: 0;
-}
-
-.job-item:hover {
-  border-color: var(--primary);
-  box-shadow: var(--shadow);
-  transform: scale(1.01);
-  background: var(--surface-container);
-}
-
-.job-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: 0.75rem;
-}
-
-.job-title {
   color: var(--on-surface);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.job-company {
-  color: var(--on-surface-variant);
-  font-size: 0.9rem;
-}
-
-.job-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-new {
-  background: #c6f6d5;
-  color: #22543d;
-}
-
-.badge-average {
-  background: #6398fc;
-  color: #cedefd;
-}
-
-.badge-urgent {
-  background: #fed7d7;
-  color: #742a2a;
-}
-
-.badge-expired {
-  background: #ff6d6d;
-  color: #e9e9e9;
-}
-
-.job-details {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  color: var(--on-surface-variant);
   font-size: 0.85rem;
-  margin-bottom: 0.75rem;
-}
-
-.job-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.job-salary {
-  color: var(--primary);
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
 }
 
-.job-match {
-  font-weight: 600;
-}
-
-.high-match {
-  color: #5bd579;
-}
-
-.medium-match {
-  color: #f5c542;
-}
-
-.low-match {
-  color: #ff5c5c;
+.page-info {
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+  margin: 0 1rem;
 }
 
 .btn {
@@ -391,6 +491,7 @@
   min-height: 48px;
   padding: 0.5rem;
   display: flex;
+
   flex-wrap: wrap;
   align-items: center;
   background: var(--input-bg);
@@ -405,6 +506,7 @@
 }
 
 [data-theme='dark'] {
+
   .chips-input-container,
   .form-control {
     background-color: var(--surface-container-low) !important;

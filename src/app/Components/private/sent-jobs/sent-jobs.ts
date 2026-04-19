@@ -10,9 +10,18 @@ import { CommonModule } from '@angular/common';
 })
 export class SentJobs {
   stateStore = inject(StateStore);
-  page = signal<number>(this.stateStore.matchedJobsPage() || 1);
+  page = signal<number>(this.stateStore.sentJobs().page || 1);
   limit = signal<number>(10);
   
+
+  ngOnInit() {
+    
+  }
+
+  onPageChange(page: number) {
+    this.page.set(page);
+    this.stateStore.loadSentJobs(page, this.limit());
+  }
 
   activities: any[] = [
     {
@@ -59,41 +68,13 @@ export class SentJobs {
 
   nextPage() {
     this.page.set(this.page() + 1);
-    this.stateStore.loadMatchedJobs(this.stateStore.profile()?.id, this.page());
   }
   previousPage() {
     this.page.set(this.page() - 1);
-    this.stateStore.loadMatchedJobs(this.stateStore.profile()?.id, this.page());
   }
-  applyJob(job: string): void {
-    window.open(`${job}`, '_blank');
-  }
+  
   saveViewedVacancy(title:string){
     localStorage.setItem("recently_viewed",title);
   }
-
-getJobBadgeByProgress(publishDate: string, deadline: string) {
-  const today = new Date();
-  const start = new Date(publishDate.split('/').reverse().join('-')); // DD/MM/YYYY → YYYY-MM-DD
-  const end = new Date(deadline.split('/').reverse().join('-'));
-
-  // Check if expired first
-  if (today > end) {
-    return { class: 'badge-expired', text: 'ვადა ამოიწურა' };
-  }
-
-  const totalMs = end.getTime() - start.getTime();
-  const elapsedMs = today.getTime() - start.getTime();
-  
-  const progress = elapsedMs / totalMs;
-
-  if (progress <= 1/3) {
-    return { class: 'badge-new', text: 'ცხელ-ცხელი' };
-  } else if (progress <= 2/3) {
-    return { class: 'badge-average', text: 'ახალი' };
-  } else {
-    return { class: 'badge-urgent', text: 'ვადა მალე ამოიწურება' };
-  }
-}
 
 }

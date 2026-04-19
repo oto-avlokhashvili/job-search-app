@@ -1,72 +1,101 @@
-<div class="content-grid">
-  <!-- Latest Jobs -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">შემოთავაზებული ვაკანსიების ისტორია</h2>
-      <span class="job-count">სულ: {{ stateStore.matchedJobsCount() }}</span>
-    </div>
+<div class="history-page">
 
-    <!-- Job listings -->
-    <div class="job-list">
-      <div class="job-item" *ngFor="let job of stateStore.matchedJobs()">
-        <div class="job-header">
-          <div>
-            <div class="job-title">{{ job.vacancy }}</div>
-            <div class="job-company">{{ job.company }}</div>
-          </div>
-          <span [ngClass]="'job-badge ' + getJobBadgeByProgress(job.publishDate, job.deadline).class">
-          {{ getJobBadgeByProgress(job.publishDate, job.deadline).text }}
-        </span>
-        </div>
-        <div class="job-details">
-          <span>📍 {{ job.location ? job.location : "თბილისი"  }}</span>
-          <span>💼 {{ "სრული" }}</span>
-          <span>🕐 {{job.publishDate}} - {{ job.deadline }}</span>
-        </div>
-        <div class="job-footer">
-          <span class="job-salary">{{ "1000-1500 GEL" }}</span>
-          <button class="btn btn-primary" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
-            ნახვა
-          </button>
-        </div>
+  <!-- Header -->
+  <div class="history-header">
+    <div class="history-title-group">
+      <div class="history-icon">📤</div>
+      <div>
+        <h2 class="history-title">განაცხადების ისტორია</h2>
+        <p class="history-subtitle">გაგზავნილი სამუშაოს განაცხადები</p>
       </div>
     </div>
-
-    <!-- Empty state -->
-    <div class="empty-state" *ngIf="stateStore.matchedJobs().length === 0">
-      <p>ვაკანსიები არ მოიძებნა</p>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div class="pagination" *ngIf="stateStore.totalPages() > 1">
-      <button 
-        class="pagination-btn" 
-        (click)="previousPage()" 
-        [disabled]="this.page() === 1"
-        >
-        ← წინა
-      </button>
-      
-      <div class="pagination-numbers">
-        <button          
-          class="pagination-number"          
-          [class.ellipsis]="stateStore.totalPages() === -1"
-          [disabled]="stateStore.totalPages() === -1"
-          >
-          {{ stateStore.totalPages() === -1 ? '...' : this.page() }}
-        </button>
-      </div>
-
-      <button 
-        class="pagination-btn" 
-        (click)="nextPage()" 
-        [disabled]="this.page() === stateStore.totalPages()"
-        >
-        შემდეგი →
-      </button>
+    <div class="history-badge">
+      <span class="history-count">{{ stateStore.sentJobs().total }}</span>
+      <span class="history-count-label">სულ განაცხადი</span>
     </div>
   </div>
 
-  <!-- Recent Activity -->
+  <!-- Timeline -->
+  <div class="timeline-wrapper" *ngIf="stateStore.sentJobs().sentJobs.length > 0">
+
+    @for (item of stateStore.sentJobs().sentJobs; track item.id; let i = $index) {
+    <div class="timeline-entry">
+
+      <!-- Timeline spine -->
+      <div class="timeline-spine">
+        <div class="timeline-dot"
+          [class.dot-strong]="item.match >= 85"
+          [class.dot-good]="item.match >= 65 && item.match < 85"
+          [class.dot-possible]="item.match >= 50 && item.match < 65"
+          [class.dot-low]="item.match < 50">
+          <div class="dot-pulse"></div>
+        </div>
+        <div class="timeline-line"></div>
+      </div>
+
+      <!-- Entry card -->
+      <div class="entry-card">
+        <div class="entry-top">
+          <div class="entry-info">
+            <span class="entry-index">#{{ stateStore.sentJobs().total - (stateStore.sentJobs().page - 1) * 12 - i }}</span>
+            <h3 class="entry-vacancy">{{ item.vacancy }}</h3>
+            <div class="entry-company">
+              <span class="company-icon">🏢</span>
+              {{ item.company }}
+            </div>
+          </div>
+          <div class="match-pill"
+            [class.tier-strong]="item.match >= 85"
+            [class.tier-good]="item.match >= 65 && item.match < 85"
+            [class.tier-possible]="item.match >= 50 && item.match < 65"
+            [class.tier-low]="item.match < 50">
+            <span class="match-value">{{ item.match }}%</span>
+            <span class="match-label">Match</span>
+          </div>
+        </div>
+
+        <div class="entry-meta">
+          <span class="meta-chip">
+            <span>📍</span> {{ item.location || 'თბილისი' }}
+          </span>
+          @if (item.salaryRange) {
+          <span class="meta-chip salary-chip">
+            <span>💰</span> {{ item.salaryRange }}
+          </span>
+          }
+          <span class="meta-chip status-chip">
+            <span>✉️</span> გაგზავნილია Telegram-ზე
+          </span>
+        </div>
+      </div>
+
+    </div>
+    }
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="stateStore.sentJobs().lastPage > 1">
+      <button class="pagination-btn"
+        [disabled]="stateStore.sentJobs().page === 1"
+        (click)="onPageChange(stateStore.sentJobs().page - 1)">
+        ← წინა
+      </button>
+      <span class="page-info">
+        {{ stateStore.sentJobs().page }} / {{ stateStore.sentJobs().lastPage }}
+      </span>
+      <button class="pagination-btn"
+        [disabled]="stateStore.sentJobs().page === stateStore.sentJobs().lastPage"
+        (click)="onPageChange(stateStore.sentJobs().page + 1)">
+        შემდეგი →
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="stateStore.sentJobs().sentJobs.length === 0">
+    <div class="empty-icon">📭</div>
+    <h3>განაცხადები ვერ მოიძებნა</h3>
+    <p>გაგზავნილი ვაკანსიები არ გაქვს</p>
+  </div>
 
 </div>

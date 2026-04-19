@@ -1,30 +1,72 @@
+// ─── Auth Page ───────────────────────────────────────────────
+// Uses the global CSS variable design tokens (styles.scss)
+// so it automatically adapts to light / dark mode.
+
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+  background: var(--surface);
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
+  transition: background 0.3s ease;
 }
 
+// Dark-mode gradient background matches the rest of the private area
+[data-theme='dark'] .login-page {
+  background: linear-gradient(135deg, #323253, #1c2849) !important;
+}
+
+// ─── Theme toggle button ─────────────────────────────────────
+.auth-theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--outline-variant);
+  background: var(--card-bg);
+  color: var(--on-surface);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.08);
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  }
+}
+
+// ─── Container ───────────────────────────────────────────────
 .login-container {
   width: 100%;
-  max-width: 450px;
+  max-width: 460px;
 }
 
+// ─── Card ────────────────────────────────────────────────────
 .login-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.5s ease-out;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  animation: slideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(28px);
   }
   to {
     opacity: 1;
@@ -32,28 +74,30 @@
   }
 }
 
+// ─── Header ──────────────────────────────────────────────────
 .login-header {
   text-align: center;
   margin-bottom: 30px;
 
   .logo {
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-size: 44px;
+    margin-bottom: 16px;
   }
 
   h2 {
     font-size: 28px;
     font-weight: 700;
-    color: #1e3c72;
-    margin-bottom: 10px;
+    color: var(--primary);
+    margin-bottom: 8px;
   }
 
   p {
-    color: #666;
+    color: var(--text-muted);
     font-size: 14px;
   }
 }
 
+// ─── Form ────────────────────────────────────────────────────
 .login-form {
   .mb-3 {
     margin-bottom: 1.5rem;
@@ -61,10 +105,12 @@
 
   .form-label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #333;
-    font-size: 14px;
+    margin-bottom: 0.45rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
   .form-control {
@@ -72,130 +118,70 @@
     width: 100%;
     padding: 12px 16px;
     font-size: 15px;
+    font-family: inherit;
     font-weight: 400;
     line-height: 1.5;
-    color: #333;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    color: var(--on-surface);
+    background-color: var(--input-bg);
+    border: 1.5px solid var(--outline-variant);
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
 
     &:focus {
-      color: #333;
-      background-color: #fff;
-      border-color: #2a5298;
-      outline: 0;
-      box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.15);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(11, 96, 150, 0.12);
     }
 
     &::placeholder {
-      color: #999;
-    }
-  }
-
-  .form-check {
-    display: flex;
-    align-items: center;
-    padding-left: 0;
-    gap: 10px;
-
-    .form-check-input {
-      width: 18px;
-      height: 18px;
-      min-width: 18px;
-      min-height: 18px;
-      margin: 0;
-      cursor: pointer;
-      border: 2px solid #e0e0e0;
-      border-radius: 4px;
-      flex-shrink: 0;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-color: #fff;
-      position: relative;
-      
-      &:checked {
-        background-color: #2a5298;
-        border-color: #2a5298;
-
-        &::after {
-          content: '✓';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: white;
-          font-size: 12px;
-          font-weight: bold;
-        }
-      }
-
-      &:focus {
-        border-color: #2a5298;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.15);
-      }
+      color: var(--text-muted);
+      opacity: 0.7;
     }
 
-    .form-check-label {
-      font-size: 14px;
-      color: #666;
-      cursor: pointer;
-      user-select: none;
-      margin: 0;
-      line-height: 1.4;
+    [data-theme='dark'] &:focus {
+      box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.18);
     }
   }
 }
 
+// ─── Primary Button ──────────────────────────────────────────
 .btn {
   display: inline-block;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
   user-select: none;
-  border: 2px solid transparent;
-  padding: 12px 24px;
-  font-size: 16px;
+  border: none;
+  padding: 13px 24px;
+  font-size: 15px;
+  font-family: inherit;
   line-height: 1.5;
-  border-radius: 10px;
-  transition: all 0.15s ease-in-out;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   cursor: pointer;
   width: 100%;
 
   &:focus {
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.25);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(11, 96, 150, 0.25);
   }
 }
 
 .btn-primary {
   color: #fff;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
-  border-color: transparent;
+  letter-spacing: 0.02em;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(42, 82, 152, 0.3);
+    box-shadow: 0 8px 24px rgba(42, 82, 152, 0.35);
+    filter: brightness(1.06);
   }
 
   &:active {
     transform: translateY(0);
-  }
-}
-
-.btn-outline-secondary {
-  color: #666;
-  background-color: transparent;
-  border-color: #e0e0e0;
-
-  &:hover {
-    color: #333;
-    background-color: #f8f9fa;
-    border-color: #d0d0d0;
+    box-shadow: none;
   }
 }
 
@@ -203,38 +189,14 @@
   margin-bottom: 15px;
 }
 
-.btn-social {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 12px;
-
-  .social-icon {
-    width: 20px;
-    height: 20px;
-  }
+.mt-4 {
+  margin-top: 1rem;
 }
 
-.forgot-password {
-  text-align: center;
-  margin-bottom: 25px;
-
-  a {
-    color: #2a5298;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
+// ─── Divider ─────────────────────────────────────────────────
 .divider {
   text-align: center;
-  margin: 30px 0;
+  margin: 28px 0;
   position: relative;
 
   &::before,
@@ -242,83 +204,68 @@
     content: '';
     position: absolute;
     top: 50%;
-    width: 45%;
+    width: 44%;
     height: 1px;
-    background-color: #e0e0e0;
+    background-color: var(--outline-variant);
   }
 
-  &::before {
-    left: 0;
-  }
-
-  &::after {
-    right: 0;
-  }
+  &::before { left: 0; }
+  &::after  { right: 0; }
 
   span {
-    background: white;
-    padding: 0 15px;
-    color: #999;
-    font-size: 14px;
-    font-weight: 500;
+    background: var(--card-bg);
+    padding: 0 14px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    transition: background 0.3s ease;
   }
 }
 
-.social-login {
-  margin-bottom: 25px;
-}
-
+// ─── Sign-up / back link ─────────────────────────────────────
 .signup-link {
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: var(--text-muted);
 
   a {
-    color: #2a5298;
+    color: var(--primary);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
 
     &:hover {
+      opacity: 0.8;
       text-decoration: underline;
     }
   }
 }
 
-// Responsive Design
+// ─── Responsive ──────────────────────────────────────────────
 @media (max-width: 576px) {
   .login-card {
-    padding: 30px 25px;
+    padding: 30px 22px;
   }
 
   .login-header {
-    h2 {
-      font-size: 24px;
-    }
-
-    .logo {
-      font-size: 40px;
-    }
-  }
-
-  .btn-social {
-    font-size: 14px;
-    padding: 10px 16px;
+    h2    { font-size: 24px; }
+    .logo { font-size: 38px; }
   }
 }
 
 @media (max-width: 380px) {
   .login-card {
-    padding: 25px 20px;
+    padding: 24px 16px;
   }
 
-  .login-header {
-    h2 {
-      font-size: 22px;
-    }
+  .login-header h2 {
+    font-size: 22px;
   }
 
   .btn {
-    padding: 10px 20px;
-    font-size: 15px;
+    padding: 11px 20px;
+    font-size: 14px;
   }
 }

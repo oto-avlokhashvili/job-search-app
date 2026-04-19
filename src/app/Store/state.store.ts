@@ -4,27 +4,22 @@ import { JobsService } from '../Core/Services/jobs-service';
 import { AuthService } from '../Core/Services/auth-service';
 import { User } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
-import { Job } from '../Core/Interfaces/jobs';
+import { AiMatchedJobsResponse, Job, SentJobsResponse } from '../Core/Interfaces/jobs';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
 type State = {
     profile: User;
     profileLoaded: boolean;
-    jobsCount: number | 0;
-    searchedJobsCount: number | 0;
 
     matchedJobsCount: number | 0;
-    activeJobs: Job[];
-    matchedJobs: Job[];
-    searchedJobs: Job[];
-    matchedJobsDashboard: Job[];
-    matchedJobsPage: number | 0;
-    matchedJobsLimit: number | 0;
-    matchedPercentage: number | 0;
+    sentJobsCount: number | 0;
+    matchedJobsDashboard: AiMatchedJobsResponse;
+    sentJobs: SentJobsResponse;
 
-    totalPages: number | 0;
-    totalJobs: number | 0;
+
+
+
 
     userCv: any;
     cvLoading: boolean;
@@ -34,20 +29,12 @@ type State = {
 const initialState: State = {
     profile: { id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: [], createdAt: '' },
     profileLoaded: false,
-    jobsCount: 0,
-    searchedJobsCount: 0,
-
     matchedJobsCount: 0,
-    activeJobs: [],
-    matchedJobs: [],
-    searchedJobs: [],
-    matchedJobsDashboard: [],
-    matchedJobsPage: 1,
-    matchedJobsLimit: 10,
-    matchedPercentage: 0,
+    sentJobsCount: 0,
 
-    totalPages: 0,
-    totalJobs: 0,
+    sentJobs: { sentJobs: [], total: 0, page: 1, lastPage: 1 },
+    matchedJobsDashboard: { data: [], total: 0, page: 1, lastPage: 1 },
+
 
     userCv: null,
     cvLoading: false
@@ -63,50 +50,8 @@ export const StateStore = signalStore(
                 profile, profileLoaded: true
             })
         },
-        loadJobs(vacancy?: string[], page?: number) {
-            jobsService.getJobs(vacancy, page).subscribe(res => {
-                patchState(store, { searchedJobs: res.jobs });
 
-                animateValue(0, res.counts.totalRecords, 400, v =>
-                    patchState(store, { jobsCount: v })
-                );
-                animateValue(0, res.counts.filteredRecords, 400, v =>
-                    patchState(store, { searchedJobsCount: v })
-                );
-                animateValue(0, (res.counts.filteredRecords / res.counts.totalRecords) * 100, 400, v =>
-                    patchState(store, { matchedPercentage: Math.round(v) })
-                );
-            })
-        },
 
-        loadMatchedJobs(id: number, page?: number) {
-            jobsService.getUserMatchedJobs(id, page).subscribe(res => {
-                patchState(store, {
-                    matchedJobsDashboard: res.page === 1 ? res.sentJobs.map(el => el.job) : store.matchedJobsDashboard(),
-                    matchedJobs: res.sentJobs.map(el => el.job),
-                    totalJobs: page,
-                    totalPages: res.totalPages,
-                    matchedJobsPage: page
-                });
-
-                animateValue(0, res.count, 400, v =>
-                    patchState(store, { matchedJobsCount: v })
-                );
-
-            })
-        },
-        /* findJobsByQuery(queries: string[]) {
-            jobsService.findByQuery(queries).subscribe(res => {
-                patchState(store, {
-                    searchedJobsCount: res?.length,
-                });
-            });
-        }, */
-        loadAllJobs(vacancy?: string[], page?: number) {
-            jobsService.getJobs(vacancy, page).subscribe(res => {
-                patchState(store, { activeJobs: res.jobs })
-            })
-        },
         updateProfile(id: number, data: any) {
             patchState(store, {
                 profile: { ...store.profile(), ...data }
@@ -116,21 +61,6 @@ export const StateStore = signalStore(
                     profile: res
                 })
             })
-        },
-        addMatchedJobs(jobs: Job[]) {
-            patchState(store, {
-                matchedJobs: [...store.matchedJobs(), ...jobs]
-            })
-        },
-        analyzeCvAndJobs() {
-            aiService.analyzeCvAndJobs().subscribe({
-                next: (res: any) => {
-                    patchState(store, { matchedJobsDashboard: res.topJobs });
-                },
-                error: (err: any) => {
-                    console.log(err);
-                }
-            });
         },
         getCv() {
             patchState(store, { cvLoading: true });
@@ -167,6 +97,38 @@ export const StateStore = signalStore(
                     console.error('Error uploading CV:', err);
                 }
             });
+        },
+        loadAIMatchedJobs(page: number = 1, limit: number = 5) {
+            aiService.getAiMatchedJobs(page, limit).subscribe({
+                next: (res: AiMatchedJobsResponse) => {
+                    patchState(store, {
+                        matchedJobsDashboard: res,
+                    });
+
+                    animateValue(0, res.total, 400, v =>
+                        patchState(store, { matchedJobsCount: v })
+                    );
+                },
+                error: (err: any) => {
+                    console.error('Error loading AI matched jobs:', err);
+                }
+            });
+        },
+        loadSentJobs(page: number = 1, take: number = 10) {
+            jobsService.getUserSentJobs(page, take).subscribe({
+                next: (res: any) => {
+                    patchState(store, {
+                        sentJobs: res
+                    });
+                    animateValue(0, res.total, 400, v =>
+                        patchState(store, { sentJobsCount: v })
+                    );
+                },
+                error: (err: any) => {
+                    console.error('Error loading sent jobs:', err);
+                }
+
+            })
         }
     })),
 )

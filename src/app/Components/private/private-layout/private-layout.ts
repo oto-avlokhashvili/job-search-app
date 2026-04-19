@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, DestroyRef } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
+import { ChatStore } from '../../../Store/chat.store';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
@@ -18,50 +19,51 @@ export class PrivateLayout implements OnInit {
   currentYear = signal(new Date().getFullYear());
   router = inject(Router);
   themeService = inject(ThemeService);
-  hideFooterAndHeader = signal<boolean>(true);
+  hideFooterAndHeader = signal<boolean>(false);
   destroyRef = inject(DestroyRef);
-  route = inject(ActivatedRoute);
   navItems = signal([
     { icon: '📊', label: 'მთავარი', route: 'dashboard' },
-    { icon: '🔍', label: 'ნაპოვნი ვაკანსიები', route: 'found-jobs' },
     { icon: '💼', label: 'ვაკანსიების ისტ.', route: 'jobs' },
-    { icon: '🔔', label: 'აქტიური ვაკანსიები', route: 'all-jobs' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' },
     { icon: '🤖', label: 'AI ასისტენტი', route: 'chat' },
   ]);
 
   authService = inject(AuthService);
   stateStore = inject(StateStore);
+  chatStore = inject(ChatStore);
 
-  // Reactive signal that tracks whether we are on the /chat route
   isOnChatRoute = signal<boolean>(this.router.url.includes('/chat'));
 
   ngOnInit() {
-    // Keep isOnChatRoute in sync on every navigation
+    this.hideFooterAndHeader.set(this.router.url.includes('/chat'));
+
     this.router.events
       .pipe(
         filter(e => e instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((e: any) => {
-        this.isOnChatRoute.set((e as NavigationEnd).urlAfterRedirects.includes('/chat'));
-        let r = this.route.firstChild;
-      while (r?.firstChild) r = r.firstChild;
-      this.hideFooterAndHeader.set(r?.snapshot.data['hideFooterAndHeader'] ?? false);
+      .subscribe((e: NavigationEnd) => {
+        this.isOnChatRoute.set(e.urlAfterRedirects.includes('/chat'));
+        this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/chat'));
       });
 
     this.getProfile();
     this.themeService.init();
-    this.stateStore.loadAllJobs([], 1);
     this.getCv();
+    this.loadMatchedJobs(1);
+    this.loadSentJobs();
+  }
+
+  loadMatchedJobs(page: number) {
+    this.stateStore.loadAIMatchedJobs(page, 6);
+  }
+
+  loadSentJobs() {
+    this.stateStore.loadSentJobs();
   }
 
   async getProfile() {
     await this.stateStore.loadProfile();
-    this.stateStore.loadMatchedJobs(this.stateStore.profile().id);
-    if (this.stateStore.profile().searchQuery?.length > 0) {
-      this.stateStore.loadJobs(this.stateStore.profile().searchQuery);
-    }
   }
 
   initials = computed(() => {
@@ -88,20 +90,37 @@ export class PrivateLayout implements OnInit {
     });
   }
 
-  // Chat helpers
-  createNewConversation() {
-    this.router.navigate(['/private/chat'], { queryParams: { reset: Date.now() } });
-  }
-
-  selectConversation() {
-    this.router.navigate(['/private/chat']);
+  // ── Chat helpers ──────────────────────────────────────────────
+  createNewChat() {
+    const newId = this.chatStore.createConversation();
+    this.router.navigate(['/private/chat', newId]);
     this.closeSidebar();
   }
 
-  deleteConversation(event: Event) {
+  selectConversation(id: string) {
+    this.chatStore.setActiveConversation(id);
+    this.router.navigate(['/private/chat', id]);
+    this.closeSidebar();
+  }
+
+  deleteConversation(event: Event, id: string) {
     event.stopPropagation();
-    // Logic to clear chat can be handled via a signal or event if needed, 
-    // but for now we'll just navigate to the page and let it handle reset if needed.
-    this.router.navigate(['/private/chat'], { queryParams: { clear: Date.now() } });
+    this.chatStore.deleteConversation(id);
+    // Navigate to another conversation or base chat
+    const remaining = this.chatStore.conversations();
+    if (remaining.length > 0) {
+      this.router.navigate(['/private/chat', remaining[0].id]);
+    } else {
+      this.router.navigate(['/private/chat']);
+    }
+  }
+
+  isActiveConversation(id: string): boolean {
+    return this.chatStore.activeConversationId() === id;
+  }
+
+  formatConvTime(date: Date): string {
+    const d = new Date(date);
+    return new Intl.DateTimeFormat('ka-GE', { month: 'short', day: 'numeric' }).format(d);
   }
 }
