@@ -78,7 +78,7 @@ export class Dashboard implements OnInit {
         colorClass: 'purple',
         redirectTo: '/private/found-jobs'
       },
-      { icon: '✓', value:sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
+      { icon: '✓', value: sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
       { icon: '📧', value: 0 + "%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo: '/private/analytics' },
     ];
   });
@@ -92,8 +92,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
-      salaryRange:"--------",
-      match:"--------",
+      salaryRange: "--------",
+      match: "--------",
     },
     {
       vacancy: '--------',
@@ -102,8 +102,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
-      salaryRange:"--------",
-      match:"--------",
+      salaryRange: "--------",
+      match: "--------",
     },
     {
       vacancy: '--------',
@@ -112,8 +112,8 @@ export class Dashboard implements OnInit {
       link: '--------',
       deadline: "--------",
       publishDate: "--------",
-      salaryRange:"--------",
-      match:"--------",
+      salaryRange: "--------",
+      match: "--------",
     },
   ]);
 
@@ -157,7 +157,7 @@ export class Dashboard implements OnInit {
   constructor(private dialog: MatDialog) { }
   ngOnInit() {
     this.recentlyViewed.set(localStorage.getItem('recently_viewed') || 'არ არის ხელმისაწვდომი');
-    
+
   }
 
   loadMatchedJobs(page: number) {

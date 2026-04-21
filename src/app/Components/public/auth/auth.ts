@@ -79,4 +79,8 @@ export class Auth {
   modeChanger() {
     this.loginMode.set(!this.loginMode());
   }
+
+  signInWithGoogle(): void {
+    window.location.href = "http://localhost:3000/auth/google/login";
+  }
 }

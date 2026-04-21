@@ -26,44 +26,44 @@ export const routes: Routes = [
   },
   {
     path: 'private',
-    component:  PrivateLayout,
+    component: PrivateLayout,
     children: [
-    {
-      path: 'dashboard',
-      component: Dashboard,
-      data: { hideLayout: true  },
+      {
+        path: 'dashboard',
+        component: Dashboard,
+        data: { hideLayout: true },
 
-    },
-    {
-      path: 'profile',
-      component: Profile,
-      data: {  hideLayout: true  },
-    },
-    {
-      path: 'jobs',
-      component: SentJobs,
-      data: {  hideLayout: true  },
-    },
-    {
-      path: 'analytics',
-      component: Analytics,
-      data: {  hideLayout: true  },
-    },
-    {
-      path: 'chat',
-      component: Chat,
-      data: { hideLayout: true, hideFooterAndHeader: true },
-    },
-    {
-      path: 'chat/:id',
-      component: Chat,
-      data: { hideLayout: true, hideFooterAndHeader: true },
-    },
-    {
-      path: '',
-      redirectTo: 'dashboard',
-      pathMatch: 'full'
-    }
-  ]
+      },
+      {
+        path: 'profile',
+        component: Profile,
+        data: { hideLayout: true },
+      },
+      {
+        path: 'jobs',
+        component: SentJobs,
+        data: { hideLayout: true },
+      },
+      {
+        path: 'analytics',
+        component: Analytics,
+        data: { hideLayout: true },
+      },
+      {
+        path: 'chat',
+        component: Chat,
+        data: { hideLayout: true, hideFooterAndHeader: true },
+      },
+      {
+        path: 'chat/:id',
+        component: Chat,
+        data: { hideLayout: true, hideFooterAndHeader: true },
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
   }
 ];

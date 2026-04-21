@@ -23,6 +23,10 @@ export class AuthService {
     })
   }
 
+  setToken(token: string) {
+    this.#tokenSignal.set(token);
+    sessionStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+  }
   loadUserFromStorage() {
     const json = sessionStorage.getItem("ACCESS_TOKEN");
     if (json) {
@@ -30,15 +34,15 @@ export class AuthService {
       this.#tokenSignal.set(user);
     }
   }
-  login(email: string, password: string):Observable<{token:string}> {
-    return this.http.post<{token:string}>(this.url + "/auth/login", { email, password }, { withCredentials: true }).pipe(
-      tap((res:{token:string}) => {
+  login(email: string, password: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(this.url + "/auth/login", { email, password }, { withCredentials: true }).pipe(
+      tap((res: { token: string }) => {
         this.#tokenSignal.set(res.token);
         sessionStorage.setItem("ACCESS_TOKEN", res.token);
       })
     )
   }
-  userRegistration(obj: UserRegistration):Observable<User>{
+  userRegistration(obj: UserRegistration): Observable<User> {
     return this.http.post<User>(this.url + "/user", obj, { withCredentials: true })
   }
   async refreshToken() {
@@ -52,7 +56,7 @@ export class AuthService {
   }
 
   async getUserProfile(): Promise<any> {
-    
+
     const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true })
     const profile = firstValueFrom(profile$)
     return profile;
@@ -65,7 +69,7 @@ export class AuthService {
   } */
 
 
-  
+
 
   async logOut() {
     const message$ = this.http.post(this.url + "/auth/logout", { withCredentials: true })
@@ -75,9 +79,9 @@ export class AuthService {
     return msg;
   }
 
-  async generateTelegramToken(){
+  async generateTelegramToken() {
     const telegramToken$ = this.http.get(this.url + "/telegram/generate-link-token")
-    const res:any = await firstValueFrom(telegramToken$)
+    const res: any = await firstValueFrom(telegramToken$)
     return res.token;
   }
 }

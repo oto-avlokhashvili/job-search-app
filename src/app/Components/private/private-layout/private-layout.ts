@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, DestroyRef } from '@angular/core';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 import { ChatStore } from '../../../Store/chat.store';
@@ -21,6 +21,10 @@ export class PrivateLayout implements OnInit {
   themeService = inject(ThemeService);
   hideFooterAndHeader = signal<boolean>(false);
   destroyRef = inject(DestroyRef);
+  route = inject(ActivatedRoute);
+
+
+
   navItems = signal([
     { icon: '📊', label: 'მთავარი', route: 'dashboard' },
     { icon: '💼', label: 'ვაკანსიების ისტ.', route: 'jobs' },
@@ -35,6 +39,16 @@ export class PrivateLayout implements OnInit {
   isOnChatRoute = signal<boolean>(this.router.url.includes('/chat'));
 
   ngOnInit() {
+    const token = this.route.snapshot.queryParamMap.get('token');
+
+    if (token) {
+      this.authService.setToken(token);
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+    }
     this.hideFooterAndHeader.set(this.router.url.includes('/chat'));
 
     this.router.events
