@@ -11,8 +11,8 @@
   <aside class="sidebar" [class.active]="isSidebarOpen()">
     <div class="sidebar-header">
       <div class="logo">
-        <div class="logo-icon">JC</div>
-        <span>Job Center</span>
+        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="sidebar-logo">
+        <span>Job Scout</span>
       </div>
       <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
         <span>☰</span>
@@ -108,7 +108,7 @@
        <footer class="footer">
          <div class="footer-content">
            <div class="footer-section">
-             <h3>Job Center</h3>
+             <h3>Job Scout</h3>
              <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
            </div>
            <div class="footer-section">
@@ -139,7 +139,7 @@
            </div>
          </div>
          <div class="footer-bottom">
-           <p>&copy; {{ currentYear() }} Job Center. All rights reserved.</p>
+           <p>&copy; {{ currentYear() }} Job Scout. All rights reserved.</p>
          </div>
        </footer>
      }

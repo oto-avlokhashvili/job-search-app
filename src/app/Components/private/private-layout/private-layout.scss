@@ -56,17 +56,10 @@
   color: var(--primary);
 }
 
-.logo-icon {
-  width: 32px;
+.sidebar-logo {
   height: 32px;
-  background: var(--primary) !important;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 0.9rem;
+  width: auto;
+  object-fit: contain;
 }
 
 .sidebar-toggle {

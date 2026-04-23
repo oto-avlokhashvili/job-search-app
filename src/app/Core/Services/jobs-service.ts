@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Job, JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
 import { environment } from '../../../environments/environment';
+import { skipLoading } from '../loading/skip-loading.component';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,7 @@ export class JobsService {
     vacancy?.forEach(q => {
       params = params.append('query', q);
     });
-    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context })
+    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context: new HttpContext().set(skipLoading, true) })
   }
 
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {

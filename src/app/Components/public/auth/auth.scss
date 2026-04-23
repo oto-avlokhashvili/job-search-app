@@ -79,9 +79,25 @@
   text-align: center;
   margin-bottom: 30px;
 
-  .logo {
-    font-size: 44px;
-    margin-bottom: 16px;
+  .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .auth-logo {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .logo-text {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--primary);
   }
 
   h2 {
@@ -196,7 +212,7 @@
 // ─── Divider ─────────────────────────────────────────────────
 .divider {
   text-align: center;
-  margin: 28px 0;
+  margin: 10px 0;
   position: relative;
 
   &::before,
@@ -251,7 +267,8 @@
 
   .login-header {
     h2    { font-size: 24px; }
-    .logo { font-size: 38px; }
+    .logo-text { font-size: 24px; }
+    .auth-logo { height: 38px; }
   }
 }
 

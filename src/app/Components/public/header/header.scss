@@ -33,12 +33,24 @@ $outline-variant-color: #97aed5;
   gap: 48px;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.nav-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo-text {
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--primary);
-  cursor: pointer;
 }
 
 .nav-links-desktop {

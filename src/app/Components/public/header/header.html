@@ -1,7 +1,10 @@
 <nav class="glass-nav fixed-header">
   <div class="header-container">
     <div class="logo-group">
-      <span class="logo-text">Horizon Talent</span>
+      <div class="logo-container">
+        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="nav-logo">
+        <span class="logo-text">Job Scout</span>
+      </div>
       <div class="nav-links-desktop">
         <a class="nav-link active" (click)="scroll('features')">აღმოაჩინე</a>
         <a class="nav-link" (click)="scroll('pricing')">ფასები</a>
