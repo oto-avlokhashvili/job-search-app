@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { UserRegistration } from '../../../Core/Interfaces/user';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { ThemeService } from '../../../Core/Services/theme.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-auth',
@@ -81,6 +82,6 @@ export class Auth {
   }
 
   signInWithGoogle(): void {
-    window.location.href = "http://localhost:3000/auth/google/login";
+    window.location.href = `${environment.apiUrl}/auth/google/login`;
   }
 }
