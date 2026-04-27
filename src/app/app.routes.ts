@@ -1,12 +1,4 @@
 import { Routes } from '@angular/router';
-import { Home } from './Components/public/home/home';
-import { Auth } from './Components/public/auth/auth';
-import { PrivateLayout } from './Components/private/private-layout/private-layout';
-import { Dashboard } from './Components/private/dashboard/dashboard';
-import { Profile } from './Components/private/profile/profile';
-import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
-import { Analytics } from './Components/private/analytics/analytics';
-import { Chat } from './Components/private/chat/chat';
 
 export const routes: Routes = [
   {
@@ -16,47 +8,46 @@ export const routes: Routes = [
   },
   {
     path: 'home',
-    component: Home,
+    loadComponent: () => import('./Components/public/home/home').then(m => m.Home),
     data: { showHeroSection: true }
   },
   {
     path: 'auth',
-    component: Auth,
+    loadComponent: () => import('./Components/public/auth/auth').then(m => m.Auth),
     data: { hideLayout: true }
   },
   {
     path: 'private',
-    component: PrivateLayout,
+    loadComponent: () => import('./Components/private/private-layout/private-layout').then(m => m.PrivateLayout),
     children: [
       {
         path: 'dashboard',
-        component: Dashboard,
+        loadComponent: () => import('./Components/private/dashboard/dashboard').then(m => m.Dashboard),
         data: { hideLayout: true },
-
       },
       {
         path: 'profile',
-        component: Profile,
+        loadComponent: () => import('./Components/private/profile/profile').then(m => m.Profile),
         data: { hideLayout: true },
       },
       {
         path: 'jobs',
-        component: SentJobs,
+        loadComponent: () => import('./Components/private/sent-jobs/sent-jobs').then(m => m.SentJobs),
         data: { hideLayout: true },
       },
       {
         path: 'analytics',
-        component: Analytics,
+        loadComponent: () => import('./Components/private/analytics/analytics').then(m => m.Analytics),
         data: { hideLayout: true },
       },
       {
         path: 'chat',
-        component: Chat,
+        loadComponent: () => import('./Components/private/chat/chat').then(m => m.Chat),
         data: { hideLayout: true, hideFooterAndHeader: true },
       },
       {
         path: 'chat/:id',
-        component: Chat,
+        loadComponent: () => import('./Components/private/chat/chat').then(m => m.Chat),
         data: { hideLayout: true, hideFooterAndHeader: true },
       },
       {
