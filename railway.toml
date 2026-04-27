@@ -2,4 +2,4 @@
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "caddy run --config /Caddyfile --adapter caddyfile"
+startCommand = "npx serve browser"
