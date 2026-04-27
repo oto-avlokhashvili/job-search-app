@@ -2,4 +2,4 @@
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "npx serve browser"
+startCommand = "npx serve browser -l $PORT"
