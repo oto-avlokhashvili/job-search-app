@@ -187,38 +187,33 @@
 .cards-scroll-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
   padding: 0.25rem 0 0.75rem;
 }
 
 .vacancy-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-left: 4px solid transparent;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   position: relative;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   &:hover {
     border-color: var(--primary);
-    box-shadow: 0 6px 20px rgba(11, 96, 150, 0.1);
-    transform: translateX(4px);
+    box-shadow: 0 6px 22px rgba(11, 96, 150, 0.12);
+    transform: translateX(3px);
     background: var(--surface-container-low);
   }
 
   &.clickable-card {
     cursor: pointer;
   }
-  // Left accent border by tier
-  &.card-tier-strong  { border-left-color: #22c55e; }
-  &.card-tier-good    { border-left-color: #eab308; }
-  &.card-tier-possible{ border-left-color: #f97316; }
-  &.card-tier-low     { border-left-color: #ef4444; }
+
 
   .card-match-badge {
     display: flex;
@@ -226,28 +221,41 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 54px;
-    height: 54px;
+    width: 56px;
+    height: 56px;
     border-radius: 12px;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 800;
     line-height: 1;
-    gap: 2px;
+    gap: 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 
     &::after {
       content: 'match';
-      font-size: 0.55rem;
+      font-size: 0.52rem;
       font-weight: 600;
       opacity: 0.85;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
 
-    &.tier-strong     { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    &.tier-good       { background: linear-gradient(135deg, #eab308, #ca8a04); }
-    &.tier-possible   { background: linear-gradient(135deg, #f97316, #ea580c); }
-    &.tier-not-possible { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    &.tier-strong {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+
+    &.tier-good {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+    }
+
+    &.tier-possible {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+    }
+
+    &.tier-not-possible {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
     background: linear-gradient(135deg, #ef4444, #dc2626);
   }
 
@@ -261,24 +269,32 @@
     font-weight: 700;
     color: var(--on-surface);
     margin: 0 0 0.2rem;
-    line-height: 1.35;
-    white-space: nowrap;
+    line-height: 1.4;
+    // Allow wrapping — no more nowrap truncation
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .job-company {
     font-size: 0.82rem;
     color: var(--primary);
     font-weight: 600;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.45rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .job-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    font-size: 0.75rem;
+    gap: 0.35rem;
+    font-size: 0.73rem;
     color: var(--on-surface-variant);
 
     span {
@@ -288,7 +304,8 @@
       background: var(--surface-container-low);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 0.15rem 0.6rem;
+      padding: 0.18rem 0.55rem;
+      white-space: nowrap;
     }
   }
 
@@ -310,6 +327,7 @@
     transition: all 0.2s;
     white-space: nowrap;
     cursor: pointer;
+    flex-shrink: 0;
 
     &:hover {
       background: var(--primary);
@@ -325,13 +343,83 @@
   animation: cardIn 0.3s ease both;
 
   @for $i from 1 through 20 {
-    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 0.04}s; }
+    &:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 0.04}s;
+    }
   }
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Mobile: stack badge on top, full-width layout ────────────────
+@media (max-width: 600px) {
+  .vacancy-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem;
+
+    // On mobile the badge becomes a small inline chip in the top row
+    .card-match-badge {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      width: auto;
+      height: auto;
+      flex-direction: row;
+      border-radius: 20px;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.8rem;
+      gap: 0.25rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+      &::after {
+        content: '%';
+        font-size: 0.8rem;
+        font-weight: 700;
+        opacity: 1;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+    }
+
+    .card-body {
+      // Give body room — badge is absolute, so no offset needed
+      padding-right: 5rem;
+    }
+
+    .job-title {
+      font-size: 0.9rem;
+      -webkit-line-clamp: 3;
+    }
+
+    .job-meta {
+      span {
+        font-size: 0.7rem;
+      }
+    }
+
+    // View button full-width at the bottom
+    >div:last-child {
+      width: 100%;
+    }
+
+    .view-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 0.6rem;
+    }
+  }
 }
 
 /* Pagination Styles */

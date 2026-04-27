@@ -23,10 +23,6 @@
       <div class="cards-scroll-wrapper">
         @for (job of stateStore.matchedJobsDashboard().data; track job.id) {
         <div class="vacancy-card clickable-card"
-          [class.card-tier-strong]="(job.match ?? 0) >= 85"
-          [class.card-tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
-          [class.card-tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
-          [class.card-tier-low]="(job.match ?? 0) < 50"
           (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
           <div class="card-match-badge"
             [class.tier-strong]="(job.match ?? 0) >= 85"

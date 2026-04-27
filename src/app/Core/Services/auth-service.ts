@@ -18,17 +18,17 @@ export class AuthService {
     effect(() => {
       const token = this.token();
       if (token) {
-        sessionStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+        localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
       }
     })
   }
 
   setToken(token: string) {
     this.#tokenSignal.set(token);
-    sessionStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+    localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
   }
   loadUserFromStorage() {
-    const json = sessionStorage.getItem("ACCESS_TOKEN");
+    const json = localStorage.getItem("ACCESS_TOKEN");
     if (json) {
       const user = JSON.parse(json);
       this.#tokenSignal.set(user);
@@ -38,7 +38,7 @@ export class AuthService {
     return this.http.post<{ token: string }>(this.url + "/auth/login", { email, password }, { withCredentials: true }).pipe(
       tap((res: { token: string }) => {
         this.#tokenSignal.set(res.token);
-        sessionStorage.setItem("ACCESS_TOKEN", res.token);
+        localStorage.setItem("ACCESS_TOKEN", res.token);
       })
     )
   }
@@ -51,7 +51,7 @@ export class AuthService {
     })
     const user: any = await firstValueFrom(refresh$);
     this.#tokenSignal.set(user.token);
-    sessionStorage.setItem("ACCESS_TOKEN", user.token);
+    localStorage.setItem("ACCESS_TOKEN", user.token);
     return user;
   }
 
@@ -75,7 +75,7 @@ export class AuthService {
     const message$ = this.http.post(this.url + "/auth/logout", { withCredentials: true })
     const msg = await firstValueFrom(message$);
     this.#tokenSignal.set(null);
-    sessionStorage.removeItem("ACCESS_TOKEN");
+    localStorage.removeItem("ACCESS_TOKEN");
     return msg;
   }
 

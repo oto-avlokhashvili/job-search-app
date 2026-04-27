@@ -331,7 +331,6 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
       this.aiService.chat(text, realFiles, cleanedHistory, hasStoredCv).subscribe({
         next: resolve,
         error: reject,
-        complete: () => this.stateStore.loadProfile(),
       });
     });
 
