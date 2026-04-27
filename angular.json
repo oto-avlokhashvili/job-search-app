@@ -24,6 +24,10 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "outputPath": {
+              "base": "browser",
+              "browser": ""
+            },
             "assets": [
               {
                 "glob": "**/*",
