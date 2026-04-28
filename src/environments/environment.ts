@@ -1,5 +1,6 @@
 export const environment = {
-  production: true,
-  apiUrl: 'https://job-search-api-production-545e.up.railway.app',
-  
+  production: false,
+  apiUrl: 'http://localhost:3000',
+  telegramUrl: "https://t.me/job_notifcation_bot",
+
 };

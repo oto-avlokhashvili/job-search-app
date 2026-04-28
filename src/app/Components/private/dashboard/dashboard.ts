@@ -11,6 +11,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Ai } from '../../../Core/Services/ai';
 import { Cv } from '../../../Core/Services/cv';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { environment } from '../../../../environments/environment';
 
 interface StatCard {
   icon: string;
@@ -65,7 +66,7 @@ export class Dashboard implements OnInit {
     //const jobs = this.stateStore.jobsCount() ?? 0;
     const matched = this.stateStore.matchedJobsCount() ?? 0;
     const sent = this.stateStore.sentJobsCount() ?? 0;
-
+    const searchQueryLength = this.stateStore.profile()?.searchQuery.length ?? 0;
     return [
       { icon: '⚡', value: 0, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
       {
@@ -76,10 +77,9 @@ export class Dashboard implements OnInit {
           .join(', ')}${(this.stateStore.matchedJobsDashboard()?.total ?? 0) > 2 ? ' და ა.შ.' : ''
           }) -ის ვაკანსიები`,
         colorClass: 'purple',
-        redirectTo: '/private/found-jobs'
       },
       { icon: '✓', value: sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
-      { icon: '📧', value: 0 + "%", label: 'შენთვის შესაბამისი ვაკანსიები', colorClass: 'orange', redirectTo: '/private/analytics' },
+      { icon: '📧', value: searchQueryLength, label: 'საძიებელი პარამეტრები', colorClass: 'orange' },
     ];
   });
 
@@ -160,6 +160,10 @@ export class Dashboard implements OnInit {
 
   }
 
+  scrollToTable() {
+    document.getElementById('ai-jobs-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   loadMatchedJobs(page: number) {
     this.stateStore.loadAIMatchedJobs(page, 6);
   }
@@ -194,7 +198,7 @@ export class Dashboard implements OnInit {
   telegramLink = signal<string>("");
   async generateTelegramToken() {
     const res = await this.authService.generateTelegramToken();
-    this.telegramLink.set("https://t.me/job_notifcation_bot?start=" + res);
+    this.telegramLink.set(`${environment.telegramUrl}?start=${res}`);
 
     if (res) {
       // Check if the user is on a mobile device

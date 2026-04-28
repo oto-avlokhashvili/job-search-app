@@ -1,6 +1,6 @@
 <div class="stats-grid">
   <div class="stat-card" [ngClass]="'colored-' + stat.colorClass" *ngFor="let stat of stats()">
-    <a style="text-decoration: none;" [routerLink]="stat.redirectTo">
+    <a style="text-decoration: none; cursor: pointer;" [routerLink]="stat.redirectTo || null" (click)="!stat.redirectTo ? scrollToTable() : null">
       <div class="stat-header">
         <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
       </div>
@@ -13,7 +13,7 @@
 <!-- Content Grid -->
 <div class="content-grid">
   <!-- Latest Jobs -->
-  <div class="card" >
+  <div class="card" id="ai-jobs-table">
     <div class="card-header">
       <h2 class="card-title">AI-ის მიერ შემოთავაზებული ვაკანსიები</h2>
     </div>
