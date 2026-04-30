@@ -41,7 +41,7 @@ export class Auth {
       this.validators.set(false);
       this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
         next: () => {
-          this.router.navigate(['/private'])
+          this.router.navigate(['/private/chat'])
         },
         error: (err) => {
           this.alertify.error(err);

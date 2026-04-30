@@ -2,6 +2,7 @@ import { HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest, HttpErrorResp
 import { AuthService } from '../Services/auth-service';
 import { inject, signal } from '@angular/core';
 import { catchError, Observable, throwError, from, switchMap } from 'rxjs';
+import { Router } from '@angular/router';
 
 let isRefreshing = signal(false);
 let pendingRequests = signal<Array<{
@@ -14,7 +15,7 @@ let pendingRequests = signal<Array<{
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const authToken = authService.token();
-  
+  const router = inject(Router);
   // Skip auth for login, refresh, and logout endpoints
   if (isAuthEndpoint(req.url)) {
     return next(req);
@@ -26,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAuthEndpoint(req.url)) {
-        return handle401Error(req, next, authService);
+        return handle401Error(req, next, authService,router);
       }
       return throwError(() => error);
     })
@@ -50,7 +51,8 @@ function isAuthEndpoint(url: string): boolean {
 function handle401Error(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
-  authService: AuthService
+  authService: AuthService,
+  router: Router // ← add parameter
 ): Observable<HttpEvent<unknown>> {
   
   if (!isRefreshing()) {
@@ -61,7 +63,6 @@ function handle401Error(
         .then(user => {
           isRefreshing.set(false);
           
-          // Process all pending requests
           const requests = pendingRequests();
           pendingRequests.set([]);
           
@@ -71,7 +72,6 @@ function handle401Error(
             resolve(pendingNext(retryReq));
           });
           
-          // Retry the original request
           const newToken = authService.token();
           return newToken ? addToken(req, newToken) : req;
         })
@@ -79,8 +79,11 @@ function handle401Error(
           isRefreshing.set(false);
           pendingRequests.set([]);
           
-          // Clear token and logout
-          authService.logOut().catch(() => {});
+          authService.logOut()
+            .catch(() => {})
+            .finally(() => {
+              router.navigate(['/auth']); // ← redirect after logout settles
+            });
           
           throw error;
         })
@@ -88,7 +91,6 @@ function handle401Error(
       switchMap(retryReq => next(retryReq))
     );
   } else {
-    // Token refresh is in progress, queue this request
     return new Observable<HttpEvent<unknown>>(observer => {
       const promise = new Promise<Observable<HttpEvent<unknown>>>((resolve, reject) => {
         const current = pendingRequests();

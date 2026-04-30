@@ -11,11 +11,14 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class Ai {
   http = inject(HttpClient);
   url = environment.apiUrl;
-  analyzeCvAndJobs(): Observable<any> {
-    return this.http.post<any>(`${this.url}/ai/ai-cv-analyzer`, null);
-  }
+callAI(message: string, history: { role: 'user' | 'model'; text: string }[] = []): Observable<any> {
+  return this.http.post<any>(
+    `${this.url}/ai/chat`,
+    { prompt: message, history },
+    { context: new HttpContext().set(skipLoading, true) }
+  );
+}
   chat(message: string, files: File[], history: any[], useStoredCv: boolean = false): Observable<any> {
-    const token = sessionStorage.getItem('ACCESS_TOKEN');
 
     const formData = new FormData();
     formData.append('prompt', message);
@@ -28,10 +31,10 @@ export class Ai {
       formData.append('files', file);
     });
 
-    return this.http.post(`${environment.apiUrl}/ai/chat`, formData, {context: new HttpContext().set(skipLoading, true)});
+    return this.http.post(`${environment.apiUrl}/ai/chat`, formData, { context: new HttpContext().set(skipLoading, true) });
   }
 
-    getAiMatchedJobs(page: number = 1, limit: number = 5): Observable<AiMatchedJobsResponse> {
-      return this.http.get<AiMatchedJobsResponse>(`${this.url}/ai-matched-jobs?page=${page}&limit=${limit}`);
-    }
+  getAiMatchedJobs(page: number = 1, limit: number = 5): Observable<AiMatchedJobsResponse> {
+    return this.http.get<AiMatchedJobsResponse>(`${this.url}/ai-matched-jobs?page=${page}&limit=${limit}`);
+  }
 }

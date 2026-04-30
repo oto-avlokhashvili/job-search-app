@@ -37,20 +37,30 @@
         <div class="empty-icon">✦</div>
         <h2>Job Center AI-ს გამარჯობა!</h2>
         <p>მე შემიძლია დაგეხმაროთ სამუშაო ძიებაში, CV ანალიზში და კარიერულ რჩევებში.</p>
-        <div class="quick-prompts">
-          <button class="quick-btn" (click)="inputText.set('გამარჯობა! დამეხმარე CV-ს გაუმჯობესებაში')" id="quick-cv">
-            📄 CV ანალიზი
-          </button>
-          <button class="quick-btn" (click)="inputText.set('რა ვაკანსიებია ჩემთვის შესაფერისი?')" id="quick-jobs">
-            🔍 ვაკანსიები
-          </button>
-          <button class="quick-btn" (click)="inputText.set('გამარჯობა! ინტერვიუს მოსამზადებლად დამეხმარე')" id="quick-interview">
-            🎯 ინტერვიუს მომზადება
-          </button>
-          <button class="quick-btn" (click)="inputText.set('რა უნარები სჭირდება Frontend Developer-ს?')" id="quick-skills">
-            💡 უნარები
-          </button>
-        </div>
+        @if (chatMode() === 'prompt') {
+          <div class="quick-prompts">
+            <button class="quick-btn" (click)="inputText.set('გამარჯობა! დამეხმარე CV-ს გაუმჯობესებაში')" id="quick-cv">
+              📄 CV ანალიზი
+            </button>
+            <button class="quick-btn" (click)="inputText.set('რა ვაკანსიებია ჩემთვის შესაფერისი?')" id="quick-jobs">
+              🔍 ვაკანსიები
+            </button>
+            <button class="quick-btn" (click)="inputText.set('გამარჯობა! ინტერვიუს მოსამზადებლად დამეხმარე')" id="quick-interview">
+              🎯 ინტერვიუს მომზადება
+            </button>
+            <button class="quick-btn" (click)="inputText.set('რა უნარები სჭირდება Frontend Developer-ს?')" id="quick-skills">
+              💡 უნარები
+            </button>
+          </div>
+        } @else {
+          <div class="job-search-guide">
+            @if (attachedFiles().length > 0) {
+              <p class="guide-ready">✅ CV მზადაა! დააჭირეთ <strong>გაგზავნა →</strong> ვაკანსიების მოსაძებნად.</p>
+            } @else {
+              <p class="guide-upload">📎 ატვირთეთ CV ქვემოთ მოცემული ღილაკით, შემდეგ დააჭირეთ გაგზავნა.</p>
+            }
+          </div>
+        }
       </div>
     }
 
@@ -198,7 +208,7 @@
       </div>
     }
 
-    <div class="input-row">
+    <div class="input-row" [class.job-search-mode]="chatMode() === 'job-search'">
       <button class="attach-btn" (click)="triggerFileInput()" title="ფაილის დამატება" id="attach-file-btn" [disabled]="isTyping() || stateStore.cvLoading()">
         📎
       </button>
@@ -206,14 +216,42 @@
       <input #fileInput type="file" multiple accept=".pdf,.doc,.docx"
         (change)="onFileSelected($event)" style="display:none" id="chat-file-input" />
 
-      <textarea #messageInput class="message-input" id="message-input" style="padding-top: 5px;"
-        [value]="inputText()" (input)="onTextInput($event)" (keydown)="onKeyDown($event)"
-        placeholder="შეტყობინება... (Shift+Enter ახალი ხაზი)" rows="1" [disabled]="isTyping() || stateStore.cvLoading()">
-      </textarea>
+      @if (chatMode() === 'prompt') {
+        <textarea #messageInput class="message-input" id="message-input" style="padding-top: 5px;"
+          [value]="inputText()" (input)="onTextInput($event)" (keydown)="onKeyDown($event)"
+          placeholder="შეტყობინება... (Shift+Enter ახალი ხაზი)" rows="1" [disabled]="isTyping() || stateStore.cvLoading()">
+        </textarea>
+      } @else {
+        <div class="job-search-placeholder">
+          <span class="jsp-icon">🔍</span>
+          <span class="jsp-text">
+            @if (attachedFiles().length > 0) {
+              CV ატვირთულია — დააჭირეთ გაგზავნა ვაკანსიების მოსაძებნად
+            } @else {
+              📎 ატვირთეთ CV ვაკანსიების მოსაძებნად
+            }
+          </span>
+        </div>
+      }
+
+      <!-- Mode Toggle -->
+      <div class="mode-toggle" id="mode-toggle">
+        <button class="mode-seg" id="mode-seg-prompt"
+          [class.active]="chatMode() === 'prompt'"
+          (click)="setMode('prompt')" title="Prompt Mode">
+          ✦ Prompt
+        </button>
+        <button class="mode-seg" id="mode-seg-jobs"
+          [class.active]="chatMode() === 'job-search'"
+          (click)="setMode('job-search')" title="Job Search Mode">
+          🔍 Jobs
+        </button>
+      </div>
 
       <button class="send-btn" id="send-message-btn" (click)="sendMessage()"
-        [disabled]="(!inputText().trim() && attachedFiles().length === 0) || isTyping() || stateStore.cvLoading()"
-        [class.active]="inputText().trim() || attachedFiles().length > 0" title="გაგზავნა">
+        [disabled]="(chatMode() === 'prompt' && !inputText().trim() && attachedFiles().length === 0) || (chatMode() === 'job-search' && attachedFiles().length === 0) || isTyping() || stateStore.cvLoading()"
+        [class.active]="(chatMode() === 'prompt' && (inputText().trim() || attachedFiles().length > 0)) || (chatMode() === 'job-search' && attachedFiles().length > 0)"
+        title="გაგზავნა">
         @if (isTyping() || stateStore.cvLoading()) {
           <span class="btn-spinner"></span>
         } @else {

@@ -9,6 +9,7 @@ import {
   signal,
   OnDestroy,
   effect,
+  untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -82,6 +83,7 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   attachedFiles = signal<AttachedFile[]>([]);
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
+  chatMode = signal<'prompt' | 'job-search'>('prompt');
   shouldScrollToBottom = false;
 
   private routeSub?: Subscription;
@@ -93,9 +95,21 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
       const cv = this.stateStore.userCv();
       if (!cv) {
         // CV removed — drop the auto-attached entry
-        this.attachedFiles.update(files => files.filter(f => f.id !== '__cv__'));
+        untracked(() => {
+          this.attachedFiles.update(files => files.filter(f => f.id !== '__cv__'));
+        });
         return;
       }
+
+      // If we already have a REAL file with __cv__ id (manually uploaded in this session), 
+      // don't overwrite it with a placeholder.
+      const hasRealFile = untracked(() => {
+        const current = this.attachedFiles().find(f => f.id === '__cv__');
+        return current && current.file.size > 0;
+      });
+
+      if (hasRealFile) return;
+
       const fileName = cv.originalName ?? 'CV.pdf';
       const mimeType = cv.mimeType ?? 'application/pdf';
       // Use a zero-byte placeholder File — the real content lives on the server
@@ -108,10 +122,13 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
         url: '',
         file: placeholder,
       };
-      this.attachedFiles.update(files => [
-        cvAttachment,
-        ...files.filter(f => f.id !== '__cv__'),
-      ]);
+
+      untracked(() => {
+        this.attachedFiles.update(files => [
+          cvAttachment,
+          ...files.filter(f => f.id !== '__cv__'),
+        ]);
+      });
     });
   }
 
@@ -193,6 +210,17 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     }
   }
 
+  setMode(mode: 'prompt' | 'job-search') {
+    this.chatMode.set(mode);
+    if (mode === 'job-search') {
+      this.inputText.set('');
+      if (this.messageInput?.nativeElement) {
+        this.messageInput.nativeElement.style.height = 'auto';
+        this.messageInput.nativeElement.value = '';
+      }
+    }
+  }
+
   triggerFileInput() {
     this.fileInput.nativeElement.click();
   }
@@ -226,7 +254,22 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     const file = files[0];
     if (!this.allowedTypes.includes(file.type)) return;
     if (file.size > this.maxFileSizeMB * 1024 * 1024) return;
-    
+
+    // Add to attached files immediately so it can be sent
+    const id = '__cv__';
+    const newFile: AttachedFile = {
+      id,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: URL.createObjectURL(file),
+      file: file
+    };
+    this.attachedFiles.update(current => [
+      newFile,
+      ...current.filter(f => f.id !== id)
+    ]);
+
     // Upload CV to profile via StateStore
     this.stateStore.uploadCv(file);
   }
@@ -253,22 +296,29 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     const id = this.activeId();
     if (!id) return;
 
-    const text = this.inputText().trim();
+    const isJobSearch = this.chatMode() === 'job-search';
+    const userText = this.inputText().trim();
     const files = this.attachedFiles();
-    if (!text && files.length === 0) return;
+
+    if (isJobSearch && files.length === 0) return;
+    if (!isJobSearch && !userText && files.length === 0) return;
     if (this.isTyping()) return;
+
+    const aiPrompt = isJobSearch
+      ? 'Find me jobs that match my CV and profile'
+      : userText;
+    const displayContent = isJobSearch ? '🔍 Find matching jobs' : userText;
 
     const userMsg: ChatMessage = {
       id: this.generateId(),
       role: 'user',
-      content: text,
+      content: displayContent,
       timestamp: new Date(),
       attachments: files.length > 0 ? [...files] : undefined,
     };
 
     this.chatStore.addMessage(id, userMsg);
     this.inputText.set('');
-    //this.attachedFiles.set([]);
     if (this.messageInput?.nativeElement) {
       this.messageInput.nativeElement.style.height = 'auto';
       this.messageInput.nativeElement.value = '';
@@ -288,8 +338,29 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     this.chatStore.addMessage(id, loadingMsg);
 
     try {
-      const history = this.messages().filter(m => m.id !== loadingMsgId);
-      const resObj = await this.callAiApi(text, files, history);
+      // Build history from existing messages, excluding the loading message
+      // cap at last 10, map to Gemini roles
+      const history = this.messages()
+  .filter((m) => !m.isLoading && !m.isError && m.id !== loadingMsgId && m.id !== userMsg.id)
+  .slice(-6)
+  .map((m) => {
+    let text = m.content;
+    // if model message is still a raw JSON string, extract the response field
+    if (m.role === 'assistant') {
+      try {
+        const parsed = JSON.parse(m.content);
+        if (parsed?.response) text = parsed.response;
+      } catch {
+        // already plain text, use as-is
+      }
+    }
+    return {
+      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+      text,
+    };
+  });
+
+      const resObj = await this.callAiApi(aiPrompt, history);
       this.chatStore.removeMessage(id, loadingMsgId);
       this.chatStore.addMessage(id, {
         id: this.generateId(),
@@ -315,36 +386,29 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
 
   private async callAiApi(
     text: string,
-    files: AttachedFile[],
-    history: ChatMessage[]
+    history: { role: 'user' | 'model'; text: string }[] = [],
   ): Promise<{ content: string; data?: AiStructuredResponse }> {
-    const cleanedHistory = history
-      .filter(m => !m.isLoading && !m.isError)
-      .map(m => ({ role: m.role, content: m.content }));
-
-    // Check if the auto-attached CV (placeholder, zero bytes) is present
-    const hasStoredCv = files.some(f => f.id === '__cv__');
-    // Only send actual user-uploaded files (not the zero-byte CV placeholder)
-    const realFiles = files.filter(f => f.id !== '__cv__').map(f => f.file);
-
     const res: any = await new Promise((resolve, reject) => {
-      this.aiService.chat(text, realFiles, cleanedHistory, hasStoredCv).subscribe({
+      this.aiService.callAI(text, history).subscribe({
         next: resolve,
         error: reject,
       });
     });
 
-    const response = res?.response as AiStructuredResponse;
-    const comment = res?.comment;
+    const response = res?.response;
 
-    if (response) {
-      return { content: comment || response.summary || '', data: response };
+    if (typeof response === 'string') {
+      return { content: response };
     }
 
-    return {
-      content: comment || res?.reply || res?.message || res?.content || String(res) || '',
-      data: undefined
-    };
+    if (typeof response === 'object' && response !== null) {
+      return {
+        content: res?.comment || response.summary || '',
+        data: response,
+      };
+    }
+
+    return { content: '' };
   }
 
   private scrollToBottom() {
