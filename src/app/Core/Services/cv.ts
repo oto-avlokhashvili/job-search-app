@@ -24,4 +24,8 @@ export class Cv {
   deleteCV(): Observable<any> {
     return this.http.delete(`${this.url}/cv`, { withCredentials: true, context: new HttpContext().set(skipLoading, true) });
   }
+
+  updateSearchQueries(searchQueries: string[]): Observable<any> {
+    return this.http.patch(`${this.url}/cv/cv-summary`, { searchQueries }, { withCredentials: true });
+  }
 }

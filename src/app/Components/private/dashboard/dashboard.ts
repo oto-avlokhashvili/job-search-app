@@ -237,31 +237,25 @@ export class Dashboard implements OnInit {
     const value = input.value?.trim();
     if (!value) return;
 
-    const currentProfile = this.stateStore.profile();
+    const currentProfile = this.stateStore.searchQuery();
     if (!currentProfile) return;
 
-    const existingQueries = currentProfile.searchQuery ?? [];
+    const existingQueries = currentProfile ?? [];
     if (!existingQueries.includes(value)) {
       const updatedQueries = [...existingQueries, value];
-      this.stateStore.updateProfile(currentProfile.id, {
-        searchQuery: updatedQueries
-      });
-      //this.stateStore.loadJobs(updatedQueries);
+      this.stateStore.updateSearchQueries(updatedQueries);
     }
     input.value = '';
   }
 
   removeKeyword(index: number) {
-    const currentProfile = this.stateStore.profile();
+    const currentProfile = this.stateStore.searchQuery();
     if (!currentProfile) return;
 
-    const existingQueries = currentProfile.searchQuery ?? [];
+    const existingQueries = currentProfile ?? [];
     const updatedQueries = existingQueries.filter((_: any, i: number) => i !== index);
 
-    this.stateStore.updateProfile(currentProfile.id, {
-      searchQuery: updatedQueries
-    });
-    //this.stateStore.loadJobs(updatedQueries);
+    this.stateStore.updateSearchQueries(updatedQueries);
   }
 
 

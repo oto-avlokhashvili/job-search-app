@@ -16,7 +16,7 @@ type State = {
     sentJobsCount: number | 0;
     matchedJobsDashboard: AiMatchedJobsResponse;
     sentJobs: SentJobsResponse;
-
+    searchQuery: string[];
 
 
 
@@ -31,6 +31,7 @@ const initialState: State = {
     profileLoaded: false,
     matchedJobsCount: 0,
     sentJobsCount: 0,
+    searchQuery: [],
 
     sentJobs: { sentJobs: [], total: 0, page: 1, lastPage: 1 },
     matchedJobsDashboard: { data: [], total: 0, page: 1, lastPage: 1 },
@@ -66,11 +67,21 @@ export const StateStore = signalStore(
             patchState(store, { cvLoading: true });
             cvService.getCV().subscribe({
                 next: (res) => {
-                    patchState(store, { userCv: res, cvLoading: false });
+                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res.summary.searchQueries });
                 },
                 error: (err) => {
                     patchState(store, { cvLoading: false });
                     console.error('Error fetching CV:', err);
+                }
+            });
+        },
+        updateSearchQueries(searchQueries: string[]) {
+            cvService.updateSearchQueries(searchQueries).subscribe({
+                next: (res) => {
+                    patchState(store, { searchQuery: res.summary.searchQueries });
+                },
+                error: (err) => {
+                    console.error('Error updating search queries:', err);
                 }
             });
         },

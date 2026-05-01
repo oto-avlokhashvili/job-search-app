@@ -83,7 +83,7 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   attachedFiles = signal<AttachedFile[]>([]);
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
-  chatMode = signal<'prompt' | 'job-search'>('prompt');
+  chatMode = signal<'prompt' | 'job-search'>('job-search');
   shouldScrollToBottom = false;
 
   private routeSub?: Subscription;
@@ -292,104 +292,88 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
-  async sendMessage() {
-    const id = this.activeId();
-    if (!id) return;
+async sendMessage() {
+  const id = this.activeId();
+  if (!id) return;
 
-    const isJobSearch = this.chatMode() === 'job-search';
-    const userText = this.inputText().trim();
-    const files = this.attachedFiles();
+  const isJobSearch = this.chatMode() === 'job-search';
+  const userText = this.inputText().trim();
+  const files = this.attachedFiles();
 
-    if (isJobSearch && files.length === 0) return;
-    if (!isJobSearch && !userText && files.length === 0) return;
-    if (this.isTyping()) return;
+  if (!isJobSearch && !userText && files.length === 0) return;
+  if (this.isTyping()) return;
 
-    const aiPrompt = isJobSearch
-      ? 'Find me jobs that match my CV and profile'
-      : userText;
-    const displayContent = isJobSearch ? '🔍 Find matching jobs' : userText;
+  const displayContent = isJobSearch ? '🔍 Find matching jobs' : userText;
 
-    const userMsg: ChatMessage = {
-      id: this.generateId(),
-      role: 'user',
-      content: displayContent,
-      timestamp: new Date(),
-      attachments: files.length > 0 ? [...files] : undefined,
-    };
+  const userMsg: ChatMessage = {
+    id: this.generateId(),
+    role: 'user',
+    content: displayContent,
+    timestamp: new Date(),
+    attachments: files.length > 0 ? [...files] : undefined,
+  };
 
-    this.chatStore.addMessage(id, userMsg);
-    this.inputText.set('');
-    if (this.messageInput?.nativeElement) {
-      this.messageInput.nativeElement.style.height = 'auto';
-      this.messageInput.nativeElement.value = '';
-    }
-
-    this.shouldScrollToBottom = true;
-    this.isTyping.set(true);
-
-    const loadingMsgId = this.generateId();
-    const loadingMsg: ChatMessage = {
-      id: loadingMsgId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isLoading: true,
-    };
-    this.chatStore.addMessage(id, loadingMsg);
-
-    try {
-      // Build history from existing messages, excluding the loading message
-      // cap at last 10, map to Gemini roles
-      const history = this.messages()
-  .filter((m) => !m.isLoading && !m.isError && m.id !== loadingMsgId && m.id !== userMsg.id)
-  .slice(-6)
-  .map((m) => {
-    let text = m.content;
-    // if model message is still a raw JSON string, extract the response field
-    if (m.role === 'assistant') {
-      try {
-        const parsed = JSON.parse(m.content);
-        if (parsed?.response) text = parsed.response;
-      } catch {
-        // already plain text, use as-is
-      }
-    }
-    return {
-      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
-      text,
-    };
-  });
-
-      const resObj = await this.callAiApi(aiPrompt, history);
-      this.chatStore.removeMessage(id, loadingMsgId);
-      this.chatStore.addMessage(id, {
-        id: this.generateId(),
-        role: 'assistant',
-        content: resObj.content,
-        data: resObj.data,
-        timestamp: new Date(),
-      });
-    } catch {
-      this.chatStore.removeMessage(id, loadingMsgId);
-      this.chatStore.addMessage(id, {
-        id: this.generateId(),
-        role: 'assistant',
-        content: 'მოხდა შეცდომა. გთხოვთ სცადოთ თავიდან.',
-        timestamp: new Date(),
-        isError: true,
-      });
-    } finally {
-      this.isTyping.set(false);
-      this.shouldScrollToBottom = true;
-    }
+  this.chatStore.addMessage(id, userMsg);
+  this.inputText.set('');
+  if (this.messageInput?.nativeElement) {
+    this.messageInput.nativeElement.style.height = 'auto';
+    this.messageInput.nativeElement.value = '';
   }
 
-  private async callAiApi(
+  this.shouldScrollToBottom = true;
+  this.isTyping.set(true);
+
+  const loadingMsgId = this.generateId();
+  this.chatStore.addMessage(id, {
+    id: loadingMsgId,
+    role: 'assistant',
+    content: '',
+    timestamp: new Date(),
+    isLoading: true,
+  });
+
+  try {
+    if (isJobSearch) {
+      await this.runJobSearch(id, loadingMsgId);
+    } else {
+      await this.runPromptChat(id, loadingMsgId, userMsg, userText);
+    }
+  } catch {
+    this.chatStore.removeMessage(id, loadingMsgId);
+    this.chatStore.addMessage(id, {
+      id: this.generateId(),
+      role: 'assistant',
+      content: 'მოხდა შეცდომა. გთხოვთ სცადოთ თავიდან.',
+      timestamp: new Date(),
+      isError: true,
+    });
+  } finally {
+    this.isTyping.set(false);
+    this.shouldScrollToBottom = true;
+  }
+}
+  private async runJobSearch(id: string, loadingMsgId: string): Promise<void> {
+  const res: any = await new Promise((resolve, reject) => {
+    this.aiService.searchJobsWithAi().subscribe({ next: resolve, error: reject, complete: () => {this.stateStore.loadAIMatchedJobs(1, 5); } });
+  });
+
+  this.chatStore.removeMessage(id, loadingMsgId);
+
+  const response = res?.response;
+  this.chatStore.addMessage(id, {
+    id: this.generateId(),
+    role: 'assistant',
+    content: res?.comment || response?.summary || '',
+    data: typeof response === 'object' && response !== null ? response : undefined,
+    timestamp: new Date(),
+  });
+}
+  private async askChat(
     text: string,
     history: { role: 'user' | 'model'; text: string }[] = [],
   ): Promise<{ content: string; data?: AiStructuredResponse }> {
     const res: any = await new Promise((resolve, reject) => {
-      this.aiService.callAI(text, history).subscribe({
+      this.aiService.askChat(text, history).subscribe({
         next: resolve,
         error: reject,
       });
@@ -410,7 +394,41 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
 
     return { content: '' };
   }
+  private async runPromptChat(
+  id: string,
+  loadingMsgId: string,
+  userMsg: ChatMessage,
+  userText: string,
+): Promise<void> {
+  const history = this.messages()
+    .filter((m) => !m.isLoading && !m.isError && m.id !== loadingMsgId && m.id !== userMsg.id)
+    .slice(-6)
+    .map((m) => {
+      let text = m.content;
+      if (m.role === 'assistant') {
+        try {
+          const parsed = JSON.parse(m.content);
+          if (parsed?.response) text = parsed.response;
+        } catch {
+          // already plain text
+        }
+      }
+      return {
+        role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+        text,
+      };
+    });
 
+  const resObj = await this.askChat(userText, history);
+  this.chatStore.removeMessage(id, loadingMsgId);
+  this.chatStore.addMessage(id, {
+    id: this.generateId(),
+    role: 'assistant',
+    content: resObj.content,
+    data: resObj.data,
+    timestamp: new Date(),
+  });
+}
   private scrollToBottom() {
     try {
       const el = this.messagesContainer?.nativeElement;

@@ -84,7 +84,7 @@
       </div>
       <div class="chips-input-container form-control" style="width: 100%;">
         <div class="chips-list">
-          @for (keyword of stateStore.profile().searchQuery; track $index) {
+          @for (keyword of stateStore.searchQuery(); track $index) {
           <div class="chip">
             <span>{{ keyword }}</span>
             <button type="button" class="chip-remove" (click)="removeKeyword($index)">

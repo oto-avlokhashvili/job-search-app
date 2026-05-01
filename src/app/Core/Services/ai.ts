@@ -11,27 +11,15 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class Ai {
   http = inject(HttpClient);
   url = environment.apiUrl;
-callAI(message: string, history: { role: 'user' | 'model'; text: string }[] = []): Observable<any> {
-  return this.http.post<any>(
-    `${this.url}/ai/chat`,
-    { prompt: message, history },
-    { context: new HttpContext().set(skipLoading, true) }
-  );
-}
-  chat(message: string, files: File[], history: any[], useStoredCv: boolean = false): Observable<any> {
-
-    const formData = new FormData();
-    formData.append('prompt', message);
-    formData.append('history', JSON.stringify(history));
-    if (useStoredCv) {
-      formData.append('useStoredCv', 'true');
-    }
-
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-
-    return this.http.post(`${environment.apiUrl}/ai/chat`, formData, { context: new HttpContext().set(skipLoading, true) });
+  askChat(message: string, history: { role: 'user' | 'model'; text: string }[] = []): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/ai/chat`,
+      { prompt: message, history },
+      { context: new HttpContext().set(skipLoading, true) }
+    );
+  }
+  searchJobsWithAi() {
+    return this.http.post<any>(`${this.url}/ai/search-job`, null, { context: new HttpContext().set(skipLoading, true) });
   }
 
   getAiMatchedJobs(page: number = 1, limit: number = 5): Observable<AiMatchedJobsResponse> {
