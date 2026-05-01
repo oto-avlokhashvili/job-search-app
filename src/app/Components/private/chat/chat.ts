@@ -354,7 +354,7 @@ async sendMessage() {
 }
   private async runJobSearch(id: string, loadingMsgId: string): Promise<void> {
   const res: any = await new Promise((resolve, reject) => {
-    this.aiService.searchJobsWithAi().subscribe({ next: resolve, error: reject, complete: () => {this.stateStore.loadAIMatchedJobs(1, 5); } });
+    this.aiService.searchJobsWithAi().subscribe({ next: resolve, error: reject, complete: () => {this.stateStore.loadAIMatchedJobs(1, 5); this.stateStore.getCv(); } });
   });
 
   this.chatStore.removeMessage(id, loadingMsgId);
