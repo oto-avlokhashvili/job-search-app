@@ -84,6 +84,7 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
   chatMode = signal<'prompt' | 'job-search'>('job-search');
+  sqOpen = signal<boolean>(false);
   shouldScrollToBottom = false;
 
   private routeSub?: Subscription;
@@ -221,6 +222,10 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
     }
   }
 
+  toggleSq() {
+    this.sqOpen.update(v => !v);
+  }
+
   triggerFileInput() {
     this.fileInput.nativeElement.click();
   }
@@ -356,7 +361,8 @@ async sendMessage() {
   const res: any = await new Promise((resolve, reject) => {
     this.aiService.searchJobsWithAi().subscribe({ next: resolve, error: reject, complete: () => {this.stateStore.loadAIMatchedJobs(1, 5); this.stateStore.getCv(); } });
   });
-
+  console.log(res);
+  
   this.chatStore.removeMessage(id, loadingMsgId);
 
   const response = res?.response;
@@ -457,5 +463,20 @@ async sendMessage() {
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
+  }
+
+  addKeyword(input: HTMLInputElement) {
+    const value = input.value?.trim();
+    if (!value) return;
+    const existing = this.stateStore.searchQuery() ?? [];
+    if (!existing.includes(value)) {
+      this.stateStore.updateSearchQueries([...existing, value]);
+    }
+    input.value = '';
+  }
+
+  removeKeyword(index: number) {
+    const existing = this.stateStore.searchQuery() ?? [];
+    this.stateStore.updateSearchQueries(existing.filter((_: any, i: number) => i !== index));
   }
 }

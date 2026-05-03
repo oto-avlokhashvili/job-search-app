@@ -184,6 +184,56 @@
 
   <!-- Input Area -->
   <div class="input-area">
+
+    <!-- Search Queries — collapsible pill, always visible in job-search mode -->
+    @if (chatMode() === 'job-search' && stateStore.searchQuery().length > 0) {
+      <div class="sq-panel" [class.sq-open]="sqOpen()">
+        <!-- Toggle row -->
+        <button class="sq-toggle" (click)="toggleSq()" type="button">
+          <span class="sq-toggle-left">
+            <span class="sq-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </span>
+            <span class="sq-label">საძიებელი პარამეტრები</span>
+            @if (stateStore.searchQuery().length > 0) {
+              <span class="sq-count">{{ stateStore.searchQuery().length }}</span>
+            }
+          </span>
+          <span class="sq-chevron" [class.open]="sqOpen()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- Expandable body -->
+        @if (sqOpen()) {
+          <div class="sq-body">
+            <div class="chips-input-container">
+              <div class="chips-list">
+                @for (keyword of stateStore.searchQuery(); track $index) {
+                  <div class="chip">
+                    <span>{{ keyword }}</span>
+                    <button type="button" class="chip-remove" (click)="removeKeyword($index)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+                <input type="text" class="chip-input" placeholder="დაამატეთ სიტყვა..." #sqQueryInputPersist
+                  (keydown.enter)="$event.preventDefault(); addKeyword(sqQueryInputPersist)">
+                <button class="sq-add-btn" (click)="addKeyword(sqQueryInputPersist)" type="button">+ დამატება</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
     @if (attachedFiles().length > 0) {
       <div class="attachments-preview">
         @for (file of attachedFiles(); track file.id) {

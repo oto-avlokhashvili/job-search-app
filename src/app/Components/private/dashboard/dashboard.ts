@@ -66,7 +66,7 @@ export class Dashboard implements OnInit {
     //const jobs = this.stateStore.jobsCount() ?? 0;
     const matched = this.stateStore.matchedJobsCount() ?? 0;
     const sent = this.stateStore.sentJobsCount() ?? 0;
-    const searchQueryLength = this.stateStore.profile()?.searchQuery.length ?? 0;
+    const searchQueryLength = this.stateStore.searchQuery()?.length ?? 0;
     return [
       { icon: '⚡', value: 0, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
       {

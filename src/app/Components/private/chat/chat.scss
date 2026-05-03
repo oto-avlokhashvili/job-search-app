@@ -526,7 +526,152 @@
   background: var(--card-bg);
   flex-shrink: 0;
   border-radius: 0 0 20px 20px;
+
+  // ── Collapsible Search Queries panel ──
+  .sq-panel {
+    margin-bottom: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface-container-low);
+    transition: border-color 0.2s;
+
+    &.sq-open {
+      border-color: var(--primary);
+    }
+
+    // The always-visible toggle row
+    .sq-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.85rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      gap: 0.5rem;
+
+      &:hover {
+        background: rgba(var(--primary-rgb, 11, 96, 150), 0.05);
+      }
+
+      .sq-toggle-left {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .sq-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+      }
+
+      .sq-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--on-surface);
+      }
+
+      .sq-count {
+        background: var(--primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.1rem 0.45rem;
+        border-radius: 20px;
+        line-height: 1.4;
+      }
+
+      .sq-chevron {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--on-surface-variant);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &.open {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    // The expandable chips body
+    .sq-body {
+      border-top: 1px solid var(--border-color);
+      padding: 0.55rem 0.75rem 0.65rem;
+      animation: fadeIn 0.15s ease;
+
+      .chips-input-container {
+        min-height: 36px;
+
+        .chips-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+          align-items: center;
+        }
+
+        .chip {
+          background: var(--surface-container);
+          color: var(--on-surface);
+          padding: 0.25rem 0.6rem;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.8rem;
+          border: 1px solid var(--border-color);
+          white-space: nowrap;
+
+          .chip-remove {
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            color: var(--on-surface-variant);
+            cursor: pointer;
+            transition: color 0.2s;
+            &:hover { color: #e53e3e; }
+          }
+        }
+
+        .chip-input {
+          flex: 1;
+          min-width: 110px;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 0.83rem;
+          color: var(--on-surface);
+          padding: 0.2rem 0.3rem;
+          &::placeholder { color: var(--on-surface-variant); opacity: 0.7; }
+        }
+
+        .sq-add-btn {
+          flex-shrink: 0;
+          font-size: 0.78rem;
+          padding: 0.2rem 0.65rem;
+          border-radius: 6px;
+          border: 1px solid var(--primary);
+          background: transparent;
+          color: var(--primary);
+          cursor: pointer;
+          margin-left: auto;
+          transition: all 0.18s;
+          &:hover {
+            background: var(--primary);
+            color: white;
+          }
+        }
+      }
+    }
+  }
 }
+
 
 .attachments-preview {
   display: flex;
@@ -851,6 +996,89 @@
   .guide-upload {
     border-color: var(--primary);
     background: rgba(11, 96, 150, 0.05);
+  }
+
+  .sq-card {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    text-align: left;
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      margin: 0;
+    }
+
+    .chips-input-container {
+      height: auto !important;
+      min-height: 44px;
+      padding: 0.5rem;
+      background: var(--input-bg, var(--surface-container-low));
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+
+      .chips-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .chip {
+        background: var(--surface-container);
+        color: var(--on-surface);
+        padding: 0.3rem 0.7rem;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-color);
+
+        .chip-remove {
+          background: none;
+          border: none;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          color: #718096;
+          cursor: pointer;
+          transition: color 0.2s;
+
+          &:hover { color: #e53e3e; }
+        }
+      }
+
+      .chip-input {
+        flex: 1;
+        min-width: 130px;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 0.88rem;
+        color: var(--on-surface);
+        padding: 0.3rem 0.4rem;
+
+        &::placeholder { color: var(--on-surface-variant); opacity: 0.7; }
+      }
+
+      .btn.btn-primary {
+        font-size: 0.82rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        cursor: pointer;
+        transition: transform 0.15s;
+        &:hover { transform: translateY(-1px); }
+      }
+    }
   }
 }
 

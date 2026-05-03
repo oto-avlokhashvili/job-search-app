@@ -67,7 +67,7 @@ export const StateStore = signalStore(
             patchState(store, { cvLoading: true });
             cvService.getCV().subscribe({
                 next: (res) => {
-                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res.summary.searchQueries });
+                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res.summary?.searchQueries ?? [] });
                 },
                 error: (err) => {
                     patchState(store, { cvLoading: false });
@@ -78,7 +78,7 @@ export const StateStore = signalStore(
         updateSearchQueries(searchQueries: string[]) {
             cvService.updateSearchQueries(searchQueries).subscribe({
                 next: (res) => {
-                    patchState(store, { searchQuery: res.summary.searchQueries });
+                    patchState(store, { searchQuery: res.summary?.searchQueries ?? [] });
                 },
                 error: (err) => {
                     console.error('Error updating search queries:', err);
