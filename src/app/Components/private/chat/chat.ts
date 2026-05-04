@@ -18,6 +18,10 @@ import { ChatStore, Conversation } from '../../../Store/chat.store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Ai } from '../../../Core/Services/ai';
 import { Subscription } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { QrModal } from '../dashboard/qr-modal/qr-modal';
+import { AuthService } from '../../../Core/Services/auth-service';
+import { environment } from '../../../../environments/environment';
 
 export interface AttachedFile {
   id: string;
@@ -78,6 +82,9 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
   aiService = inject(Ai);
+  authService = inject(AuthService);
+  private dialog = inject(MatDialog);
+  telegramLink = signal<string>('');
 
   inputText = signal<string>('');
   attachedFiles = signal<AttachedFile[]>([]);
@@ -435,6 +442,33 @@ async sendMessage() {
     timestamp: new Date(),
   });
 }
+  async generateTelegramToken() {
+    const res = await this.authService.generateTelegramToken();
+    this.telegramLink.set(`${environment.telegramUrl}?start=${res}`);
+    if (res) {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = this.telegramLink();
+      } else {
+        this.openDialog(this.telegramLink());
+      }
+    }
+  }
+
+  openDialog(link: string) {
+    const dialogRef = this.dialog.open(QrModal, {
+      width: '400px',
+      disableClose: true,
+      autoFocus: false,
+      data: { telegramLink: link },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.stateStore.loadProfile();
+      }
+    });
+  }
+
   private scrollToBottom() {
     try {
       const el = this.messagesContainer?.nativeElement;

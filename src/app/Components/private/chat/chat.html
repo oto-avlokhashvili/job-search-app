@@ -27,6 +27,32 @@
         </p>
       </div>
     </div>
+
+    <!-- Telegram Button -->
+    <div class="tg-header-wrapper">
+      @if (stateStore.profile().telegramChatId) {
+        <!-- Connected state -->
+        <div class="telegram-connected-badge" id="telegram-connected-badge">
+          <svg class="tg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.8 2.1L1.3 9.9c-1.3.5-1.3 1.3-.2 1.6l5.2 1.6 12-7.6c.6-.4 1.1-.2.7.2L8.8 16.1v2.8l2 1.9 1.4-1.3 2.8 2.1c.5.3.9.1 1-.4l3.5-16.5c.2-.9-.3-1.3-1-1.6h0z" fill="currentColor"/>
+          </svg>
+          <span class="tg-label">Telegram დაკავშირებულია</span>
+          <span class="tg-check">✓</span>
+        </div>
+      } @else if (stateStore.profileLoaded()) {
+        <!-- Not connected — show connect button -->
+        <button
+          class="telegram-connect-btn"
+          id="telegram-connect-btn"
+          (click)="generateTelegramToken()"
+          title="Telegram-ზე დაკავშირება">
+          <svg class="tg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21.8 2.1L1.3 9.9c-1.3.5-1.3 1.3-.2 1.6l5.2 1.6 12-7.6c.6-.4 1.1-.2.7.2L8.8 16.1v2.8l2 1.9 1.4-1.3 2.8 2.1c.5.3.9.1 1-.4l3.5-16.5c.2-.9-.3-1.3-1-1.6h0z" fill="currentColor"/>
+          </svg>
+          <span class="tg-label">Telegram-ის დაკავშირება</span>
+        </button>
+      }
+    </div>
   </header>
 
   <!-- Messages Area -->

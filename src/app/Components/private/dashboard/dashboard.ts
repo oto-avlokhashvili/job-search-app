@@ -68,18 +68,14 @@ export class Dashboard implements OnInit {
     const sent = this.stateStore.sentJobsCount() ?? 0;
     const searchQueryLength = this.stateStore.searchQuery()?.length ?? 0;
     return [
-      { icon: '⚡', value: 0, label: 'აქტიური ვაკასნია', colorClass: 'blue', redirectTo: '/private/all-jobs' },
       {
-        icon: '🎯',
+        icon: '⚡',
         value: matched,
-        label: `AI-ის მიერ ნაპოვნი (${(this.stateStore.profile()?.searchQuery ?? [])
-          .slice(0, 2)
-          .join(', ')}${(this.stateStore.matchedJobsDashboard()?.total ?? 0) > 2 ? ' და ა.შ.' : ''
-          }) -ის ვაკანსიები`,
-        colorClass: 'purple',
+        label: `AI-ის რეკომენდირებული ვაკანსიები`,
+        colorClass: 'blue',
       },
-      { icon: '✓', value: sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'green', redirectTo: '/private/jobs' },
-      { icon: '📧', value: searchQueryLength, label: 'საძიებელი პარამეტრები', colorClass: 'orange' },
+      { icon: '🕒', value: sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'orange', redirectTo: '/private/jobs' },
+      { icon: '📧', value: searchQueryLength, label: 'საძიებელი პარამეტრები', colorClass: 'green' },
     ];
   });
 

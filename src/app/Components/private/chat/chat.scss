@@ -196,6 +196,94 @@
   }
 }
 
+// ─── Telegram Header Wrapper ───────────────────────────────────────────────────
+.tg-header-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// ─── Telegram Connect Button ───────────────────────────────────────────────────
+.telegram-connect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: 10px;
+  border: 1.5px solid #229ED9;
+  background: rgba(34, 158, 217, 0.08);
+  color: #229ED9;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.22s, color 0.22s, box-shadow 0.22s, transform 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+
+  .tg-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    transition: transform 0.22s;
+  }
+
+  .tg-label {
+    letter-spacing: 0.01em;
+  }
+
+  &:hover {
+    background: #229ED9;
+    color: white;
+    border-color: #229ED9;
+    box-shadow: 0 4px 16px rgba(34, 158, 217, 0.35);
+    transform: translateY(-1px);
+
+    .tg-icon {
+      transform: scale(1.15) rotate(-6deg);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(34, 158, 217, 0.2);
+  }
+}
+
+// ─── Telegram Connected Badge ──────────────────────────────────────────────────
+.telegram-connected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: 10px;
+  border: 1.5px solid #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+  color: #16a34a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .tg-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    color: #229ED9;
+  }
+
+  .tg-label {
+    letter-spacing: 0.01em;
+  }
+
+  .tg-check {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #22c55e;
+  }
+}
+
 // ─── Messages ─────────────────────────────────────────────────────────────────
 .messages-area {
   flex: 1;
