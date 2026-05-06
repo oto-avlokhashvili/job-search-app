@@ -1,32 +1,58 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { Job } from '../../../Core/Interfaces/jobs';
 import { skipLoading } from '../../../Core/loading/skip-loading.component';
 
+import { CommonModule } from '@angular/common';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-home',
-  imports: [RouterModule],
+  standalone: true,
+  imports: [RouterModule, CommonModule, ReactiveFormsModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home implements OnInit {
+
+  search = new FormControl<string>('')
+  searchQuery = signal<string>('');
+  count = signal<number>(0)
   jobsService = inject(JobsService);
   ngOnInit() {
-    this.getJobs();
+    this.jobsService.getJobs("").subscribe({
+    next: (res) => {
+      this.jobs.set(res.jobs.slice(0, 5));
+      this.count.set(res.counts?.totalRecords);
+    },
+    error: (err) => {
+      console.log(err);
+    },
+  });
+
+    this.search.valueChanges.subscribe((value) => {
+      if(value){
+        this.searchQuery.set(value);
+      }
+    });
   }
-  getJobs(){
-    this.jobsService.getJobs().subscribe({
-      next: (res) => {
-        this.jobs.set(res.jobs.slice(0, 5));
-      },
-      error: (err) => {
-        console.log(err);
-      },
-      
-    })  
-  }
+@ViewChild('browseSection') browseSectionRef!: ElementRef;
+
+getJobs(query?: string) {
+  this.jobsService.getJobs(query).subscribe({
+    next: (res) => {
+      this.jobs.set(res.jobs.slice(0, 5));
+      setTimeout(() => {
+        this.browseSectionRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    },
+    error: (err) => {
+      console.log(err);
+    },
+  });
+}
     
   jobs = signal<Job[]>([
       {
@@ -82,6 +108,18 @@ export class Home implements OnInit {
     ]);
   isLoading = signal(false);
 
+
+
+  clearSearch() {
+    this.searchQuery.set('');
+    this.search.reset();
+  }
+
+  onSearch() {
+    console.log('Searching for:', this.searchQuery());
+    // Implement search logic here
+  }
+
   scroll(target: string) {
     document.querySelector(`#${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -89,4 +127,5 @@ export class Home implements OnInit {
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
   }
+  
 }

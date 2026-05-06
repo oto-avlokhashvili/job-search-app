@@ -1,86 +1,51 @@
 <main class="home-main">
   <!-- Editorial Hero Section -->
+  <!-- Centered Hero Section -->
   <section class="hero-section">
-    <div class="hero-grid">
-      <div class="hero-content">
-        <h1 class="display-lg">
-          იპოვე შენი <br />
-          <span class="text-primary">მომავალი კარიერა.</span>
-        </h1>
-        <p class="body-lg text-on-surface-variant">
-          გაიარე გზა ძიებიდან დასაქმებამდე მარტივად. ჩვენ გთავაზობთ მაღალი დონის ვაკანსიებს თანამედროვე, "Fluid"
-          პროფესიონალებისთვის.
-        </p>
-        <div class="hero-actions">
-          <button class="btn-fluid primary" [routerLink]="'/auth'">დაიწყე ახლა</button>
-          <button class="btn-fluid secondary" (click)="scroll('browse-jobs')">ვაკანსიების ძებნა</button>
-        </div>
-      </div>
+    <div class="hero-container">
+      <h1 class="display-lg text-center">
+        <span class="me-2">
+          იპოვე
+        </span>
+        <span class="text-primary" > ახალი შესაძლებლობები</span>
+      </h1>
+      <p class="body-lg text-center text-on-surface-variant subtitle" #browseSection>
+        სწრაფი გზა სამსახურის საპოვნელად. დაე ჩვენმა ხელოვნურმა ინტელექტმა იპოვოს საუკეთესო პოზიცია შენთვის.
+      </p>
 
-      <div class="hero-visual">
-        <div class="visual-container">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaxVBd9bVRXD6XIRTKjuLPH4ZEV9S6yamTwh4FKo_7gBpfY891_pyq0OC19ZFJEvg_mJlHECvWrYry31HrFPKavYUwcB5OqbUlQpoYNff8yMBV65OhGfaxxKtOGI6-D48gE20q7PsfQc-gtcJNwctnVT-Qp4vrGeKRnVZkKkgprZ29F1vRtXEMeHH2Orm48K5aN15JOFkaWoy4uKuoOfte9Pg0aNzUQ15cSwyB8qrJwutSCaOErP8X2EFXWIylMK6-FzHGLuZ6fKB9"
-            alt="Team Collaboration" class="hero-img">
-          <div class="visual-overlay"></div>
-          <div class="glass-card hero-badge">
-            <div class="badge-content">
-              <div>
-                <p class="badge-title">1,200+</p>
-                <p class="badge-subtitle">ახალი ვაკანსია ამ კვირაში</p>
-              </div>
-              <div class="user-stack">
-                <div class="user-avatar" style="z-index: 3;"><img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuArOzun2PhNTeJr1L1Z5zS9Rmosq490ndTi4OzFeIapXcKzLlH513GA4q35_xfoa_uAkKhadNQu5VCRPU-ugY5U4TfOIwLaVotbeOZiQjSOi47wEZFmsTXGvtq80idGjD8AvoEwq4ybBcoBozF-lHWsmvqDzTzpYHN06hgq2F4JRcg5tZfpuTm8MBY85_if5OAJJsytwdgSR2v-fiu_iaYjpI5MOsVmcr5UMfebX9USjbK63y1-_FjQGJni1iy4alkwgyln5MlOweV8"
-                    alt="User"></div>
-                <div class="user-avatar" style="z-index: 2;"><img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrhGt2-A9n8LEAWogeOdxI0y3UsEKoYON1iB1UQD4iQBka5gO7VG3UUBLldCILhmAYyf8xk9bb0ZchpWXz2TKJPcZCplpqqStTExABT7lkw-nsFM1gTH2eNWiEc89nqm8YbORgkWfwU13PyETyrlHwGYhMtTUcI7PQ5U7zzt_dndAg6IvuZOVJ6hwbee2MYVzg58xY6HZBha90JeDdmTZoEfLAIRLMfUZpu4gvwQOyL6_ypnbIm0TIadBslSAo5F5U-nU38SlFCsy_"
-                    alt="User"></div>
-                <div class="user-avatar" style="z-index: 1;"><img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWxc9rATUFZhxTJM_oagwUzoLa7Q5pQEY1DxuoCKP2DoZL1r7Yk3ZOABpTZzsFG3-4SDcgb0nnpmj2nvHfqwk4VGCZ8vfLbaSLfgyWpqS1u794KXBZazUGWTy5141Uj-U_C03fU9rECjW5rErTpccrT478aucHH6lEmoZWWOMGGcMmcyFsJkqiktY-OfwHZFRjjPv-soqq2KaPCYFPrVj9ppND4Bca589xm2HUU00nI_zdfsRwmCKwdmRPCHyePUJ-deydeVCzyKKk"
-                    alt="User"></div>
-              </div>
-            </div>
+      <div class="search-wrapper">
+        <button class="improve-ai-btn" [routerLink]="'/auth'" >
+          <span class="material-symbols-outlined">auto_awesome</span>
+          მოძებნე AI-ით
+        </button>
+
+        <div class="search-container">
+          <div class="search-input-group">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" [formControl]="search" 
+              placeholder="გსურთ მოძებნოთ პოზიცია?" 
+              class="hero-search-input" 
+              (keyup.enter)="getJobs(search.value!)">
+            
+            @if (searchQuery()) {
+              <button class="btn-clear" (click)="clearSearch()">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            }
           </div>
+          
+          <div class="search-actions">
+            <button class="btn-search" (click)="getJobs(search.value!)">ძიება</button>
+          </div>
+          
         </div>
       </div>
+      
     </div>
   </section>
-
+  
   <!-- Browse All Jobs Section (REPLACING FEATURES/PRICING) -->
-  <section class="browse-jobs-section" id="browse-jobs">
-    <div class="section-header-flex">
-      <div class="header-text">
-        <h2 class="display-sm">აღმოაჩინე ყველა ვაკანსია</h2>
-        <p class="body-md text-on-surface-variant">იპოვე პოზიციები, რომლებიც შეესაბამება შენს კარიერულ გზას.</p>
-      </div>
-
-      <div class="filter-bar">
-        <div class="filter-input-wrap">
-          <input type="text" placeholder="მდებარეობა..." class="f-input">
-          <span class="material-symbols-outlined f-icon">location_on</span>
-        </div>
-
-        <div class="filter-input-wrap">
-          <select class="f-select">
-            <option>სამუშაოს ტიპი</option>
-            <option>Full-time</option>
-            <option>Contract</option>
-            <option>Remote</option>
-          </select>
-          <span class="material-symbols-outlined f-icon">work</span>
-        </div>
-
-        <div class="filter-input-wrap">
-          <select class="f-select">
-            <option>გამოქვეყნების დრო</option>
-            <option>ბოლო 24სთ</option>
-            <option>ბოლო 7 დღე</option>
-          </select>
-          <span class="material-symbols-outlined f-icon">calendar_today</span>
-        </div>
-      </div>
-    </div>
+  <section class="browse-jobs-section" id="browse-jobs" >
 
     @if (isLoading()) {
     <div class="loading-state">
@@ -121,11 +86,16 @@
       <!-- Browse More Card -->
       <div class="more-card border-dashed">
         <div class="more-icon-wrap">
-          <span class="material-symbols-outlined text-primary">search</span>
+          <span class="material-symbols-outlined text-primary">auto_awesome</span>
         </div>
         <h3 class="title-md">ვერ იპოვე სასურველი?</h3>
-        <p class="body-sm">ჩვენ გვაქვს 500+ სხვა პოზიცია შენი უნიკალური უნარებისთვის.</p>
-        <button class="btn-link" [routerLink]="'/auth'">იხილეთ ყველა 1,200 ვაკანსია</button>
+        <p class="body-sm">სისტემაში გვაქვს <strong>{{count()}}</strong> აქტიური ვაკანსია.</p>
+        <div class="card-actions-vertical">
+          <button class="btn-fluid primary" [routerLink]="'/auth'">
+            <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 8px;">auto_awesome</span>
+            მოძებნე AI-ით
+          </button>
+        </div>
       </div>
     </div>
     }

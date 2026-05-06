@@ -1,6 +1,7 @@
 <div class="stats-grid">
   <div class="stat-card" [ngClass]="'colored-' + stat.colorClass" *ngFor="let stat of stats()">
-    <a style="text-decoration: none; cursor: pointer;" [routerLink]="stat.redirectTo || null" (click)="!stat.redirectTo ? scrollToTable() : null">
+    <a style="text-decoration: none; cursor: pointer;" [routerLink]="stat.redirectTo || null"
+      (click)="!stat.redirectTo ? scrollToTable() : null">
       <div class="stat-header">
         <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
       </div>
@@ -22,10 +23,8 @@
     <div class="vacancy-cards-container">
       <div class="cards-scroll-wrapper">
         @for (job of stateStore.matchedJobsDashboard().data; track job.id) {
-        <div class="vacancy-card clickable-card"
-          (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
-          <div class="card-match-badge"
-            [class.tier-strong]="(job.match ?? 0) >= 85"
+        <div class="vacancy-card clickable-card" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
+          <div class="card-match-badge" [class.tier-strong]="(job.match ?? 0) >= 85"
             [class.tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
             [class.tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
             [class.tier-not-possible]="(job.match ?? 0) < 50">

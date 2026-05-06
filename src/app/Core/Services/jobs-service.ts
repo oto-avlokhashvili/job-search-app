@@ -11,14 +11,15 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class JobsService {
   http = inject(HttpClient);
   url = environment.apiUrl;
-  getJobs(vacancy: string[] = [], page: number = 1, context?: HttpContext): Observable<JobsResponse> {
-    let params = new HttpParams();
+getJobs( query: string = '', page: number = 1): Observable<JobsResponse> {
+  let params = new HttpParams();
 
-    vacancy?.forEach(q => {
-      params = params.append('query', q);
-    });
-    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context: new HttpContext().set(skipLoading, true) })
+  if (query.trim().length > 0) {
+    params = params.set('query', query.trim());
   }
+
+  return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, {params});
+}
 
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs?page=${page}&limit=${limit}`);
