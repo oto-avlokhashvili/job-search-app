@@ -41,6 +41,7 @@ $my-theme: mat.m2-define-light-theme((
 :root,
 [data-theme='light'] {
   --primary: #0b6096;
+  --primary-rgb: 11, 96, 150;
   --primary-container: #5b9bd5;
   --app-bg: #f4f6ff;
   --surface: #f4f6ff;
@@ -71,6 +72,7 @@ $my-theme: mat.m2-define-light-theme((
 // ─── Dark Mode ────────────────────────────────────────────────
 [data-theme='dark'] {
   --primary: #5b9bd5;
+  --primary-rgb: 91, 155, 213;
   --primary-container: #0b6096;
   --app-bg: linear-gradient(135deg, #323253, #1c2849);;
   --surface: #1e1e2e;
@@ -201,3 +203,18 @@ body {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Subscription dialog panel ───────────────────────────── */
+.subscription-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+  padding: 0 !important;
+}
+
+.subscription-dialog .mat-mdc-dialog-surface {
+  border-radius: 20px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}

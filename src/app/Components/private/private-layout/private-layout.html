@@ -11,7 +11,8 @@
   <aside class="sidebar" [class.active]="isSidebarOpen()">
     <div class="sidebar-header">
       <div class="logo">
-        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="sidebar-logo">
+        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo"
+          class="sidebar-logo">
         <span>Job Scout</span>
       </div>
       <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
@@ -31,31 +32,58 @@
     </nav>
 
     @if (isOnChatRoute()) {
-      <div class="chat-conversations-panel">
-        <div class="chat-panel-header">
-          <span class="chat-panel-label">ჩატები</span>
-          <button class="new-chat-btn" (click)="createNewChat()" title="ახალი ჩატი">
-            <span>+</span>
-          </button>
-        </div>
+    <div class="chat-conversations-panel">
+      <div class="chat-panel-header">
+        <span class="chat-panel-label">ჩატები</span>
+        <button class="new-chat-btn" (click)="createNewChat()" title="ახალი ჩატი">
+          <span>+</span>
+        </button>
+      </div>
 
-        <div class="chat-conv-list">
-          @if (chatStore.conversations().length === 0) {
-            <div class="conv-empty">ჩატი არ არის</div>
-          }
-          @for (conv of chatStore.conversations(); track conv.id) {
-            <div class="chat-conv-item"
-              [class.active-conv]="isActiveConversation(conv.id)"
-              (click)="selectConversation(conv.id)">
-              <span class="conv-dot">💬</span>
-              <div class="conv-info">
-                <span class="conv-title-text">{{ conv.title }}</span>
-                <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
-              </div>
-              <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
-            </div>
-          }
+      <div class="chat-conv-list">
+        @if (chatStore.conversations().length === 0) {
+        <div class="conv-empty">ჩატი არ არის</div>
+        }
+        @for (conv of chatStore.conversations(); track conv.id) {
+        <div class="chat-conv-item" [class.active-conv]="isActiveConversation(conv.id)"
+          (click)="selectConversation(conv.id)">
+          <span class="conv-dot">💬</span>
+          <div class="conv-info">
+            <span class="conv-title-text">{{ conv.title }}</span>
+            <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
+          </div>
+          <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
         </div>
+        }
+      </div>
+    </div>
+    }
+
+
+    <div class="sidebar-user-profile">
+      <div class="user-avatar">
+        @if (stateStore.profileLoaded()) {
+        {{ initials() }}
+        } @else {
+        <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
+        }
+      </div>
+      <div class="user-info">
+        <span class="user-name">{{ stateStore.profile().firstName + " " + stateStore.profile().lastName }}</span>
+        <span class="user-plan">{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' :
+          stateStore.profile().subscription === 'PRO' ? 'პრო' :
+          'პრემიუმ' }}</span>
+      </div>
+    </div>
+
+    @if (stateStore.profile().subscription === 'BASIC') {
+      <div class="upgrade-banner">
+        <div class="upgrade-header">
+          <span class="upgrade-icon">⚡</span>
+          <span>განაახლე გეგმა</span>
+        </div>
+        <span class="upgrade-sub">მეტი შესაძლებლობებისთვის განაახლე შენი გამოწერა</span>
+        <a class="upgrade-btn" (click)="openUpgradeModal()">განახლება →</a>
       </div>
     }
 
@@ -64,7 +92,7 @@
         <span class="nav-icon">{{ themeService.isDarkMode() ? '☀️' : '🌙' }}</span>
         <span>{{ themeService.isDarkMode() ? 'დღის ხედვა' : 'ღამის ხედვა' }}</span>
       </button>
-      <button class="nav-link logout-btn" (click)="logout()">
+      <button class="nav-link theme-toggle" (click)="logout()">
         <span class="nav-icon">🚪</span>
         <span>გასვლა</span>
       </button>
@@ -76,72 +104,50 @@
     <main class="main-content">
       <!-- Header -->
 
-      @if (!hideFooterAndHeader()) {
-        <header class="header">
-          <div class="header-title">
-            <h3>გამარჯობა {{stateStore.profile().firstName}}!</h3>
-           
-          </div>
-          <div class="user-profile">
-            <div class="user-info">
-              <h3>{{ stateStore.profile().firstName + " " + stateStore.profile().lastName }}</h3>
-              <p>{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' : stateStore.profile().subscription === 'PRO' ? 'პრო' :
-                'პრემიუმ' }}</p>
-            </div>
-            <div class="user-avatar">
-              @if (stateStore.profileLoaded()) {
-                {{ initials() }}
-              } @else {
-                <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
-              }
-            </div>
-          </div>
-        </header>
-      }
 
       <!-- Router Outlet for Page Content -->
       <router-outlet></router-outlet>
     </main>
 
     <!-- Footer -->
-     @if (!hideFooterAndHeader()) {
-       <footer class="footer">
-         <div class="footer-content">
-           <div class="footer-section">
-             <h3>Job Scout</h3>
-             <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
-           </div>
-           <div class="footer-section">
-             <h4>Quick Links</h4>
-             <ul>
-               <li><a href="#">Features</a></li>
-               <li><a href="#">Pricing</a></li>
-               <li><a href="#">How It Works</a></li>
-               <li><a href="#">Contact</a></li>
-             </ul>
-           </div>
-           <div class="footer-section">
-             <h4>Legal</h4>
-             <ul>
-               <li><a href="#">Privacy Policy</a></li>
-               <li><a href="#">Terms of Service</a></li>
-               <li><a href="#">Cookie Policy</a></li>
-             </ul>
-           </div>
-           <div class="footer-section">
-             <h4>Connect</h4>
-             <div class="social-links">
-               <a href="#" class="social-icon">🐦</a>
-               <a href="#" class="social-icon">💼</a>
-               <a href="#" class="social-icon">📘</a>
-               <a href="#" class="social-icon">📧</a>
-             </div>
-           </div>
-         </div>
-         <div class="footer-bottom">
-           <p>&copy; {{ currentYear() }} Job Scout. All rights reserved.</p>
-         </div>
-       </footer>
-     }
+    @if (!hideFooterAndHeader()) {
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Job Scout</h3>
+          <p>Never miss your dream job. Get instant alerts delivered to your Telegram.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">How It Works</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <div class="social-links">
+            <a href="#" class="social-icon">🐦</a>
+            <a href="#" class="social-icon">💼</a>
+            <a href="#" class="social-icon">📘</a>
+            <a href="#" class="social-icon">📧</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear() }} Job Scout. All rights reserved.</p>
+      </div>
+    </footer>
+    }
   </div>
 </div>

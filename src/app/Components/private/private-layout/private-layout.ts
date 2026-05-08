@@ -7,6 +7,8 @@ import { ChatStore } from '../../../Store/chat.store';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { SubscriptionModal } from './subscription-modal/subscription-modal';
 
 @Component({
   selector: 'app-private-layout',
@@ -35,6 +37,7 @@ export class PrivateLayout implements OnInit {
   authService = inject(AuthService);
   stateStore = inject(StateStore);
   chatStore = inject(ChatStore);
+  dialog = inject(MatDialog);
 
   isOnChatRoute = signal<boolean>(this.router.url.includes('/chat'));
 
@@ -101,6 +104,16 @@ export class PrivateLayout implements OnInit {
   logout() {
     this.authService.logOut().then(() => {
       this.router.navigate(['/auth']);
+    });
+  }
+
+  openUpgradeModal() {
+    this.dialog.open(SubscriptionModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: 'subscription-dialog',
+      disableClose: false,
+      autoFocus: false,
     });
   }
 

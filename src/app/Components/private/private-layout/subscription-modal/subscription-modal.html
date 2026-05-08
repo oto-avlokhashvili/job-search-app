@@ -1,0 +1,66 @@
+<div class="sub-modal">
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="modal-title-group">
+      <span class="modal-icon">⚡</span>
+      <div>
+        <h2>განაახლე გამოწერა</h2>
+        <p>აირჩიე შენთვის საუკეთესო</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="close()">✕</button>
+  </div>
+
+  <!-- Current plan badge -->
+  <div class="current-plan-badge">
+    <span>მიმდინარე გეგმა:</span>
+    <span class="badge">Starter (უფასო)</span>
+  </div>
+
+  <!-- Plans -->
+  <div class="plans-grid">
+    @for (plan of plans; track plan.key) {
+      <div class="plan-card" [class.featured]="plan.badge">
+        @if (plan.badge) {
+          <div class="featured-badge">{{ plan.badge }}</div>
+        }
+
+        <div class="plan-header">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          <div class="price">
+            @if (plan.period) {
+              <span class="currency">₾</span>
+              <span class="amount">{{ plan.price }}</span>
+              <span class="period">{{ plan.period }}</span>
+            } @else {
+              <span class="amount custom">{{ plan.price }}</span>
+            }
+          </div>
+        </div>
+
+        <ul class="features">
+          @for (f of plan.features; track f) {
+            <li>
+              <span class="check-icon">✓</span>
+              {{ f }}
+            </li>
+          }
+        </ul>
+
+        <button
+          class="activate-btn"
+          [class.featured-btn]="plan.badge"
+          [disabled]="loading() === plan.key || plan.key === 'PREMIUM'"
+          (click)="activate(plan)">
+          @if (loading() === plan.key) {
+            <span class="btn-spinner"></span>
+          } @else {
+            {{ plan.badge ? 'გახდი ' + plan.name : 'დაემატება მალე...' }}
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  <p class="disclaimer">გამოწერა შეიძლება გაუქმდეს ნებისმიერ დროს. ყველა ფასი მოიცავს დღგ-ს.</p>
+</div>

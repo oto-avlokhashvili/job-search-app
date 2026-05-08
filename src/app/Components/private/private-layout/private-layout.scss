@@ -44,7 +44,54 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem;
+  background: rgba(var(--primary-rgb), 0.05);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  margin-top: auto;
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .user-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-plan {
+      font-size: 0.75rem;
+      color: var(--primary);
+      opacity: 0.8;
+    }
+  }
 }
 
 .logo {
@@ -115,12 +162,12 @@ nav {
 }
 
 .nav-link:hover {
-background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 213, 0.05));
-  
+  background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 213, 0.05));
+
 }
 
 .nav-link.active {
- background: linear-gradient(to right, rgba(91, 155, 213, 0.4), rgba(91, 155, 213, 0.08));
+  background: linear-gradient(to right, rgba(91, 155, 213, 0.4), rgba(91, 155, 213, 0.08));
 
   border-right: 3px solid #5b9bd5;
   border-radius: 8px 0 0 8px;
@@ -145,8 +192,69 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
 .sidebar-footer {
   border-top: 1px solid var(--border-color);
   padding-top: 0.75rem;
-  margin-top: auto;
+  margin-top: 0.5rem;
   flex-shrink: 0;
+}
+
+.upgrade-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(11, 96, 150, 0.12), rgba(91, 155, 213, 0.08));
+  border: 1px solid rgba(91, 155, 213, 0.3);
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+
+  .upgrade-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .upgrade-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+  }
+
+  .upgrade-sub {
+    font-size: 0.72rem;
+    color: var(--on-surface-variant);
+    line-height: 1.4;
+    white-space: normal;
+  }
+
+  .upgrade-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0;
+    border-radius: 8px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    width: 100%;
+    transition: all 0.2s;
+
+    &:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+[data-theme='dark'] .upgrade-banner {
+  background: linear-gradient(135deg, rgba(91, 155, 213, 0.15), rgba(11, 96, 150, 0.08));
+  border-color: rgba(91, 155, 213, 0.2);
 }
 
 // ─── Chat Conversations Panel ───────────────────────────────────────────────
@@ -191,6 +299,7 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
     color: var(--primary);
     transition: all 0.2s;
     line-height: 1;
+
     &:hover {
       background: var(--primary);
       border-color: var(--primary);
@@ -207,9 +316,18 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
   gap: 2px;
   padding: 0 0.25rem;
 
-  &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
 }
 
 .chat-conv-item {
@@ -223,7 +341,10 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
   font-size: 0.8rem;
   color: var(--on-surface-variant);
 
-  .conv-dot { font-size: 0.75rem; flex-shrink: 0; }
+  .conv-dot {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
 
   .conv-info {
     flex: 1;
@@ -257,6 +378,7 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
     transition: all 0.2s;
     flex-shrink: 0;
     color: var(--on-surface-variant);
+
     &:hover {
       background: rgba(179, 27, 37, 0.12);
       color: #b31b25;
@@ -266,15 +388,21 @@ background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 21
   &:hover {
     background: var(--surface-container-low);
     color: var(--on-surface);
-    .conv-delete-btn { opacity: 1; }
+
+    .conv-delete-btn {
+      opacity: 1;
+    }
   }
 
   &.active-conv {
-    background: linear-gradient(135deg, rgba(11,96,150,0.12), rgba(91,155,213,0.08));
+    background: linear-gradient(135deg, rgba(11, 96, 150, 0.12), rgba(91, 155, 213, 0.08));
     border-left: 2px solid var(--primary);
     color: var(--primary);
     font-weight: 600;
-    .conv-delete-btn { opacity: 1; }
+
+    .conv-delete-btn {
+      opacity: 1;
+    }
   }
 }
 
