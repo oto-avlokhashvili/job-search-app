@@ -571,3 +571,148 @@ $outline-variant-color: #97aed5;
 }
 
 
+
+
+// 💰 Pricing Section
+.pricing-section {
+  padding: 80px 48px;
+  max-width: 1440px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 60px 24px;
+  }
+}
+
+.pricing-container {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pricing-card {
+  padding: 48px;
+  border-radius: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background-color: var(--surface-container-lowest);
+  border: 1px solid var(--border-color);
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  &.featured {
+    background: linear-gradient(180deg, var(--surface-container-low) 0%, var(--surface-container-lowest) 100%);
+    border: 2px solid var(--primary);
+    box-shadow: 0 12px 24px rgba(11, 96, 150, 0.1); // Using $primary-color equivalent
+    
+    .featured-badge {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--primary);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .plan-name {
+      color: var(--primary);
+    }
+  }
+
+  .card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .plan-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+
+    .price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+
+      .currency {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--on-surface-variant);
+      }
+
+      .amount {
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--on-surface);
+        letter-spacing: -0.02em;
+      }
+
+      .period {
+        font-size: 16px;
+        color: var(--on-surface-variant);
+      }
+    }
+  }
+
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      color: var(--on-surface-variant);
+
+      span {
+        color: var(--primary);
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05); // Default glass
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme='dark'] {
+  .pricing-card {
+    background: rgba(30, 30, 46, 0.4);
+    
+    &.featured {
+      background: rgba(11, 96, 150, 0.05);
+    }
+  }
+}

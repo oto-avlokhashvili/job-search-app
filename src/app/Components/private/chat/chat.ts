@@ -92,7 +92,7 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   isDragOver = signal<boolean>(false);
   chatMode = signal<'prompt' | 'job-search'>('job-search');
   sqOpen = signal<boolean>(false);
-  shouldScrollToBottom = false;
+  shouldScrollToBottom = true;
 
   private routeSub?: Subscription;
 

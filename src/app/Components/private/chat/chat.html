@@ -212,7 +212,7 @@
   <div class="input-area">
 
     <!-- Search Queries — collapsible pill, always visible in job-search mode -->
-    @if (chatMode() === 'job-search' && stateStore.searchQuery().length > 0) {
+    @if (chatMode() === 'job-search' && stateStore.searchQuery().length > 0 && attachedFiles().length > 0) {
       <div class="sq-panel" [class.sq-open]="sqOpen()">
         <!-- Toggle row -->
         <button class="sq-toggle" (click)="toggleSq()" type="button">

@@ -7,6 +7,7 @@ import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { Chat } from './Components/private/chat/chat';
+import { authGuard } from './Core/Guards/auth-guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,8 @@ export const routes: Routes = [
   {
     path: 'private',
     component: PrivateLayout,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'dashboard',
