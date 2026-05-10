@@ -41,35 +41,36 @@ export class PrivateLayout implements OnInit {
 
   isOnChatRoute = signal<boolean>(this.router.url.includes('/chat'));
 
-  ngOnInit() {
-    const token = this.route.snapshot.queryParamMap.get('token');
+  async ngOnInit() {
+  const token = this.route.snapshot.queryParamMap.get('token');
 
-    if (token) {
-      this.authService.setToken(token);
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true
-      });
-    }
-    this.hideFooterAndHeader.set(this.router.url.includes('/chat'));
-
-    this.router.events
-      .pipe(
-        filter(e => e instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((e: NavigationEnd) => {
-        this.isOnChatRoute.set(e.urlAfterRedirects.includes('/chat'));
-        this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/chat'));
-      });
-
-    this.getProfile();
-    this.themeService.init();
-    this.getCv();
-    this.loadMatchedJobs(1);
-    this.loadSentJobs();
+  if (token) {
+    this.authService.setToken(token);
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
+
+  // now runs AFTER navigation settles
+  this.hideFooterAndHeader.set(this.router.url.includes('/chat'));
+  this.router.events
+    .pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe((e: NavigationEnd) => {
+      this.isOnChatRoute.set(e.urlAfterRedirects.includes('/chat'));
+      this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/chat'));
+    });
+
+  this.getProfile();
+  this.themeService.init();
+  this.getCv();
+  this.loadMatchedJobs(1);
+  this.loadSentJobs();
+}
 
   loadMatchedJobs(page: number) {
     this.stateStore.loadAIMatchedJobs(page, 6);
