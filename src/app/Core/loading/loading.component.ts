@@ -45,7 +45,7 @@ export class LoadingIndicatorComponent implements OnInit, OnDestroy {
             s.style.top = Math.random() * 340 + 'px';
             s.style.animationDelay = (Math.random() * 2) + 's';
             s.style.opacity = String(0.3 + Math.random() * 0.7);
-            this.starsContainer.nativeElement.appendChild(s);
+            this.starsContainer?.nativeElement?.appendChild(s);
         }
     }
 }

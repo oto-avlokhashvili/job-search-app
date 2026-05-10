@@ -8,6 +8,8 @@
   background: var(--card-bg);
   border-radius: 20px;
   border: 1px solid var(--border-color);
+  min-width: 0;        // prevent flex child from overflowing
+  max-width: 100%;     // never exceed the container
 }
 
 // ─── Drop Overlay ─────────────────────────────────────────────────────────────
@@ -73,18 +75,26 @@
   backdrop-filter: blur(16px);
   flex-shrink: 0;
   border-radius: 20px 20px 0 0;
+  gap: 0.5rem;        // gap so items don't jam together
+  min-width: 0;
+  overflow: hidden;   // clip anything that still overflows
 }
 
 .chat-header-info {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  min-width: 0;      // allow text to truncate instead of expand
+  flex-shrink: 1;
 
   h3 {
     font-size: 1rem;
     font-weight: 700;
     color: var(--on-surface);
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .ai-status {
@@ -201,6 +211,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 // ─── Telegram Connect Button ───────────────────────────────────────────────────
@@ -861,6 +872,7 @@
   border-radius: 14px;
   padding: 0.5rem 0.6rem;
   transition: border-color 0.25s, box-shadow 0.25s;
+  min-width: 0;       // prevent row from overflowing its parent
 
   &:focus-within {
     border-color: var(--primary);
@@ -998,6 +1010,16 @@
   &:hover {
     border-color: var(--primary);
   }
+
+  // On very small screens collapse to icon-only
+  @media (max-width: 400px) {
+    .mode-seg {
+      padding: 3px 6px;
+      font-size: 0;
+      // keep just the emoji visible
+      &::first-line { font-size: 0.68rem; }
+    }
+  }
 }
 
 .mode-seg {
@@ -1029,9 +1051,11 @@
 // ─── Job Search Placeholder (replaces textarea) ───────────────────────────────
 .job-search-placeholder {
   flex: 1;
+  min-width: 0;        // allow flex child to shrink below content size
+  overflow: hidden;    // clip the container
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.45rem;
   padding: 0 0.25rem;
   min-height: 34px;
   animation: fadeIn 0.2s ease;
@@ -1048,6 +1072,11 @@
     opacity: 0.75;
     font-style: italic;
     line-height: 1.4;
+    // truncate gracefully instead of wrapping or overflowing
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 }
 
@@ -1456,6 +1485,16 @@
 
   .insights-tabs {
     grid-template-columns: 1fr;
+  }
+
+  // Shrink Telegram label on tablet
+  .tg-label {
+    display: none;
+  }
+
+  .telegram-connect-btn,
+  .telegram-connected-badge {
+    padding: 0.42rem 0.6rem;
   }
 }
 

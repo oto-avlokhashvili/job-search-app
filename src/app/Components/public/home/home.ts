@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, ViewChild, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { JobsService } from '../../../Core/Services/jobs-service';
@@ -15,7 +15,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   search = new FormControl<string>('')
   searchQuery = signal<string>('');
@@ -38,7 +38,76 @@ export class Home implements OnInit {
       }
     });
   }
-@ViewChild('browseSection') browseSectionRef!: ElementRef;
+  @ViewChild('browseSection') browseSectionRef!: ElementRef;
+  @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private animationFrameId: number | null = null;
+  private ngZone = inject(NgZone);
+
+  ngAfterViewInit() {
+    this.ngZone.runOutsideAngular(() => this.initParticles());
+  }
+
+  ngOnDestroy() {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+  }
+
+  private initParticles() {
+    const canvas = this.particleCanvasRef.nativeElement;
+    const ctx = canvas.getContext('2d')!;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 55;
+    interface Particle {
+      x: number; y: number;
+      r: number; speed: number;
+      opacity: number; drift: number;
+      color: string;
+    }
+
+    const colors = ['rgba(11,96,150,', 'rgba(151,174,213,', 'rgba(22,47,80,'];
+
+    const make = (): Particle => ({
+      x: Math.random() * canvas.width,
+      y: canvas.height + Math.random() * 60,
+      r: Math.random() * 2.5 + 0.8,
+      speed: Math.random() * 0.5 + 0.2,
+      opacity: Math.random() * 0.45 + 0.1,
+      drift: (Math.random() - 0.5) * 0.3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    });
+
+    const particles: Particle[] = Array.from({ length: COUNT }, make);
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${p.opacity})`;
+        ctx.fill();
+
+        p.y -= p.speed;
+        p.x += p.drift;
+        p.opacity -= 0.0008;
+
+        if (p.y < -10 || p.opacity <= 0) {
+          Object.assign(p, make());
+        }
+      }
+      this.animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+  }
 
 getJobs(query?: string) {
   this.jobsService.getJobs(query).subscribe({
