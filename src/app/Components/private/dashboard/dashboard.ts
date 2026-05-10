@@ -71,11 +71,13 @@ export class Dashboard implements OnInit {
       {
         icon: '⚡',
         value: matched,
-        label: `AI-ის რეკომენდირებული ვაკანსიები`,
+        label: `AI-ვაკანსიები`,
         colorClass: 'blue',
       },
-      { icon: '🕒', value: sent, label: 'მიღებული ვაკასნიების ისტორია', colorClass: 'orange', redirectTo: '/private/jobs' },
+      { icon: '🕒', value: sent, label: 'ვაკასნიების ისტორია', colorClass: 'orange', redirectTo: '/private/jobs' },
       { icon: '📧', value: searchQueryLength, label: 'საძიებელი პარამეტრები', colorClass: 'green' },
+      { icon: '💼', value: 0, label: 'ყველა ვაკანსია', colorClass: 'purple', redirectTo: '/private/all-jobs' },
+
     ];
   });
 

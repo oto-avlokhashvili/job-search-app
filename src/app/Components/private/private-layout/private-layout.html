@@ -9,29 +9,29 @@
 <div class="dashboard-wrapper">
   <!-- Sidebar -->
   <aside class="sidebar" [class.active]="isSidebarOpen()">
-    <div class="sidebar-header">
-      <div class="logo">
-        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo"
-          class="sidebar-logo">
-        <span>Job Scout</span>
-      </div>
-      <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
-        <span>☰</span>
-      </button>
+  <div class="sidebar-header">
+    <div class="logo">
+      <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo"
+        class="sidebar-logo">
+      <span>Job Scout</span>
     </div>
+    <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+      <span>☰</span>
+    </button>
+  </div>
 
-    <nav>
-      <ul class="nav-menu">
-        <li class="nav-item" *ngFor="let item of navItems()">
-          <a [routerLink]="item.route" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
-            <span class="nav-icon">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
+  <nav>
+    <ul class="nav-menu">
+      <li class="nav-item" *ngFor="let item of navItems()">
+        <a [routerLink]="item.route" class="nav-link" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-    @if (isOnChatRoute()) {
+  @if (isOnChatRoute()) {
     <div class="chat-conversations-panel">
       <div class="chat-panel-header">
         <span class="chat-panel-label">ჩატები</span>
@@ -39,40 +39,41 @@
           <span>+</span>
         </button>
       </div>
-
       <div class="chat-conv-list">
         @if (chatStore.conversations().length === 0) {
-        <div class="conv-empty">ჩატი არ არის</div>
+          <div class="conv-empty">ჩატი არ არის</div>
         }
         @for (conv of chatStore.conversations(); track conv.id) {
-        <div class="chat-conv-item" [class.active-conv]="isActiveConversation(conv.id)"
-          (click)="selectConversation(conv.id)">
-          <span class="conv-dot">💬</span>
-          <div class="conv-info">
-            <span class="conv-title-text">{{ conv.title }}</span>
-            <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
+          <div class="chat-conv-item" [class.active-conv]="isActiveConversation(conv.id)"
+            (click)="selectConversation(conv.id)">
+            <span class="conv-dot">💬</span>
+            <div class="conv-info">
+              <span class="conv-title-text">{{ conv.title }}</span>
+              <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
+            </div>
+            <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
           </div>
-          <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
-        </div>
         }
       </div>
     </div>
-    }
+  }
 
+  <!-- Spacer pushes everything below to the bottom -->
+  <div class="sidebar-spacer"></div>
 
+  <div class="sidebar-bottom">
     <div class="sidebar-user-profile">
       <div class="user-avatar">
         @if (stateStore.profileLoaded()) {
-        {{ initials() }}
+          {{ initials() }}
         } @else {
-        <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
+          <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
         }
       </div>
       <div class="user-info">
         <span class="user-name">{{ stateStore.profile().firstName + " " + stateStore.profile().lastName }}</span>
         <span class="user-plan">{{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' :
-          stateStore.profile().subscription === 'PRO' ? 'პრო' :
-          'პრემიუმ' }}</span>
+          stateStore.profile().subscription === 'PRO' ? 'პრო' : 'პრემიუმ' }}</span>
       </div>
     </div>
 
@@ -97,7 +98,8 @@
         <span>გასვლა</span>
       </button>
     </div>
-  </aside>
+  </div>
+</aside>
 
   <!-- Main Content Area -->
   <div class="main-wrapper">
