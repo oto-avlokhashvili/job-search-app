@@ -205,11 +205,16 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ─── Subscription dialog panel ───────────────────────────── */
+
+// Transparent container so .sub-modal's own background shows through
 .subscription-dialog .mat-mdc-dialog-container {
   --mdc-dialog-container-color: transparent;
   border-radius: 20px !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
   padding: 0 !important;
+  // Let content determine height; cap at 90% of viewport
+  max-height: 90svh !important;
+  overflow: visible !important;
 }
 
 .subscription-dialog .mat-mdc-dialog-surface {
@@ -217,4 +222,43 @@ body {
   background: transparent !important;
   box-shadow: none !important;
   padding: 0 !important;
+  // Don't restrict — the .sub-modal inside handles its own scroll
+  overflow: visible !important;
+  max-height: none !important;
 }
+
+// The CDK pane itself needs a max-height too so it doesn't push off-screen
+.subscription-dialog.cdk-overlay-pane {
+  max-height: 90svh !important;
+}
+
+// ── Mobile ≤ 600px ──────────────────────────────────────────────
+@media (max-width: 600px) {
+  .subscription-dialog {
+    max-width: 100vw !important;
+    width: calc(100vw - 2rem) !important;
+    margin: 0 1rem !important;
+    max-height: 92svh !important;
+  }
+
+  .subscription-dialog .mat-mdc-dialog-container,
+  .subscription-dialog .mat-mdc-dialog-surface {
+    border-radius: 16px !important;
+  }
+}
+
+// ── Mobile ≤ 420px ──────────────────────────────────────────────
+@media (max-width: 420px) {
+  .subscription-dialog {
+    width: calc(100vw - 1rem) !important;
+    margin: 0 0.5rem !important;
+    max-height: 94svh !important;
+  }
+
+  .subscription-dialog .mat-mdc-dialog-container,
+  .subscription-dialog .mat-mdc-dialog-surface {
+    border-radius: 14px !important;
+  }
+}
+
+

@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   background: var(--app-bg);
-  overflow-x: hidden;   // hard stop for horizontal scroll at root level
+  overflow-x: hidden;
 }
 
 .main-wrapper {
@@ -10,18 +10,17 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  min-width: 0;         // flex child: don't grow wider than the parent
+  min-width: 0;
   overflow-x: hidden;
 }
 
 .main-content {
   flex: 1;
   padding: 2rem;
-  min-width: 0;         // prevent flex child overflow
+  min-width: 0;
   overflow-x: hidden;
 }
 
-// Chat page uses its own border-radius card — just use a smaller padding
 .main-content:has(app-chat) {
   padding: 1rem;
 }
@@ -43,29 +42,34 @@
 
   display: flex;
   flex-direction: column;
+
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .sidebar-user-profile {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 1rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
   background: rgba(var(--primary-rgb), 0.05);
-  border-radius: 12px;
-  margin-bottom: 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
   border: 1px solid var(--border-color);
-  margin-top: auto;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
 
   .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background: var(--primary);
     border-radius: 50%;
     display: flex;
@@ -73,7 +77,7 @@
     justify-content: center;
     color: white;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
   }
 
@@ -83,7 +87,7 @@
     min-width: 0;
 
     .user-name {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--on-surface);
       white-space: nowrap;
@@ -92,7 +96,7 @@
     }
 
     .user-plan {
-      font-size: 0.75rem;
+      font-size: 0.68rem;
       color: var(--primary);
       opacity: 0.8;
     }
@@ -102,14 +106,14 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
+  gap: 0.4rem;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--primary);
 }
 
 .sidebar-logo {
-  height: 32px;
+  height: 22px;
   width: auto;
   object-fit: contain;
 }
@@ -132,7 +136,8 @@
 
 nav {
   overflow-y: auto;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  max-height: 280px;
 }
 
 .nav-menu {
@@ -142,14 +147,14 @@ nav {
 }
 
 .nav-item {
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.1rem;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.48rem 0.85rem;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
   color: var(--on-surface-variant);
   text-decoration: none;
   border-radius: 8px;
@@ -159,7 +164,7 @@ nav {
   background: transparent;
   width: 100%;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   font-family: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -168,12 +173,10 @@ nav {
 
 .nav-link:hover {
   background: linear-gradient(to right, rgba(91, 155, 213, 0.25), rgba(91, 155, 213, 0.05));
-
 }
 
 .nav-link.active {
   background: linear-gradient(to right, rgba(91, 155, 213, 0.4), rgba(91, 155, 213, 0.08));
-
   border-right: 3px solid #5b9bd5;
   border-radius: 8px 0 0 8px;
 }
@@ -190,13 +193,13 @@ nav {
 }
 
 .nav-icon {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
 }
 
 .sidebar-footer {
   border-top: 1px solid var(--border-color);
-  padding-top: 0.75rem;
+  padding-top: 0.4rem;
   margin-top: 0.5rem;
   flex-shrink: 0;
 }
@@ -204,35 +207,35 @@ nav {
 .upgrade-banner {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.85rem 1rem;
-  border-radius: 12px;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
   background: linear-gradient(135deg, rgba(11, 96, 150, 0.12), rgba(91, 155, 213, 0.08));
   border: 1px solid rgba(91, 155, 213, 0.3);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   flex-shrink: 0;
 
   .upgrade-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 
     .upgrade-icon {
-      font-size: 1rem;
+      font-size: 0.85rem;
       flex-shrink: 0;
     }
 
     span {
-      font-size: 0.8rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: var(--on-surface);
     }
   }
 
   .upgrade-sub {
-    font-size: 0.72rem;
+    font-size: 0.67rem;
     color: var(--on-surface-variant);
-    line-height: 1.4;
+    line-height: 1.3;
     white-space: normal;
   }
 
@@ -240,11 +243,11 @@ nav {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.4rem 0;
-    border-radius: 8px;
+    padding: 0.3rem 0;
+    border-radius: 7px;
     background: var(--primary);
     color: white;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-decoration: none;
     width: 100%;
@@ -262,10 +265,10 @@ nav {
   border-color: rgba(91, 155, 213, 0.2);
 }
 
-// ─── Chat Conversations Panel ───────────────────────────────────────────────
+// ─── Chat Conversations Panel ────────────────────────────────────────────────
 .chat-conversations-panel {
   flex: 1;
-  min-height: 0;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border-color);
@@ -279,6 +282,7 @@ nav {
   align-items: center;
   justify-content: space-between;
   padding: 0 0.5rem 0.4rem;
+  flex-shrink: 0;
 
   .chat-panel-label {
     font-size: 0.68rem;
@@ -420,7 +424,7 @@ nav {
 }
 
 .theme-toggle {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.15rem;
 }
 
 .logout-btn {
@@ -431,6 +435,7 @@ nav {
   background: var(--error);
   color: white;
 }
+
 
 /* ========== HEADER STYLES ========== */
 .header {
@@ -485,6 +490,7 @@ nav {
   font-size: 0.85rem;
   margin: 0;
 }
+
 
 /* ========== FOOTER STYLES ========== */
 .footer {
@@ -578,12 +584,14 @@ nav {
   margin: 0;
 }
 
-/* ========== DARK MODE SPECIFIC OVERRIDES (Optional, Variables handle most) ========== */
+
+/* ========== DARK MODE OVERRIDES ========== */
 [data-theme='dark'] .sidebar,
 [data-theme='dark'] .header,
 [data-theme='dark'] .footer {
   border: 1px solid var(--border-color);
 }
+
 
 /* ========== MOBILE MENU TOGGLE ========== */
 .menu-toggle {
@@ -640,11 +648,8 @@ nav {
   opacity: 1;
 }
 
-/* ========== RESPONSIVE STYLES ========== */
-@media (max-width: 1024px) {
-  /* Adjustments for tablets */
-}
 
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .menu-toggle {
     display: block;
@@ -675,7 +680,6 @@ nav {
     margin-top: 4rem;
   }
 
-  // On mobile, chat card should use all available width with no side padding
   .main-content:has(app-chat) {
     padding: 0.5rem 0.5rem 0.5rem;
   }
