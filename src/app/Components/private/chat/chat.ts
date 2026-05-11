@@ -17,11 +17,12 @@ import { StateStore } from '../../../Store/state.store';
 import { ChatStore, Conversation } from '../../../Store/chat.store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Ai } from '../../../Core/Services/ai';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { QrModal } from '../dashboard/qr-modal/qr-modal';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { environment } from '../../../../environments/environment';
+import { JobsService } from '../../../Core/Services/jobs-service';
 
 export interface AttachedFile {
   id: string;
@@ -85,6 +86,7 @@ export class Chat implements OnInit, AfterViewChecked, OnDestroy {
   authService = inject(AuthService);
   private dialog = inject(MatDialog);
   telegramLink = signal<string>('');
+  jobService = inject(JobsService);
 
   inputText = signal<string>('');
   attachedFiles = signal<AttachedFile[]>([]);
@@ -364,15 +366,41 @@ async sendMessage() {
     this.shouldScrollToBottom = true;
   }
 }
-  private async runJobSearch(id: string, loadingMsgId: string): Promise<void> {
+private async runJobSearch(id: string, loadingMsgId: string): Promise<void> {
   const res: any = await new Promise((resolve, reject) => {
-    this.aiService.searchJobsWithAi().subscribe({ next: resolve, error: reject, complete: () => {this.stateStore.loadAIMatchedJobs(1, 5); this.stateStore.getCv(); } });
+    this.aiService.searchJobsWithAi().subscribe({ 
+      next: resolve, 
+      error: reject, 
+      complete: () => {
+        this.stateStore.loadAIMatchedJobs(1, 5); 
+        this.stateStore.getCv(); 
+      } 
+    });
   });
-  console.log(res);
-  
+
   this.chatStore.removeMessage(id, loadingMsgId);
 
   const response = res?.response;
+  const jobs: any[] = Array.isArray(response?.topJobs) ? response.topJobs 
+                     : Array.isArray(response) ? response 
+                     : [];
+
+  if (jobs.length > 0) {
+  const userId = this.stateStore.profile().id;
+
+  const payload = jobs.map(job => ({
+    userId,
+    jobId: job.id,
+    vacancy: job.vacancy,
+    location: job.location,
+    company: job.company,
+    match: job.match,
+    salaryRange: job.salaryRange,
+  }));
+
+  await firstValueFrom(this.jobService.markAsSentBulk(payload));
+}
+
   this.chatStore.addMessage(id, {
     id: this.generateId(),
     role: 'assistant',

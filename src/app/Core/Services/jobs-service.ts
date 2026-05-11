@@ -11,15 +11,15 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class JobsService {
   http = inject(HttpClient);
   url = environment.apiUrl;
-getJobs( query: string = '', page: number = 1): Observable<JobsResponse> {
-  let params = new HttpParams();
+  getJobs(query: string = '', page: number = 1): Observable<JobsResponse> {
+    let params = new HttpParams();
 
-  if (query.trim().length > 0) {
-    params = params.set('query', query.trim());
+    if (query.trim().length > 0) {
+      params = params.set('query', query.trim());
+    }
+
+    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params });
   }
-
-  return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, {params});
-}
 
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs?page=${page}&limit=${limit}`);
@@ -36,5 +36,9 @@ getJobs( query: string = '', page: number = 1): Observable<JobsResponse> {
 
   analyzeJob(job: any): Observable<any> {
     return this.http.post<any>(`${this.url}/ai/generate`, job);
+  }
+
+  markAsSentBulk(jobs: any[]): Observable<any> {
+    return this.http.post<any>(`${this.url}/sent-jobs/bulk`, jobs, { context: new HttpContext().set(skipLoading, true) });
   }
 }
