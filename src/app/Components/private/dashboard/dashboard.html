@@ -173,30 +173,65 @@
 
 
 
-    <!-- Recent Activity -->
+    <!-- CV Summary -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title">ბოლო აქტივობები</h2>
+        <h2 class="card-title">CV-ის ანალიზი</h2>
       </div>
 
-      <div class="activity-item" *ngFor="let activity of activities()">
-        @if(activity.title !== "ტელეგრამი" && activity.title !== "ელ-ფოსტა"){
-        <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
-          {{ activity.icon }}
+      <div class="cv-summary-wrapper">
+        @if (cvSummary()) {
+        <div class="cv-summary-container">
+          <div class="summary-item">
+            <span class="summary-label">პოზიცია:</span>
+            <span class="summary-value">{{ cvSummary()?.detectedRole }} @if(cvSummary()?.seniorityLevel) { ({{
+              cvSummary()?.seniorityLevel }}) }</span>
+          </div>
+
+          <div class="summary-item" *ngIf="cvSummary()?.salaryEstimates">
+            <span class="summary-label">სავარაუდო ხელფასი:</span>
+            <div class="salary-badges">
+              <div class="salary-badge-group" *ngIf="cvSummary()?.salaryEstimates?.georgia">
+                <span class="salary-loc">საქართველო (Tbilisi):</span>
+                <div class="salary-badge">🇬🇪 {{ cvSummary()?.salaryEstimates?.georgia }}</div>
+              </div>
+              <div class="salary-badge-group" *ngIf="cvSummary()?.salaryEstimates?.remote">
+                <span class="salary-loc">Remote (Global):</span>
+                <div class="salary-badge">🌍 {{ cvSummary()?.salaryEstimates?.remote }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">უნარები:</span>
+            <div class="skills-list">
+              @for (skill of (cvSummary()?.primarySkills || []); track skill) {
+              <span class="skill-tag">
+                {{ skill }}
+              </span>
+              } @empty {
+              <span class="empty-text">ინფორმაცია არ არის ხელმისაწვდომი</span>
+              }
+            </div>
+          </div>
+
+          <div class="summary-item" *ngIf="cvSummary()?.locationPreference">
+            <span class="summary-label">ლოკაცია:</span>
+            <span class="summary-value">📍 {{ cvSummary()?.locationPreference }}</span>
+          </div>
+        </div>
+        } @else if (stateStore.cvLoading()) {
+        <div class="cv-loader-placeholder">
+          <div class="cv-spinner"></div>
+          <p>მუშავდება...</p>
+        </div>
+        } @else {
+        <div class="empty-cv-summary">
+          <p>ატვირთეთ CV ანალიზისთვის</p>
         </div>
         }
-        @if(activity.title == "ტელეგრამი"){
-        <img class="activity-icon" [src]="activity.icon" alt="Telegram">
-        }
-        @if(activity.title == "ელ-ფოსტა"){
-        <img class="activity-icon" [style.background]="activity.iconBg" [src]="activity.icon" alt="Gmail">
-        }
-        <div class="activity-content">
-          <h4>{{ activity.title }}</h4>
-          <p>{{ activity.description }}</p>
-          <div class="activity-time">{{ activity.time }}</div>
-        </div>
       </div>
+
       <div class="row mt-4 gy-2">
         @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
         <div class="col-md-12">

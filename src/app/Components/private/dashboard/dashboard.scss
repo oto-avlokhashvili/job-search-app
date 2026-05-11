@@ -863,81 +863,389 @@
   align-items: center;
   gap: 12px;
   padding: 1rem 0;
-  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
+}
+
+.chip {
+  background: var(--surface-container);
+  color: var(--on-surface);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+
+  .chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #718096;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 50%;
+
+    &:hover {
+      color: #e53e3e;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    i {
+      font-size: 16px;
+      line-height: 1;
+    }
+  }
+}
+
+.chip-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  min-width: 150px;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--on-surface);
+
+  &::placeholder {
+    color: var(--on-surface-variant);
+  }
+}
+
+.analyze-with-ai {
+  color: #5b9bd5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 3px 5px;
+}
+
+.analyze-with-ai:hover {
+  color: white;
+  background-color: #5b9bd5;
+  border-radius: 4px;
+}
+
+/* ── CV & Summary Sections ────────────────────────────────────── */
+
+.cv-content-wrapper {
+  margin-top: 0.5rem;
+}
+
+.cv-upload-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: 14px;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--on-surface-variant);
+  background: var(--surface-container-low);
+  text-align: center;
+
+  &:hover {
+    border-color: var(--primary);
+    background: var(--primary-container);
+    color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(11, 96, 150, 0.1);
+  }
+
+  svg {
+    opacity: 0.8;
+    color: var(--primary);
+  }
+}
+
+.cv-upload-text {
+  span {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin-bottom: 0.25rem;
+  }
+  p {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin: 0;
+  }
+}
+
+.cv-file-info {
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
+  }
+}
+
+.cv-file-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--primary-container);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.cv-file-details {
+  flex: 1;
+  min-width: 0;
+  
+  .cv-file-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .cv-file-size {
+    font-size: 0.85rem;
+    color: var(--on-surface-variant);
+    opacity: 0.75;
+  }
+}
+
+.cv-change-btn {
+  background: transparent;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--on-surface);
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+}
+
+.cv-delete-btn {
+  color: #ef4444;
+  opacity: 0.6;
+  transition: all 0.2s;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* CV Analysis Summary Styles */
+.cv-summary-wrapper {
+  padding: 0.5rem 0;
+}
+
+.cv-summary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.summary-item {
+  .summary-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+  }
+  
+  .summary-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    line-height: 1.4;
+  }
+}
+
+.salary-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.salary-badge-group {
+  .salary-loc {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    margin-bottom: 0.4rem;
+  }
+  
+  .salary-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1.15rem;
+    background: var(--surface-container-high);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 1.05rem;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: scale(1.02);
+      border-color: var(--primary);
+    }
+  }
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.skill-tag {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  padding: 0.4rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: var(--primary-container);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.1);
+  }
+}
+
+.cv-loader-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  gap: 1.25rem;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-low);
+  border-radius: 14px;
+  border: 1px dashed var(--border-color);
+
+  .cv-spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+  
+  p {
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.empty-cv-summary {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-low);
+  border-radius: 14px;
+  border: 1px dashed var(--border-color);
+  font-style: italic;
+  
+  p {
+    margin: 0;
+    opacity: 0.7;
+  }
+}
+
+.empty-text {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+/* Dark Mode Fine-Tuning */
+[data-theme='dark'] {
+  .cv-upload-zone {
+    background: rgba(255, 255, 255, 0.02);
+    &:hover { background: rgba(255, 255, 255, 0.05); }
+  }
+  
+  .cv-file-info {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .salary-badge {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--primary) !important;
+  }
+  
+  .skill-tag {
+    background: rgba(255, 255, 255, 0.04);
+    &:hover { background: var(--primary-container); }
+  }
 }
 
 .cv-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-color);
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--border-color);
   border-top-color: var(--primary);
   border-radius: 50%;
-  animation: cv-spin 0.7s linear infinite;
+  animation: cv-spin 0.8s linear infinite;
   flex-shrink: 0;
 }
 
 @keyframes cv-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ── Dark mode cleanup ── */
-[data-theme='dark'] {
-  .cv-upload-zone {
-    border-color: var(--border-color);
-    color: var(--on-surface-variant);
-  }
-
-  .cv-upload-zone:hover {
-    border-color: var(--primary);
-    color: var(--on-surface);
-  }
-
-  .cv-upload-text span {
-    color: var(--on-surface);
-  }
-
-  .cv-upload-text p {
-    color: var(--on-surface-variant);
-  }
-
-  .cv-file-info {
-    border-color: var(--border-color);
-    background: var(--surface-container-low);
-  }
-
-  .cv-file-icon {
-    background: var(--primary-container);
-    color: var(--primary);
-  }
-
-  .cv-file-name {
-    color: var(--on-surface);
-  }
-
-  .cv-file-size {
-    color: var(--on-surface-variant);
-  }
-
-  .cv-change-btn {
-    border-color: var(--border-color);
-    color: var(--on-surface);
-  }
-
-  .cv-change-btn:hover {
-    border-color: var(--primary);
-  }
-
-  .cv-loader {
-    color: var(--on-surface-variant);
-  }
-
-  .cv-spinner {
-    border-color: var(--border-color);
-    border-top-color: var(--primary);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .cv-analyze-btn {

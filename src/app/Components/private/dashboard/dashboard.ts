@@ -62,6 +62,7 @@ export class Dashboard implements OnInit {
   stateStore = inject(StateStore);
   profileId = computed(() => this.stateStore.profile()?.id);
   recentlyViewed = signal<string>('')
+  cvSummary = computed(() => this.stateStore.userCv()?.summary);
   stats = computed(() => {
     //const jobs = this.stateStore.jobsCount() ?? 0;
     const matched = this.stateStore.matchedJobsCount() ?? 0;
