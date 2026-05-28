@@ -16,8 +16,36 @@
 
 /* Modal Container */
 
-.bg-dark{
-    background-color: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+.bg-dark {
+  background: linear-gradient(135deg, #323253 0%, #1c2849 100%);
+  color: #e2e8f0;
+
+  .modal-title, h4, .text-center {
+    color: #e2e8f0 !important;
+  }
+
+  .modal-header, .modal-footer {
+    border-color: rgba(127, 190, 250, 0.15) !important;
+  }
+
+  .close-btn {
+    color: #a0b4cc;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+  }
+
+  .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #a0b4cc;
+    border: 1px solid rgba(127, 190, 250, 0.15);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+  }
 }
 .bg-light{
     background-color: rgba(255, 255, 255, 0.95);

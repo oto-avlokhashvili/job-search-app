@@ -11,7 +11,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 })
 export class QrModal {
 
-    isDarkMode = signal(localStorage.getItem('theme') === 'dark' || false);
+    isDarkMode = signal(localStorage.getItem('app-theme') === 'dark' || false);
     constructor(
     public dialogRef: MatDialogRef<QrModal>,
     @Inject(MAT_DIALOG_DATA) public data: { telegramLink: string }
