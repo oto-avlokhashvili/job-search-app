@@ -744,199 +744,12 @@
   border-radius: 4px;
 }
 
-
-.cv-upload-zone {
-  border: 1px dashed var(--border-color);
-  border-radius: 12px;
-  padding: 2.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--on-surface-variant);
-}
-
-.cv-upload-zone:hover {
-  border-color: var(--primary);
-  background: var(--surface-container-low);
-  color: var(--on-surface);
-}
-
-.cv-upload-text {
-  text-align: center;
-}
-
-.cv-upload-text span {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--on-surface);
-  display: block;
-  margin-bottom: 2px;
-}
-
-.cv-upload-text p {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-  margin: 0;
-}
-
-.cv-file-info {
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface-container-low);
-}
-
-.cv-file-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: var(--primary-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--primary);
-}
-
-.cv-file-details {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cv-file-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--on-surface);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
-}
-
-.cv-file-size {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-}
-
-.cv-change-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-  color: var(--on-surface);
-}
-
-.cv-change-btn:hover {
-  border-color: var(--primary);
-  background: var(--primary-container);
-  color: var(--primary);
-}
-
-.cv-delete-btn {
-  cursor: pointer;
-  color: #d32f2f;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.15s;
-}
-
-.cv-delete-btn:hover {
-  opacity: 0.7;
-}
-
 .cv-loader {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 1rem 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
   width: 100%;
-  align-items: center;
-}
-
-.chip {
-  background: var(--surface-container);
-  color: var(--on-surface);
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  border: 1px solid var(--border-color);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-
-  .chip-remove {
-    background: none;
-    border: none;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #718096;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 50%;
-
-    &:hover {
-      color: #e53e3e;
-      background: rgba(0, 0, 0, 0.05);
-    }
-
-    i {
-      font-size: 16px;
-      line-height: 1;
-    }
-  }
-}
-
-.chip-input {
-  border: none;
-  outline: none;
-  background: transparent;
-  flex: 1;
-  min-width: 150px;
-  padding: 0.4rem;
-  font-size: 0.9rem;
-  color: var(--on-surface);
-
-  &::placeholder {
-    color: var(--on-surface-variant);
-  }
-}
-
-.analyze-with-ai {
-  color: #5b9bd5;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.3s;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 3px 5px;
-}
-
-.analyze-with-ai:hover {
-  color: white;
-  background-color: #5b9bd5;
-  border-radius: 4px;
 }
 
 /* ── CV & Summary Sections ────────────────────────────────────── */
@@ -948,11 +761,11 @@
 .cv-upload-zone {
   border: 2px dashed var(--border-color);
   border-radius: 14px;
-  padding: 2.5rem 1.5rem;
+  padding: 1.5rem 1.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--on-surface-variant);
@@ -963,8 +776,8 @@
     border-color: var(--primary);
     background: var(--primary-container);
     color: var(--primary);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(11, 96, 150, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(11, 96, 150, 0.08);
   }
 
   svg {
@@ -992,7 +805,7 @@
   background: var(--surface-container-low);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 1.25rem;
+  padding: 1rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
@@ -1008,8 +821,8 @@
 }
 
 .cv-file-icon {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   background: var(--primary-container);
   color: var(--primary);
@@ -1082,32 +895,33 @@
 .cv-summary-container {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 0.85rem;
 }
 
 .summary-item {
   .summary-label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--on-surface-variant);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.2rem;
     opacity: 0.6;
   }
   
   .summary-value {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--on-surface);
-    line-height: 1.4;
+    line-height: 1.3;
   }
 }
 
 .salary-badges {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -1117,26 +931,20 @@
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--on-surface-variant);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.25rem;
   }
   
   .salary-badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.65rem 1.15rem;
+    padding: 0.5rem 0.9rem;
     background: var(--surface-container-high);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     font-weight: 800;
     color: var(--primary);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
-    transition: all 0.25s ease;
-
-    &:hover {
-      transform: scale(1.02);
-      border-color: var(--primary);
-    }
   }
 }
 
@@ -1149,20 +957,11 @@
 .skill-tag {
   background: var(--surface-container-high);
   color: var(--on-surface);
-  padding: 0.4rem 0.95rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 700;
   border: 1px solid var(--border-color);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background: var(--primary-container);
-    color: var(--primary);
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.1);
-  }
 }
 
 .cv-loader-placeholder {
@@ -1230,7 +1029,6 @@
   
   .skill-tag {
     background: rgba(255, 255, 255, 0.04);
-    &:hover { background: var(--primary-container); }
   }
 }
 
