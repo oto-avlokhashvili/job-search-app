@@ -20,6 +20,13 @@
     <!-- Central Search/Upload Widget -->
     <div class="search-widget-container">
 
+      @if (!showJobs()) {
+        <!-- Hero Welcome Section -->
+        <div class="hero-section">
+          <h1 class="hero-title">აღმოაჩინე შენი კარიერული მომავალი <span class="gradient-text">AI-ით</span></h1>
+          <p class="hero-subtitle">ატვირთეთ თქვენი CV და ჩვენი ხელოვნური ინტელექტი მყისიერად შეგირჩევთ საუკეთესო ვაკანსიებს.</p>
+        </div>
+      }
 
       <!-- Input Card (CV File Upload Area) -->
       <div class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
@@ -83,6 +90,35 @@
       </div>
 
     </div>
+
+    <!-- Capabilities / Feature Highlight Cards -->
+    @if (!showJobs()) {
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper blue">
+            <span class="material-symbols-outlined">psychology</span>
+          </div>
+          <h3>AI-ით შერჩევა</h3>
+          <p>აანალიზებს თქვენს უნარებსა და გამოცდილებას იდეალური შესატყვისების საპოვნელად.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper green">
+            <span class="material-symbols-outlined">bolt</span>
+          </div>
+          <h3>Telegram შეტყობინებები</h3>
+          <p>მყისიერად მიიღეთ ახალი შესაფერისი ვაკანსიები პირდაპირ თქვენს მობილურზე.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper orange">
+            <span class="material-symbols-outlined">upload_file</span>
+          </div>
+          <h3>მარტივი ატვირთვა</h3>
+          <p>ჩააგდეთ PDF ან Word ფაილი და სისტემა თავად ამოიკითხავს თქვენს მონაცემებს.</p>
+        </div>
+      </div>
+    }
 
     <!-- Results Workspace (Layout splits when jobs exist) -->
     @if (showJobs()) {
