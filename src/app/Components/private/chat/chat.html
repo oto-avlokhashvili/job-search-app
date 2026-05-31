@@ -127,23 +127,23 @@
         <!-- Left Side: Search Context / CV Summary -->
         <div class="context-card-wrapper">
           <div class="context-card">
-            <h3>Search Context</h3>
+            <h3>ძიების თემატიკა</h3>
             
             <div class="context-details">
               <div class="context-item">
-                <span class="label">Role</span>
-                <span class="value">{{ aiDetectedRole() || cvSummary()?.detectedRole || 'Not specified' }}</span>
+                <span class="label">პოზიცია</span>
+                <span class="value">{{ aiDetectedRole() || cvSummary()?.detectedRole || 'მითითებული არ არის' }}</span>
               </div>
               
               <div class="context-item">
-                <span class="label">Location</span>
-                <span class="value">{{ aiLocationPreference() || cvSummary()?.locationPreference || 'Remote / Hybrid' }}</span>
+                <span class="label">ადგილმდებარეობა</span>
+                <span class="value">{{ aiLocationPreference() || cvSummary()?.locationPreference || 'დისტანციური / ჰიბრიდული' }}</span>
               </div>
 
               @if ((aiPrimarySkills().length > 0 ? aiPrimarySkills() : cvSummary()?.primarySkills); as skills) {
                 @if (skills && skills.length > 0) {
                   <div class="context-item">
-                    <span class="label">Top Skills</span>
+                    <span class="label">ძირითადი უნარები</span>
                     <div class="skills-wrap">
                       @for (skill of skills.slice(0, 4); track skill) {
                         <span class="skill-pill">{{ skill }}</span>
@@ -159,9 +159,9 @@
                 @if (aiSummary()) {
                   {{ aiSummary() }}
                 } @else if (aiDetectedRole() || cvSummary()?.detectedRole; as role) {
-                  I've analyzed the current market for a {{ role }}. Here are the top matches that prioritize high-complexity systems and user trust.
+                  გავაანალიზე მიმდინარე ბაზარი {{ role }}-ის პოზიციაზე. აქ არის საუკეთესო შესატყვისები, რომლებიც პრიორიტეტს ანიჭებს მაღალი სირთულის სისტემებსა და მომხმარებლის ნდობას.
                 } @else {
-                  I've analyzed the current market. Here are the top matches matching your keywords and profile preferences.
+                  გავაანალიზე მიმდინარე ბაზარი. აქ არის საუკეთესო შესატყვისები თქვენი საკვანძო სიტყვებისა და პროფილის პრეფერენციების მიხედვით.
                 }
               </p>
             </div>
@@ -169,7 +169,7 @@
 
           <!-- Separate Queries Management Card -->
           <div class="queries-card">
-            <h3>Search Queries</h3>
+            <h3>საძიებელი პარამეტრები</h3>
             <div class="queries-management">
               <div class="context-chips-list">
                 @for (keyword of stateStore.searchQuery(); track $index) {
@@ -193,7 +193,7 @@
 
         <!-- Right Side: Job Listings -->
         <div class="jobs-results-wrapper">
-          <h3 class="results-title">Top Matches ({{ matchedJobs().length }})</h3>
+          <h3 class="results-title">Top ვაკანსიები ({{ matchedJobs().length }})</h3>
           
           <div class="jobs-list">
             @for (job of matchedJobs(); track job.id) {
@@ -213,7 +213,7 @@
                             [class.tier-strong]="job.match >= 75" 
                             [class.tier-good]="job.match >= 50 && job.match < 75" 
                             [class.tier-possible]="job.match < 50">
-                        {{ job.match }}% Match
+                        {{ job.match }}% შესატყვისი
                       </span>
                       @if (job.salaryRange) {
                         <span class="job-tag salary-tag">{{ job.salaryRange }}</span>
@@ -224,7 +224,7 @@
 
                 <!-- Job Actions -->
                 <div class="job-actions">
-                  <a [href]="job.link" target="_blank" class="apply-btn">Quick Apply</a>
+                  <a [href]="job.link" target="_blank" class="apply-btn">სწრაფად განაცხადე</a>
                 </div>
               </div>
             } @empty {
