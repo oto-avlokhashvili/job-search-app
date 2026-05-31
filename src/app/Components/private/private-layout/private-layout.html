@@ -31,32 +31,7 @@
     </ul>
   </nav>
 
-  @if (isOnChatRoute()) {
-    <div class="chat-conversations-panel">
-      <div class="chat-panel-header">
-        <span class="chat-panel-label">ჩატები</span>
-        <button class="new-chat-btn" (click)="createNewChat()" title="ახალი ჩატი">
-          <span>+</span>
-        </button>
-      </div>
-      <div class="chat-conv-list">
-        @if (chatStore.conversations().length === 0) {
-          <div class="conv-empty">ჩატი არ არის</div>
-        }
-        @for (conv of chatStore.conversations(); track conv.id) {
-          <div class="chat-conv-item" [class.active-conv]="isActiveConversation(conv.id)"
-            (click)="selectConversation(conv.id)">
-            <span class="conv-dot">💬</span>
-            <div class="conv-info">
-              <span class="conv-title-text">{{ conv.title }}</span>
-              <span class="conv-date">{{ formatConvTime(conv.createdAt) }}</span>
-            </div>
-            <button class="conv-delete-btn" (click)="deleteConversation($event, conv.id)" title="წაშლა">✕</button>
-          </div>
-        }
-      </div>
-    </div>
-  }
+
 
   <!-- Spacer pushes everything below to the bottom -->
   <div class="sidebar-spacer"></div>

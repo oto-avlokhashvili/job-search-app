@@ -2,7 +2,8 @@
      (dragover)="onDragOver($event)" 
      (dragleave)="onDragLeave()" 
      (drop)="onDrop($event)"
-     [class.drag-active]="isDragOver()">
+     [class.drag-active]="isDragOver()"
+     [class.has-results]="showJobs()">
 
   <!-- Drop overlay -->
   @if (isDragOver()) {

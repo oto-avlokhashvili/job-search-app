@@ -17,15 +17,21 @@ $shadow: var(--shadow);
 .career-dashboard {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 4rem);
+  min-height: calc(100vh - 4rem);
+  height: auto;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: $on-surface;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
+
+  &.has-results {
+    max-width: none;
+    margin: 0;
+  }
 
   * {
     box-sizing: border-box;
@@ -178,12 +184,16 @@ $shadow: var(--shadow);
   flex-direction: column;
   flex-grow: 1;
   padding: 1.5rem 2rem;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:not(.has-results) {
     justify-content: center;
     align-items: center;
+  }
+
+  &.has-results {
+    padding: 1.5rem 0;
   }
 }
 
@@ -521,7 +531,7 @@ $shadow: var(--shadow);
   gap: 1.5rem;
   width: 100%;
   flex-grow: 1;
-  overflow: hidden;
+  overflow: visible;
 
   @media (min-width: 768px) {
     grid-template-columns: 280px 1fr;
@@ -530,8 +540,8 @@ $shadow: var(--shadow);
 
 // Left Column: Context Card
 .context-card-wrapper {
-  overflow-y: auto;
-  max-height: 100%;
+  overflow-y: visible;
+  max-height: none;
   padding-right: 0.25rem;
   display: flex;
   flex-direction: column;
@@ -712,8 +722,8 @@ $shadow: var(--shadow);
 .jobs-results-wrapper {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  height: 100%;
+  overflow: visible;
+  height: auto;
 
   .results-title {
     margin: 0 0 0.75rem 0.25rem;
@@ -725,7 +735,7 @@ $shadow: var(--shadow);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    overflow-y: auto;
+    overflow-y: visible;
     padding-bottom: 2rem;
     padding-right: 0.5rem;
     flex-grow: 1;

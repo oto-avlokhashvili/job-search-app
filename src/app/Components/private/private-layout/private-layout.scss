@@ -23,6 +23,10 @@
   padding: 1rem;
 }
 
+.main-content:has(app-chat.has-results) {
+  padding: 2rem;
+}
+
 
 /* ========== SIDEBAR STYLES ========== */
 .sidebar {
@@ -700,6 +704,10 @@ nav {
 
   .main-content:has(app-chat) {
     padding: 0.5rem 0.5rem 0.5rem;
+  }
+
+  .main-content:has(app-chat.has-results) {
+    padding: 1rem;
   }
 
   .header {

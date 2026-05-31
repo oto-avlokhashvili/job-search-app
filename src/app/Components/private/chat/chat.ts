@@ -70,6 +70,9 @@ export interface ChatMessage {
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
+  host: {
+    '[class.has-results]': 'showJobs()',
+  },
 })
 export class Chat implements OnInit {
   @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
@@ -146,8 +149,8 @@ export class Chat implements OnInit {
   }
 
   ngOnInit() {
-    this.stateStore.getCv();
-    this.stateStore.loadProfile();
+    //this.stateStore.getCv();
+    //this.stateStore.loadProfile();
   }
 
   triggerFileInput() {
