@@ -1,16 +1,3 @@
-<div class="stats-grid">
-  <div class="stat-card" [ngClass]="'colored-' + stat.colorClass" *ngFor="let stat of stats()">
-    <a style="text-decoration: none; cursor: pointer;" [routerLink]="stat.redirectTo || null"
-      (click)="!stat.redirectTo ? scrollToTable() : null">
-      <div class="stat-header">
-        <div class="stat-icon" [ngClass]="stat.colorClass">{{ stat.icon }}</div>
-      </div>
-      <div class="stat-value">{{ stat.value }}</div>
-      <div class="stat-label">{{ stat.label }}</div>
-    </a>
-  </div>
-</div>
-
 <!-- Content Grid -->
 <div class="content-grid">
   <!-- Latest Jobs -->
@@ -19,69 +6,94 @@
       <h2 class="card-title">AI-ის მიერ შემოთავაზებული ვაკანსიები</h2>
     </div>
 
+    <div class="timeline-wrapper" *ngIf="stateStore.matchedJobsDashboard().data.length > 0">
+      @for (job of stateStore.matchedJobsDashboard().data; track job.id; let i = $index) {
+      <div class="timeline-entry" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
 
-    <div class="vacancy-cards-container">
-      <div class="cards-scroll-wrapper">
-        @for (job of stateStore.matchedJobsDashboard().data; track job.id) {
-        <div class="vacancy-card clickable-card" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
-          <div class="card-match-badge" [class.tier-strong]="(job.match ?? 0) >= 85"
-            [class.tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
-            [class.tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
-            [class.tier-not-possible]="(job.match ?? 0) < 50">
-            {{ job.match ?? 0 }}%
+        <!-- Timeline spine -->
+        <div class="timeline-spine">
+          <div class="timeline-dot"
+            [class.dot-strong]="(job.match ?? 0) >= 85"
+            [class.dot-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
+            [class.dot-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
+            [class.dot-low]="(job.match ?? 0) < 50">
+            <div class="dot-pulse"></div>
           </div>
-          <div class="card-body">
-            <h4 class="job-title">{{ job.vacancy }}</h4>
-            <div class="job-company">{{ job.company }}</div>
-            <div class="job-meta">
-              <span>📍 {{ job.location || 'თბილისი' }}</span>
-              @if (job.salaryRange) {
-              <span>💰 {{ job.salaryRange }}</span>
-              }
-              <span>🕐 {{ job.publishDate }} – {{ job.deadline }}</span>
+          <div class="timeline-line"></div>
+        </div>
+
+        <!-- Entry card -->
+        <div class="entry-card">
+          <div class="entry-top">
+            <div class="entry-info">
+              <h3 class="entry-vacancy">{{ job.vacancy }}</h3>
+              <div class="entry-company">
+                <span class="company-icon">🏢</span>
+                {{ job.company }}
+              </div>
+            </div>
+            <div class="match-pill"
+              [class.tier-strong]="(job.match ?? 0) >= 85"
+              [class.tier-good]="(job.match ?? 0) >= 65 && (job.match ?? 0) < 85"
+              [class.tier-possible]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 65"
+              [class.tier-low]="(job.match ?? 0) < 50">
+              <span class="match-value">{{ job.match ?? 0 }}%</span>
+              <span class="match-label">Match</span>
             </div>
           </div>
-          <div>
-            <button class="view-btn">ნახვა →</button>
+
+          <div class="entry-meta">
+            <span class="meta-chip">
+              <span>📍</span> {{ job.location || 'თბილისი' }}
+            </span>
+            @if (job.salaryRange) {
+            <span class="meta-chip salary-chip">
+              <span>💰</span> {{ job.salaryRange }}
+            </span>
+            }
+            <span class="meta-chip date-chip">
+              <span>🕐</span> {{ job.publishDate }} – {{ job.deadline }}
+            </span>
           </div>
         </div>
-        }
-
 
       </div>
+      }
 
       <!-- Pagination -->
       <div class="pagination-container" *ngIf="stateStore.matchedJobsDashboard().lastPage > 1">
         <button class="pagination-btn" [disabled]="stateStore.matchedJobsDashboard().page === 1"
           (click)="onPageChange(stateStore.matchedJobsDashboard().page - 1)">
-          ←
+          ← წინა
         </button>
 
         <span class="page-info">
-          გვერდი {{ stateStore.matchedJobsDashboard().page }} / {{ stateStore.matchedJobsDashboard().lastPage }}
+          {{ stateStore.matchedJobsDashboard().page }} / {{ stateStore.matchedJobsDashboard().lastPage }}
         </span>
 
         <button class="pagination-btn"
           [disabled]="stateStore.matchedJobsDashboard().page === stateStore.matchedJobsDashboard().lastPage"
           (click)="onPageChange(stateStore.matchedJobsDashboard().page + 1)">
-          →
+          შემდეგი →
         </button>
       </div>
     </div>
 
     <div class="empty-state" *ngIf="stateStore.matchedJobsDashboard().data.length === 0">
-      <p>ვაკანსიები არ მოიძებნა</p>
+      <div class="empty-icon">📭</div>
+      <h3>ვაკანსიები არ მოიძებნა</h3>
+      <p>ატვირთეთ CV და დაამატეთ საძიებელი პარამეტრები</p>
     </div>
 
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+  <div class="sidebar-column">
     <!-- Search Query Card -->
     <div class="card">
       <div class="card-header" style="margin-bottom: 0.5rem;">
         <h2 class="card-title">საძიებელი პარამეტრები</h2>
       </div>
-      <div class="chips-input-container form-control" style="width: 100%;">
+      <div class="chips-input-container form-control">
         <div class="chips-list">
           @for (keyword of stateStore.searchQuery(); track $index) {
           <div class="chip">
@@ -98,13 +110,13 @@
             </button>
           </div>
           }
-          <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..." #queryInput
-            (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
-
-          <button class="btn btn-primary" (click)="addKeyword(queryInput)"
-            style="white-space: nowrap; padding: 0.25rem 0.75rem; border-radius: 4px; margin-left: auto;">
-            დამატება
-          </button>
+          <div class="chip-input-row">
+            <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..." #queryInput
+              (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
+            <button class="btn btn-primary chip-add-btn" (click)="addKeyword(queryInput)">
+              დამატება
+            </button>
+          </div>
         </div>
       </div>
     </div>

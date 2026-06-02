@@ -1,147 +1,37 @@
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-
-  a {
-    text-decoration: none;
-  }
-
-  // Light mode — soft pastels
-  &.colored-blue {
-    background: var(--stat-card-1);
-  }
-
-  &.colored-green {
-    background: var(--stat-card-2);
-  }
-
-  &.colored-orange {
-    background: var(--stat-card-3);
-  }
-
-  &.colored-purple {
-    background: var(--stat-card-4);
-  }
-
-  .stat-value,
-  .stat-label {
-    color: #ffffff !important;
-  }
-
-  .stat-value {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  }
-}
-
-/* Dark mode — specific richer versions */
-[data-theme='dark'] {
-  .stat-card.colored-blue {
-    background: linear-gradient(135deg, #2f6fa8, #1d4e7a) !important;
-  }
-
-  .stat-card.colored-green {
-    background: linear-gradient(135deg, #276f4a, #174d32) !important;
-  }
-
-  .stat-card.colored-orange {
-    background: linear-gradient(135deg, #b5621e, #8a4510) !important;
-  }
-
-  .stat-card.colored-purple {
-    background: linear-gradient(135deg, #6040a8, #3f2478) !important;
-  }
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-
-  [data-theme='dark'] & {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-.stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-@keyframes vibrate {
-
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-
-  15% {
-    transform: translate(-2px, 1px) rotate(-1deg);
-  }
-
-  30% {
-    transform: translate(2px, -1px) rotate(1deg);
-  }
-
-  45% {
-    transform: translate(-1px, 2px) rotate(0deg);
-  }
-
-  60% {
-    transform: translate(1px, -2px) rotate(1deg);
-  }
-
-  75% {
-    transform: translate(-1px, 1px) rotate(-1deg);
-  }
-}
-
-.stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(4px);
-  animation: vibrate 3s ease-in-out infinite;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--on-surface);
-  margin-bottom: 0.25rem;
-}
-
-.stat-label {
-  color: var(--on-surface-variant);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
 /* Content Grid */
 .content-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+// Right sidebar column
+.sidebar-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+// Chip input + add button row
+.chip-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.chip-add-btn {
+  white-space: nowrap;
+  padding: 0.3rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 .card {
@@ -150,6 +40,8 @@
   border-radius: 12px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .card-header {
@@ -178,248 +70,201 @@
   transform: translateX(4px);
 }
 
-/* ─── Premium Vacancy Cards ──────────────────────────────────── */
-.vacancy-cards-container {
-  margin: 0.5rem 0;
-  width: 100%;
-}
-
-.cards-scroll-wrapper {
+// ─── Timeline Wrapper ────────────────────────────────────────────
+.timeline-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 0.25rem 0 0.75rem;
+  gap: 0;
 }
 
-.vacancy-card {
+// ─── Timeline Entry ──────────────────────────────────────────────
+.timeline-entry {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  cursor: pointer;
+  animation: fadeSlideIn 0.35s ease both;
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 0.05}s; }
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// ─── Timeline Spine (line + dot) ────────────────────────────────
+.timeline-spine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  padding-top: 1.6rem;
+}
+
+.timeline-dot {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  z-index: 1;
+
+  &.dot-strong  { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+  &.dot-good    { background: linear-gradient(135deg, #eab308, #ca8a04); box-shadow: 0 0 0 3px rgba(234,179,8,0.2); }
+  &.dot-possible{ background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 0 0 3px rgba(249,115,22,0.2); }
+  &.dot-low     { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+}
+
+.dot-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: pulse 2.5s infinite ease-out;
+}
+
+@keyframes pulse {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(2); }
+}
+
+.timeline-line {
+  flex: 1;
+  width: 2px;
+  background: var(--border-color);
+  margin: 4px 0;
+  min-height: 16px;
+
+  .timeline-entry:last-child > & {
+    display: none;
+  }
+}
+
+// ─── Entry Card ─────────────────────────────────────────────────
+.entry-card {
+  flex: 1;
+  margin: 0.5rem 0 1rem 1rem;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 1rem 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  position: relative;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   &:hover {
     border-color: var(--primary);
-    box-shadow: 0 6px 22px rgba(11, 96, 150, 0.12);
-    transform: translateX(3px);
-    background: var(--surface-container-low);
-  }
-
-  &.clickable-card {
-    cursor: pointer;
-  }
-
-
-  .card-match-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    color: white;
-    font-size: 0.92rem;
-    font-weight: 800;
-    line-height: 1;
-    gap: 3px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-
-    &::after {
-      content: 'match';
-      font-size: 0.52rem;
-      font-weight: 600;
-      opacity: 0.85;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    &.tier-strong {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-    }
-
-    &.tier-good {
-      background: linear-gradient(135deg, #eab308, #ca8a04);
-    }
-
-    &.tier-possible {
-      background: linear-gradient(135deg, #f97316, #ea580c);
-    }
-
-    &.tier-not-possible {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-    }
-
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-  }
-
-  .card-body {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .job-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--on-surface);
-    margin: 0 0 0.2rem;
-    line-height: 1.4;
-    // Allow wrapping — no more nowrap truncation
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .job-company {
-    font-size: 0.82rem;
-    color: var(--primary);
-    font-weight: 600;
-    margin-bottom: 0.45rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .job-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    font-size: 0.73rem;
-    color: var(--on-surface-variant);
-
-    span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      background: var(--surface-container-low);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 0.18rem 0.55rem;
-      white-space: nowrap;
-    }
-  }
-
-  .card-footer {
-    flex-shrink: 0;
-  }
-
-  .view-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 1.1rem;
-    background: transparent;
-    color: var(--primary);
-    border: 1.5px solid var(--primary);
-    border-radius: 9px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    transition: all 0.2s;
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-
-    &:hover {
-      background: var(--primary);
-      color: white;
-      transform: scale(1.04);
-      box-shadow: 0 4px 12px rgba(11, 96, 150, 0.25);
-    }
+    box-shadow: 0 6px 20px rgba(11, 96, 150, 0.1);
+    transform: translateX(4px);
   }
 }
 
-// Animation
-.vacancy-card {
-  animation: cardIn 0.3s ease both;
-
-  @for $i from 1 through 20 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{($i - 1) * 0.04}s;
-    }
-  }
+.entry-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
 }
 
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.entry-info {
+  flex: 1;
+  min-width: 0;
 }
 
-// ── Mobile: stack badge on top, full-width layout ────────────────
-@media (max-width: 600px) {
-  .vacancy-card {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-    padding: 1rem;
+.entry-vacancy {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin: 0 0 0.35rem;
+  line-height: 1.35;
+}
 
-    // On mobile the badge becomes a small inline chip in the top row
-    .card-match-badge {
-      position: absolute;
-      top: 0.85rem;
-      right: 0.85rem;
-      width: auto;
-      height: auto;
-      flex-direction: row;
-      border-radius: 20px;
-      padding: 0.25rem 0.65rem;
-      font-size: 0.8rem;
-      gap: 0.25rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.entry-company {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 600;
+}
 
-      &::after {
-        content: '%';
-        font-size: 0.8rem;
-        font-weight: 700;
-        opacity: 1;
-        text-transform: none;
-        letter-spacing: 0;
-      }
-    }
+// ─── Match Pill ──────────────────────────────────────────────────
+.match-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+  color: white;
+  min-width: 64px;
+  text-align: center;
 
-    .card-body {
-      // Give body room — badge is absolute, so no offset needed
-      padding-right: 5rem;
-    }
+  &.tier-strong   { background: linear-gradient(135deg, #22c55e, #16a34a); }
+  &.tier-good     { background: linear-gradient(135deg, #eab308, #ca8a04); }
+  &.tier-possible { background: linear-gradient(135deg, #f97316, #ea580c); }
+  &.tier-low      { background: linear-gradient(135deg, #ef4444, #dc2626); }
+}
 
-    .job-title {
-      font-size: 0.9rem;
-      -webkit-line-clamp: 3;
-    }
+.match-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
 
-    .job-meta {
-      span {
-        font-size: 0.7rem;
-      }
-    }
+.match-label {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
 
-    // View button full-width at the bottom
-    >div:last-child {
-      width: 100%;
-    }
+// ─── Meta Chips ─────────────────────────────────────────────────
+.entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
 
-    .view-btn {
-      width: 100%;
-      justify-content: center;
-      padding: 0.6rem;
-    }
-  }
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--on-surface-variant);
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.salary-chip {
+  color: var(--primary);
+  border-color: rgba(11, 96, 150, 0.25);
+  background: rgba(11, 96, 150, 0.06);
+}
+
+.date-chip {
+  color: var(--on-surface-variant);
 }
 
 /* Pagination Styles */
@@ -427,22 +272,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--border-color);
 }
 
 .pagination-btn {
-  padding: 0.5rem 0.85rem;
-  border-radius: 8px;
+  padding: 0.55rem 1.25rem;
   border: 1px solid var(--border-color);
   background: var(--surface-container-low);
   color: var(--on-surface);
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
     background: var(--primary);
@@ -451,21 +296,16 @@
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
-  }
-
-  &.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
   }
 }
 
 .page-info {
   font-size: 0.85rem;
   color: var(--on-surface-variant);
-  margin: 0 1rem;
+  font-weight: 600;
+  margin: 0;
 }
 
 .btn {
@@ -498,47 +338,36 @@
   color: white;
 }
 
-/* Activity Feed */
-.activity-item {
+/* Empty State */
+.empty-state {
   display: flex;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  font-size: 1.1rem;
-}
+  padding: 5rem 2rem;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 16px;
+  gap: 0.75rem;
 
-.activity-content h4 {
-  color: var(--on-surface);
-  font-size: 0.9rem;
-  margin: 0 0 0.25rem 0;
-}
+  .empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
 
-.activity-content p {
-  color: var(--on-surface-variant);
-  font-size: 0.8rem;
-  margin: 0;
-}
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0;
+  }
 
-.activity-time {
-  color: var(--on-surface-variant);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  opacity: 0.7;
+  p {
+    color: var(--on-surface-variant);
+    font-size: 0.9rem;
+    margin: 0;
+  }
 }
 
 /* Responsive */
@@ -546,49 +375,189 @@
   .content-grid {
     grid-template-columns: 1fr;
   }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
+// ── Tablet & below — collapse grid earlier ───────────────────────
 @media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr); /* keep 2 columns */
-    gap: 0.75rem;
-  }
-
-  /* Make the cards more compact */
-  .stat-card {
-    padding: 1rem;
-  }
-
-  .stat-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 1.1rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-  }
-
-  .stat-label {
-    font-size: 0.8rem;
-  }
-
   .content-grid {
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .job-footer {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
+  .card {
+    padding: 1.1rem;
   }
 
-  .btn {
+  .card-title {
+    font-size: 1.05rem;
+  }
+
+  .entry-card {
+    padding: 1rem 1.1rem;
+    margin: 0.4rem 0 0.75rem 0.65rem;
+  }
+
+  .timeline-spine {
+    width: 40px;
+  }
+}
+
+// ── Mobile: iPhone SE (375px) ────────────────────────────────────
+@media (max-width: 480px) {
+  .content-grid {
+    gap: 0.75rem;
+  }
+
+  .sidebar-column {
+    gap: 0.75rem;
+  }
+
+  .card {
+    padding: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .card-header {
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  // Timeline — narrow spine to reclaim horizontal space
+  .timeline-spine {
+    width: 28px;
+    padding-top: 1.2rem;
+  }
+
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  .entry-card {
+    padding: 0.85rem;
+    margin: 0.35rem 0 0.6rem 0.5rem;
+  }
+
+  // Match pill stays inline column on mobile (compact)
+  .entry-top {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .match-pill {
+    flex-direction: column;
+    min-width: 50px;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .match-value {
+    font-size: 0.92rem;
+  }
+
+  .entry-vacancy {
+    font-size: 0.88rem;
+  }
+
+  .entry-company {
+    font-size: 0.76rem;
+  }
+
+  .meta-chip {
+    font-size: 0.7rem;
+    padding: 0.18rem 0.5rem;
+  }
+
+  // Chips input — input + button stack inside the row
+  .chips-input-container {
+    padding: 0.4rem;
+  }
+
+  .chip {
+    font-size: 0.76rem;
+    padding: 0.22rem 0.5rem;
+  }
+
+  .chip-input-row {
+    flex-wrap: nowrap;
     width: 100%;
+  }
+
+  .chip-input {
+    min-width: 80px;
+    font-size: 0.82rem;
+  }
+
+  .chip-add-btn {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  // Pagination
+  .pagination-container {
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+  }
+
+  .pagination-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .page-info {
+    font-size: 0.75rem;
+    margin: 0 0.25rem;
+  }
+
+  // CV upload zone
+  .cv-upload-zone {
+    padding: 1.1rem 0.9rem;
+  }
+
+  // Salary badges — stack vertically on tiny screens
+  .salary-badges {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .skill-tag {
+    font-size: 0.78rem;
+    padding: 0.22rem 0.5rem;
+  }
+
+  // CV file info row — tighter
+  .cv-file-info {
+    gap: 0.6rem;
+    padding: 0.7rem;
+  }
+
+  .cv-file-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .cv-file-details {
+    .cv-file-name {
+      font-size: 0.85rem;
+    }
+    .cv-file-size {
+      font-size: 0.75rem;
+    }
+  }
+
+  .cv-change-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  // Empty state compact
+  .empty-state {
+    padding: 3rem 1rem;
   }
 }
 
@@ -672,7 +641,9 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   width: 100%;
+  max-width: 100%;
   align-items: center;
+  overflow: hidden;
 }
 
 .chip {
@@ -725,23 +696,6 @@
   &::placeholder {
     color: var(--on-surface-variant);
   }
-}
-
-.analyze-with-ai {
-  color: #5b9bd5;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.3s;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 3px 5px;
-}
-
-.analyze-with-ai:hover {
-  color: white;
-  background-color: #5b9bd5;
-  border-radius: 4px;
 }
 
 .cv-loader {
@@ -835,23 +789,25 @@
 
 .cv-file-details {
   flex: 1;
-  min-width: 0;
-  
-  .cv-file-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--on-surface);
-    margin: 0 0 0.15rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .cv-file-size {
-    font-size: 0.85rem;
-    color: var(--on-surface-variant);
-    opacity: 0.75;
-  }
+  min-width: 0; // keeps flex item shrinkable
+}
+
+.cv-file-name {
+  display: block; // important for proper ellipsis behavior
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin: 0 0 0.15rem;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cv-file-size {
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+  opacity: 0.75;
 }
 
 .cv-change-btn {
