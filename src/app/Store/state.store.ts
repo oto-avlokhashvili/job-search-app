@@ -18,11 +18,15 @@ type State = {
     sentJobs: SentJobsResponse;
     searchQuery: string[];
 
-
-
-
     userCv: any;
     cvLoading: boolean;
+
+    chatMatchedJobs: any[];
+    chatShowJobs: boolean;
+    chatAiSummary: string;
+    chatAiDetectedRole: string;
+    chatAiLocationPreference: string;
+    chatAiPrimarySkills: string[];
 }
 
 
@@ -36,9 +40,15 @@ const initialState: State = {
     sentJobs: { sentJobs: [], total: 0, page: 1, lastPage: 1 },
     matchedJobsDashboard: { data: [], total: 0, page: 1, lastPage: 1 },
 
-
     userCv: null,
-    cvLoading: false
+    cvLoading: false,
+
+    chatMatchedJobs: [],
+    chatShowJobs: false,
+    chatAiSummary: '',
+    chatAiDetectedRole: '',
+    chatAiLocationPreference: '',
+    chatAiPrimarySkills: [],
 }
 
 export const StateStore = signalStore(
@@ -83,6 +93,16 @@ export const StateStore = signalStore(
                 error: (err) => {
                     console.error('Error updating search queries:', err);
                 }
+            });
+        },
+        updateChatSearchResults(jobs: any[], summary: string, role: string, location: string, skills: string[], show: boolean) {
+            patchState(store, {
+                chatMatchedJobs: jobs,
+                chatAiSummary: summary,
+                chatAiDetectedRole: role,
+                chatAiLocationPreference: location,
+                chatAiPrimarySkills: skills,
+                chatShowJobs: show
             });
         },
         deleteCv() {

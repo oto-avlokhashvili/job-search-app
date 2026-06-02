@@ -90,14 +90,14 @@ export class Chat implements OnInit {
   attachedFiles = signal<AttachedFile[]>([]);
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
-  showJobs = signal<boolean>(false);
+  showJobs = computed(() => this.stateStore.chatShowJobs());
   telegramLink = signal<string>('');
 
-  matchedJobs = signal<any[]>([]);
-  aiSummary = signal<string>('');
-  aiDetectedRole = signal<string>('');
-  aiLocationPreference = signal<string>('');
-  aiPrimarySkills = signal<string[]>([]);
+  matchedJobs = computed(() => this.stateStore.chatMatchedJobs());
+  aiSummary = computed(() => this.stateStore.chatAiSummary());
+  aiDetectedRole = computed(() => this.stateStore.chatAiDetectedRole());
+  aiLocationPreference = computed(() => this.stateStore.chatAiLocationPreference());
+  aiPrimarySkills = computed(() => this.stateStore.chatAiPrimarySkills());
 
   cvSummary = computed(() => this.stateStore.userCv()?.summary);
 
@@ -242,25 +242,27 @@ export class Chat implements OnInit {
     try {
       const res: any = await firstValueFrom(this.aiService.searchJobsWithAi());
       this.stateStore.getCv();
-      this.showJobs.set(true);
 
       const jobs = res?.response?.topJobs || res?.response || [];
-      this.matchedJobs.set(jobs);
-
       const comment = res?.comment || res?.response?.summary || '';
-      this.aiSummary.set(comment);
+
+      let role = '';
+      let location = '';
+      let skills: string[] = [];
 
       const profile = res?.response?.candidateProfile;
       if (profile) {
-        this.aiDetectedRole.set(profile.detectedRole || '');
-        this.aiLocationPreference.set(profile.locationPreference || '');
-        this.aiPrimarySkills.set(profile.primarySkills || []);
+        role = profile.detectedRole || '';
+        location = profile.locationPreference || '';
+        skills = profile.primarySkills || [];
       } else {
         const cvSummary = this.stateStore.userCv()?.summary;
-        this.aiDetectedRole.set(cvSummary?.detectedRole || '');
-        this.aiLocationPreference.set(cvSummary?.locationPreference || '');
-        this.aiPrimarySkills.set(cvSummary?.primarySkills || []);
+        role = cvSummary?.detectedRole || '';
+        location = cvSummary?.locationPreference || '';
+        skills = cvSummary?.primarySkills || [];
       }
+
+      this.stateStore.updateChatSearchResults(jobs, comment, role, location, skills, true);
 
       if (Array.isArray(jobs) && jobs.length > 0) {
         const userId = this.stateStore.profile().id;
