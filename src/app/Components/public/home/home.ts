@@ -20,6 +20,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   search = new FormControl<string>('')
   searchQuery = signal<string>('');
   count = signal<number>(0)
+  hasSearched = signal<boolean>(false);
   jobsService = inject(JobsService);
   ngOnInit() {
     this.jobsService.getJobs("").subscribe({
@@ -40,9 +41,11 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
   @ViewChild('browseSection') browseSectionRef!: ElementRef;
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('searchContainer') searchContainerRef!: ElementRef;
 
   private animationFrameId: number | null = null;
   private ngZone = inject(NgZone);
+  searchState: 'idle' | 'searching' | 'burst' = 'idle';
 
   ngAfterViewInit() {
     this.ngZone.runOutsideAngular(() => this.initParticles());
@@ -65,12 +68,14 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     resize();
     window.addEventListener('resize', resize);
 
-    const COUNT = 55;
+    const COUNT = 80;
     interface Particle {
       x: number; y: number;
       r: number; speed: number;
       opacity: number; drift: number;
       color: string;
+      vx?: number;
+      vy?: number;
     }
 
     const colors = ['rgba(11,96,150,', 'rgba(151,174,213,', 'rgba(22,47,80,'];
@@ -78,29 +83,101 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     const make = (): Particle => ({
       x: Math.random() * canvas.width,
       y: canvas.height + Math.random() * 60,
-      r: Math.random() * 2.5 + 0.8,
-      speed: Math.random() * 0.5 + 0.2,
-      opacity: Math.random() * 0.45 + 0.1,
-      drift: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2.5 + 2.0,
+      speed: Math.random() * 1.1 + 0.4,
+      opacity: Math.random() * 0.5 + 0.25,
+      drift: (Math.random() - 0.5) * 1.0,
       color: colors[Math.floor(Math.random() * colors.length)],
+      vx: 0,
+      vy: 0
     });
 
     const particles: Particle[] = Array.from({ length: COUNT }, make);
 
+    const container = this.searchContainerRef?.nativeElement;
+    const updateContainerBounds = () => {
+      if (!container) return null;
+      const canvasRect = canvas.getBoundingClientRect();
+      const rect = container.getBoundingClientRect();
+      return {
+        left: rect.left - canvasRect.left,
+        right: rect.right - canvasRect.left,
+        top: rect.top - canvasRect.top,
+        bottom: rect.bottom - canvasRect.top,
+        width: rect.width,
+        height: rect.height,
+        centerX: (rect.left + rect.right) / 2 - canvasRect.left,
+        centerY: (rect.top + rect.bottom) / 2 - canvasRect.top,
+      };
+    };
+
+    let bounds = updateContainerBounds();
+    window.addEventListener('resize', () => {
+      resize();
+      bounds = updateContainerBounds();
+    });
+
+    let lastState: 'idle' | 'searching' | 'burst' = 'idle';
+
     const draw = () => {
+      if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+        resize();
+        bounds = updateContainerBounds();
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particles) {
+      const state = this.searchState;
+
+      if (state === 'searching' && lastState !== 'searching') {
+        bounds = updateContainerBounds();
+      }
+
+      if (state === 'burst' && lastState !== 'burst') {
+        bounds = updateContainerBounds();
+        if (bounds) {
+          for (const p of particles) {
+            const angle = Math.atan2(p.y - bounds.centerY, p.x - bounds.centerX);
+            const force = Math.random() * 6 + 4;
+            p.vx = Math.cos(angle) * force;
+            p.vy = Math.sin(angle) * force + 2;
+          }
+        }
+      }
+
+      lastState = state;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `${p.color}${p.opacity})`;
         ctx.fill();
 
-        p.y -= p.speed;
-        p.x += p.drift;
-        p.opacity -= 0.0008;
+        if (state === 'searching' && bounds) {
+          const targetX = bounds.left + (i / COUNT) * bounds.width;
+          const time = Date.now() * 0.006;
+          const wave = Math.sin((targetX - bounds.left) * 0.03 - time) * 10;
+          const targetY = bounds.bottom + 12 + wave;
 
-        if (p.y < -10 || p.opacity <= 0) {
-          Object.assign(p, make());
+          p.x += (targetX - p.x) * 0.08;
+          p.y += (targetY - p.y) * 0.08;
+          p.opacity += (0.75 - p.opacity) * 0.1;
+        } else if (state === 'burst') {
+          p.x += p.vx || 0;
+          p.y += p.vy || 0;
+          p.opacity -= 0.025;
+
+          if (p.opacity <= 0) {
+            Object.assign(p, make());
+          }
+        } else {
+          p.y -= p.speed;
+          p.x += p.drift;
+          p.opacity -= 0.001;
+
+          if (p.y < -10 || p.opacity <= 0) {
+            Object.assign(p, make());
+          }
         }
       }
       this.animationFrameId = requestAnimationFrame(draw);
@@ -109,19 +186,34 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     draw();
   }
 
-getJobs(query?: string) {
-  this.jobsService.getJobs(query).subscribe({
-    next: (res) => {
-      this.jobs.set(res.jobs.slice(0, 5));
-      setTimeout(() => {
-        this.browseSectionRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
-      }, 0);
-    },
-    error: (err) => {
-      console.log(err);
-    },
-  });
-}
+  getJobs(query?: string) {
+    this.searchState = 'searching';
+    const startTime = Date.now();
+
+    this.jobsService.getJobs(query).subscribe({
+      next: (res) => {
+        const elapsedTime = Date.now() - startTime;
+        const minDuration = 1000;
+        const delay = Math.max(0, minDuration - elapsedTime);
+
+        setTimeout(() => {
+          this.jobs.set(res.jobs.slice(0, 5));
+          this.hasSearched.set(true);
+          this.searchState = 'burst';
+
+          setTimeout(() => {
+            if (this.searchState === 'burst') {
+              this.searchState = 'idle';
+            }
+          }, 600);
+        }, delay);
+      },
+      error: (err) => {
+        console.log(err);
+        this.searchState = 'idle';
+      },
+    });
+  }
     
   jobs = signal<Job[]>([
       {
@@ -182,6 +274,7 @@ getJobs(query?: string) {
   clearSearch() {
     this.searchQuery.set('');
     this.search.reset();
+    this.hasSearched.set(false);
   }
 
   onSearch() {

@@ -47,6 +47,7 @@ $outline-variant-color: #97aed5;
   align-items: center;
   position: relative; // needed for particle canvas
   overflow: hidden;
+  transition: min-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), padding 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 991px) {
     padding: calc(72px + 48px) 32px 48px;
@@ -60,6 +61,17 @@ $outline-variant-color: #97aed5;
 
   @media (max-width: 480px) {
     padding: calc(72px + 24px) 16px 32px;
+  }
+}
+
+.home-main.has-results {
+  .hero-section {
+    min-height: 55vh;
+    padding-bottom: 24px;
+
+    @media (max-width: 991px) {
+      min-height: auto;
+    }
   }
 }
 
@@ -183,6 +195,7 @@ $outline-variant-color: #97aed5;
     border: 1px solid var(--border-color);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 64px;
+    scroll-margin-top: 90px;
 
     @media (max-width: 768px) {
       flex-direction: column;

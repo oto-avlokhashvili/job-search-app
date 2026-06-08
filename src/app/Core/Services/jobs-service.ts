@@ -18,7 +18,7 @@ export class JobsService {
       params = params.set('query', query.trim());
     }
 
-    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params });
+    return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context: new HttpContext().set(skipLoading, true) });
   }
 
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {
