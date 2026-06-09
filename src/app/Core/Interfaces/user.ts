@@ -6,7 +6,8 @@ export interface User {
   subscription: 'BASIC' | 'PREMIUM' | 'PRO';
   createdAt: string;
   searchQuery: string[];
-  telegramChatId?:string
+  telegramChatId?:string;
+  isEmailVerified?: boolean;
 }
 
 export interface UserRegistration {

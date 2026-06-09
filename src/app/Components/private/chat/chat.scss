@@ -38,6 +38,15 @@ $shadow: var(--shadow);
   }
 }
 
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
 // ─── Drag & Drop Overlay ──────────────────────────────────────────────────
 .drop-overlay {
   position: absolute;
@@ -180,6 +189,8 @@ $shadow: var(--shadow);
 
 // ─── Main Body Layout ─────────────────────────────────────────────────────
 .dashboard-body {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -379,52 +390,239 @@ $shadow: var(--shadow);
 // Meta Row Below Search Bar
 .search-meta-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-top: 0.75rem;
   padding: 0 0.5rem;
 
-  .telegram-status-container {
+  .telegram-status-container, .email-status-container {
     display: flex;
-    justify-content: center;
-    width: 100%;
+    align-items: center;
+  }
 
-    .telegram-badge {
+  .telegram-badge, .email-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    border: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    span {
+      font-size: 1.1rem;
+    }
+  }
+
+  .telegram-badge {
+    &.connected {
+      background: $surface-container-low;
+      color: $primary;
+      border: 1px solid rgba(var(--primary-rgb), 0.15);
+    }
+
+    &.connect-btn {
+      background: $primary;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  .email-badge {
+    &.connected {
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    &.verify-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+.pro-benefits-card-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.pro-benefits-card {
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.03) 0%, rgba(var(--primary-rgb), 0.08) 100%);
+  border: 1px solid rgba(var(--primary-rgb), 0.15);
+  border-radius: 20px;
+  padding: 1.75rem;
+  max-width: 540px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(22, 47, 80, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--primary-rgb), 0.25);
+    box-shadow: 0 15px 35px rgba(22, 47, 80, 0.08);
+  }
+
+  .pro-badge-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+
+    .premium-spark {
+      font-size: 1rem;
+    }
+  }
+
+  .pro-card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: $on-surface;
+  }
+
+  .pro-card-description {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: $on-surface-variant;
+    margin: 0 0 1.5rem 0;
+    max-width: 420px;
+  }
+
+  .pro-benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+
+    @media (min-width: 480px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .pro-benefit-item {
+    background: $surface-container-lowest;
+    border: 1px solid rgba(var(--primary-rgb), 0.08);
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    text-align: left;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: rgba(var(--primary-rgb), 0.15);
+      background: $surface-container-low;
+    }
+
+    .icon {
+      color: #f59e0b;
+      font-size: 1.4rem;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 0.4rem;
+      border-radius: 10px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.45rem 1.15rem;
-      font-size: 0.78rem;
-      font-weight: 700;
-      border-radius: 9999px;
-      border: none;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      justify-content: center;
+    }
 
-      span {
-        font-size: 1.1rem;
+    .text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+
+      h4 {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: $on-surface;
       }
 
-      &.connected {
-        background: $surface-container-low;
-        color: $primary;
-        border: 1px solid rgba(var(--primary-rgb), 0.15);
+      p {
+        margin: 0;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: $on-surface-variant;
       }
+    }
+  }
 
-      &.connect-btn {
-        background: $primary;
-        color: white;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+  .pro-upgrade-btn {
+    background: linear-gradient(135deg, $primary 0%, #1e40af 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.75rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.25);
+    transition: all 0.25s;
 
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
-        }
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.35);
+    }
 
-        &:active {
-          transform: scale(0.95);
-        }
-      }
+    &:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    span {
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
     }
   }
 }

@@ -1,0 +1,84 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay">
+    <!-- Modal Container -->
+    <div class="modal-container" [ngClass]="isDarkMode() ? 'bg-dark' : 'bg-light'">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">ელ-ფოსტის დადასტურება</h2>
+            <button class="close-btn" title="დახურვა" (click)="close()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+            <div class="icon-wrapper">
+                <span class="material-symbols-outlined">mark_email_unread</span>
+            </div>
+            
+            <p class="instruction-text">
+                დადასტურების კოდი გაეგზავნა თქვენს ელ-ფოსტას:<br>
+                <strong class="email-highlight">{{ data.email }}</strong>
+            </p>
+
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    class="code-input" 
+                    placeholder="123456" 
+                    maxLength="6"
+                    [ngModel]="verificationCode()"
+                    (ngModelChange)="verificationCode.set($event)"
+                    [disabled]="isLoading()"
+                    (keydown.enter)="verify()"
+                />
+                <span class="input-hint">შეიყვანეთ 6-ნიშნა კოდი</span>
+            </div>
+
+            <!-- Error and Success Messages -->
+            @if (errorMessage()) {
+                <div class="message error-message">
+                    <span class="material-symbols-outlined">error</span>
+                    <span>{{ errorMessage() }}</span>
+                </div>
+            }
+            @if (successMessage()) {
+                <div class="message success-message">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>{{ successMessage() }}</span>
+                </div>
+            }
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button 
+                class="btn btn-secondary" 
+                type="button" 
+                [disabled]="isLoading() || resendCooldown() > 0" 
+                (click)="resendCode()"
+            >
+                @if (resendCooldown() > 0) {
+                    ხელახლა გაგზავნა ({{ resendCooldown() }}წმ)
+                } @else {
+                    კოდის ხელახლა გაგზავნა
+                }
+            </button>
+            <button 
+                class="btn btn-primary" 
+                type="button" 
+                [disabled]="isLoading() || verificationCode().length !== 6" 
+                (click)="verify()"
+            >
+                @if (isLoading()) {
+                    <span class="spinner"></span>
+                } @else {
+                    დადასტურება
+                }
+            </button>
+        </div>
+    </div>
+</div>

@@ -84,4 +84,14 @@ export class AuthService {
     const res: any = await firstValueFrom(telegramToken$)
     return res.token;
   }
+
+  async verifyEmail(email: string, code: string): Promise<any> {
+    const res$ = this.http.post(this.url + "/user/verify", { email, code });
+    return firstValueFrom(res$);
+  }
+
+  async resendVerification(email: string): Promise<any> {
+    const res$ = this.http.post(this.url + "/user/resend-verification", { email });
+    return firstValueFrom(res$);
+  }
 }

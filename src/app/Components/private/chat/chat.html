@@ -5,6 +5,8 @@
      [class.drag-active]="isDragOver()"
      [class.has-results]="showJobs()">
 
+  <canvas #particleCanvas class="particle-canvas"></canvas>
+
   <!-- Drop overlay -->
   @if (isDragOver()) {
     <div class="drop-overlay">
@@ -29,7 +31,7 @@
       }
 
       <!-- Input Card (CV File Upload Area) -->
-      <div class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
+      <div #searchContainer class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
         <!-- File Input (Hidden) -->
         <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
 
@@ -72,22 +74,77 @@
       </div>
 
       <!-- Query Parameters & Meta (Below search bar) -->
-      <div class="search-meta-row">
-        <!-- Telegram Status Badge -->
-        <div class="telegram-status-container">
+      @if (stateStore.profile().subscription === 'PRO') {
+        <div class="search-meta-row">
+          <!-- Telegram Status Badge -->
           @if (stateStore.profile().telegramChatId) {
-            <div class="telegram-badge connected">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>Telegram დაკავშირებულია</span>
+            <div class="telegram-status-container">
+              <div class="telegram-badge connected">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Telegram დაკავშირებულია</span>
+              </div>
             </div>
-          } @else if (stateStore.profileLoaded()) {
-            <button class="telegram-badge connect-btn" (click)="generateTelegramToken()">
-              <span class="material-symbols-outlined">send</span>
-              <span>Telegram-ის დაკავშირება</span>
-            </button>
+          } @else if (!stateStore.profile().isEmailVerified && stateStore.profileLoaded()) {
+            <div class="telegram-status-container">
+              <button class="telegram-badge connect-btn" (click)="generateTelegramToken()">
+                <span class="material-symbols-outlined">send</span>
+                <span>Telegram-ის დაკავშირება</span>
+              </button>
+            </div>
+          }
+
+          <!-- Email Status Badge -->
+          @if (stateStore.profile().isEmailVerified) {
+            <div class="email-status-container">
+              <div class="email-badge connected">
+                <span class="material-symbols-outlined">verified</span>
+                <span>ელ-ფოსტა დადასტურებულია</span>
+              </div>
+            </div>
+          } @else if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
+            <div class="email-status-container">
+              <button class="email-badge verify-btn" (click)="openEmailVerificationDialog()">
+                <span class="material-symbols-outlined">mark_email_unread</span>
+                <span>ელ-ფოსტის დადასტურება</span>
+              </button>
+            </div>
           }
         </div>
-      </div>
+      } @else if (stateStore.profileLoaded()) {
+        <!-- Pro Benefits Card for Basic Users -->
+        <div class="pro-benefits-card-container">
+          <div class="pro-benefits-card">
+            <div class="pro-badge-header">
+              <span class="material-symbols-outlined premium-spark">workspace_premium</span>
+              <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>
+            </div>
+            <h3 class="pro-card-title">ავტომატური შეტყობინებები</h3>
+            <p class="pro-card-description">
+              დაუკავშირეთ Telegram და ელ-ფოსტა, რათა ყოველდღიურად მიიღოთ თქვენზე მორგებული ახალი ვაკანსიები.
+            </p>
+            <div class="pro-benefits-grid">
+              <div class="pro-benefit-item">
+                <span class="material-symbols-outlined icon">mail</span>
+                <div class="text-group">
+                  <h4>Email დაიჯესტი</h4>
+                  <p>ყოველდღიური ვაკანსიების დაიჯესტი თქვენს მეილზე</p>
+                </div>
+              </div>
+              <div class="pro-benefit-item">
+                <span class="material-symbols-outlined icon">send</span>
+                <div class="text-group">
+                  <h4>Telegram შეტყობინებები</h4>
+                  <p>მყისიერი შეტყობინებები თქვენს მობილურზე</p>
+                </div>
+              </div>
+            </div>
+            <button class="pro-upgrade-btn" (click)="openUpgradeModal()">
+              <span>ტარიფის განახლება</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      }
 
     </div>
 
