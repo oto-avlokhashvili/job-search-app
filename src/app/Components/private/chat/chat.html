@@ -111,9 +111,17 @@
           }
         </div>
       } @else if (stateStore.profileLoaded()) {
-        <!-- Pro Benefits Card for Basic Users -->
-        <div class="pro-benefits-card-container">
+        <!-- Pro Benefits Section (Toggle-able) -->
+        <div class="pro-benefits-wrapper" [class.expanded]="showProBenefits()">
+          <!-- Shrinked Button for Basic Users -->
+          <button class="pro-benefits-btn" (click)="showProBenefits.set(true)">
+            <span class="material-symbols-outlined icon">notifications_active</span>
+            <span>ავტომატური შეტყობინებები</span>
+          </button>
+
+          <!-- Pro Benefits Card for Basic Users -->
           <div class="pro-benefits-card">
+            <button class="close-card-btn" (click)="showProBenefits.set(false)" title="დახურვა">✕</button>
             <div class="pro-badge-header">
               <span class="material-symbols-outlined premium-spark">workspace_premium</span>
               <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>

@@ -123,8 +123,7 @@
 
   &.dot-strong  { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
   &.dot-good    { background: linear-gradient(135deg, #eab308, #ca8a04); box-shadow: 0 0 0 3px rgba(234,179,8,0.2); }
-  &.dot-possible{ background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 0 0 3px rgba(249,115,22,0.2); }
-  &.dot-low     { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+  &.dot-possible{ background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
 }
 
 .dot-pulse {
@@ -226,8 +225,7 @@
 
   &.tier-strong   { background: linear-gradient(135deg, #22c55e, #16a34a); }
   &.tier-good     { background: linear-gradient(135deg, #eab308, #ca8a04); }
-  &.tier-possible { background: linear-gradient(135deg, #f97316, #ea580c); }
-  &.tier-low      { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  &.tier-possible { background: linear-gradient(135deg, #ef4444, #dc2626); }
 }
 
 .match-value {

@@ -24,10 +24,9 @@
       <!-- Timeline spine -->
       <div class="timeline-spine">
         <div class="timeline-dot"
-          [class.dot-strong]="item.match >= 85"
-          [class.dot-good]="item.match >= 65 && item.match < 85"
-          [class.dot-possible]="item.match >= 50 && item.match < 65"
-          [class.dot-low]="item.match < 50">
+          [class.dot-strong]="item.match >= 75"
+          [class.dot-good]="item.match >= 50 && item.match < 75"
+          [class.dot-possible]="item.match < 50">
           <div class="dot-pulse"></div>
         </div>
         <div class="timeline-line"></div>
@@ -45,10 +44,9 @@
             </div>
           </div>
           <div class="match-pill"
-            [class.tier-strong]="item.match >= 85"
-            [class.tier-good]="item.match >= 65 && item.match < 85"
-            [class.tier-possible]="item.match >= 50 && item.match < 65"
-            [class.tier-low]="item.match < 50">
+            [class.tier-strong]="item.match >= 75"
+            [class.tier-good]="item.match >= 50 && item.match < 75"
+            [class.tier-possible]="item.match < 50">
             <span class="match-value">{{ item.match }}%</span>
             <span class="match-label">Match</span>
           </div>

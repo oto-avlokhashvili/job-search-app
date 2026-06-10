@@ -169,7 +169,7 @@ export class Chat implements OnInit, AfterViewInit, OnDestroy {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const state = this.searchState;
 
-      if (state === 'searching' && lastState !== 'searching') {
+      if (state === 'searching') {
         bounds = updateContainerBounds();
       }
 
@@ -241,6 +241,7 @@ export class Chat implements OnInit, AfterViewInit, OnDestroy {
   isDragOver = signal<boolean>(false);
   showJobs = computed(() => this.stateStore.chatShowJobs());
   telegramLink = signal<string>('');
+  showProBenefits = signal<boolean>(true);
 
   matchedJobs = computed(() => this.stateStore.chatMatchedJobs());
   aiSummary = computed(() => this.stateStore.chatAiSummary());
@@ -376,6 +377,8 @@ export class Chat implements OnInit, AfterViewInit, OnDestroy {
 
   async search() {
     if (this.isTyping() || this.stateStore.cvLoading()) return;
+
+    this.showProBenefits.set(false);
 
     const query = this.inputText().trim();
     if (query) {
