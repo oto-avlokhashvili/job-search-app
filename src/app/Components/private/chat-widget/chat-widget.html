@@ -43,6 +43,28 @@
                   <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
                 </div>
               </div>
+
+              @if (msg.role === 'assistant' && msg.jobs && msg.jobs.length > 0) {
+                <div class="chat-jobs-list">
+                  @for (job of msg.jobs; track job.id) {
+                    <div class="chat-job-card">
+                      <div class="job-card-header">
+                        <h5 class="job-card-title" [title]="job.vacancy">{{ job.vacancy }}</h5>
+                        <span class="job-card-company" [title]="job.company">{{ job.company }}</span>
+                      </div>
+                      <div class="job-card-meta">
+                        <span class="meta-item location">📍 {{ job.location || 'დისტანციური' }}</span>
+                        @if (job.salaryRange) {
+                          <span class="meta-item salary">₾ {{ job.salaryRange }}</span>
+                        }
+                      </div>
+                      <div class="job-card-actions">
+                        <a [href]="job.link" target="_blank" class="apply-inline-btn">გახსნა</a>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             }
 
             @if (isTyping()) {

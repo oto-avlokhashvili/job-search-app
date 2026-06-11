@@ -291,9 +291,15 @@
       border: 1px solid var(--border-color);
 
       &.error {
-        border-color: rgba(179, 27, 37, 0.2);
-        background: rgba(179, 27, 37, 0.04);
-        color: var(--error);
+        background: rgba(179, 27, 37, 0.12);
+        border: 1px solid rgba(179, 27, 37, 0.28);
+        color: #d32f2f;
+
+        [data-theme='dark'] & {
+          background: rgba(239, 83, 80, 0.16);
+          border-color: rgba(239, 83, 80, 0.35);
+          color: #ff8a80;
+        }
       }
     }
 
@@ -440,6 +446,111 @@
     span {
       font-size: 18px;
       margin-left: 2px; /* slight visual balancing for send icon */
+    }
+  }
+}
+
+/* ==========================================================================
+   Jobs List (Vertical Stack)
+   ========================================================================== */
+.chat-jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 85%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+  padding-left: 0.2rem;
+}
+
+.chat-job-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
+  }
+
+  .job-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    .job-card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--on-surface);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .job-card-company {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .job-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    
+    .meta-item {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      
+      &.salary {
+        color: var(--primary);
+        font-weight: 700;
+      }
+    }
+  }
+
+  .job-card-actions {
+    margin-top: 0.15rem;
+    width: 100%;
+  }
+
+  .apply-inline-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.4rem 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--primary);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+
+    &:hover {
+      background: rgba(var(--primary-rgb), 0.95);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
     }
   }
 }

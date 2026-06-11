@@ -18,6 +18,7 @@ export interface WidgetChatMessage {
   content: string;
   timestamp: Date;
   isError?: boolean;
+  jobs?: any[];
 }
 
 @Component({
@@ -92,11 +93,15 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
       const res = await firstValueFrom(this.aiService.askChat(prompt, history));
 
+      const isSearchEmpty = res?.searchTriggered && (!res?.jobs || res?.jobs.length === 0);
+
       const botMessage: WidgetChatMessage = {
         id: Math.random().toString(36).substring(7),
         role: 'assistant',
         content: res?.response || res?.text || 'შეცდომა პასუხის მიღებისას.',
         timestamp: new Date(),
+        jobs: res?.jobs || [],
+        isError: isSearchEmpty || res?.isError || false,
       };
 
       this.chatMessages.update((msgs) => [...msgs, botMessage]);
@@ -138,7 +143,7 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   private loadMessages() {
     try {
-      const raw = localStorage.getItem('chat_widget_messages');
+      const raw = sessionStorage.getItem('chat_widget_messages');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
@@ -151,15 +156,15 @@ export class ChatWidget implements OnInit, AfterViewChecked {
         }
       }
     } catch (err) {
-      console.error('Error loading chat widget messages from localStorage', err);
+      console.error('Error loading chat widget messages from sessionStorage', err);
     }
   }
 
   private saveMessages() {
     try {
-      localStorage.setItem('chat_widget_messages', JSON.stringify(this.chatMessages()));
+      sessionStorage.setItem('chat_widget_messages', JSON.stringify(this.chatMessages()));
     } catch (err) {
-      console.error('Error saving chat widget messages to localStorage', err);
+      console.error('Error saving chat widget messages to sessionStorage', err);
     }
   }
 }
