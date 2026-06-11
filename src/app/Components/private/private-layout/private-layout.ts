@@ -9,10 +9,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from './subscription-modal/subscription-modal';
+import { ChatWidget } from '../chat-widget/chat-widget';
 
 @Component({
   selector: 'app-private-layout',
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, ChatWidget],
   templateUrl: './private-layout.html',
   styleUrl: './private-layout.scss',
 })
@@ -31,7 +32,7 @@ export class PrivateLayout implements OnInit {
     { icon: '🔥', label: 'Top ვაკანსიები', route: 'dashboard' },
     { icon: '🔔', label: 'შეტყობინებები', route: 'jobs' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' },
-    { icon: '🤖', label: 'AI ასისტენტი', route: 'chat' },
+    { icon: '🤖', label: 'AI ძიება', route: 'chat' },
   ]);
 
   authService = inject(AuthService);

@@ -1,0 +1,85 @@
+<div class="chat-widget-container">
+  <!-- Chat Window -->
+  @if (isChatOpen()) {
+    <div class="chat-window">
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-header-title">
+          <div class="avatar-status-wrapper">
+            <span class="chat-avatar">🤖</span>
+            <span class="status-dot"></span>
+          </div>
+          <div class="chat-info">
+            <h3>AI ასისტენტი</h3>
+            <p>ონლაინ რეჟიმში</p>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          @if (chatMessages().length > 0) {
+            <button class="action-btn clear-btn" (click)="clearChat()" title="ჩატის გასუფთავება">
+              <span class="material-symbols-outlined">delete_sweep</span>
+            </button>
+          }
+          <button class="action-btn close-btn" (click)="toggleChat()" title="დახურვა">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages Body -->
+      <div class="chat-body" #messagesScroll>
+        @if (chatMessages().length === 0) {
+          <div class="empty-state">
+            <span class="empty-icon">👋</span>
+            <h4>გამარჯობა! მე ვარ შენი AI ასისტენტი.</h4>
+            <p>რით შემიძლია დაგეხმარო დღეს? მკითხე რამე კარიერის, CV-ს ან გასაუბრების შესახებ.</p>
+          </div>
+        } @else {
+          <div class="messages-list">
+            @for (msg of chatMessages(); track msg.id) {
+              <div class="message-wrapper" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                <div class="message-bubble" [class.error]="msg.isError">
+                  <p class="message-content">{{ msg.content }}</p>
+                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+                </div>
+              </div>
+            }
+
+            @if (isTyping()) {
+              <div class="message-wrapper assistant">
+                <div class="message-bubble typing-bubble">
+                  <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="chat-footer">
+        <textarea
+          [(ngModel)]="chatInputText"
+          (keydown.enter)="$event.preventDefault(); sendChatMessage()"
+          placeholder="მოგვწერეთ..."
+          rows="1"
+          [disabled]="isTyping()">
+        </textarea>
+        <button class="send-btn" [disabled]="!chatInputText().trim() || isTyping()" (click)="sendChatMessage()">
+          <span class="material-symbols-outlined">send</span>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Floating FAB Button -->
+  <button class="chat-fab" [class.active]="isChatOpen()" (click)="toggleChat()" title="გახსენი AI ჩატი">
+    <span class="material-symbols-outlined fab-icon">
+      {{ isChatOpen() ? 'close' : 'chat' }}
+    </span>
+  </button>
+</div>
