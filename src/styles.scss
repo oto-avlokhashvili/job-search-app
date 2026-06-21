@@ -61,6 +61,12 @@ $my-theme: mat.m2-define-light-theme((
   --text-muted: #455c7f;
   --border-color: rgba(151, 174, 213, 0.2);
   --shadow: 0 2px 16px rgba(11, 96, 150, 0.08);
+  --success-bg: #e8f5e9;
+  --success-text: #2e7d32;
+  --success-border: rgba(46, 125, 50, 0.3);
+  --success-hover: #c8e6c9;
+  --success-disabled-bg: #f1f8e9;
+  --success-disabled-text: #9ccc65;
   --input-bg: #dee9ff;
   --stat-card-1:linear-gradient(135deg, #a8c8e8, #7aafd6);
   --stat-card-2:linear-gradient(135deg, #c3aae8, #a98ed8);
@@ -92,6 +98,12 @@ $my-theme: mat.m2-define-light-theme((
   --text-muted: #a0b4cc;
   --border-color: rgba(127, 190, 250, 0.12);
   --shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  --success-bg: rgba(76, 175, 80, 0.1);
+  --success-text: #81c784;
+  --success-border: rgba(76, 175, 80, 0.25);
+  --success-hover: rgba(76, 175, 80, 0.2);
+  --success-disabled-bg: rgba(76, 175, 80, 0.05);
+  --success-disabled-text: rgba(129, 199, 132, 0.4);
   --input-bg: rgba(50, 50, 83, 0.6);
   --stat-card-1:linear-gradient(135deg, #2f6fa8, #1d4e7a);
   --stat-card-2:linear-gradient(135deg, #6040a8, #3f2478);

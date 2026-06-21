@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, signal, inject, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../../../Core/Services/auth-service';
+import { ThemeService } from '../../../../Core/Services/theme.service';
 
 @Component({
   selector: 'app-email-verify-modal',
@@ -12,7 +13,8 @@ import { AuthService } from '../../../../Core/Services/auth-service';
   styleUrl: './email-verify-modal.scss',
 })
 export class EmailVerifyModal implements OnInit, OnDestroy {
-  isDarkMode = signal(localStorage.getItem('app-theme') === 'dark' || false);
+  private themeService = inject(ThemeService);
+  isDarkMode = computed(() => this.themeService.isDarkMode());
   verificationCode = signal<string>('');
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');

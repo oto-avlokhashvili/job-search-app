@@ -445,9 +445,9 @@ $shadow: var(--shadow);
 
   .email-badge {
     &.connected {
-      background: rgba(16, 185, 129, 0.08);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-border);
     }
 
     &.verify-btn {
@@ -456,13 +456,21 @@ $shadow: var(--shadow);
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 
-      &:hover {
+      &:hover:not(:disabled) {
         transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
       }
 
       &:active {
         transform: scale(0.95);
+      }
+
+      &:disabled {
+        background: var(--success-disabled-bg);
+        color: var(--success-disabled-text);
+        box-shadow: none;
+        cursor: not-allowed;
+        border: 1px solid var(--success-border);
       }
     }
   }
