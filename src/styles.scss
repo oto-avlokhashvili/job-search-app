@@ -200,7 +200,13 @@ body {
       background-color: $surface-container;
     }
   }
-  
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none !important;
+  }
 }
 
 // ─── Global Utilities ─────────────────────────────────────────
@@ -271,6 +277,10 @@ body {
   .subscription-dialog .mat-mdc-dialog-surface {
     border-radius: 14px !important;
   }
+}
+
+#features, #pricing, #contact {
+  scroll-margin-top: 72px;
 }
 
 

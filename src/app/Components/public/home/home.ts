@@ -6,7 +6,9 @@ import { Job } from '../../../Core/Interfaces/jobs';
 import { skipLoading } from '../../../Core/loading/skip-loading.component';
 
 import { CommonModule } from '@angular/common';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +24,18 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   count = signal<number>(0)
   hasSearched = signal<boolean>(false);
   jobsService = inject(JobsService);
+
+  contactEmail = new FormControl<string>('', {
+    validators: [Validators.required, Validators.email],
+    nonNullable: true
+  });
+  contactComment = new FormControl<string>('', {
+    validators: [Validators.required],
+    nonNullable: true
+  });
+
+  private http = inject(HttpClient);
+  private alertify = inject(AlertifyService);
   ngOnInit() {
     this.jobsService.getJobs("").subscribe({
     next: (res) => {
@@ -283,11 +297,35 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   scroll(target: string) {
-    document.querySelector(`#${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   applyJob(job: string): void {
     window.open(`${job}`, '_blank');
+  }
+
+  sendContactEmail() {
+    if (this.contactEmail.invalid || this.contactComment.invalid) {
+      this.alertify.error('გთხოვთ შეავსოთ ყველა ველი სწორად');
+      return;
+    }
+
+    const payload = {
+      email: this.contactEmail.value,
+      comment: this.contactComment.value
+    };
+
+    this.http.post(`${environment.apiUrl}/email/contact`, payload).subscribe({
+      next: () => {
+        this.alertify.success('შეტყობინება წარმატებით გაიგზავნა');
+        this.contactEmail.reset();
+        this.contactComment.reset();
+      },
+      error: (err) => {
+        console.error('Error sending contact email:', err);
+        this.alertify.error('შეტყობინების გაგზავნისას დაფიქსირდა შეცდომა');
+      }
+    });
   }
   
 }

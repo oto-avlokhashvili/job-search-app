@@ -1,15 +1,18 @@
 <footer class="tonal-footer">
   <div class="footer-container">
     <div class="footer-brand">
-      <span class="logo-text">Horizon Talent</span>
-      <p class="copyright">© 2024 Horizon Talent. The Fluid Professional.</p>
+      <div class="logo-container">
+        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="footer-logo">
+        <span class="logo-text">Job Scout</span>
+      </div>
+      <p class="copyright">© 2026 Job Scout. ყველა უფლება დაცულია.</p>
     </div>
     
-    <div class="footer-links-group">
-      <a href="#">Privacy</a>
-      <a href="#">Terms</a>
-      <a href="#">Support</a>
-      <a href="#">Careers</a>
-    </div>
+    <!-- <div class="footer-links-group">
+      <a href="#">კონფიდენციალურობა</a>
+      <a href="#">წესები და პირობები</a>
+      <a href="#">მხარდაჭერა</a>
+      <a href="#">კარიერა</a>
+    </div> -->
   </div>
 </footer>

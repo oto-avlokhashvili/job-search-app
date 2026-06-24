@@ -187,5 +187,10 @@ $outline-variant-color: #97aed5;
     font-weight: 700;
     color: var(--on-surface);
     text-decoration: none;
+    transition: color 0.2s ease;
+
+    &.active {
+      color: var(--primary);
+    }
   }
 }

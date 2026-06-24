@@ -6,9 +6,9 @@
         <span class="logo-text">Job Scout</span>
       </div>
       <div class="nav-links-desktop">
-        <a class="nav-link active" (click)="scroll('features')">აღმოაჩინე</a>
-        <a class="nav-link" (click)="scroll('pricing')">ფასები</a>
-        <a class="nav-link" (click)="scroll('how-it-works')">როგორ მუშაობს</a>
+        <a class="nav-link" [class.active]="activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
+        <a class="nav-link" [class.active]="activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
+        <a class="nav-link" [class.active]="activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
       </div>
     </div>
 
@@ -28,8 +28,9 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" [class.active]="menuOpen">
-    <a (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
-    <a (click)="scroll('pricing'); menuOpen = false">ფასები</a>
+    <a [class.active]="activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
+    <a [class.active]="activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
+    <a [class.active]="activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
     <a [routerLink]="'/auth'" (click)="menuOpen = false">ავტორიზაცია</a>
   </div>

@@ -1,7 +1,7 @@
 <main class="home-main" [class.has-results]="hasSearched()">
   <!-- Editorial Hero Section -->
   <!-- Centered Hero Section -->
-  <section class="hero-section">
+  <section class="hero-section" id="features">
     <canvas #particleCanvas class="particle-canvas"></canvas>
     <div class="hero-container">
       <h1 class="display-lg text-center">
@@ -129,7 +129,7 @@
             <li><span class="material-symbols-outlined">check_circle</span> AI რჩევები</li>
             <li><span class="material-symbols-outlined">check_circle</span> ელ-ფოსტის შეტყობინებები</li>
           </ul>
-          <button class="btn-fluid secondary">დაწყება</button>
+          <button class="btn-fluid secondary" [routerLink]="'/auth'">დაწყება</button>
         </div>
 
         <!-- Pro Plan (Featured) -->
@@ -149,7 +149,7 @@
             <li><span class="material-symbols-outlined">check_circle</span> პრიორიტეტული მხარდაჭერა</li>
             <li><span class="material-symbols-outlined">check_circle</span> სტატისტიკა და ანალიტიკა</li>
           </ul>
-          <button class="btn-fluid primary">გახდი Pro</button>
+          <button class="btn-fluid primary" [routerLink]="'/auth'">გახდი Pro</button>
         </div>
 
         <!-- Enterprise Plan -->
@@ -165,22 +165,36 @@
             <li><span class="material-symbols-outlined">check_circle</span> პერსონალური მენეჯერი</li>
             <li><span class="material-symbols-outlined">check_circle</span> გუნდური მართვა</li>
           </ul>
-          <button class="btn-fluid secondary">დაგვიკავშირდით</button>
+          <button class="btn-fluid secondary" (click)="scroll('contact')">დაგვიკავშირდით</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Newsletter CTA -->
-  <section class="newsletter-section">
+  <!-- Contact Us Section -->
+  <section class="newsletter-section" id="contact">
     <div class="newsletter-card">
-      <div class="newsletter-content">
-        <h2 class="display-sm">არ გამოტოვო შენი შანსი.</h2>
-        <p class="body-lg">შეუერთდი 45,000+ პროფესიონალს და მიიღე საუკეთესო ვაკანსიები
-          ყოველკვირეულად.</p>
+      <div class="newsletter-grid">
+        <div class="newsletter-info">
+          <h2 class="display-sm">მოგვწერეთ შეტყობინება</h2>
+          <p class="body-lg">გაქვთ კითხვები ან თანამშრომლობის წინადადებები? გამოგვიგზავნეთ შეტყობინება და ჩვენი გუნდი მალე გიპასუხებთ.</p>
+          
+          <div class="contact-details">
+            <div class="contact-item">
+              <span class="material-symbols-outlined text-primary">mail</span>
+              <span>info@jobscout.ge</span>
+            </div>
+            <div class="contact-item">
+              <span class="material-symbols-outlined text-primary">call</span>
+              <span>+995 32 2XX XX XX</span>
+            </div>
+          </div>
+        </div>
+        
         <div class="subscribe-form">
-          <input type="email" placeholder="შეიყვანეთ ელ-ფოსტა" class="email-input">
-          <button class="btn-fluid primary">გამოწერა</button>
+          <input type="email" [formControl]="contactEmail" placeholder="შეიყვანეთ ელ-ფოსტა" class="email-input" [class.is-invalid]="contactEmail.invalid && contactEmail.touched">
+          <textarea [formControl]="contactComment" placeholder="დაწერეთ თქვენი შეტყობინება..." class="comment-textarea" [class.is-invalid]="contactComment.invalid && contactComment.touched"></textarea>
+          <button class="btn-fluid primary" (click)="sendContactEmail()" [disabled]="contactEmail.invalid || contactComment.invalid">გაგზავნა</button>
         </div>
       </div>
     </div>
