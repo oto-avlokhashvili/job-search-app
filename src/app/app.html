@@ -13,3 +13,7 @@
     <app-footer/>
   }
 </div>
+
+@if (authService.isAuthModalOpen()) {
+  <app-auth />
+}

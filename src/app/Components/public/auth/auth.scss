@@ -2,47 +2,61 @@
 // Uses the global CSS variable design tokens (styles.scss)
 // so it automatically adapts to light / dark mode.
 
-.login-page {
-  min-height: 100vh;
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
   padding: 20px;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  position: relative;
-  transition: background 0.3s ease;
+  animation: fadeIn 0.3s ease;
 }
 
-// Dark-mode gradient background matches the rest of the private area
-[data-theme='dark'] .login-page {
-  background: linear-gradient(135deg, #323253, #1c2849) !important;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-// ─── Theme toggle button ─────────────────────────────────────
-.auth-theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-  width: 44px;
-  height: 44px;
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: -20px;
+  margin-right: -20px;
+  margin-bottom: 10px;
+}
+
+.modal-action-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 1.5px solid var(--outline-variant);
-  background: var(--card-bg);
+  border: 1px solid var(--outline-variant);
+  background: var(--input-bg);
   color: var(--on-surface);
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow);
   transition: all 0.2s ease;
 
   &:hover {
     transform: scale(1.08);
     border-color: var(--primary);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    background: var(--card-bg);
+  }
+
+  &.close-btn {
+    span {
+      font-size: 20px;
+    }
   }
 }
 
@@ -160,13 +174,15 @@
   }
 }
 
-// ─── Primary Button ──────────────────────────────────────────
+// ─── Buttons ─────────────────────────────────────────────────
 .btn {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
-  vertical-align: middle;
   user-select: none;
   border: none;
   padding: 13px 24px;
@@ -174,30 +190,30 @@
   font-family: inherit;
   line-height: 1.5;
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   width: 100%;
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(11, 96, 150, 0.25);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
   }
 }
 
 .btn-primary {
-  color: #fff;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
-  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.25);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(42, 82, 152, 0.35);
-    filter: brightness(1.06);
+    box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.35);
+    filter: brightness(1.08);
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.2);
   }
 }
 
@@ -288,21 +304,16 @@
 }
 
 .btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
   color: var(--on-surface);
   background: var(--card-bg);
   border: 1.5px solid var(--outline-variant);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  box-shadow: var(--shadow);
 
   &:hover {
-    background: var(--surface);
+    background: var(--surface-container-low);
     border-color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   }
 
   &:active {

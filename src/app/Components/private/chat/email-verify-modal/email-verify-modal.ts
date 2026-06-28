@@ -20,6 +20,7 @@ export class EmailVerifyModal implements OnInit, OnDestroy {
   errorMessage = signal<string>('');
   successMessage = signal<string>('');
   resendCooldown = signal<number>(0);
+  codeSent = signal<boolean>(false);
   private timerInterval: any = null;
 
   constructor(
@@ -29,7 +30,7 @@ export class EmailVerifyModal implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Start with a small cooldown or let them resend immediately. Let's start with 0.
+    // We do not send code automatically on load.
   }
 
   ngOnDestroy() {
@@ -37,6 +38,7 @@ export class EmailVerifyModal implements OnInit, OnDestroy {
   }
 
   async verify() {
+    if (!this.codeSent()) return;
     const code = this.verificationCode().trim();
     if (!code || code.length !== 6) {
       this.errorMessage.set('გთხოვთ შეიყვანოთ სწორი 6-ნიშნა კოდი');
@@ -71,10 +73,15 @@ export class EmailVerifyModal implements OnInit, OnDestroy {
 
     try {
       await this.authService.resendVerification(this.data.email);
-      this.successMessage.set('კოდი ხელახლა გაიგზავნა თქვენს ელ-ფოსტაზე!');
+      if (!this.codeSent()) {
+        this.successMessage.set('კოდი წარმატებით გაიგზავნა თქვენს ელ-ფოსტაზე!');
+      } else {
+        this.successMessage.set('კოდი ხელახლა გაიგზავნა თქვენს ელ-ფოსტაზე!');
+      }
+      this.codeSent.set(true);
       this.startCooldown();
     } catch (err: any) {
-      console.error('Error resending email verification code:', err);
+      console.error('Error sending email verification code:', err);
       const msg = err.error?.message || 'კოდის გაგზავნა ვერ მოხერხდა. სცადეთ მოგვიანებით.';
       this.errorMessage.set(msg);
     } finally {

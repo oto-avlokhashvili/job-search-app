@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { Router } from '@angular/router';
@@ -20,7 +20,7 @@ export class Auth {
   router = inject(Router);
   themeService = inject(ThemeService);
   validators = signal(false);
-  loginMode = signal(true);
+  loginMode = computed(() => this.authService.authModalMode() === 'login');
 
   loginForm = this.fb.group({
     email: ['', Validators.required],
@@ -41,7 +41,14 @@ export class Auth {
       this.validators.set(false);
       this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
         next: () => {
-          this.router.navigate(['/private/chat'])
+          const returnUrl = this.authService.returnUrl();
+          if (returnUrl) {
+            this.router.navigate([returnUrl]);
+            this.authService.returnUrl.set(null);
+          } else {
+            this.router.navigate(['/private/chat']);
+          }
+          this.authService.closeAuthModal();
         },
         error: (err) => {
           this.alertify.error(err);
@@ -63,10 +70,10 @@ export class Auth {
           this.loginForm.reset();
         },
         error: (err) => {
-          this.loginMode.set(false)
+          this.authService.authModalMode.set('register');
           this.alertify.error(err);
         },
-        complete: () => { this.loginMode.set(true) }
+        complete: () => { this.authService.authModalMode.set('login') }
       });
 
     }
@@ -78,10 +85,16 @@ export class Auth {
 
 
   modeChanger() {
-    this.loginMode.set(!this.loginMode());
+    const current = this.authService.authModalMode();
+    this.authService.authModalMode.set(current === 'login' ? 'register' : 'login');
   }
 
   signInWithGoogle(): void {
     window.location.href = `${environment.apiUrl}/auth/google/login`;
+  }
+
+  @HostListener('document:keydown.escape')
+  handleEscapeKey() {
+    this.authService.closeAuthModal();
   }
 }

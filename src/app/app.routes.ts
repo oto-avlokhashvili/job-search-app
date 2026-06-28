@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 import { Home } from './Components/public/home/home';
 import { PrivateLayout } from './Components/private/private-layout/private-layout'
-import { Auth } from './Components/public/auth/auth';
 import { Dashboard } from './Components/private/dashboard/dashboard';
 import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { Chat } from './Components/private/chat/chat';
 import { authGuard } from './Core/Guards/auth-guard';
+import { SearchJobs } from './Components/public/search-jobs/search-jobs';
 
 export const routes: Routes = [
   {
@@ -21,9 +21,14 @@ export const routes: Routes = [
     data: { showHeroSection: true }
   },
   {
+    path: 'jobs',
+    component: SearchJobs,
+    data: { showHeroSection: false }
+  },
+  {
     path: 'auth',
-    component: Auth,
-    data: { hideLayout: true }
+    redirectTo: 'home',
+    pathMatch: 'full'
   },
   {
     path: 'private',

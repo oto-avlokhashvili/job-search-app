@@ -15,9 +15,8 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot): boolean
   if (service.isLoggedIn()) {
     return true;
   } else {
-    router.navigate(['/auth'], {
-      queryParams: { returnUrl: router.url },
-    });
+    service.openAuthModal('login', router.url);
+    router.navigate(['/home']);
     return false;
   }
 };

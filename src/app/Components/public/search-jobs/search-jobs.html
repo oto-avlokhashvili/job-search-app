@@ -1,0 +1,98 @@
+<main class="jobs-main" [class.has-results]="hasSearched()">
+  <!-- Search Hero Section -->
+  <section class="hero-section">
+    <canvas #particleCanvas class="particle-canvas"></canvas>
+    <div class="hero-container">
+      <h1 class="display-lg text-center">
+        ვაკანსიების <span class="text-primary">ძიება</span>
+      </h1>
+      <p class="body-lg text-center text-on-surface-variant subtitle">
+        მოძებნეთ სასურველი პოზიციები ჩვენს ბაზაში ან გამოიყენეთ ხელოვნური ინტელექტი.
+      </p>
+
+      <div class="search-wrapper">
+        <button class="improve-ai-btn" (click)="authService.openAuthModal('login')">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          მოძებნე AI-ით
+        </button>
+
+        <div #searchContainer class="search-container">
+          <div class="search-input-group">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" [formControl]="search" 
+              placeholder="გსურთ მოძებნოთ პოზიცია?" 
+              class="hero-search-input" 
+              (keyup.enter)="getJobs(search.value!)">
+            
+            @if (searchQuery()) {
+              <button class="btn-clear" (click)="clearSearch()">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            }
+          </div>
+          
+          <div class="search-actions">
+            <button class="btn-search" (click)="getJobs(search.value!)">ძიება</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Job Results Section -->
+  @if (hasSearched()) {
+    <section class="browse-jobs-section" id="browse-jobs">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <p>იტვირთება ვაკანსიები...</p>
+        </div>
+      } @else {
+        <div class="job-grid">
+          @for (job of jobs(); track job.id) {
+            <div class="job-card tonal-card">
+              <div class="card-header">
+                <div class="company-logo">
+                  <span class="material-symbols-outlined text-primary">work</span>
+                </div>
+                <span class="badge-new">ახალი</span>
+              </div>
+
+              <div class="card-body">
+                <h3 class="title-lg">{{ job.vacancy }}</h3>
+                <p class="company-name">{{ job.company }}</p>
+
+                <div class="metadata-row">
+                  <span class="pill-meta">{{ job.location || 'Remote' }}</span>
+                  <span class="pill-meta">Full-time</span>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="salary-box">
+                  <span class="label-xs">ხელფასი</span>
+                  <span class="salary-value">{{ job.salaryRange || 'შეთანხმებით' }}</span>
+                </div>
+                <button class="btn-fluid btn-sm primary" (click)="applyJob(job.link)">ნახვა</button>
+              </div>
+            </div>
+          }
+
+          <!-- Browse More Card -->
+          <div class="more-card border-dashed">
+            <div class="more-icon-wrap">
+              <span class="material-symbols-outlined text-primary">auto_awesome</span>
+            </div>
+            <h3 class="title-md">ვერ იპოვე სასურველი?</h3>
+            <p class="body-sm">სისტემაში გვაქვს <strong>{{count()}}</strong> აქტიური ვაკანსია.</p>
+            <div class="card-actions-vertical">
+              <button class="btn-fluid primary" (click)="authService.openAuthModal('login')">
+                <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 8px;">auto_awesome</span>
+                მოძებნე AI-ით
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</main>

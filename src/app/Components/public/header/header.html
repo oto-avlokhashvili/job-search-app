@@ -1,14 +1,15 @@
 <nav class="glass-nav fixed-header">
   <div class="header-container">
     <div class="logo-group">
-      <div class="logo-container">
+      <div class="logo-container" (click)="scroll('features')">
         <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="nav-logo">
         <span class="logo-text">Job Scout</span>
       </div>
       <div class="nav-links-desktop">
-        <a class="nav-link" [class.active]="activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
-        <a class="nav-link" [class.active]="activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
-        <a class="nav-link" [class.active]="activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
+        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
+        <a class="nav-link" [routerLink]="'/jobs'" routerLinkActive="active">ვაკანსიები</a>
+        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
+        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
       </div>
     </div>
 
@@ -16,7 +17,7 @@
       <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
         {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
       </button>
-      <button class="btn-auth" [routerLink]="'/auth'">ავტორიზაცია</button>
+      <button class="btn-auth" (click)="authService.openAuthModal('login')">ავტორიზაცია</button>
       
       <div class="hamburger" [class.active]="menuOpen" (click)="menuOpen = !menuOpen">
         <span></span>
@@ -28,10 +29,11 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" [class.active]="menuOpen">
-    <a [class.active]="activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
-    <a [class.active]="activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
-    <a [class.active]="activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
+    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
+    <a [routerLink]="'/jobs'" routerLinkActive="active" (click)="menuOpen = false">ვაკანსიები</a>
+    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
+    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
-    <a [routerLink]="'/auth'" (click)="menuOpen = false">ავტორიზაცია</a>
+    <a (click)="authService.openAuthModal('login'); menuOpen = false">ავტორიზაცია</a>
   </div>
 </nav>

@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom, Observable, shareReplay, tap } from 'rxjs';
 import { User, UserRegistration } from '../Interfaces/user';
 import { environment } from '../../../environments/environment';
+import { skipLoading } from '../loading/skip-loading.component';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,21 @@ export class AuthService {
   #tokenSignal = signal<string | null>(null);
   token = this.#tokenSignal.asReadonly();
   isLoggedIn = computed(() => !!this.token());
+  
+  isAuthModalOpen = signal(false);
+  authModalMode = signal<'login' | 'register'>('login');
+  returnUrl = signal<string | null>(null);
+
+  openAuthModal(mode: 'login' | 'register' = 'login', returnUrl: string | null = null) {
+    this.authModalMode.set(mode);
+    this.returnUrl.set(returnUrl);
+    this.isAuthModalOpen.set(true);
+  }
+
+  closeAuthModal() {
+    this.isAuthModalOpen.set(false);
+  }
+
   constructor() {
     this.loadUserFromStorage();
     effect(() => {
@@ -20,7 +36,14 @@ export class AuthService {
       if (token) {
         localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
       }
-    })
+    });
+    effect(() => {
+      if (this.isAuthModalOpen()) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+    });
   }
 
   setToken(token: string) {
@@ -86,12 +109,12 @@ export class AuthService {
   }
 
   async verifyEmail(email: string, code: string): Promise<any> {
-    const res$ = this.http.post(this.url + "/user/verify", { email, code });
+    const res$ = this.http.post(this.url + "/user/verify", { email, code }, { context: new HttpContext().set(skipLoading, true) });
     return firstValueFrom(res$);
   }
 
   async resendVerification(email: string): Promise<any> {
-    const res$ = this.http.post(this.url + "/user/resend-verification", { email });
+    const res$ = this.http.post(this.url + "/user/resend-verification", { email }, { context: new HttpContext().set(skipLoading, true) });
     return firstValueFrom(res$);
   }
 }

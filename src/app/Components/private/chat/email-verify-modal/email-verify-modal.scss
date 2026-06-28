@@ -220,6 +220,15 @@
   align-items: center;
   width: 100%;
   margin-bottom: 24px;
+  
+  &.disabled-container {
+    opacity: 0.5;
+    
+    .code-input {
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+  }
 }
 
 .code-input {

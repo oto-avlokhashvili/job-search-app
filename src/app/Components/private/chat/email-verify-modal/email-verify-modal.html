@@ -20,11 +20,15 @@
             </div>
             
             <p class="instruction-text">
-                დადასტურების კოდი გაეგზავნა თქვენს ელ-ფოსტას:<br>
+                @if (!codeSent()) {
+                    დადასტურების კოდის მისაღებად დააჭირეთ „გაგზავნე კოდი“-ს:<br>
+                } @else {
+                    დადასტურების კოდი გაეგზავნა თქვენს ელ-ფოსტას:<br>
+                }
                 <strong class="email-highlight">{{ data.email }}</strong>
             </p>
 
-            <div class="input-container">
+            <div class="input-container" [ngClass]="{'disabled-container': !codeSent()}">
                 <input 
                     type="text" 
                     class="code-input" 
@@ -32,7 +36,7 @@
                     maxLength="6"
                     [ngModel]="verificationCode()"
                     (ngModelChange)="verificationCode.set($event)"
-                    [disabled]="isLoading()"
+                    [disabled]="isLoading() || !codeSent()"
                     (keydown.enter)="verify()"
                 />
                 <span class="input-hint">შეიყვანეთ 6-ნიშნა კოდი</span>
@@ -63,6 +67,8 @@
             >
                 @if (resendCooldown() > 0) {
                     ხელახლა გაგზავნა ({{ resendCooldown() }}წმ)
+                } @else if (!codeSent()) {
+                    გაგზავნე კოდი
                 } @else {
                     კოდის ხელახლა გაგზავნა
                 }
@@ -70,7 +76,7 @@
             <button 
                 class="btn btn-primary" 
                 type="button" 
-                [disabled]="isLoading() || verificationCode().length !== 6" 
+                [disabled]="isLoading() || verificationCode().length !== 6 || !codeSent()" 
                 (click)="verify()"
             >
                 @if (isLoading()) {

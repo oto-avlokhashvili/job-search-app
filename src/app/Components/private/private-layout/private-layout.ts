@@ -105,7 +105,7 @@ export class PrivateLayout implements OnInit {
 
   logout() {
     this.authService.logOut().then(() => {
-      this.router.navigate(['/auth']);
+      this.router.navigate(['/home']);
     });
   }
 

@@ -1,11 +1,16 @@
-<div class="login-page">
-    <!-- Theme Toggle -->
-    <button class="auth-theme-toggle" (click)="themeService.toggle()" title="Toggle theme">
-        {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
-    </button>
-
-    <div class="login-container">
+<div class="auth-modal-overlay" (click)="authService.closeAuthModal()">
+    <div class="login-container" (click)="$event.stopPropagation()">
         <div class="login-card">
+            <!-- Modal Header Actions (Close & Theme Toggle) -->
+            <div class="modal-actions">
+                <button class="modal-action-btn" (click)="themeService.toggle()" title="Toggle theme">
+                    {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
+                </button>
+                <button class="modal-action-btn close-btn" (click)="authService.closeAuthModal()" title="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
             <div class="login-header">
                 <div class="logo-container">
                     <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Scout Logo" class="auth-logo">

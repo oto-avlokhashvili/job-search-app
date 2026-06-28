@@ -129,6 +129,10 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+body.modal-open {
+  overflow: hidden !important;
+}
+
 // Apply gradient app background on root containers
 [data-theme='dark'] body,
 [data-theme='dark'] .landing-page,

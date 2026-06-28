@@ -7,10 +7,11 @@ import { Home } from './Components/public/home/home';
 import { Header } from './Components/public/header/header';
 import { filter } from 'rxjs';
 import { ThemeService } from './Core/Services/theme.service';
+import { Auth } from './Components/public/auth/auth';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule],
+  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule, Auth],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
