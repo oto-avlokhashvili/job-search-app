@@ -1,33 +1,104 @@
 <main class="home-main">
-  <!-- Editorial Hero Section -->
+  <!-- Hero Section — Command Center stats design -->
   <section class="hero-section" id="features">
     <div class="hero-grid-container">
+      <!-- Left Column: Copy & CTAs -->
       <div class="hero-content-left">
+        <div class="hero-badge">
+          <span class="material-symbols-outlined">bolt</span>
+          <span>AI-ზე დაფუძნებული კარიერული ავტომატიზაცია</span>
+        </div>
+        
         <h1 class="display-lg">
-          დასაქმდი <span class="text-primary">AI აგენტის</span> დახმარებით
+          შენი სამუშაო ძიება <span class="text-gradient">ავტოპილოტზე.</span>
         </h1>
-        <p class="body-lg text-on-surface-variant subtitle">
-          ჩვენი მიზანია დაგეხმაროთ იდეალური ვაკანსიის მოძიებაში. უბრალოდ ატვირთეთ თქვენი CV, დაუშვით ჩვენი AI აგენტი, რომ მან თავად მოძებნოს საუკეთესო პოზიციები და მიიღეთ ავტომატური შეტყობინებები ახალ ვაკანსიებზე.
+        
+        <p class="body-lg subtitle">
+          შემოუერთდი ათასობით პროფესიონალს, რომლებმაც ჩართეს პერსონალური AI აგენტები პორტალების მუდმივი სკანირების, პროფილების ოპტიმიზაციისა და გასაუბრებების დასანიშნად — სრულიად ავტომატურად.
         </p>
 
         <div class="cta-group">
           <button class="btn-fluid primary" (click)="authService.openAuthModal('login')">
-            <span class="material-symbols-outlined">auto_awesome</span>
-            მოძებნე AI აგენტით
+            <span class="material-symbols-outlined">rocket_launch</span>
+            ჩართე შენი აგენტი
           </button>
           <button class="btn-fluid secondary" [routerLink]="'/jobs'">
-            <span class="material-symbols-outlined">search</span>
-            მოძებნე სწრაფად
+            <span class="material-symbols-outlined">query_stats</span>
+            იხილე ცოცხალი სტატისტიკა
           </button>
+        </div>
+
+        <div class="trust-indicators">
+          <div class="indicator">
+            <span class="material-symbols-outlined">security</span>
+            <span>SOC2 თავსებადი</span>
+          </div>
+          <div class="indicator">
+            <span class="material-symbols-outlined">encrypted</span>
+            <span>მონაცემები დაშიფრულია</span>
+          </div>
         </div>
       </div>
 
+      <!-- Right Column: Live Logistics Tracker -->
       <div class="hero-visual-right">
-        <div class="visual-card-wrap">
-          <img src="/ai_resume_scan_mockup.png" alt="AI Resume Scan Illustration" class="visual-img">
-          <!-- Translucent decorative details -->
-          <div class="glass-deco deco-1"></div>
-          <div class="glass-deco deco-2"></div>
+        <div class="dashboard-card">
+          <!-- Header -->
+          <div class="card-header">
+            <div class="pulse-dot"></div>
+            <h3 class="card-title">ოპერაციების მართვის ცენტრი</h3>
+          </div>
+          
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">აქტიური აგენტები</div>
+              <div class="stat-value text-primary">14,204</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">აქტიური მომხმარებლები</div>
+              <div class="stat-value text-accent">8,942</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">აქტიური აგრეგატორები</div>
+              <div class="stat-value">42</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">გაანალიზებული ვაკანსიები (24სთ)</div>
+              <div class="stat-value">42,891</div>
+            </div>
+            <div class="stat-box full-width">
+              <div class="stat-box-left">
+                <div class="stat-label">შესაბამისობის სიზუსტე</div>
+                <div class="stat-value text-gradient">94.2%</div>
+              </div>
+              <div class="stat-box-right">
+                <div class="system-status-label">სისტემის სტატუსი</div>
+                <div class="system-status-value">
+                  <span class="pulse-dot-green"></span>
+                  <span>ოპტიმალური</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decorative Footer Info -->
+          <div class="card-footer">
+            <div class="user-avatars">
+              <div class="avatar-icon">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <div class="avatar-icon">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <div class="avatar-icon">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+            </div>
+            <div class="match-time">
+              გათვლის საშუალო დრო: <span class="highlight">1.2 წამი</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
