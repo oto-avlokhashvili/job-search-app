@@ -133,8 +133,8 @@ $outline-variant-color: #97aed5;
   .display-lg {
     font-size: clamp(2.5rem, 5vw, 3.5rem);
     font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
     color: var(--on-surface);
     text-align: left;
     margin: 0;
@@ -149,6 +149,11 @@ $outline-variant-color: #97aed5;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       color: var(--primary);
+      display: inline-block;
+      padding-bottom: 0.12em;
+      margin-bottom: -0.12em;
+      padding-right: 0.05em;
+      margin-right: -0.05em;
     }
   }
 
@@ -355,6 +360,11 @@ $outline-variant-color: #97aed5;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             color: var(--primary);
+            display: inline-block;
+            padding-bottom: 0.12em;
+            margin-bottom: -0.12em;
+            padding-right: 0.05em;
+            margin-right: -0.05em;
           }
         }
 
