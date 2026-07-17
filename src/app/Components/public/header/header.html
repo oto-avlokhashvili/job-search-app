@@ -10,6 +10,9 @@
         <a class="nav-link" [routerLink]="'/jobs'" routerLinkActive="active">ვაკანსიები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
+        @if (authService.isLoggedIn()) {
+          <a class="nav-link" [routerLink]="'/private/chat'" [class.active]="router.url.startsWith('/private')">პირადი სივრცე</a>
+        }
       </div>
     </div>
 
@@ -17,7 +20,45 @@
       <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
         {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
       </button>
-      <button class="btn-auth" (click)="authService.openAuthModal('login')">ავტორიზაცია</button>
+      
+      @if (authService.isLoggedIn()) {
+        <div class="user-profile-menu">
+          <button class="avatar-btn" (click)="toggleProfileMenu()">
+            @if (stateStore.profileLoaded()) {
+              {{ initials() }}
+            } @else {
+              <span class="btn-spinner" style="width: 14px; height: 14px; border-width: 2px;"></span>
+            }
+          </button>
+          
+          @if (profileMenuOpen()) {
+            <div class="profile-dropdown-menu">
+              <div class="dropdown-header">
+                <span class="name">{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</span>
+                <span class="email">{{ stateStore.profile().email }}</span>
+              </div>
+              <div class="dropdown-info-item">
+                <span class="info-label">გეგმა:</span>
+                <span class="plan-value" [class]="stateStore.profile().subscription.toLowerCase()">
+                  {{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' :
+                     stateStore.profile().subscription === 'PRO' ? 'PRO' : 'PREMIUM' }}
+                </span>
+              </div>
+              @if (stateStore.profile().subscription === 'BASIC') {
+                <button class="dropdown-item upgrade-btn" (click)="openUpgradeModal()">
+                  <span class="icon">⚡</span> განახლება
+                </button>
+              }
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item logout" (click)="logout()">
+                <span class="icon">🚪</span> გასვლა
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <button class="btn-auth" (click)="authService.openAuthModal('login')">ავტორიზაცია</button>
+      }
       
       <div class="hamburger" [class.active]="menuOpen" (click)="menuOpen = !menuOpen">
         <span></span>
@@ -33,7 +74,14 @@
     <a [routerLink]="'/jobs'" routerLinkActive="active" (click)="menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
-    <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
-    <a (click)="authService.openAuthModal('login'); menuOpen = false">ავტორიზაცია</a>
+    @if (authService.isLoggedIn()) {
+      <a [routerLink]="'/private/chat'" [class.active]="router.url.startsWith('/private')" (click)="menuOpen = false">პანელი</a>
+      <a [routerLink]="'/private/jobs'" routerLinkActive="active" (click)="menuOpen = false">შეტყობინებები</a>
+      <a [routerLink]="'/private/profile'" routerLinkActive="active" (click)="menuOpen = false">პროფილი</a>
+      <a [routerLink]="'/private/chat'" routerLinkActive="active" (click)="menuOpen = false">AI ძიება</a>
+      <a (click)="logout(); menuOpen = false" style="color: var(--error)">გასვლა</a>
+    } @else {
+      <a (click)="authService.openAuthModal('login'); menuOpen = false">ავტორიზაცია</a>
+    }
   </div>
 </nav>

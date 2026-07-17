@@ -122,34 +122,42 @@
           <!-- Pro Benefits Card for Basic Users -->
           <div class="pro-benefits-card">
             <button class="close-card-btn" (click)="showProBenefits.set(false)" title="დახურვა">✕</button>
-            <div class="pro-badge-header">
-              <span class="material-symbols-outlined premium-spark">workspace_premium</span>
-              <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>
-            </div>
-            <h3 class="pro-card-title">ავტომატური შეტყობინებები</h3>
-            <p class="pro-card-description">
-              დაუკავშირეთ Telegram და ელ-ფოსტა, რათა ყოველდღიურად მიიღოთ თქვენზე მორგებული ახალი ვაკანსიები.
-            </p>
-            <div class="pro-benefits-grid">
-              <div class="pro-benefit-item">
-                <span class="material-symbols-outlined icon">mail</span>
-                <div class="text-group">
-                  <h4>Email დაიჯესტი</h4>
-                  <p>ყოველდღიური ვაკანსიების დაიჯესტი თქვენს მეილზე</p>
+            
+            <div class="pro-benefits-content-wrapper">
+              <!-- Left Column: Title, Subtitle, and Upgrade Button -->
+              <div class="pro-info-column">
+                <div class="pro-badge-header">
+                  <span class="material-symbols-outlined premium-spark">workspace_premium</span>
+                  <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>
+                </div>
+                <h3 class="pro-card-title">ავტომატური შეტყობინებები</h3>
+                <p class="pro-card-description">
+                  დაუკავშირეთ Telegram და ელ-ფოსტა, რათა ყოველდღიურად მიიღოთ თქვენზე მორგებული ახალი ვაკანსიები.
+                </p>
+                <button class="pro-upgrade-btn" (click)="openUpgradeModal()">
+                  <span>ტარიფის განახლება</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+              
+              <!-- Right Column: Benefits Stack -->
+              <div class="pro-benefits-grid">
+                <div class="pro-benefit-item">
+                  <span class="material-symbols-outlined icon">mail</span>
+                  <div class="text-group">
+                    <h4>Email დაიჯესტი</h4>
+                    <p>ყოველდღიური ვაკანსიების დაიჯესტი თქვენს მეილზე</p>
+                  </div>
+                </div>
+                <div class="pro-benefit-item">
+                  <span class="material-symbols-outlined icon">send</span>
+                  <div class="text-group">
+                    <h4>Telegram შეტყობინებები</h4>
+                    <p>მყისიერი შეტყობინებები თქვენს მობილურზე</p>
+                  </div>
                 </div>
               </div>
-              <div class="pro-benefit-item">
-                <span class="material-symbols-outlined icon">send</span>
-                <div class="text-group">
-                  <h4>Telegram შეტყობინებები</h4>
-                  <p>მყისიერი შეტყობინებები თქვენს მობილურზე</p>
-                </div>
-              </div>
             </div>
-            <button class="pro-upgrade-btn" (click)="openUpgradeModal()">
-              <span>ტარიფის განახლება</span>
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
           </div>
         </div>
       }

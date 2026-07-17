@@ -1,46 +1,224 @@
-<div class="content-grid">
-    <!-- Latest Jobs -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">პროფილი</h2>
-        </div>
-        <div class="profile-form">
-            <form class="login-form" [formGroup]="profileForm">
-                <div class="row">
-                    <div class="mb-3 col-md-6">
-                        <label for="firstName" class="form-label">სახელი</label>
-                        <input formControlName="firstName" type="text" class="form-control" id="firstName"
-                            placeholder="შეიყვანეთ სახელი" required [class.is-invalid]="isInvalid('firstName')">
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label for="lastName" class="form-label">გვარი</label>
-                        <input formControlName="lastName" type="text" class="form-control" id="lastName"
-                            placeholder="შეიყვანეთ გვარი" required [class.is-invalid]="isInvalid('lastName')">
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label for="email" class="form-label">ელ-ფოსტა</label>
-                        <input formControlName="email" type="email" class="form-control" id="email"
-                            placeholder="შეიყვანეთ ელ-ფოსტა" readonly required [class.is-invalid]="isInvalid('email')">
-                    </div>
-
-                    <div class="mb-3 col-md-6">
-                        <label for="subscription" class="form-label">გამოწერა</label>
-                        <input formControlName="subscription" type="text" class="form-control" id="subscription"
-                            placeholder="გამოწერა" readonly required [class.is-invalid]="isInvalid('subscription')">
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label for="telegramChatId" class="form-label">ტელეგრამ ID</label>
-                        <input formControlName="telegramChatId" type="text" class="form-control" id="telegramChatId"
-                            placeholder="ტელეგრამ ID" required readonly [class.is-invalid]="isInvalid('telegramChatId')">
-                    </div>
-                </div>
-                <div class="d-flex justify-content-end">
-                    <button type="button" (click)="save()" class="btn btn-primary">შენახვა</button>
-                </div>
-
-
-
-            </form>
-        </div>
+<div class="profile-container">
+  
+  <!-- Profile Header Card (Initials, Name, Plan badge) -->
+  <div class="profile-header-card">
+    <div class="avatar-large">{{ initials() }}</div>
+    <div class="user-meta">
+      <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
+      <div class="badge-row">
+        <span class="plan-badge" [class]="stateStore.profile().subscription.toLowerCase()">
+          {{ stateStore.profile().subscription === 'BASIC' ? 'BASIC' : stateStore.profile().subscription === 'PRO' ? 'PRO' : 'PREMIUM' }}
+        </span>
+      </div>
     </div>
-</div>
+  </div>
+
+  <div class="profile-grid">
+    <!-- Left Column: Edit Profile Form, Keywords, Notification Channel -->
+    <div class="profile-main-column">
+      
+      <!-- Edit Profile Form -->
+      <div class="profile-card edit-profile-section">
+        <div class="card-header-clean">
+          <span class="material-symbols-outlined icon">person</span>
+          <h3>პირადი ინფორმაცია</h3>
+        </div>
+        
+        <form [formGroup]="profileForm" class="profile-form-grid">
+          <div class="form-group">
+            <label for="firstName">სახელი</label>
+            <input formControlName="firstName" type="text" id="firstName" class="form-input" 
+                   placeholder="სახელი" required [class.is-invalid]="isInvalid('firstName')">
+          </div>
+          
+          <div class="form-group">
+            <label for="lastName">გვარი</label>
+            <input formControlName="lastName" type="text" id="lastName" class="form-input" 
+                   placeholder="გვარი" required [class.is-invalid]="isInvalid('lastName')">
+          </div>
+          
+          <div class="form-group full-width">
+            <label for="email">ელ-ფოსტა</label>
+            <div class="input-with-icon">
+              <input formControlName="email" type="email" id="email" class="form-input" 
+                     readonly required [class.is-invalid]="isInvalid('email')">
+              <span class="material-symbols-outlined field-icon lock">lock</span>
+            </div>
+          </div>
+
+          <button type="button" (click)="save()" class="btn-save" [disabled]="profileForm.invalid">
+            <span class="material-symbols-outlined">save</span> შენახვა
+          </button>
+        </form>
+      </div>
+
+      <!-- Keywords / Search Queries Card -->
+      <div class="profile-card keywords-section">
+        <div class="card-header-clean">
+          <span class="material-symbols-outlined icon">tag</span>
+          <h3>საძიებო სიტყვები</h3>
+        </div>
+        <p class="section-desc">ხელოვნური ინტელექტი ამ სიტყვების მიხედვით შეგირჩევთ თქვენზე მორგებულ საუკეთესო ვაკანსიებს.</p>
+        
+        <div class="chips-input-container-wrapper">
+          <div class="chips-input-container">
+            <div class="chips-list">
+              <div class="chip" *ngFor="let query of stateStore.searchQuery(); let i = index">
+                <span>{{ query }}</span>
+                <button class="chip-remove" (click)="removeKeyword(i)">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <input type="text" class="chip-input" placeholder="დაამატეთ საკვანძო სიტყვა..." 
+                     [(ngModel)]="keywordInputValue" (keydown.enter)="addKeywordFromValue()">
+            </div>
+          </div>
+          <button class="btn-add-keyword" [disabled]="!keywordInputValue().trim()" (click)="addKeywordFromValue()" title="დამატება">
+            <span class="material-symbols-outlined">add</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notification Channel Card -->
+      <div class="profile-card notification-channel-section">
+        <div class="card-header-clean">
+          <span class="material-symbols-outlined icon">notifications</span>
+          <h3>შეტყობინებების არხი</h3>
+        </div>
+        
+        @if (stateStore.profile().telegramChatId) {
+          <!-- Telegram is active, Email is hidden -->
+          <div class="channel-status active-telegram">
+            <div class="status-indicator">
+              <span class="dot telegram-dot"></span>
+              <span class="channel-title">აქტიურია: Telegram</span>
+            </div>
+            <p class="status-desc">AI ვაკანსიების მყისიერი შეტყობინებები იგზავნება თქვენს Telegram-ზე (ID: {{ stateStore.profile().telegramChatId }}).</p>
+            
+            <button class="btn-switch-channel to-email" (click)="switchToEmail()">
+              <span class="material-symbols-outlined">mail</span> ელ-ფოსტაზე გადართვა
+            </button>
+          </div>
+        } @else {
+          <!-- Email is active, Telegram is hidden -->
+          <div class="channel-status active-email">
+            <div class="status-indicator">
+              <span class="dot email-dot" [class.unverified]="!stateStore.profile().isEmailVerified"></span>
+              <span class="channel-title">აქტიურია: ელ-ფოსტა</span>
+            </div>
+            
+            @if (stateStore.profile().isEmailVerified) {
+              <p class="status-desc">შეტყობინებები იგზავნება ელ-ფოსტაზე: <strong>{{ stateStore.profile().email }}</strong>.</p>
+            } @else {
+              <p class="status-desc warning-text">ელ-ფოსტა <strong>{{ stateStore.profile().email }}</strong> დაუდასტურებელია. შეტყობინებების მისაღებად გთხოვთ დაადასტუროთ.</p>
+              <button class="btn-verify-email-inline" (click)="openEmailVerification()">
+                ელ-ფოსტის დადასტურება
+              </button>
+            }
+            
+            <button class="btn-switch-channel to-telegram" (click)="generateTelegramToken()">
+              <span class="material-symbols-outlined">send</span> Telegram-ზე გადართვა
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Right Column: CV & Subscription -->
+    <div class="profile-sidebar-grid">
+      
+      <!-- Analyzed CV Card -->
+      <div class="profile-card cv-section">
+        <div class="card-header-clean">
+          <span class="material-symbols-outlined icon">description</span>
+          <h3>ატვირთული CV</h3>
+        </div>
+        
+        @if (stateStore.userCv()) {
+          <div class="cv-file-details">
+            <div class="cv-meta-row">
+              <span class="material-symbols-outlined file-type-icon">picture_as_pdf</span>
+              <div class="file-name-size">
+                <span class="filename">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
+                <span class="filesize">ატვირთულია</span>
+              </div>
+              <button class="btn-delete-cv" (click)="deleteCv()" title="CV-ს წაშლა">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+            
+            <div class="cv-analysis-summary">
+              <div class="analysis-item">
+                <span class="label">გამოვლენილი პოზიცია:</span>
+                <span class="value">{{ stateStore.userCv()?.summary?.detectedRole || 'მითითებული არ არის' }}</span>
+              </div>
+              <div class="analysis-item">
+                <span class="label">სასურველი ლოკაცია:</span>
+                <span class="value">{{ stateStore.userCv()?.summary?.locationPreference || 'მითითებული არ არის' }}</span>
+              </div>
+              
+              <!-- Salary Estimates Section -->
+              <div class="analysis-item" *ngIf="stateStore.userCv()?.summary?.salaryEstimates">
+                <span class="label">ხელფასის პროგნოზი:</span>
+                <div class="salary-estimates-container">
+                  <div class="salary-estimate-box" *ngIf="stateStore.userCv()?.summary?.salaryEstimates?.georgia">
+                    <span class="flag">🇬🇪</span>
+                    <div class="est-info">
+                      <span class="loc-label">თბილისი</span>
+                      <span class="amount">{{ stateStore.userCv()?.summary?.salaryEstimates?.georgia }}</span>
+                    </div>
+                  </div>
+                  <div class="salary-estimate-box" *ngIf="stateStore.userCv()?.summary?.salaryEstimates?.remote">
+                    <span class="flag">🌍</span>
+                    <div class="est-info">
+                      <span class="loc-label">Remote</span>
+                      <span class="amount">{{ stateStore.userCv()?.summary?.salaryEstimates?.remote }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="analysis-item skills">
+                <span class="label">ძირითადი უნარები:</span>
+                <div class="skills-badges-list">
+                  <span class="skill-badge" *ngFor="let skill of stateStore.userCv()?.summary?.primarySkills">
+                    {{ skill }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="cv-empty-state">
+            <span class="material-symbols-outlined upload-cloud-icon">cloud_upload</span>
+            <p class="empty-desc">თქვენი CV არ არის ატვირთული. ატვირთეთ ფაილი ავტომატური AI ანალიზისთვის.</p>
+            <input #cvFileInput type="file" (change)="uploadCv($event)" accept=".pdf,.doc,.docx" style="display: none;">
+            <button class="btn-upload-cv" (click)="cvFileInput.click()">
+              <span class="material-symbols-outlined">upload</span> CV-ს ატვირთვა
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Subscription Card -->
+      <div class="profile-card subscription-section">
+        <div class="card-header-clean">
+          <span class="material-symbols-outlined icon">credit_card</span>
+          <h3>აქტიური გამოწერა</h3>
+        </div>
+        
+        <div class="sub-card-box" [class]="stateStore.profile().subscription.toLowerCase()">
+          <span class="plan-title">{{ stateStore.profile().subscription }}</span>
+          @if (stateStore.profile().subscription === 'BASIC') {
+            <span class="plan-sub">მეტი შესაძლებლობებისთვის განაახლეთ გამოწერა</span>
+            <button class="btn-upgrade-sub" (click)="openUpgradeModal()">განახლება</button>
+          } @else {
+            <span class="plan-sub">პროფესიონალური AI ძიება გააქტიურებულია!</span>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

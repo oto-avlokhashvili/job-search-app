@@ -6,6 +6,7 @@ import { UserRegistration } from '../../../Core/Interfaces/user';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { environment } from '../../../../environments/environment';
+import { StateStore } from '../../../Store/state.store';
 
 @Component({
   selector: 'app-auth',
@@ -19,6 +20,7 @@ export class Auth {
   fb = inject(FormBuilder);
   router = inject(Router);
   themeService = inject(ThemeService);
+  stateStore = inject(StateStore);
   validators = signal(false);
   loginMode = computed(() => this.authService.authModalMode() === 'login');
 
@@ -41,12 +43,11 @@ export class Auth {
       this.validators.set(false);
       this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
         next: () => {
+          this.stateStore.loadProfile();
           const returnUrl = this.authService.returnUrl();
           if (returnUrl) {
             this.router.navigate([returnUrl]);
             this.authService.returnUrl.set(null);
-          } else {
-            this.router.navigate(['/private/chat']);
           }
           this.authService.closeAuthModal();
         },

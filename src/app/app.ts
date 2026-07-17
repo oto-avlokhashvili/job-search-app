@@ -8,6 +8,7 @@ import { Header } from './Components/public/header/header';
 import { filter } from 'rxjs';
 import { ThemeService } from './Core/Services/theme.service';
 import { Auth } from './Components/public/auth/auth';
+import { StateStore } from './Store/state.store';
 
 @Component({
   selector: 'app-root',
@@ -19,12 +20,17 @@ export class App {
   protected readonly title = signal('job-search-app');
   isAuthorized = signal(false);
   authService = inject(AuthService);
+  stateStore = inject(StateStore);
   themeService = inject(ThemeService);
   hideLayout = signal(false);
+  hideFooter = signal(false);
   showHeroSection = signal(false);
   constructor(private router: Router, private route: ActivatedRoute){
     this.themeService.init();
-    this.isAuthorized.set(this.authService.isLoggedIn())
+    this.isAuthorized.set(this.authService.isLoggedIn());
+    if (this.authService.isLoggedIn()) {
+      this.stateStore.loadProfile();
+    }
     
 
     this.router.events
@@ -33,6 +39,7 @@ export class App {
       let r = this.route.firstChild;
       while (r?.firstChild) r = r.firstChild;
       this.hideLayout.set(r?.snapshot.data['hideLayout'] ?? false);
+      this.hideFooter.set(r?.snapshot.data['hideFooter'] ?? false);
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
     });
   }

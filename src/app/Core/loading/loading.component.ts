@@ -14,10 +14,10 @@ export class LoadingIndicatorComponent implements OnInit, OnDestroy {
     loading: Signal<boolean> = this.loadingService.loading;
 
     private readonly statusMessages = [
-        'Initializing systems',
-        'Loading AI core',
-        'Calibrating engines',
-        'T-minus 3... 2... 1...'
+        'სისტემის ინიციალიზაცია...',
+        'ხელოვნური ინტელექტის მომზადება...',
+        'მონაცემთა ბაზის ანალიზი...',
+        'უსაფრთხო კავშირის დამყარება...'
     ];
 
     statusMessage = signal(this.statusMessages[0]);
@@ -38,14 +38,15 @@ export class LoadingIndicatorComponent implements OnInit, OnDestroy {
     @ViewChild('starsContainer') starsContainer!: ElementRef;
 
     ngAfterViewInit() {
-        for (let i = 0; i < 60; i++) {
+        if (!this.starsContainer) return;
+        for (let i = 0; i < 40; i++) {
             const s = document.createElement('div');
             s.className = 'star-dot';
-            s.style.left = Math.random() * 600 + 'px';
-            s.style.top = Math.random() * 340 + 'px';
-            s.style.animationDelay = (Math.random() * 2) + 's';
-            s.style.opacity = String(0.3 + Math.random() * 0.7);
-            this.starsContainer?.nativeElement?.appendChild(s);
+            s.style.left = Math.random() * 100 + 'vw';
+            s.style.top = Math.random() * 100 + 'vh';
+            s.style.animationDelay = (Math.random() * 3) + 's';
+            s.style.opacity = String(0.2 + Math.random() * 0.8);
+            this.starsContainer.nativeElement.appendChild(s);
         }
     }
 }

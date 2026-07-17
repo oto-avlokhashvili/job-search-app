@@ -1,10 +1,17 @@
-import { Component, effect, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, effect, inject, signal, computed } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { StateStore } from '../../../Store/state.store';
+import { AuthService } from '../../../Core/Services/auth-service';
+import { MatDialog } from '@angular/material/dialog';
+import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
+import { QrModal } from '../dashboard/qr-modal/qr-modal';
+import { EmailVerifyModal } from '../chat/email-verify-modal/email-verify-modal';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -12,6 +19,16 @@ export class Profile {
   validators = signal(false);
   fb = inject(FormBuilder);
   stateStore = inject(StateStore);
+  authService = inject(AuthService);
+  dialog = inject(MatDialog);
+  keywordInputValue = signal<string>('');
+
+  initials = computed(() => {
+    const u = this.stateStore.profile();
+    if (!u) return '';
+    return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
+  });
+
   profileForm = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
@@ -22,6 +39,7 @@ export class Profile {
   })
 
   constructor() {
+    this.stateStore.getCv();
     effect(() => {
       const profile = this.stateStore.profile();
       const loaded = this.stateStore.profileLoaded();
@@ -43,23 +61,21 @@ export class Profile {
     return !!(control && control.invalid && (control.touched || this.validators()));
   }
 
-  addKeyword(event: any) {
-    const input = event.target as HTMLInputElement;
-    const value = input.value.trim();
-
+  addKeywordFromValue() {
+    const value = this.keywordInputValue().trim();
     if (value) {
-      const currentKeywords = this.profileForm.get('searchQuery')?.value as string[] || [];
+      const currentKeywords = this.stateStore.searchQuery() || [];
       if (!currentKeywords.includes(value)) {
-        this.profileForm.get('searchQuery')?.setValue([...currentKeywords, value]);
+        this.stateStore.updateSearchQueries([...currentKeywords, value]);
       }
-      input.value = '';
+      this.keywordInputValue.set('');
     }
   }
 
   removeKeyword(index: number) {
-    const currentKeywords = this.profileForm.get('searchQuery')?.value as string[] || [];
+    const currentKeywords = this.stateStore.searchQuery() || [];
     const updatedKeywords = currentKeywords.filter((_, i) => i !== index);
-    this.profileForm.get('searchQuery')?.setValue(updatedKeywords);
+    this.stateStore.updateSearchQueries(updatedKeywords);
   }
 
   save() {
@@ -67,5 +83,77 @@ export class Profile {
     if (this.profileForm.valid) {
       this.stateStore.updateProfile(this.stateStore.profile()?.id, this.profileForm.value);
     }
+  }
+
+  openUpgradeModal() {
+    this.dialog.open(SubscriptionModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: 'subscription-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+  }
+
+  telegramLink = signal<string>("");
+  async generateTelegramToken() {
+    const res = await this.authService.generateTelegramToken();
+    this.telegramLink.set(`${environment.telegramUrl}?start=${res}`);
+
+    if (res) {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        window.location.href = this.telegramLink();
+      } else {
+        this.openDialog(this.telegramLink());
+      }
+    }
+  }
+
+  openDialog(link: string) {
+    const dialogRef = this.dialog.open(QrModal, {
+      width: '400px',
+      disableClose: true,
+      autoFocus: false,
+      data: { telegramLink: link }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.stateStore.loadProfile();
+      }
+    });
+  }
+
+  openEmailVerification() {
+    const dialogRef = this.dialog.open(EmailVerifyModal, {
+      width: '450px',
+      maxWidth: '95vw',
+      data: { email: this.stateStore.profile().email },
+      disableClose: false,
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe(verified => {
+      if (verified) {
+        this.stateStore.loadProfile();
+      }
+    });
+  }
+
+  deleteCv() {
+    this.stateStore.deleteCv();
+  }
+
+  uploadCv(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.stateStore.uploadCv(file);
+    }
+  }
+
+  switchToEmail() {
+    this.stateStore.updateProfile(this.stateStore.profile()?.id, { telegramChatId: '' });
   }
 }

@@ -1,7 +1,10 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, inject, signal, HostListener, computed } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { ThemeService } from '../../../Core/Services/theme.service';
+import { StateStore } from '../../../Store/state.store';
+import { MatDialog } from '@angular/material/dialog';
+import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
 
 @Component({
   selector: 'app-header',
@@ -13,8 +16,51 @@ export class Header {
   menuOpen = false;
   authService = inject(AuthService);
   themeService = inject(ThemeService);
+  stateStore = inject(StateStore);
   router = inject(Router);
+  dialog = inject(MatDialog);
   activeSection = signal('features');
+  profileMenuOpen = signal(false);
+
+  initials = computed(() => {
+    const u = this.stateStore.profile();
+    if (!u) return '';
+    return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
+  });
+
+  toggleProfileMenu() {
+    this.profileMenuOpen.set(!this.profileMenuOpen());
+  }
+
+  closeProfileMenu() {
+    this.profileMenuOpen.set(false);
+  }
+
+  logout() {
+    this.closeProfileMenu();
+    this.authService.logOut().then(() => {
+      this.router.navigate(['/home']);
+    });
+  }
+
+  openUpgradeModal() {
+    this.closeProfileMenu();
+    this.dialog.open(SubscriptionModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: 'subscription-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-profile-menu')) {
+      this.closeProfileMenu();
+    }
+  }
   private isScrolling = false;
   private scrollTimeout: any;
 

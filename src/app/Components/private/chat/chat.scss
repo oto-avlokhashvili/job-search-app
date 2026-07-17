@@ -17,11 +17,9 @@ $shadow: var(--shadow);
 .career-dashboard {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 4rem);
+  min-height: calc(100vh - 280px);
   height: auto;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: $on-surface;
   position: relative;
@@ -29,8 +27,6 @@ $shadow: var(--shadow);
   box-sizing: border-box;
 
   &.has-results {
-    max-width: none;
-    margin: 0;
   }
 
   * {
@@ -211,14 +207,7 @@ $shadow: var(--shadow);
 // ─── Search Widget Container ──────────────────────────────────────────────
 .search-widget-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
   transition: all 0.4s ease;
-
-  .dashboard-body.has-results & {
-    max-width: 100%;
-    margin-bottom: 1.5rem;
-  }
 }
 
 // Suggested Prompts
@@ -523,18 +512,14 @@ $shadow: var(--shadow);
 
   .pro-benefits-card {
     background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.03) 0%, rgba(var(--primary-rgb), 0.08) 100%);
-    border: 1px solid transparent;
-    border-radius: 20px;
+    border: 1px solid rgba(var(--primary-rgb), 0.15);
+    border-radius: 24px;
     padding: 0;
-    max-width: 540px;
     width: 100%;
-    text-align: center;
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    align-items: center;
     position: relative;
-    backdrop-filter: blur(10px);
     opacity: 0;
     visibility: hidden;
     transform: scale(0.9) translateY(-10px);
@@ -543,6 +528,31 @@ $shadow: var(--shadow);
     margin: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    .pro-benefits-content-wrapper {
+      display: flex;
+      gap: 2.5rem;
+      width: 100%;
+      text-align: left;
+      align-items: center;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+      }
+    }
+
+    .pro-info-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 1;
+
+      @media (max-width: 768px) {
+        align-items: center;
+      }
+    }
 
     .close-card-btn {
       position: absolute;
@@ -605,15 +615,11 @@ $shadow: var(--shadow);
     }
 
     .pro-benefits-grid {
-      display: grid;
-      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 1rem;
       width: 100%;
-      margin-bottom: 1.5rem;
-
-      @media (min-width: 480px) {
-        grid-template-columns: 1fr 1fr;
-      }
+      flex: 1;
     }
 
     .pro-benefit-item {
@@ -715,16 +721,15 @@ $shadow: var(--shadow);
       visibility: visible;
       transform: scale(1) translateY(0);
       max-height: 600px;
-      padding: 1.75rem;
+      padding: 2.2rem 2.5rem;
       border-color: rgba(var(--primary-rgb), 0.15);
-      box-shadow: 0 10px 30px rgba(22, 47, 80, 0.05);
+      box-shadow: none;
       margin-top: 1.5rem;
       margin-bottom: 0.5rem;
       pointer-events: auto;
 
       &:hover {
         border-color: rgba(var(--primary-rgb), 0.25);
-        box-shadow: 0 15px 35px rgba(22, 47, 80, 0.08);
       }
     }
   }
@@ -1481,10 +1486,9 @@ $shadow: var(--shadow);
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
   width: 100%;
-  max-width: 900px;
-  margin: 3.5rem auto 1.5rem;
+  margin: 3.5rem 0 1.5rem;
   animation: fadeIn 0.9s ease;
 
   .feature-card {
