@@ -1,5 +1,5 @@
 import { Component, ElementRef, inject, OnInit, signal, ViewChild, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { Job } from '../../../Core/Interfaces/jobs';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -23,6 +23,7 @@ export class SearchJobs implements OnInit, AfterViewInit, OnDestroy {
 
   jobsService = inject(JobsService);
   authService = inject(AuthService);
+  router = inject(Router);
   private alertify = inject(AlertifyService);
   private ngZone = inject(NgZone);
 
@@ -270,6 +271,14 @@ export class SearchJobs implements OnInit, AfterViewInit, OnDestroy {
         this.searchState = 'idle';
       },
     });
+  }
+
+  handleAiSearch() {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/private/dashboard']);
+    } else {
+      this.authService.openAuthModal('login');
+    }
   }
 
   clearSearch() {

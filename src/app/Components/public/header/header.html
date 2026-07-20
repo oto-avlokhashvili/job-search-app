@@ -11,7 +11,7 @@
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
-          <a class="nav-link" [routerLink]="'/private/chat'" [class.active]="router.url.startsWith('/private')">პირადი სივრცე</a>
+          <a class="nav-link" [routerLink]="'/private/dashboard'" [class.active]="router.url.startsWith('/private')">პირადი სივრცე</a>
         }
       </div>
     </div>
@@ -74,11 +74,12 @@
     <a [routerLink]="'/jobs'" routerLinkActive="active" (click)="menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
+    <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
     @if (authService.isLoggedIn()) {
-      <a [routerLink]="'/private/chat'" [class.active]="router.url.startsWith('/private')" (click)="menuOpen = false">პანელი</a>
+      <a [routerLink]="'/private/dashboard'" (click)="menuOpen = false">მართვის პანელი</a>
       <a [routerLink]="'/private/jobs'" routerLinkActive="active" (click)="menuOpen = false">შეტყობინებები</a>
       <a [routerLink]="'/private/profile'" routerLinkActive="active" (click)="menuOpen = false">პროფილი</a>
-      <a [routerLink]="'/private/chat'" routerLinkActive="active" (click)="menuOpen = false">AI ძიება</a>
+      <a [routerLink]="'/private/dashboard'" routerLinkActive="active" (click)="menuOpen = false">AI ძიება</a>
       <a (click)="logout(); menuOpen = false" style="color: var(--error)">გასვლა</a>
     } @else {
       <a (click)="authService.openAuthModal('login'); menuOpen = false">ავტორიზაცია</a>

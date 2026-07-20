@@ -138,7 +138,11 @@
         @if (stateStore.userCv()) {
           <div class="cv-file-details">
             <div class="cv-meta-row">
-              <span class="material-symbols-outlined file-type-icon">picture_as_pdf</span>
+              <div class="file-icon-badge" [class.word]="isWordFile()" [class.pdf]="!isWordFile()">
+                <span class="material-symbols-outlined file-type-icon">
+                  {{ isWordFile() ? 'description' : 'picture_as_pdf' }}
+                </span>
+              </div>
               <div class="file-name-size">
                 <span class="filename">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
                 <span class="filesize">ატვირთულია</span>
@@ -149,6 +153,16 @@
             </div>
             
             <div class="cv-analysis-summary">
+              <!-- Textual CV Summary / Overview -->
+              @if (cvTextSummary()) {
+                <div class="analysis-item">
+                  <span class="label">რეზიუმეს მიმოხილვა:</span>
+                  <p class="summary-text-box">
+                    {{ cvTextSummary() }}
+                  </p>
+                </div>
+              }
+
               <div class="analysis-item">
                 <span class="label">გამოვლენილი პოზიცია:</span>
                 <span class="value">{{ stateStore.userCv()?.summary?.detectedRole || 'მითითებული არ არის' }}</span>

@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
 import { Home } from './Components/public/home/home';
-import { PrivateLayout } from './Components/private/private-layout/private-layout'
+import { PrivateLayout } from './Components/private/private-layout/private-layout';
 import { Dashboard } from './Components/private/dashboard/dashboard';
 import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
-import { Chat } from './Components/private/chat/chat';
 import { authGuard } from './Core/Guards/auth-guard';
 import { SearchJobs } from './Components/public/search-jobs/search-jobs';
 
@@ -41,6 +40,20 @@ export const routes: Routes = [
         component: Dashboard,
       },
       {
+        path: 'dashboard/:id',
+        component: Dashboard,
+      },
+      {
+        path: 'chat',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'chat/:id',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
         path: 'profile',
         component: Profile,
       },
@@ -53,13 +66,8 @@ export const routes: Routes = [
         component: Analytics,
       },
       {
-        path: 'chat',
-        component: Chat,
-      },
-
-      {
         path: '',
-        redirectTo: 'chat',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       }
     ]

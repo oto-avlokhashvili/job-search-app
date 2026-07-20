@@ -30,7 +30,6 @@ export class EmailVerifyModal implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // We do not send code automatically on load.
   }
 
   ngOnDestroy() {

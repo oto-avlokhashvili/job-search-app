@@ -3,7 +3,7 @@ import { Component, computed, inject, OnInit, signal, DestroyRef } from '@angula
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
-import { ChatStore } from '../../../Store/chat.store';
+import { DashboardStore } from '../../../Store/dashboard.store';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
@@ -26,51 +26,49 @@ export class PrivateLayout implements OnInit {
   destroyRef = inject(DestroyRef);
   route = inject(ActivatedRoute);
 
-
-
   navItems = signal([
+    { icon: '🤖', label: 'AI ძიება', route: 'dashboard' },
     { icon: '🔔', label: 'შეტყობინებები', route: 'jobs' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' },
-    { icon: '🤖', label: 'AI ძიება', route: 'chat' },
   ]);
 
   authService = inject(AuthService);
   stateStore = inject(StateStore);
-  chatStore = inject(ChatStore);
+  dashboardStore = inject(DashboardStore);
   dialog = inject(MatDialog);
 
-  isOnChatRoute = signal<boolean>(this.router.url.includes('/chat'));
+  isOnChatRoute = signal<boolean>(this.router.url.includes('/dashboard'));
 
   async ngOnInit() {
-  const token = this.route.snapshot.queryParamMap.get('token');
+    const token = this.route.snapshot.queryParamMap.get('token');
 
-  if (token) {
-    this.authService.setToken(token);
-    await this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {},
-      replaceUrl: true
-    });
+    if (token) {
+      this.authService.setToken(token);
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+    }
+
+    // now runs AFTER navigation settles
+    this.hideFooterAndHeader.set(this.router.url.includes('/dashboard'));
+    this.router.events
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((e: NavigationEnd) => {
+        this.isOnChatRoute.set(e.urlAfterRedirects.includes('/dashboard'));
+        this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/dashboard'));
+      });
+
+    this.getProfile();
+    this.themeService.init();
+    this.getCv();
+    this.loadMatchedJobs(1);
+    this.loadSentJobs();
   }
-
-  // now runs AFTER navigation settles
-  this.hideFooterAndHeader.set(this.router.url.includes('/chat'));
-  this.router.events
-    .pipe(
-      filter(e => e instanceof NavigationEnd),
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe((e: NavigationEnd) => {
-      this.isOnChatRoute.set(e.urlAfterRedirects.includes('/chat'));
-      this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/chat'));
-    });
-
-  this.getProfile();
-  this.themeService.init();
-  this.getCv();
-  this.loadMatchedJobs(1);
-  this.loadSentJobs();
-}
 
   loadMatchedJobs(page: number) {
     this.stateStore.loadAIMatchedJobs(page, 6);
@@ -118,33 +116,33 @@ export class PrivateLayout implements OnInit {
     });
   }
 
-  // ── Chat helpers ──────────────────────────────────────────────
+  // ── Dashboard helpers ──────────────────────────────────────────
   createNewChat() {
-    const newId = this.chatStore.createConversation();
-    this.router.navigate(['/private/chat', newId]);
+    const newId = this.dashboardStore.createConversation();
+    this.router.navigate(['/private/dashboard', newId]);
     this.closeSidebar();
   }
 
   selectConversation(id: string) {
-    this.chatStore.setActiveConversation(id);
-    this.router.navigate(['/private/chat', id]);
+    this.dashboardStore.setActiveConversation(id);
+    this.router.navigate(['/private/dashboard', id]);
     this.closeSidebar();
   }
 
   deleteConversation(event: Event, id: string) {
     event.stopPropagation();
-    this.chatStore.deleteConversation(id);
+    this.dashboardStore.deleteConversation(id);
     // Navigate to another conversation or base chat
-    const remaining = this.chatStore.conversations();
+    const remaining = this.dashboardStore.conversations();
     if (remaining.length > 0) {
-      this.router.navigate(['/private/chat', remaining[0].id]);
+      this.router.navigate(['/private/dashboard', remaining[0].id]);
     } else {
-      this.router.navigate(['/private/chat']);
+      this.router.navigate(['/private/dashboard']);
     }
   }
 
   isActiveConversation(id: string): boolean {
-    return this.chatStore.activeConversationId() === id;
+    return this.dashboardStore.activeConversationId() === id;
   }
 
   formatConvTime(date: Date): string {

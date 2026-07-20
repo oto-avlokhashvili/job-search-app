@@ -114,7 +114,14 @@
             <li><span class="material-symbols-outlined">check_circle</span> AI რჩევები</li>
             <li><span class="material-symbols-outlined">check_circle</span> ელ-ფოსტის შეტყობინებები</li>
           </ul>
-          <button class="btn-fluid secondary" (click)="authService.openAuthModal('register')">დაწყება</button>
+
+          @if (authService.isLoggedIn()) {
+            <button class="btn-fluid secondary" [disabled]="true">
+              {{ stateStore.profile().subscription === 'BASIC' ? 'მიმდინარე გეგმა' : 'Starter' }}
+            </button>
+          } @else {
+            <button class="btn-fluid secondary" (click)="handlePlanClick('BASIC')">დაწყება</button>
+          }
         </div>
 
         <!-- Pro Plan (Featured) -->
@@ -134,7 +141,22 @@
             <li><span class="material-symbols-outlined">check_circle</span> პრიორიტეტული მხარდაჭერა</li>
             <li><span class="material-symbols-outlined">check_circle</span> სტატისტიკა და ანალიტიკა</li>
           </ul>
-          <button class="btn-fluid primary" (click)="authService.openAuthModal('register')">გახდი Pro</button>
+
+          @if (authService.isLoggedIn()) {
+            <button class="btn-fluid primary" 
+                    [disabled]="stateStore.profile().subscription === 'PRO' || stateStore.profile().subscription === 'PREMIUM'" 
+                    (click)="handlePlanClick('PRO')">
+              @if (stateStore.profile().subscription === 'PRO') {
+                უკვე გაქვს Pro გეგმა
+              } @else if (stateStore.profile().subscription === 'PREMIUM') {
+                მიმდინარე გეგმა
+              } @else {
+                გახდი Pro
+              }
+            </button>
+          } @else {
+            <button class="btn-fluid primary" (click)="handlePlanClick('PRO')">გახდი Pro</button>
+          }
         </div>
 
         <!-- Enterprise Plan -->

@@ -3,14 +3,16 @@ import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angu
 import { CommonModule } from '@angular/common';
 import { StateStore } from '../../../Store/state.store';
 import { AuthService } from '../../../Core/Services/auth-service';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
-import { QrModal } from '../dashboard/qr-modal/qr-modal';
-import { EmailVerifyModal } from '../chat/email-verify-modal/email-verify-modal';
+import { QrModal } from '../qr-modal/qr-modal';
+import { EmailVerifyModal } from '../dashboard/email-verify-modal/email-verify-modal';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
+  standalone: true,
   imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -20,6 +22,7 @@ export class Profile {
   fb = inject(FormBuilder);
   stateStore = inject(StateStore);
   authService = inject(AuthService);
+  private alertify = inject(AlertifyService);
   dialog = inject(MatDialog);
   keywordInputValue = signal<string>('');
 
@@ -29,14 +32,38 @@ export class Profile {
     return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
   });
 
+  isWordFile = computed(() => {
+    const name = this.stateStore.userCv()?.originalName || '';
+    return name.toLowerCase().endsWith('.doc') || name.toLowerCase().endsWith('.docx');
+  });
+
+  cvTextSummary = computed(() => {
+    const cv = this.stateStore.userCv();
+    if (!cv) return '';
+    if (typeof cv.summary === 'string') return cv.summary;
+    const s = cv.summary;
+    if (s && typeof s === 'object') {
+      return (
+        s.summary ||
+        s.overview ||
+        s.candidateSummary ||
+        s.description ||
+        s.text ||
+        s.candidateProfile?.summary ||
+        ''
+      );
+    }
+    return cv.cvSummary || cv.overview || cv.description || '';
+  });
+
   profileForm = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    email: ['', Validators.required],
-    subscription: ['', Validators.required],
-    searchQuery: [[] as string[], [Validators.required, Validators.minLength(1)]],
-    telegramChatId: ['', Validators.required],
-  })
+    email: [{ value: '', disabled: true }],
+    subscription: [''],
+    searchQuery: [[] as string[]],
+    telegramChatId: [''],
+  });
 
   constructor() {
     this.stateStore.getCv();
@@ -46,16 +73,17 @@ export class Profile {
 
       if (loaded && profile) {
         this.profileForm.patchValue({
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          email: profile.email,
-          subscription: profile.subscription,
-          telegramChatId: profile.telegramChatId,
-          searchQuery: profile.searchQuery,
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          email: profile.email || '',
+          subscription: profile.subscription || '',
+          telegramChatId: profile.telegramChatId || '',
+          searchQuery: profile.searchQuery || [],
         });
       }
     });
   }
+
   isInvalid(name: string) {
     const control = this.profileForm.get(name);
     return !!(control && control.invalid && (control.touched || this.validators()));
@@ -81,7 +109,15 @@ export class Profile {
   save() {
     this.validators.set(true);
     if (this.profileForm.valid) {
-      this.stateStore.updateProfile(this.stateStore.profile()?.id, this.profileForm.value);
+      const val = this.profileForm.getRawValue();
+      const payload = {
+        firstName: val.firstName,
+        lastName: val.lastName,
+      };
+      this.stateStore.updateProfile(this.stateStore.profile()?.id, payload);
+      this.alertify.success('პროფილის მონაცემები წარმატებით განახლდა');
+    } else {
+      this.alertify.error('გთხოვთ შეავსოთ სავალდებულო ველები');
     }
   }
 

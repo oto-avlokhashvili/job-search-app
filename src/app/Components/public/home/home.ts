@@ -1,11 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { environment } from '../../../../environments/environment';
+import { StateStore } from '../../../Store/state.store';
+import { MatDialog } from '@angular/material/dialog';
+import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
 
 @Component({
   selector: 'app-home',
@@ -16,6 +19,9 @@ import { environment } from '../../../../environments/environment';
 })
 export class Home implements OnInit {
   authService = inject(AuthService);
+  stateStore = inject(StateStore);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
 
   contactEmail = new FormControl<string>('', {
     validators: [Validators.required, Validators.email],
@@ -30,11 +36,28 @@ export class Home implements OnInit {
   private alertify = inject(AlertifyService);
 
   ngOnInit() {
-    // Initialization if any
   }
 
   scroll(target: string) {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  handlePlanClick(planKey: string) {
+    if (this.authService.isLoggedIn()) {
+      this.openUpgradeModal();
+    } else {
+      this.authService.openAuthModal('register');
+    }
+  }
+
+  openUpgradeModal() {
+    this.dialog.open(SubscriptionModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: 'subscription-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
   }
 
   sendContactEmail() {

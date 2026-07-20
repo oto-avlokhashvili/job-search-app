@@ -20,7 +20,7 @@ export class AuthService {
   returnUrl = signal<string | null>(null);
 
   openAuthModal(mode: 'login' | 'register' = 'login', returnUrl: string | null = null) {
-    this.authModalMode.set(mode);
+    this.authModalMode.set('login');
     this.returnUrl.set(returnUrl);
     this.isAuthModalOpen.set(true);
   }

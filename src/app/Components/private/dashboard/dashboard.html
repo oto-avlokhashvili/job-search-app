@@ -1,258 +1,316 @@
-<!-- Content Grid -->
-<div class="content-grid">
-  <!-- Latest Jobs -->
-  <div class="card" id="ai-jobs-table">
-    <div class="card-header">
-      <h2 class="card-title">AI-ის მიერ შემოთავაზებული ვაკანსიები</h2>
-    </div>
+<div class="career-dashboard" 
+     (dragover)="onDragOver($event)" 
+     (dragleave)="onDragLeave()" 
+     (drop)="onDrop($event)"
+     [class.drag-active]="isDragOver()"
+     [class.has-results]="showJobs()">
 
-    <div class="timeline-wrapper" *ngIf="stateStore.matchedJobsDashboard().data.length > 0">
-      @for (job of stateStore.matchedJobsDashboard().data; track job.id; let i = $index) {
-      <div class="timeline-entry" (click)="applyJob(job.link); saveViewedVacancy(job.vacancy)">
+  <canvas #particleCanvas class="particle-canvas"></canvas>
 
-        <!-- Timeline spine -->
-        <div class="timeline-spine">
-          <div class="timeline-dot"
-            [class.dot-strong]="(job.match ?? 0) >= 75"
-            [class.dot-good]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 75"
-            [class.dot-possible]="(job.match ?? 0) < 50">
-            <div class="dot-pulse"></div>
-          </div>
-          <div class="timeline-line"></div>
-        </div>
-
-        <!-- Entry card -->
-        <div class="entry-card">
-          <div class="entry-top">
-            <div class="entry-info">
-              <h3 class="entry-vacancy">{{ job.vacancy }}</h3>
-              <div class="entry-company">
-                <span class="company-icon">🏢</span>
-                {{ job.company }}
-              </div>
-            </div>
-            <div class="match-pill"
-              [class.tier-strong]="(job.match ?? 0) >= 75"
-              [class.tier-good]="(job.match ?? 0) >= 50 && (job.match ?? 0) < 75"
-              [class.tier-possible]="(job.match ?? 0) < 50">
-              <span class="match-value">{{ job.match ?? 0 }}%</span>
-              <span class="match-label">Match</span>
-            </div>
-          </div>
-
-          <div class="entry-meta">
-            <span class="meta-chip">
-              <span>📍</span> {{ job.location || 'თბილისი' }}
-            </span>
-            @if (job.salaryRange) {
-            <span class="meta-chip salary-chip">
-              <span>💰</span> {{ job.salaryRange }}
-            </span>
-            }
-            <span class="meta-chip date-chip">
-              <span>🕐</span> {{ job.publishDate }} – {{ job.deadline }}
-            </span>
-          </div>
-        </div>
-
+  <!-- Drop overlay -->
+  @if (isDragOver()) {
+    <div class="drop-overlay">
+      <div class="drop-content">
+        <span class="material-symbols-outlined drop-icon">cloud_upload</span>
+        <p>ჩააგდეთ CV ასატვირთად</p>
       </div>
+    </div>
+  }
+  <!-- Body Content -->
+  <div class="dashboard-body" [class.has-results]="showJobs()">
+    
+    <!-- Central Search/Upload Widget -->
+    <div class="search-widget-container">
+
+      @if (!showJobs()) {
+        <!-- Hero Welcome Section -->
+        <div class="hero-section">
+          <h1 class="hero-title">აღმოაჩინე შენი კარიერული მომავალი <span class="gradient-text">AI-ით</span></h1>
+          <p class="hero-subtitle">ატვირთეთ თქვენი CV და ჩვენი ხელოვნური ინტელექტი მყისიერად შეგირჩევთ საუკეთესო ვაკანსიებს.</p>
+        </div>
       }
 
-      <!-- Pagination -->
-      <div class="pagination-container" *ngIf="stateStore.matchedJobsDashboard().lastPage > 1">
-        <button class="pagination-btn" [disabled]="stateStore.matchedJobsDashboard().page === 1"
-          (click)="onPageChange(stateStore.matchedJobsDashboard().page - 1)">
-          ← წინა
-        </button>
+      <!-- Input Card (CV File Upload Area) -->
+      <div #searchContainer class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
+        <!-- File Input (Hidden) -->
+        <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
 
-        <span class="page-info">
-          {{ stateStore.matchedJobsDashboard().page }} / {{ stateStore.matchedJobsDashboard().lastPage }}
-        </span>
-
-        <button class="pagination-btn"
-          [disabled]="stateStore.matchedJobsDashboard().page === stateStore.matchedJobsDashboard().lastPage"
-          (click)="onPageChange(stateStore.matchedJobsDashboard().page + 1)">
-          შემდეგი →
-        </button>
-      </div>
-    </div>
-
-    <div class="empty-state" *ngIf="stateStore.matchedJobsDashboard().data.length === 0">
-      <div class="empty-icon">📭</div>
-      <h3>ვაკანსიები არ მოიძებნა</h3>
-      <p>ატვირთეთ CV და დაამატეთ საძიებელი პარამეტრები</p>
-    </div>
-
-  </div>
-
-  <div class="sidebar-column">
-    <!-- Search Query Card -->
-    <div class="card">
-      <div class="card-header" style="margin-bottom: 0.5rem;">
-        <h2 class="card-title">საძიებელი პარამეტრები</h2>
-      </div>
-      <div class="chips-input-container form-control">
-        <div class="chips-list">
-          @for (keyword of stateStore.searchQuery(); track $index) {
-          <div class="chip">
-            <span>{{ keyword }}</span>
-            <button type="button" class="chip-remove" (click)="removeKeyword($index)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6" />
-                <path d="M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
-            </button>
+        <div class="file-info-container">
+          <span class="material-symbols-outlined file-icon">
+            {{ stateStore.userCv() ? 'description' : 'cloud_upload' }}
+          </span>
+          
+          <div class="file-text-details">
+            @if (stateStore.userCv()) {
+              <span class="file-name">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
+              <span class="file-size">{{ formatFileSize(stateStore.userCv()?.size || 0) }}</span>
+            } @else {
+              <span class="upload-prompt-text">ატვირთეთ CV სამუშაოს მოსაძებნად</span>
+              <span class="upload-hint-text">მხარდაჭერილია PDF, Word ფაილები</span>
+            }
           </div>
+
+          @if (stateStore.userCv()) {
+            <button class="change-file-btn" (click)="$event.stopPropagation(); fileInput.click()" title="შეცვლა">
+              <span class="material-symbols-outlined">cached</span>
+            </button>
+            <button class="remove-file-btn" (click)="$event.stopPropagation(); removeAttachment('__cv__')" title="წაშლა">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
           }
-          <div class="chip-input-row">
-            <input type="text" class="chip-input" id="searchQuery" placeholder="დაამატეთ სიტყვა..." #queryInput
-              (keydown.enter)="$event.preventDefault(); addKeyword(queryInput)">
-            <button class="btn btn-primary chip-add-btn" (click)="addKeyword(queryInput)">
-              დამატება
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card cv-card">
-      <div class="card-header">
-        <h2 class="card-title">ჩემი CV</h2>
-        <a *ngIf="stateStore.userCv()" class="cv-delete-btn" (click)="deleteCv()" title="წაშლა">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-        </a>
-      </div>
-
-      <div class="cv-content-wrapper">
-
-        <!-- STATE 1: No CV -->
-        <div *ngIf="!stateStore.userCv() && !stateStore.cvLoading()" class="cv-upload-zone" (click)="fileInput.click()">
-          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
-            style="display: none">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          <div class="cv-upload-text">
-            <span>ატვირთეთ CV</span>
-            <p>PDF ან Word ფორმატში</p>
-          </div>
         </div>
 
-        <!-- STATE 2: CV uploaded -->
-        <div *ngIf="stateStore.userCv() && !stateStore.cvLoading()" class="cv-file-info">
-          <div class="cv-file-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
-          </div>
-          <div class="cv-file-details">
-            <span class="cv-file-name">{{ stateStore.userCv()?.originalName || 'ჩემი CV.pdf' }}</span>
-            <span class="cv-file-size">{{ stateStore.userCv()?.size ? (stateStore.userCv()?.size / 1024 |
-              number:'1.0-2') + ' KB' : ''
-              }}</span>
-          </div>
-          <button class="cv-change-btn" (click)="fileInput2.click()">შეცვლა</button>
-          <input type="file" #fileInput2 (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
-            style="display: none">
-        </div>
-        <!-- STATE 3: Loading -->
-        <div *ngIf="stateStore.cvLoading()" class="cv-loader">
-          <div class="cv-spinner"></div>
-          <span>იტვირთება...</span>
-        </div>
-
-      </div>
-    </div>
-
-
-
-    <!-- CV Summary -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">CV-ის ანალიზი</h2>
+        <!-- Search Action Button -->
+        <button class="search-btn" 
+                (click)="$event.stopPropagation(); search()" 
+                [disabled]="!stateStore.userCv() || isTyping() || stateStore.cvLoading()"
+                title="ვაკანსიების მოძიება">
+          @if (isTyping() || stateStore.cvLoading()) {
+            <span class="loading-spinner"></span>
+          } @else {
+            <span class="material-symbols-outlined">search</span>
+          }
+        </button>
       </div>
 
-      <div class="cv-summary-wrapper">
-        @if (cvSummary()) {
-        <div class="cv-summary-container">
-          <div class="summary-item">
-            <span class="summary-label">პოზიცია:</span>
-            <span class="summary-value">{{ cvSummary()?.detectedRole }} @if(cvSummary()?.seniorityLevel) { ({{
-              cvSummary()?.seniorityLevel }}) }</span>
-          </div>
-
-          <div class="summary-item" *ngIf="cvSummary()?.salaryEstimates">
-            <span class="summary-label">სავარაუდო ხელფასი:</span>
-            <div class="salary-badges">
-              <div class="salary-badge-group" *ngIf="cvSummary()?.salaryEstimates?.georgia">
-                <span class="salary-loc">საქართველო (Tbilisi):</span>
-                <div class="salary-badge">🇬🇪 {{ cvSummary()?.salaryEstimates?.georgia }}</div>
+      <!-- Query Parameters & Meta (Below search bar) -->
+      @if (stateStore.profile().subscription === 'PRO') {
+        <div class="search-meta-row">
+          <!-- Telegram Status Badge -->
+          @if (stateStore.profile().telegramChatId) {
+            <div class="telegram-status-container">
+              <div class="telegram-badge connected">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Telegram დაკავშირებულია</span>
               </div>
-              <div class="salary-badge-group" *ngIf="cvSummary()?.salaryEstimates?.remote">
-                <span class="salary-loc">Remote (Global):</span>
-                <div class="salary-badge">🌍 {{ cvSummary()?.salaryEstimates?.remote }}</div>
+            </div>
+          } @else if (!stateStore.profile().isEmailVerified && stateStore.profileLoaded()) {
+            <div class="telegram-status-container">
+              <button class="telegram-badge connect-btn" (click)="generateTelegramToken()">
+                <span class="material-symbols-outlined">send</span>
+                <span>Telegram-ის დაკავშირება</span>
+              </button>
+            </div>
+          }
+
+          <!-- Email Status Badge -->
+          @if (stateStore.profile().isEmailVerified) {
+            <div class="email-status-container">
+              <div class="email-badge connected">
+                <span class="material-symbols-outlined">verified</span>
+                <span>ელ-ფოსტა დადასტურებულია</span>
+              </div>
+            </div>
+          } @else if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
+            <div class="email-status-container">
+              <button class="email-badge verify-btn" (click)="openEmailVerificationDialog()">
+                <span class="material-symbols-outlined">mark_email_unread</span>
+                <span>ელ-ფოსტის დადასტურება</span>
+              </button>
+            </div>
+          }
+        </div>
+      } @else if (stateStore.profileLoaded()) {
+        <!-- Pro Benefits Section (Toggle-able) -->
+        <div class="pro-benefits-wrapper" [class.expanded]="showProBenefits()">
+          <!-- Shrinked Button for Basic Users -->
+          <button class="pro-benefits-btn" (click)="showProBenefits.set(true)">
+            <span class="material-symbols-outlined icon">notifications_active</span>
+            <span>ავტომატური შეტყობინებები</span>
+          </button>
+
+          <!-- Pro Benefits Card for Basic Users -->
+          <div class="pro-benefits-card">
+            <button class="close-card-btn" (click)="showProBenefits.set(false)" title="დახურვა">✕</button>
+            
+            <div class="pro-benefits-content-wrapper">
+              <!-- Left Column: Title, Subtitle, and Upgrade Button -->
+              <div class="pro-info-column">
+                <div class="pro-badge-header">
+                  <span class="material-symbols-outlined premium-spark">workspace_premium</span>
+                  <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>
+                </div>
+                <h3 class="pro-card-title">ავტომატური შეტყობინებები</h3>
+                <p class="pro-card-description">
+                  დაუკავშირეთ Telegram და ელ-ფოსტა, რათა ყოველდღიურად მიიღოთ თქვენზე მორგებული ახალი ვაკანსიები.
+                </p>
+                <button class="pro-upgrade-btn" (click)="openUpgradeModal()">
+                  <span>ტარიფის განახლება</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+              
+              <!-- Right Column: Benefits Stack -->
+              <div class="pro-benefits-grid">
+                <div class="pro-benefit-item">
+                  <span class="material-symbols-outlined icon">mail</span>
+                  <div class="text-group">
+                    <h4>Email დაიჯესტი</h4>
+                    <p>ყოველდღიური ვაკანსიების დაიჯესტი თქვენს მეილზე</p>
+                  </div>
+                </div>
+                <div class="pro-benefit-item">
+                  <span class="material-symbols-outlined icon">send</span>
+                  <div class="text-group">
+                    <h4>Telegram შეტყობინებები</h4>
+                    <p>მყისიერი შეტყობინებები თქვენს მობილურზე</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      }
 
-          <div class="summary-item">
-            <span class="summary-label">უნარები:</span>
-            <div class="skills-list">
-              @for (skill of (cvSummary()?.primarySkills || []); track skill) {
-              <span class="skill-tag">
-                {{ skill }}
-              </span>
-              } @empty {
-              <span class="empty-text">ინფორმაცია არ არის ხელმისაწვდომი</span>
+    </div>
+
+    <!-- Capabilities / Feature Highlight Cards -->
+    @if (!showJobs()) {
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper blue">
+            <span class="material-symbols-outlined">psychology</span>
+          </div>
+          <h3>AI-ით შერჩევა</h3>
+          <p>აანალიზებს თქვენს უნარებსა და გამოცდილებას იდეალური შესატყვისების საპოვნელად.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper green">
+            <span class="material-symbols-outlined">bolt</span>
+          </div>
+          <h3>Telegram შეტყობინებები</h3>
+          <p>მყისიერად მიიღეთ ახალი შესაფერისი ვაკანსიები პირდაპირ თქვენს მობილურზე.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrapper orange">
+            <span class="material-symbols-outlined">upload_file</span>
+          </div>
+          <h3>მარტივი ატვირთვა</h3>
+          <p>ჩააგდეთ PDF ან Word ფაილი და სისტემა თავად ამოიკითხავს თქვენს მონაცემებს.</p>
+        </div>
+      </div>
+    }
+
+    <!-- Results Workspace (Layout splits when jobs exist) -->
+    @if (showJobs()) {
+      <div class="results-workspace fade-in">
+        
+        <!-- Left Side: Search Context / CV Summary -->
+        <div class="context-card-wrapper">
+          <div class="context-card">
+            <h3>ძიების თემატიკა</h3>
+            
+            <div class="context-details">
+              <div class="context-item">
+                <span class="label">პოზიცია</span>
+                <span class="value">{{ aiDetectedRole() || cvSummary()?.detectedRole || 'მითითებული არ არის' }}</span>
+              </div>
+              
+              <div class="context-item">
+                <span class="label">ადგილმდებარეობა</span>
+                <span class="value">{{ aiLocationPreference() || cvSummary()?.locationPreference || 'დისტანციური / ჰიბრიდული' }}</span>
+              </div>
+
+              @if ((aiPrimarySkills().length > 0 ? aiPrimarySkills() : cvSummary()?.primarySkills); as skills) {
+                @if (skills && skills.length > 0) {
+                  <div class="context-item">
+                    <span class="label">ძირითადი უნარები</span>
+                    <div class="skills-wrap">
+                      @for (skill of skills.slice(0, 4); track skill) {
+                        <span class="skill-pill">{{ skill }}</span>
+                      }
+                    </div>
+                  </div>
+                }
               }
             </div>
+
+            <div class="context-summary">
+              <p>
+                @if (aiSummary()) {
+                  {{ aiSummary() }}
+                } @else if (aiDetectedRole() || cvSummary()?.detectedRole; as role) {
+                  გავაანალიზე მიმდინარე ბაზარი {{ role }}-ის პოზიციაზე. აქ არის საუკეთესო შესატყვისები, რომლებიც პრიორიტეტს ანიჭებს მაღალი სირთულის სისტემებსა და მომხმარებლის ნდობას.
+                } @else {
+                  გავაანალიზე მიმდინარე ბაზარი. აქ არის საუკეთესო შესატყვისები თქვენი საკვანძო სიტყვებისა და პროფილის პრეფერენციების მიხედვით.
+                }
+              </p>
+            </div>
           </div>
 
-          <div class="summary-item" *ngIf="cvSummary()?.locationPreference">
-            <span class="summary-label">ლოკაცია:</span>
-            <span class="summary-value">📍 {{ cvSummary()?.locationPreference }}</span>
+          <!-- Separate Queries Management Card -->
+          <div class="queries-card">
+            <h3>საძიებელი პარამეტრები</h3>
+            <div class="queries-management">
+              <div class="context-chips-list">
+                @for (keyword of stateStore.searchQuery(); track $index) {
+                  <span class="context-chip">
+                    {{ keyword }}
+                    <button class="remove-chip-btn" (click)="removeKeyword($index)">✕</button>
+                  </span>
+                }
+              </div>
+              <div class="add-query-box">
+                <input type="text" 
+                       #newQueryInput 
+                       (keydown.enter)="$event.preventDefault(); addKeyword(newQueryInput)" 
+                       placeholder="დაამატეთ სიტყვა..." 
+                       class="add-query-input" />
+                <button class="add-query-btn" (click)="addKeyword(newQueryInput)">+</button>
+              </div>
+            </div>
           </div>
         </div>
-        } @else if (stateStore.cvLoading()) {
-        <div class="cv-loader-placeholder">
-          <div class="cv-spinner"></div>
-          <p>მუშავდება...</p>
-        </div>
-        } @else {
-        <div class="empty-cv-summary">
-          <p>ატვირთეთ CV ანალიზისთვის</p>
-        </div>
-        }
-      </div>
 
-      <div class="row mt-4 gy-2">
-        @if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
-        <div class="col-md-12">
-          <button class="btn btn-primary" style="width: 100%;" (click)="generateTelegramToken()">
-            <img src="/icons/telegram.png" alt="Telegram"
-              style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-            <span>დაკავშირება</span>
-          </button>
+        <!-- Right Side: Job Listings -->
+        <div class="jobs-results-wrapper">
+          <h3 class="results-title">Top ვაკანსიები ({{ matchedJobs().length }})</h3>
+          
+          <div class="jobs-list">
+            @for (job of matchedJobs(); track job.id) {
+              <div class="job-card">
+                <div class="job-card-main">
+                  <!-- Match Icon & Badge -->
+                  <div class="job-icon-container">
+                    <span class="material-symbols-outlined">account_balance</span>
+                  </div>
+                  
+                  <div class="job-info-details">
+                    <h4 class="job-title">{{ job.vacancy }}</h4>
+                    <p class="job-subtitle">{{ job.company }} <span class="dot-sep">•</span> {{ job.location }}</p>
+                    
+                    <div class="job-tags">
+                      <span class="job-tag match-pct" 
+                            [class.tier-strong]="job.match >= 75" 
+                            [class.tier-good]="job.match >= 50 && job.match < 75" 
+                            [class.tier-possible]="job.match < 50">
+                        {{ job.match }}% შესატყვისი
+                      </span>
+                      @if (job.salaryRange) {
+                        <span class="job-tag salary-tag">{{ job.salaryRange }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Job Actions -->
+                <div class="job-actions">
+                  <a [href]="job.link" target="_blank" class="apply-btn">სწრაფად განაცხადე</a>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-jobs">
+                <span class="material-symbols-outlined">search_off</span>
+                <p>შესაფერისი ვაკანსიები არ მოიძებნა</p>
+              </div>
+            }
+          </div>
         </div>
-        }
+
       </div>
-    </div>
+    }
+
   </div>
 </div>

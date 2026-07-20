@@ -1,5 +1,5 @@
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { ChatMessage } from '../Components/private/chat/chat';
+import { ChatMessage } from '../Components/private/dashboard/dashboard';
 
 export interface Conversation {
   id: string;
@@ -8,14 +8,14 @@ export interface Conversation {
   messages: ChatMessage[];
 }
 
-type ChatState = {
+type DashboardState = {
   conversations: Conversation[];
   activeConversationId: string | null;
 };
 
 const generateId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-const loadFromStorage = (): ChatState => {
+const loadFromStorage = (): DashboardState => {
   try {
     const raw = localStorage.getItem('chat_state');
     if (!raw) return { conversations: [], activeConversationId: null };
@@ -32,15 +32,15 @@ const loadFromStorage = (): ChatState => {
   }
 };
 
-const saveToStorage = (state: ChatState) => {
+const saveToStorage = (state: DashboardState) => {
   try {
     localStorage.setItem('chat_state', JSON.stringify(state));
   } catch { /* quota exceeded or SSR */ }
 };
 
-const initialState: ChatState = loadFromStorage();
+const initialState: DashboardState = loadFromStorage();
 
-export const ChatStore = signalStore(
+export const DashboardStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withMethods((store) => ({
@@ -130,7 +130,7 @@ export const ChatStore = signalStore(
 
     // ── Clear all conversations ──────────────────────────────────
     clearAll() {
-      const next: ChatState = { conversations: [], activeConversationId: null };
+      const next: DashboardState = { conversations: [], activeConversationId: null };
       patchState(store, next);
       saveToStorage(next);
     },

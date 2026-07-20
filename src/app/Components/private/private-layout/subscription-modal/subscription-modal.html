@@ -14,7 +14,7 @@
   <!-- Current plan badge -->
   <div class="current-plan-badge">
     <span>მიმდინარე გეგმა:</span>
-    <span class="badge">Starter (უფასო)</span>
+    <span class="badge">{{ stateStore.profile().subscription === 'PRO' ? 'Pro' : stateStore.profile().subscription === 'PREMIUM' ? 'Enterprise' : 'Starter (უფასო)' }}</span>
   </div>
 
   <!-- Plans -->
@@ -50,10 +50,12 @@
         <button
           class="activate-btn"
           [class.featured-btn]="plan.badge"
-          [disabled]="loading() === plan.key || plan.key === 'PREMIUM'"
+          [disabled]="loading() === plan.key || plan.key === 'PREMIUM' || stateStore.profile().subscription === plan.key"
           (click)="activate(plan)">
           @if (loading() === plan.key) {
             <span class="btn-spinner"></span>
+          } @else if (stateStore.profile().subscription === plan.key) {
+            უკვე გაქვს {{ plan.name }} გეგმა
           } @else {
             {{ plan.badge ? 'გახდი ' + plan.name : 'დაემატება მალე...' }}
           }

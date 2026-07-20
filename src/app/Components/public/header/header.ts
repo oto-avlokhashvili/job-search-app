@@ -106,6 +106,15 @@ export class Header {
   }
 
   private checkActiveSection() {
+    if (
+      document.body.classList.contains('modal-open') ||
+      document.body.classList.contains('cdk-global-scrollblock') ||
+      document.documentElement.classList.contains('cdk-global-scrollblock') ||
+      !!document.querySelector('.cdk-overlay-pane')
+    ) {
+      return;
+    }
+
     const sections = ['features', 'pricing', 'contact'];
     const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
     const scrollHeight = document.documentElement.scrollHeight;
