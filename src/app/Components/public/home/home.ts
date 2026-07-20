@@ -42,6 +42,14 @@ export class Home implements OnInit {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  handleHeroClick() {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/private/dashboard']);
+    } else {
+      this.authService.openAuthModal('login');
+    }
+  }
+
   handlePlanClick(planKey: string) {
     if (this.authService.isLoggedIn()) {
       this.openUpgradeModal();

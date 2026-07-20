@@ -8,6 +8,7 @@ import { AiMatchedJobsResponse, Job, SentJobsResponse } from '../Core/Interfaces
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
+
 type State = {
     profile: User;
     profileLoaded: boolean;
@@ -28,7 +29,6 @@ type State = {
     chatAiLocationPreference: string;
     chatAiPrimarySkills: string[];
 }
-
 
 const initialState: State = {
     profile: { id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: [], createdAt: '' },
@@ -55,13 +55,19 @@ export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
     withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv)) => ({
-        async loadProfile() {
-            const profile = await authService.getUserProfile()
-            patchState(store, {
-                profile, profileLoaded: true
-            })
+        async loadProfile(force: boolean = false) {
+            if (!force && store.profileLoaded() && store.profile().id !== 0) {
+                return;
+            }
+            try {
+                const profile = await authService.getUserProfile();
+                patchState(store, {
+                    profile, profileLoaded: true
+                });
+            } catch (err) {
+                console.error('Error loading profile:', err);
+            }
         },
-
 
         updateProfile(id: number, data: any) {
             patchState(store, {
@@ -70,14 +76,18 @@ export const StateStore = signalStore(
             userService.getUserById(id, data).subscribe(res => {
                 patchState(store, {
                     profile: res
-                })
-            })
+                });
+            });
         },
-        getCv() {
+
+        getCv(force: boolean = false) {
+            if (!force && store.userCv() !== null && !!store.userCv()?.summary) {
+                return;
+            }
             patchState(store, { cvLoading: true });
             cvService.getCV().subscribe({
                 next: (res) => {
-                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res.summary?.searchQueries ?? [] });
+                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res?.summary?.searchQueries ?? [] });
                 },
                 error: (err) => {
                     patchState(store, { cvLoading: false });
@@ -85,6 +95,7 @@ export const StateStore = signalStore(
                 }
             });
         },
+
         updateSearchQueries(searchQueries: string[]) {
             cvService.updateSearchQueries(searchQueries).subscribe({
                 next: (res) => {
@@ -95,6 +106,7 @@ export const StateStore = signalStore(
                 }
             });
         },
+
         updateChatSearchResults(jobs: any[], summary: string, role: string, location: string, skills: string[], show: boolean) {
             patchState(store, {
                 chatMatchedJobs: jobs,
@@ -105,6 +117,7 @@ export const StateStore = signalStore(
                 chatShowJobs: show
             });
         },
+
         deleteCv() {
             patchState(store, { cvLoading: true });
             cvService.deleteCV().subscribe({
@@ -117,11 +130,17 @@ export const StateStore = signalStore(
                 }
             });
         },
+
         uploadCv(file: File) {
             patchState(store, { cvLoading: true });
             cvService.upload(file).subscribe({
                 next: (res) => {
                     patchState(store, { userCv: res, cvLoading: false });
+                    cvService.getCV().subscribe({
+                        next: (fullCv) => {
+                            patchState(store, { userCv: fullCv, searchQuery: fullCv?.summary?.searchQueries ?? [] });
+                        }
+                    });
                 },
                 error: (err) => {
                     patchState(store, { cvLoading: false });
@@ -129,7 +148,11 @@ export const StateStore = signalStore(
                 }
             });
         },
-        loadAIMatchedJobs(page: number = 1, limit: number = 5) {
+
+        loadAIMatchedJobs(page: number = 1, limit: number = 5, force: boolean = false) {
+            if (!force && store.matchedJobsDashboard()?.data?.length > 0) {
+                return;
+            }
             aiService.getAiMatchedJobs(page, limit).subscribe({
                 next: (res: AiMatchedJobsResponse) => {
                     patchState(store, {
@@ -145,7 +168,11 @@ export const StateStore = signalStore(
                 }
             });
         },
-        loadSentJobs(page: number = 1, take: number = 10) {
+
+        loadSentJobs(page: number = 1, take: number = 10, force: boolean = false) {
+            if (!force && store.sentJobs()?.sentJobs?.length > 0) {
+                return;
+            }
             jobsService.getUserSentJobs(page, take).subscribe({
                 next: (res: any) => {
                     patchState(store, {
@@ -158,18 +185,16 @@ export const StateStore = signalStore(
                 error: (err: any) => {
                     console.error('Error loading sent jobs:', err);
                 }
-
-            })
+            });
         }
     })),
-)
+);
 
 export function animateValue(start: number, end: number, duration: number, onUpdate: (val: number) => void) {
     const startTime = performance.now();
     const step = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease out cubic
         const eased = 1 - Math.pow(1 - progress, 3);
         onUpdate(Math.round(start + (end - start) * eased));
         if (progress < 1) requestAnimationFrame(step);

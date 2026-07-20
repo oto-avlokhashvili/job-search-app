@@ -392,7 +392,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
     try {
       const res: any = await firstValueFrom(this.aiService.searchJobsWithAi());
-      this.stateStore.getCv();
+      this.stateStore.getCv(true);
 
       const jobs = res?.response?.topJobs || res?.response || [];
       const comment = res?.comment || res?.response?.summary || '';

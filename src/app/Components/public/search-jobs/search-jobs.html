@@ -11,7 +11,7 @@
       </p>
 
       <div class="search-wrapper">
-        <button class="improve-ai-btn" (click)="authService.openAuthModal('login')">
+        <button class="improve-ai-btn" (click)="handleAiSearch()">
           <span class="material-symbols-outlined">auto_awesome</span>
           მოძებნე AI-ით
         </button>
@@ -85,7 +85,7 @@
             <h3 class="title-md">ვერ იპოვე სასურველი?</h3>
             <p class="body-sm">სისტემაში გვაქვს <strong>{{count()}}</strong> აქტიური ვაკანსია.</p>
             <div class="card-actions-vertical">
-              <button class="btn-fluid primary" (click)="authService.openAuthModal('login')">
+              <button class="btn-fluid primary" (click)="handleAiSearch()">
                 <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 8px;">auto_awesome</span>
                 მოძებნე AI-ით
               </button>
