@@ -77,7 +77,9 @@ function handle401Error(
         })
         .catch(error => {
           isRefreshing.set(false);
+          const requests = pendingRequests();
           pendingRequests.set([]);
+          requests.forEach(({ reject }) => reject(error));
           
           authService.logOut()
             .catch(() => {})

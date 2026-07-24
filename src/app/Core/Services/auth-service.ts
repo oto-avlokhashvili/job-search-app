@@ -95,11 +95,15 @@ export class AuthService {
 
 
   async logOut() {
-    const message$ = this.http.post(this.url + "/auth/logout", { withCredentials: true })
-    const msg = await firstValueFrom(message$);
-    this.#tokenSignal.set(null);
-    localStorage.removeItem("ACCESS_TOKEN");
-    return msg;
+    try {
+      const message$ = this.http.post(this.url + "/auth/logout", { withCredentials: true });
+      await firstValueFrom(message$);
+    } catch (err) {
+      console.warn("Backend logout failed, clearing local session anyway:", err);
+    } finally {
+      this.#tokenSignal.set(null);
+      localStorage.removeItem("ACCESS_TOKEN");
+    }
   }
 
   async generateTelegramToken() {

@@ -147,7 +147,7 @@
           <div class="filter-group-main">
             <div class="search-input-wrapper">
               <span class="material-symbols-outlined search-icon">search</span>
-              <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია ან კომპანია..." class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value)">
+              <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value)">
             </div>
             
             <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
