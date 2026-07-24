@@ -7,7 +7,7 @@
       </div>
       <div class="nav-links-desktop">
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
-        <a class="nav-link" [routerLink]="'/jobs'" routerLinkActive="active">ვაკანსიები</a>
+        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'vacancies'" (click)="scroll('vacancies')">ვაკანსიები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
@@ -68,10 +68,9 @@
     </div>
   </div>
 
-  <!-- Mobile Menu -->
   <div class="mobile-menu" [class.active]="menuOpen">
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
-    <a [routerLink]="'/jobs'" routerLinkActive="active" (click)="menuOpen = false">ვაკანსიები</a>
+    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'vacancies'" (click)="scroll('vacancies'); menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>

@@ -115,7 +115,7 @@ export class Header {
       return;
     }
 
-    const sections = ['features', 'pricing', 'contact'];
+    const sections = ['features', 'vacancies', 'pricing', 'contact'];
     const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
     const scrollHeight = document.documentElement.scrollHeight;
     const clientHeight = document.documentElement.clientHeight;

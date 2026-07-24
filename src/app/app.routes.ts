@@ -6,7 +6,6 @@ import { Profile } from './Components/private/profile/profile';
 import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { authGuard } from './Core/Guards/auth-guard';
-import { SearchJobs } from './Components/public/search-jobs/search-jobs';
 
 export const routes: Routes = [
   {
@@ -18,11 +17,6 @@ export const routes: Routes = [
     path: 'home',
     component: Home,
     data: { showHeroSection: true }
-  },
-  {
-    path: 'jobs',
-    component: SearchJobs,
-    data: { showHeroSection: false }
   },
   {
     path: 'auth',
