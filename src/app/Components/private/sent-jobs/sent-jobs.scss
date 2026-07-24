@@ -18,6 +18,22 @@
   box-shadow: var(--shadow);
 }
 
+.quick-toggle-messages {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--surface-container-low);
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
+
+  .toggle-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+  }
+}
+
 .history-title-group {
   display: flex;
   align-items: center;
@@ -353,6 +369,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .quick-toggle-messages {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
   }
 
   .history-badge {

@@ -8,6 +8,7 @@ export interface User {
   searchQuery: string[];
   telegramChatId?:string;
   isEmailVerified?: boolean;
+  receiveMessages?: boolean;
 }
 
 export interface UserRegistration {

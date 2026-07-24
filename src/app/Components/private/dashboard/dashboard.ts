@@ -473,6 +473,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
         this.stateStore.loadProfile();
       }
     });
@@ -491,6 +492,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
         this.stateStore.loadProfile();
       }
     });

@@ -5,6 +5,7 @@ import { ThemeService } from '../../../Core/Services/theme.service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 @Component({
   selector: 'app-header',
@@ -19,8 +20,23 @@ export class Header {
   stateStore = inject(StateStore);
   router = inject(Router);
   dialog = inject(MatDialog);
+  private alertify = inject(AlertifyService);
   activeSection = signal('features');
   profileMenuOpen = signal(false);
+
+  toggleReceiveMessages(event: any) {
+    event.stopPropagation();
+    const checked = event.target.checked;
+    this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: checked });
+    this.alertify.success(checked ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
+  }
+
+  toggleReceiveMessagesOutside() {
+    const current = this.stateStore.profile().receiveMessages ?? false;
+    const nextValue = !current;
+    this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: nextValue });
+    this.alertify.success(nextValue ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
+  }
 
   initials = computed(() => {
     const u = this.stateStore.profile();

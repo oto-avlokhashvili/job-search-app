@@ -63,6 +63,7 @@ export class Profile {
     subscription: [''],
     searchQuery: [[] as string[]],
     telegramChatId: [''],
+    receiveMessages: [false],
   });
 
   constructor() {
@@ -79,6 +80,7 @@ export class Profile {
           subscription: profile.subscription || '',
           telegramChatId: profile.telegramChatId || '',
           searchQuery: profile.searchQuery || [],
+          receiveMessages: profile.receiveMessages ?? false,
         });
       }
     });
@@ -113,12 +115,20 @@ export class Profile {
       const payload = {
         firstName: val.firstName,
         lastName: val.lastName,
+        receiveMessages: val.receiveMessages,
       };
       this.stateStore.updateProfile(this.stateStore.profile()?.id, payload);
       this.alertify.success('პროფილის მონაცემები წარმატებით განახლდა');
     } else {
       this.alertify.error('გთხოვთ შეავსოთ სავალდებულო ველები');
     }
+  }
+
+  toggleReceiveMessages(event: any) {
+    const checked = event.target.checked;
+    this.profileForm.patchValue({ receiveMessages: checked });
+    this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: checked });
+    this.alertify.success(checked ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
   }
 
   openUpgradeModal() {
@@ -157,6 +167,7 @@ export class Profile {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
         this.stateStore.loadProfile();
       }
     });
@@ -173,6 +184,7 @@ export class Profile {
 
     dialogRef.afterClosed().subscribe(verified => {
       if (verified) {
+        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
         this.stateStore.loadProfile();
       }
     });

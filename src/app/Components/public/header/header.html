@@ -17,6 +17,18 @@
     </div>
 
     <div class="action-group">
+      @if (authService.isLoggedIn()) {
+        <div class="nav-notifications-switch-container" [title]="stateStore.profile().receiveMessages ? 'შეტყობინებები ჩართულია' : 'შეტყობინებები გამორთულია'">
+          <span class="material-symbols-outlined icon" [class.active]="stateStore.profile().receiveMessages">
+            {{ stateStore.profile().receiveMessages ? 'notifications_active' : 'notifications_off' }}
+          </span>
+          <label class="switch small">
+            <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      }
+
       <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
         {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
       </button>
@@ -43,6 +55,13 @@
                   {{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' :
                      stateStore.profile().subscription === 'PRO' ? 'PRO' : 'PREMIUM' }}
                 </span>
+              </div>
+              <div class="dropdown-info-item dropdown-toggle-item">
+                <span class="info-label">შეტყობინებები:</span>
+                <label class="switch">
+                  <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+                  <span class="slider round"></span>
+                </label>
               </div>
               @if (stateStore.profile().subscription === 'BASIC') {
                 <button class="dropdown-item upgrade-btn" (click)="openUpgradeModal()">
@@ -75,10 +94,7 @@
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     <a (click)="scroll('how-it-works'); menuOpen = false">როგორ მუშაობს</a>
     @if (authService.isLoggedIn()) {
-      <a [routerLink]="'/private/dashboard'" (click)="menuOpen = false">მართვის პანელი</a>
-      <a [routerLink]="'/private/jobs'" routerLinkActive="active" (click)="menuOpen = false">შეტყობინებები</a>
-      <a [routerLink]="'/private/profile'" routerLinkActive="active" (click)="menuOpen = false">პროფილი</a>
-      <a [routerLink]="'/private/dashboard'" routerLinkActive="active" (click)="menuOpen = false">AI ძიება</a>
+      <a [routerLink]="'/private/dashboard'" (click)="menuOpen = false">პირადი სივრცე</a>
       <a (click)="logout(); menuOpen = false" style="color: var(--error)">გასვლა</a>
     } @else {
       <a (click)="authService.openAuthModal('login'); menuOpen = false">ავტორიზაცია</a>

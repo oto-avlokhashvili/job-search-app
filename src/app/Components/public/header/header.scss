@@ -127,6 +127,16 @@ $outline-variant-color: #97aed5;
   }
 }
 
+.nav-notifications-toggle {
+  &.active {
+    color: #f59e0b; // Vibrant amber/gold for active notifications
+    
+    &:hover {
+      color: #d97706;
+    }
+  }
+}
+
 .btn-auth {
   background-color: transparent;
   color: var(--primary);
@@ -319,6 +329,13 @@ $outline-variant-color: #97aed5;
     }
   }
 
+  .dropdown-toggle-item {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 16px;
+    margin: 4px 0;
+  }
+
   .upgrade-btn {
     color: var(--primary) !important;
     background: rgba(11, 96, 150, 0.08) !important;
@@ -379,5 +396,47 @@ $outline-variant-color: #97aed5;
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.nav-notifications-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--surface-container-low);
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
+  margin-right: 4px;
+
+  .icon {
+    font-size: 18px;
+    color: var(--on-surface-variant);
+    transition: color 0.2s ease;
+    user-select: none;
+
+    &.active {
+      color: #f59e0b;
+    }
+  }
+
+  .switch {
+    width: 36px;
+    height: 20px;
+
+    .slider {
+      &:before {
+        height: 12px;
+        width: 12px;
+        left: 3px;
+        bottom: 3px;
+      }
+    }
+
+    input:checked + .slider {
+      &:before {
+        transform: translateX(16px);
+      }
+    }
   }
 }

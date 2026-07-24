@@ -975,6 +975,39 @@
   }
 }
 
+/* ========== Toggle Switch ========== */
+.receive-messages-toggle-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--surface-container-low);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+
+  .toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 16px;
+
+    .toggle-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+    .toggle-desc {
+      font-size: 11px;
+      color: var(--on-surface-variant);
+      line-height: 1.4;
+      opacity: 0.85;
+    }
+  }
+}
+
+
 /* ========== DARK MODE ADAPTATIONS ========== */
 [data-theme='dark'] {
   .profile-form-grid .form-input,

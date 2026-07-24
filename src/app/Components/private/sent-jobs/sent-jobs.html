@@ -9,6 +9,16 @@
         <p class="history-subtitle">მიღებული ვაკანსიები</p>
       </div>
     </div>
+    
+    <!-- Quick Toggle -->
+    <div class="quick-toggle-messages">
+      <span class="toggle-label">შეტყობინებების მიღება</span>
+      <label class="switch">
+        <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+        <span class="slider round"></span>
+      </label>
+    </div>
+
     <div class="history-badge">
       <span class="history-count">{{ stateStore.sentJobs().total }}</span>
       <span class="history-count-label">სულ</span>

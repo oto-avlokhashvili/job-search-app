@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { StateStore } from '../../../Store/state.store';
 import { CommonModule } from '@angular/common';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 @Component({
   selector: 'app-sent-jobs',
@@ -10,8 +11,15 @@ import { CommonModule } from '@angular/common';
 })
 export class SentJobs {
   stateStore = inject(StateStore);
+  private alertify = inject(AlertifyService);
   page = signal<number>(this.stateStore.sentJobs().page || 1);
   limit = signal<number>(10);
+
+  toggleReceiveMessages(event: any) {
+    const checked = event.target.checked;
+    this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: checked });
+    this.alertify.success(checked ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
+  }
   
 
   ngOnInit() {
