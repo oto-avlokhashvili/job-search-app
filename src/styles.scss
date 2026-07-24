@@ -72,6 +72,12 @@ $my-theme: mat.m2-define-light-theme((
   --stat-card-2:linear-gradient(135deg, #c3aae8, #a98ed8);
   --stat-card-3:linear-gradient(135deg, #96d9b0, #68c090);
   --stat-card-4:linear-gradient(135deg, #f5c89a, #eeaa70);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --featured-bg: linear-gradient(180deg, var(--surface-container-low) 0%, var(--surface-container-lowest) 100%);
+  --featured-bg-hover: linear-gradient(180deg, var(--surface-container) 0%, var(--surface-container-lowest) 100%);
+  --featured-shadow: 0 12px 24px rgba(11, 96, 150, 0.1);
   color-scheme: light;
 }
 
@@ -109,6 +115,12 @@ $my-theme: mat.m2-define-light-theme((
   --stat-card-2:linear-gradient(135deg, #6040a8, #3f2478);
   --stat-card-3:linear-gradient(135deg, #276f4a, #174d32);
   --stat-card-4:linear-gradient(135deg, #b5621e, #8a4510);
+  --glass-bg: rgba(50, 50, 83, 0.5);
+  --glass-bg-hover: rgba(50, 50, 83, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --featured-bg: linear-gradient(180deg, rgba(91, 155, 213, 0.18) 0%, rgba(30, 30, 46, 0.95) 100%);
+  --featured-bg-hover: linear-gradient(180deg, rgba(91, 155, 213, 0.26) 0%, rgba(30, 30, 46, 0.9) 100%);
+  --featured-shadow: 0 0 0 1px var(--primary), 0 12px 24px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
