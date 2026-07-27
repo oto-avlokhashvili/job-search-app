@@ -10,7 +10,7 @@
         </div>
         
         <h1 class="display-lg">
-          შექმენი საკუთარი <span class="text-gradient">AI აგენტი</span>
+          შექმენი საკუთარი <span class="text-gradient">AI აგენტი</span> და მოაძებნინე სამსახური მარტივად
         </h1>
         
         <p class="body-lg subtitle">
@@ -159,18 +159,31 @@
               
               @if (isLocationOpen()) {
                 <div class="custom-select-dropdown glass-card animated-fade-in">
-                  @for (option of locationOptions; track option.value) {
-                    <div 
-                      class="custom-select-option" 
-                      [class.selected]="option.value === locationFilter.value"
-                      (click)="selectLocation(option.value)"
-                    >
-                      <span class="option-label">{{ option.label }}</span>
-                      @if (option.value === locationFilter.value) {
-                        <span class="material-symbols-outlined check-icon">check</span>
-                      }
-                    </div>
-                  }
+                  <div class="dropdown-search-wrapper" (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined search-icon-small">search</span>
+                    <input type="text" [formControl]="locationSearchInput" placeholder="ძებნა..." class="dropdown-search-input">
+                    @if (locationSearchInput.value) {
+                      <button type="button" class="btn-clear-search-small" (click)="locationSearchInput.setValue('')">
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="options-list">
+                    @for (option of filteredLocationOptions(); track option.value) {
+                      <div 
+                        class="custom-select-option" 
+                        [class.selected]="option.value === locationFilter.value"
+                        (click)="selectLocation(option.value)"
+                      >
+                        <span class="option-label">{{ option.label }}</span>
+                        @if (option.value === locationFilter.value) {
+                          <span class="material-symbols-outlined check-icon">check</span>
+                        }
+                      </div>
+                    } @empty {
+                      <div class="no-options-found">ქალაქი ვერ მოიძებნა</div>
+                    }
+                  </div>
                 </div>
               }
             </div>

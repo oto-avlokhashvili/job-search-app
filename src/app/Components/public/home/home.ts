@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, OnInit, signal, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, computed, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -68,6 +68,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   // Filter Form Controls
   searchFilter = new FormControl<string>('', { nonNullable: true });
   locationFilter = new FormControl<string>('all', { nonNullable: true });
+  locationSearchInput = new FormControl<string>('', { nonNullable: true });
+  locationSearch = signal<string>('');
   sourceFilter = new FormControl<string>('all', { nonNullable: true });
   companyFilter = new FormControl<string>('', { nonNullable: true });
   dateRangeFilter = new FormControl<string>('all', { nonNullable: true });
@@ -77,7 +79,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
 
-  locationOptions = [
+  defaultLocationOptions = [
     { value: 'all', label: 'ყველა ლოკაცია' },
     { value: 'თბილისი', label: 'თბილისი' },
     { value: 'ბათუმი', label: 'ბათუმი' },
@@ -85,6 +87,30 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     { value: 'ქუთაისი', label: 'ქუთაისი' },
     { value: 'გორი', label: 'გორი' }
   ];
+
+  filteredLocationOptions = computed(() => {
+    const cities = this.stateStore.cities() || [];
+    const searchVal = this.locationSearch().toLowerCase().trim();
+
+    let options: { value: string; label: string }[] = [];
+    if (cities.length > 0) {
+      options = [
+        { value: 'all', label: 'ყველა ლოკაცია' },
+        ...cities.map(c => ({ value: c.location, label: `${c.location} (${c.count})` }))
+      ];
+    } else {
+      options = this.defaultLocationOptions;
+    }
+
+    if (!searchVal) {
+      return options;
+    }
+
+    return [
+      options[0],
+      ...options.slice(1).filter(opt => opt.value.toLowerCase().includes(searchVal))
+    ];
+  });
 
   dateRangeOptions = [
     { value: 'all', label: 'ყველა დროის' },
@@ -100,9 +126,18 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   private http = inject(HttpClient);
   private alertify = inject(AlertifyService);
+  private searchSub?: any;
 
   ngOnInit() {
     this.loadJobs();
+    this.stateStore.loadCities();
+
+    this.searchSub = this.locationSearchInput.valueChanges.pipe(
+      debounceTime(150),
+      distinctUntilChanged()
+    ).subscribe(val => {
+      this.locationSearch.set(val);
+    });
   }
 
   ngAfterViewInit() {
@@ -112,6 +147,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+    }
+    if (this.searchSub) {
+      this.searchSub.unsubscribe();
     }
   }
 
@@ -437,6 +475,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   clearFilters() {
     this.searchFilter.setValue('');
     this.locationFilter.setValue('all');
+    this.locationSearchInput.setValue('');
     this.sourceFilter.setValue('all');
     this.companyFilter.setValue('');
     this.dateRangeFilter.setValue('all');
@@ -447,8 +486,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   getSelectedLocationLabel(): string {
     const val = this.locationFilter.value;
-    const option = this.locationOptions.find(o => o.value === val);
-    return option ? option.label : 'ყველა ლოკაცია';
+    if (val === 'all') return 'ყველა ლოკაცია';
+    const cities = this.stateStore.cities() || [];
+    const found = cities.find(c => c.location === val);
+    return found ? found.location : val;
   }
 
   getSelectedDateRangeLabel(): string {
@@ -484,6 +525,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   closeAllDropdowns() {
     this.isLocationOpen.set(false);
     this.isDateRangeOpen.set(false);
+    this.locationSearchInput.setValue('');
   }
 
   @HostListener('document:click', ['$event'])

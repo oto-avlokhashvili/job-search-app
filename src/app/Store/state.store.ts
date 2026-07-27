@@ -28,6 +28,10 @@ type State = {
     chatAiDetectedRole: string;
     chatAiLocationPreference: string;
     chatAiPrimarySkills: string[];
+
+    cities: { location: string; count: number }[];
+    citiesLoaded: boolean;
+    citiesLoading: boolean;
 }
 
 const initialState: State = {
@@ -49,6 +53,10 @@ const initialState: State = {
     chatAiDetectedRole: '',
     chatAiLocationPreference: '',
     chatAiPrimarySkills: [],
+
+    cities: [],
+    citiesLoaded: false,
+    citiesLoading: false,
 }
 
 export const StateStore = signalStore(
@@ -184,6 +192,26 @@ export const StateStore = signalStore(
                 },
                 error: (err: any) => {
                     console.error('Error loading sent jobs:', err);
+                }
+            });
+        },
+
+        loadCities(force: boolean = false) {
+            if (!force && store.citiesLoaded() && store.cities().length > 0) {
+                return;
+            }
+            patchState(store, { citiesLoading: true });
+            jobsService.getCities().subscribe({
+                next: (res) => {
+                    patchState(store, {
+                        cities: res || [],
+                        citiesLoaded: true,
+                        citiesLoading: false
+                    });
+                },
+                error: (err) => {
+                    patchState(store, { citiesLoading: false });
+                    console.error('Error loading cities:', err);
                 }
             });
         }

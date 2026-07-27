@@ -62,4 +62,12 @@ export class JobsService {
   markAsSentBulk(jobs: any[]): Observable<any> {
     return this.http.post<any>(`${this.url}/sent-jobs/bulk`, jobs, { context: new HttpContext().set(skipLoading, true) });
   }
+
+  getCities(search?: string): Observable<{ location: string; count: number }[]> {
+    let params = new HttpParams();
+    if (search && search.trim().length > 0) {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<{ location: string; count: number }[]>(`${this.url}/job/cities`, { params });
+  }
 }
