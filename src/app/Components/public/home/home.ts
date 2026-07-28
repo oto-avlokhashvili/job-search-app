@@ -450,12 +450,18 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   formatDate(dateStr: any): string {
     if (!dateStr) return 'დღეს';
     try {
-      const date = new Date(dateStr);
+      let date: Date;
+      if (typeof dateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr.trim())) {
+        return dateStr.trim();
+      } else {
+        date = new Date(dateStr);
+      }
+
       if (isNaN(date.getTime())) return dateStr;
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      return `${day}/${month}/${year}`;
     } catch {
       return dateStr;
     }
