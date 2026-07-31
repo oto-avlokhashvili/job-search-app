@@ -1401,10 +1401,28 @@ $outline-variant-color: #97aed5;
   gap: 4px;
 }
 
+.job-vacancy-link {
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+
+  &:hover .job-vacancy,
+  &:hover .card-vacancy-title {
+    color: var(--primary, #3B82F6);
+    text-decoration: underline;
+  }
+}
+
 .job-vacancy {
   font-weight: 700;
   color: var(--on-surface);
   font-size: 16px;
+  transition: color 0.2s ease;
 }
 
 .job-company {
@@ -1422,6 +1440,68 @@ $outline-variant-color: #97aed5;
   background-color: var(--surface-container-low);
   color: var(--on-surface-variant);
   border: 1px solid var(--border-color);
+}
+
+.deadline-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.fresh {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid rgba(46, 125, 50, 0.3);
+  }
+
+  &.warning {
+    background: #FFF8E1;
+    color: #B45309;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+
+  &.urgent {
+    background: #FFEBEE;
+    color: #C62828;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &.expired {
+    background: rgba(148, 163, 184, 0.15);
+    color: #64748B;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+  }
+
+  &.none {
+    color: var(--on-surface-variant);
+  }
+
+  [data-theme='dark'] & {
+    &.fresh {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ADE80;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+    &.warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #FBBF24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    &.urgent {
+      background: rgba(239, 68, 68, 0.15);
+      color: #F87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    &.expired {
+      background: rgba(148, 163, 184, 0.12);
+      color: #94A3B8;
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+  }
 }
 
 .location-cell {

@@ -32,6 +32,10 @@ type State = {
     cities: { location: string; count: number }[];
     citiesLoaded: boolean;
     citiesLoading: boolean;
+
+    selectedJob: Job | null;
+    selectedJobLoading: boolean;
+    selectedJobError: string | null;
 }
 
 const initialState: State = {
@@ -57,6 +61,10 @@ const initialState: State = {
     cities: [],
     citiesLoaded: false,
     citiesLoading: false,
+
+    selectedJob: null,
+    selectedJobLoading: false,
+    selectedJobError: null,
 }
 
 export const StateStore = signalStore(
@@ -214,6 +222,28 @@ export const StateStore = signalStore(
                     console.error('Error loading cities:', err);
                 }
             });
+        },
+
+        loadJobById(id: number | string) {
+            patchState(store, { selectedJobLoading: true, selectedJobError: null });
+            jobsService.getJobById(id).subscribe({
+                next: (res: any) => {
+                    const loadedJob = res?.job || res;
+                    if (loadedJob && (loadedJob.id || loadedJob.vacancy)) {
+                        patchState(store, { selectedJob: loadedJob, selectedJobLoading: false, selectedJobError: null });
+                    } else {
+                        patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის მონაცემები ვერ მოიძებნა' });
+                    }
+                },
+                error: (err: any) => {
+                    console.error('Error loading job by ID:', err);
+                    patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის ჩატვირთვისას დაფიქსირდა შეცდომა ან ვაკანსია ვერ მოიძებნა' });
+                }
+            });
+        },
+
+        clearSelectedJob() {
+            patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: null });
         }
     })),
 );

@@ -4,16 +4,20 @@ export interface JobsResponse {
 }
 export interface Job {
   id: number;
-  matchId?:number;
+  matchId?: number;
   vacancy: string;
-  location:string;
+  location: string;
   company: string;
   link: string;
   publishDate: string; // or Date if you plan to parse it
   deadline: string;    // or Date
   page?: number;
   salaryRange?: string;
-  match?:number;
+  match?: number;
+  description?: string;
+  requirements?: string;
+  source?: string;
+  category?: string;
 }
 
 export interface AiMatchedJobsResponse {

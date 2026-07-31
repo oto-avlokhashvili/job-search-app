@@ -1,0 +1,185 @@
+<div class="vacancy-details-modal">
+  
+  <!-- Modal Top Bar -->
+  <div class="modal-top-bar">
+    <div class="modal-title-group">
+      <span class="material-symbols-outlined title-icon">work_outline</span>
+      <span class="modal-heading-text">ვაკანსიის დეტალები</span>
+    </div>
+
+    <div class="top-actions">
+      <button type="button" class="btn-icon-action" (click)="copyLink()" title="ბმულის დაკოპირება">
+        <span class="material-symbols-outlined">share</span>
+      </button>
+
+      <button type="button" class="btn-close-modal" (click)="close()" title="დახურვა">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-body-content">
+
+    <!-- Loading State -->
+    @if (stateStore.selectedJobLoading()) {
+      <div class="details-card glass-card skeleton-container">
+        <div class="skeleton-header">
+          <div class="company-logo-avatar skeleton-pulse" style="width: 64px; height: 64px;"></div>
+          <div class="skeleton-text-group">
+            <div class="skeleton-line title-line skeleton-pulse"></div>
+            <div class="skeleton-line subtitle-line skeleton-pulse"></div>
+          </div>
+        </div>
+
+        <div class="skeleton-grid">
+          <div class="skeleton-block skeleton-pulse"></div>
+          <div class="skeleton-block skeleton-pulse"></div>
+          <div class="skeleton-block skeleton-pulse"></div>
+        </div>
+
+        <div class="skeleton-body">
+          <div class="skeleton-line skeleton-pulse" style="width: 90%;"></div>
+          <div class="skeleton-line skeleton-pulse" style="width: 80%;"></div>
+          <div class="skeleton-line skeleton-pulse" style="width: 85%;"></div>
+        </div>
+      </div>
+    }
+
+    <!-- Error State -->
+    @else if (stateStore.selectedJobError()) {
+      <div class="error-card glass-card">
+        <div class="error-icon-wrapper">
+          <span class="material-symbols-outlined error-icon">error_outline</span>
+        </div>
+        <h2 class="error-title">შეცდომა</h2>
+        <p class="error-message">{{ stateStore.selectedJobError() }}</p>
+        <div class="error-actions">
+          <button type="button" class="btn-primary" (click)="close()">
+            <span class="material-symbols-outlined">close</span>
+            <span>დახურვა</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Vacancy Details Loaded -->
+    @else if (stateStore.selectedJob(); as j) {
+      <div class="vacancy-main-layout">
+        
+        <!-- Primary Hero Card -->
+        <div class="details-hero-card glass-card">
+          <div class="hero-header">
+            <div class="company-avatar">
+              {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
+            </div>
+
+            <div class="vacancy-heading">
+              <div class="badge-row">
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.link) === 'hr.ge'">
+                  <span class="material-symbols-outlined badge-icon">language</span>
+                  {{ detectSource(j.link) }}
+                </span>
+                <span class="publish-date-badge">
+                  <span class="material-symbols-outlined badge-icon">calendar_today</span>
+                  გამოქვეყნდა: {{ formatDate(j.publishDate) }}
+                </span>
+                @if (j.deadline) {
+                  <span class="deadline-badge">
+                    <span class="material-symbols-outlined badge-icon">schedule</span>
+                    ბოლო ვადა: {{ formatDate(j.deadline) }}
+                  </span>
+                }
+              </div>
+
+              <h1 class="vacancy-title">{{ j.vacancy }}</h1>
+              <div class="company-subheading">
+                <span class="material-symbols-outlined">domain</span>
+                <span class="company-name">{{ j.company }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-card">
+              <div class="meta-icon-wrapper">
+                <span class="material-symbols-outlined">location_on</span>
+              </div>
+              <div class="meta-info">
+                <span class="meta-label">ლოკაცია</span>
+                <span class="meta-value">{{ j.location || 'დისტანციური / შეთანხმებით' }}</span>
+              </div>
+            </div>
+
+            <div class="meta-card">
+              <div class="meta-icon-wrapper salary">
+                <span class="material-symbols-outlined">payments</span>
+              </div>
+              <div class="meta-info">
+                <span class="meta-label">ხელფასი</span>
+                <span class="meta-value">{{ j.salaryRange || 'შეთანხმებით' }}</span>
+              </div>
+            </div>
+
+            @if (extractedEmail(); as email) {
+              <div class="meta-card email-card">
+                <div class="meta-icon-wrapper email">
+                  <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div class="meta-info">
+                  <span class="meta-label">ელ-ფოსტა</span>
+                  <div class="email-value-group">
+                    <span class="meta-value email-text" [title]="email">{{ email }}</span>
+                    <button type="button" class="btn-copy-email-icon" (click)="copyEmail(email)" title="ელ-ფოსტის დაკოპირება">
+                      <span class="material-symbols-outlined">content_copy</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="hero-actions">
+            <button type="button" class="btn-primary apply-now-btn" (click)="openOriginalSource(j.link)">
+              <span class="material-symbols-outlined">open_in_new</span>
+              <span>ორიგინალ წყაროზე გადასვლა</span>
+            </button>
+
+            <button type="button" class="btn-secondary" (click)="copyLink()">
+              <span class="material-symbols-outlined">content_copy</span>
+              <span>ბმულის კოპირება</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Description & Details Card -->
+        <div class="details-content-card glass-card">
+          <h2 class="section-title">
+            <span class="material-symbols-outlined title-icon">description</span>
+            ვაკანსიის აღწერა და დეტალები
+          </h2>
+
+          <div class="description-scroll-container">
+            @if (j.description) {
+              <div class="description-text" [innerHTML]="j.description"></div>
+            } @else if (j.requirements) {
+              <div class="description-text" [innerHTML]="j.requirements"></div>
+            } @else {
+              <div class="description-text">
+                <p>ვაკანსიის სრული დეტალების და მოთხოვნების სანახავად გადადით განაცხადის ორიგინალ წყაროზე.</p>
+              </div>
+            }
+          </div>
+
+          <div class="content-footer-actions">
+            <button type="button" class="btn-primary" (click)="openOriginalSource(j.link)">
+              <span class="material-symbols-outlined">send</span>
+              <span>განაცხადის გაგზავნა</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

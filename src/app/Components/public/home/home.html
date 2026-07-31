@@ -287,6 +287,7 @@
                   <th>ლოკაცია</th>
                   <th>ხელფასი</th>
                   <th>გამოქვეყნდა</th>
+                  <th>ბოლო ვადა</th>
                   <th></th>
                 </tr>
               </thead>
@@ -299,7 +300,9 @@
                           {{ job.company.charAt(0) }}
                         </div>
                         <div class="job-titles">
-                          <span class="job-vacancy">{{ job.vacancy }}</span>
+                          <button type="button" class="job-vacancy-link" (click)="viewVacancy(job.id)">
+                            <span class="job-vacancy">{{ job.vacancy }}</span>
+                          </button>
                           <span class="job-company">{{ job.company }}</span>
                         </div>
                       </div>
@@ -317,7 +320,13 @@
                       <span class="date-text">{{ job.publishDate }}</span>
                     </td>
                     <td>
-                      <button class="btn-fluid btn-sm primary apply-btn" (click)="applyJob(job.link)">
+                      @let dStatus = getDeadlineStatus(job.deadline, job.publishDate);
+                      <span class="deadline-tag" [ngClass]="dStatus.class">
+                        {{ dStatus.text }}
+                      </span>
+                    </td>
+                    <td>
+                      <button type="button" class="btn-fluid btn-sm primary apply-btn" (click)="viewVacancy(job.id)">
                         ნახვა
                       </button>
                     </td>
@@ -337,6 +346,7 @@
                     <td><div class="location-cell skeleton-text" style="width: 110px; height: 14px;"></div></td>
                     <td><span class="salary-text skeleton-text" style="width: 100px; height: 16px;"></span></td>
                     <td><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
+                    <td><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
                     <td><div class="apply-btn skeleton-block" style="width: 80px; height: 34px;"></div></td>
                   </tr>
                 }
@@ -354,7 +364,9 @@
                       {{ job.company.charAt(0) }}
                     </div>
                     <div>
-                      <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
+                      <button type="button" class="job-vacancy-link" (click)="viewVacancy(job.id)">
+                        <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
+                      </button>
                       <p class="card-company-name">{{ job.company }}</p>
                     </div>
                   </div>
@@ -373,10 +385,17 @@
                     <span class="material-symbols-outlined detail-icon">calendar_today</span>
                     <span class="detail-value">{{ job.publishDate }}</span>
                   </div>
+                  <div class="detail-item">
+                    <span class="material-symbols-outlined detail-icon">schedule</span>
+                    @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
+                    <span class="deadline-tag" [ngClass]="mStatus.class">
+                      {{ mStatus.text }}
+                    </span>
+                  </div>
                 </div>
 
                 <div class="card-action-wrapper">
-                  <button class="btn-fluid primary btn-sm apply-btn" (click)="applyJob(job.link)">
+                  <button type="button" class="btn-fluid primary btn-sm apply-btn" (click)="viewVacancy(job.id)">
                     ნახვა
                   </button>
                 </div>

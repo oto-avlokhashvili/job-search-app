@@ -9,6 +9,7 @@ import { environment } from '../../../../environments/environment';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
+import { VacancyDetails } from '../vacancy-details/vacancy-details';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { JobsService } from '../../../Core/Services/jobs-service';
@@ -22,6 +23,7 @@ interface HomeJob {
   source: string;
   salaryRange?: string;
   publishDate: string;
+  deadline?: string;
   matchScore: number;
   link: string;
 }
@@ -380,6 +382,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
             source: this.detectSource(job.link || ''),
             salaryRange: job.salaryRange || 'შეთანხმებით',
             publishDate: this.formatDate(job.publishDate),
+            deadline: job.deadline ? this.formatDate(job.deadline) : '',
             matchScore: job.match || Math.floor(Math.random() * 10) + 90,
             link: job.link || '/jobs'
           }));
@@ -464,6 +467,60 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       return `${day}/${month}/${year}`;
     } catch {
       return dateStr;
+    }
+  }
+
+  getDeadlineStatus(deadlineStr?: string, publishDateStr?: string): { text: string; class: 'fresh' | 'warning' | 'urgent' | 'expired' | 'none' } {
+    const targetDateStr = deadlineStr || publishDateStr;
+    if (!targetDateStr) return { text: 'მითითებული არ არის', class: 'none' };
+
+    let targetDate: Date | null = null;
+    try {
+      if (typeof targetDateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(targetDateStr.trim())) {
+        const [day, month, year] = targetDateStr.trim().split('/').map(Number);
+        targetDate = new Date(year, month - 1, day);
+      } else {
+        targetDate = new Date(targetDateStr);
+      }
+    } catch {
+      targetDate = null;
+    }
+
+    if (!targetDate || isNaN(targetDate.getTime())) {
+      return { text: targetDateStr, class: 'none' };
+    }
+
+    const now = new Date();
+    const diffMs = targetDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    const formattedText = this.formatDate(targetDateStr);
+
+    if (deadlineStr) {
+      if (diffDays < 0) {
+        return { text: formattedText, class: 'expired' };
+      } else if (diffDays <= 7) {
+        // Last week (red)
+        return { text: formattedText, class: 'urgent' };
+      } else if (diffDays <= 21) {
+        // 2-3 weeks (yellow)
+        return { text: formattedText, class: 'warning' };
+      } else {
+        // Over 1 week / fresh (green)
+        return { text: formattedText, class: 'fresh' };
+      }
+    } else {
+      const daysOld = Math.abs(diffDays);
+      if (daysOld <= 7) {
+        // Fresh (≤ 1 week old) -> Green
+        return { text: formattedText, class: 'fresh' };
+      } else if (daysOld <= 21) {
+        // 2-3 weeks old -> Yellow
+        return { text: formattedText, class: 'warning' };
+      } else {
+        // Older -> Red
+        return { text: formattedText, class: 'urgent' };
+      }
     }
   }
 
@@ -558,11 +615,20 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.searchContainerRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  viewVacancy(jobId: number | string) {
+    this.dialog.open(VacancyDetails, {
+      width: '750px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'vacancy-dialog',
+      autoFocus: false,
+      data: { jobId }
+    });
+  }
+
   applyJob(link: string) {
-    if (this.authService.isLoggedIn()) {
+    if (link && link !== '/jobs') {
       window.open(link, '_blank');
-    } else {
-      this.authService.openAuthModal('login');
     }
   }
 
