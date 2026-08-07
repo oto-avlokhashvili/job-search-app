@@ -662,36 +662,50 @@
   justify-content: center;
   gap: 8px;
   border: 1.5px solid var(--border-color);
-  background: var(--card-bg);
+  background: var(--surface-container-low);
   color: var(--on-surface-variant);
-  border-radius: 10px;
-  padding: 10px 16px;
+  border-radius: 12px;
+  padding: 11px 18px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 13.5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   width: 100%;
+  box-sizing: border-box;
 
   span {
-    font-size: 18px;
+    font-size: 19px;
   }
 
   &:hover {
-    background: var(--surface-container-low);
-    color: var(--on-surface);
-    border-color: var(--on-surface-variant);
+    background: var(--surface-container);
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.08);
   }
 
   &.to-telegram {
-    background: #229ed9;
+    background: linear-gradient(135deg, #229ed9, #1b86ba);
     color: white;
     border: none;
-    box-shadow: 0 4px 12px rgba(34, 158, 217, 0.2);
+    box-shadow: 0 4px 14px rgba(34, 158, 217, 0.25);
 
     &:hover {
-      box-shadow: 0 6px 16px rgba(34, 158, 217, 0.3);
-      filter: brightness(1.08);
+      box-shadow: 0 6px 18px rgba(34, 158, 217, 0.35);
+      transform: translateY(-1.5px);
       color: white;
+    }
+  }
+
+  &.to-email {
+    background: var(--surface-container-low);
+    color: var(--primary);
+    border: 1.5px solid rgba(11, 96, 150, 0.25);
+
+    &:hover {
+      background: rgba(11, 96, 150, 0.08);
+      border-color: var(--primary);
     }
   }
 }
@@ -986,12 +1000,27 @@
   border-radius: 12px;
   margin-bottom: 1.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    padding: 0.85rem 1rem;
+    gap: 12px;
+  }
+
+  .switch {
+    flex-shrink: 0;
+  }
 
   .toggle-info {
     display: flex;
     flex-direction: column;
     gap: 4px;
     padding-right: 16px;
+    min-width: 0;
+
+    @media (max-width: 480px) {
+      padding-right: 0;
+    }
 
     .toggle-title {
       font-size: 14px;

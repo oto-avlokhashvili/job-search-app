@@ -1921,106 +1921,310 @@ $outline-variant-color: #97aed5;
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .source-tabs {
-  display: inline-flex;
+  display: flex;
+  align-items: center;
   background: var(--surface-container-low);
-  padding: 4px;
-  border-radius: 14px;
+  padding: 5px;
+  border-radius: 100px;
   border: 1px solid var(--border-color);
   gap: 4px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
   
   [data-theme='dark'] & {
-    background: rgba(30, 30, 46, 0.4);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
-  }
-
-  @media (max-width: 600px) {
-    display: flex;
-    width: 100%;
+    background: rgba(22, 24, 38, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
   }
 
   .source-tab {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 24px;
-    border-radius: 10px;
-    border: none;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 100px;
+    border: 1px solid transparent;
     background: transparent;
     color: var(--on-surface-variant);
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    flex-shrink: 0;
 
-    @media (max-width: 600px) {
-      flex: 1;
-      justify-content: center;
-      padding: 10px 12px;
-      font-size: 12px;
+    .tab-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
     }
 
-    @media (max-width: 400px) {
-      padding: 8px 4px;
-      font-size: 11px;
-      gap: 4px;
+    .tab-icon {
+      font-size: 18px;
+      color: var(--on-surface-variant);
+      transition: color 0.2s ease;
+      flex-shrink: 0;
     }
 
     .tab-logo {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
       object-fit: contain;
+      flex-shrink: 0;
+    }
 
-      @media (max-width: 400px) {
-        width: 14px;
-        height: 14px;
+    .tab-label {
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .tab-count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7.5px;
+      border-radius: 100px;
+      background: rgba(11, 96, 150, 0.08);
+      color: var(--on-surface-variant);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2px;
+      flex-shrink: 0;
+
+      [data-theme='dark'] & {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.7);
       }
     }
 
     &:hover {
       color: var(--primary);
+
+      .tab-icon {
+        color: var(--primary);
+      }
+
+      .tab-count-badge {
+        background: rgba(11, 96, 150, 0.14);
+        color: var(--primary);
+
+        [data-theme='dark'] & {
+          background: rgba(255, 255, 255, 0.16);
+          color: #ffffff;
+        }
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
 
     &.active {
       background: var(--card-bg);
       color: var(--primary);
-      box-shadow: 0 4px 12px rgba(11, 96, 150, 0.08);
-      
-      [data-theme='dark'] & {
-        background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 3px 10px rgba(11, 96, 150, 0.12), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+      .tab-icon {
         color: var(--primary);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
-    }
 
-    .tab-count {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--on-surface-variant);
-      opacity: 0.7;
-      margin-left: 4px;
-      transition: color 0.25s ease;
+      .tab-count-badge {
+        background: var(--primary);
+        color: white;
+        font-weight: 800;
 
-      @media (max-width: 480px) {
-        display: none !important;
+        [data-theme='dark'] & {
+          background: var(--primary);
+          color: white;
+        }
       }
-    }
 
-    &:hover .tab-count {
-      color: var(--primary);
-    }
-
-    &.active .tab-count {
-      color: var(--primary);
-      opacity: 0.9;
-      
       [data-theme='dark'] & {
+        background: var(--primary);
         color: #ffffff;
+        box-shadow: 0 4px 14px rgba(11, 96, 150, 0.4);
+
+        .tab-icon {
+          color: #ffffff;
+        }
+
+        .tab-count-badge {
+          background: rgba(255, 255, 255, 0.25);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  /* ========== Tablet / Medium Screen Adjustments (641px - 991px) ========== */
+  @media (max-width: 991px) and (min-width: 641px) {
+    padding: 4px;
+    gap: 3px;
+
+    .source-tab {
+      padding: 8px 14px;
+      font-size: 12.5px;
+      gap: 6px;
+
+      .tab-left {
+        gap: 6px;
+      }
+
+      .tab-count-badge {
+        font-size: 10.5px;
+        padding: 1.5px 6.5px;
+      }
+    }
+  }
+
+  /* ========== Mobile 2x2 Space-Between Cards Layout (<= 640px) ========== */
+  @media (max-width: 640px) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 8px;
+    width: 100%;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    .source-tab {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      border-radius: 14px;
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-color);
+      box-sizing: border-box;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+
+      [data-theme='dark'] & {
+        background: rgba(22, 24, 38, 0.7);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .tab-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        flex: 1;
+        margin-right: 4px;
+      }
+
+      .tab-icon {
+        font-size: 18px;
+      }
+
+      .tab-logo {
+        width: 18px;
+        height: 18px;
+      }
+
+      .tab-label {
+        font-size: 12.5px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+
+      .tab-count-badge {
+        font-size: 10.5px;
+        padding: 2px 7px;
+        margin-left: 0;
+        flex-shrink: 0;
+      }
+
+      &.active {
+        background: var(--card-bg);
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 4px 14px rgba(11, 96, 150, 0.15);
+
+        .tab-icon {
+          color: var(--primary);
+        }
+
+        .tab-count-badge {
+          background: var(--primary);
+          color: #ffffff;
+        }
+
+        [data-theme='dark'] & {
+          background: var(--primary);
+          color: #ffffff;
+          border-color: var(--primary);
+          box-shadow: 0 4px 16px rgba(11, 96, 150, 0.45);
+
+          .tab-icon {
+            color: #ffffff;
+          }
+
+          .tab-count-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+        }
+      }
+    }
+  }
+
+  /* ========== Small Mobile Screens (<= 380px) ========== */
+  @media (max-width: 380px) {
+    grid-gap: 6px;
+
+    .source-tab {
+      padding: 8px 10px;
+      font-size: 11.5px;
+      min-height: 40px;
+
+      .tab-left {
+        gap: 5px;
+      }
+
+      .tab-icon {
+        font-size: 16px;
+      }
+
+      .tab-logo {
+        width: 16px;
+        height: 16px;
+      }
+
+      .tab-label {
+        font-size: 11.5px;
+      }
+
+      .tab-count-badge {
+        font-size: 10px;
+        padding: 1.5px 5.5px;
       }
     }
   }

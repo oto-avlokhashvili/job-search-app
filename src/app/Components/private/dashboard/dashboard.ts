@@ -26,6 +26,7 @@ import { SubscriptionModal } from '../private-layout/subscription-modal/subscrip
 import { AuthService } from '../../../Core/Services/auth-service';
 import { environment } from '../../../../environments/environment';
 import { JobsService } from '../../../Core/Services/jobs-service';
+import { extractSalary } from '../../../Core/Utils/salary-extractor';
 
 export interface AttachedFile {
   id: string;
@@ -245,7 +246,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   telegramLink = signal<string>('');
   showProBenefits = signal<boolean>(true);
 
-  matchedJobs = computed(() => this.stateStore.chatMatchedJobs());
+  matchedJobs = computed(() => {
+    const jobs = this.stateStore.chatMatchedJobs();
+    return jobs.map(j => ({
+      ...j,
+      salaryRange: extractSalary(j)
+    }));
+  });
   aiSummary = computed(() => this.stateStore.chatAiSummary());
   aiDetectedRole = computed(() => this.stateStore.chatAiDetectedRole());
   aiLocationPreference = computed(() => this.stateStore.chatAiLocationPreference());

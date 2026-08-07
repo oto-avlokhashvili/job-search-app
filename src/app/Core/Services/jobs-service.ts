@@ -45,6 +45,10 @@ export class JobsService {
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs?page=${page}&limit=${limit}`);
   }
+
+  getJobById(id: number | string): Observable<Job> {
+    return this.http.get<Job>(`${this.url}/job/${id}`, { context: new HttpContext().set(skipLoading, true) });
+  }
   findByQuery(queries: string[] = []): Observable<Job[]> {
     let params = new HttpParams();
 

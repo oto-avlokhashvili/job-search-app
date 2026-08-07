@@ -15,6 +15,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { Job } from '../../../Core/Interfaces/jobs';
 
+import { extractSalary } from '../../../Core/Utils/salary-extractor';
+
 interface HomeJob {
   id: number;
   vacancy: string;
@@ -56,6 +58,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   dbTotalRecords = signal<number>(0);
   jobsGeCount = signal<number>(0);
   hrGeCount = signal<number>(0);
+  aworkGeCount = signal<number>(0);
   hasMoreJobs = signal<boolean>(true);
 
   contactEmail = new FormControl<string>('', {
@@ -380,7 +383,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
             company: job.company,
             location: job.location || 'Remote',
             source: this.detectSource(job.link || ''),
-            salaryRange: job.salaryRange || 'შეთანხმებით',
+            salaryRange: extractSalary(job),
             publishDate: this.formatDate(job.publishDate),
             deadline: job.deadline ? this.formatDate(job.deadline) : '',
             matchScore: job.match || Math.floor(Math.random() * 10) + 90,
@@ -399,11 +402,17 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
           const dbTotal = res.counts?.totalRecords || 0;
           this.dbTotalRecords.set(dbTotal);
 
-          const jobsGe = res.counts?.jobsGe || 0;
+          const jobsGe = res.counts?.jobsGe ?? res.counts?.jobs_ge ?? res.counts?.['jobs.ge'] ?? 0;
           this.jobsGeCount.set(jobsGe);
 
-          const hrGe = res.counts?.hrGe || 0;
+          const hrGe = res.counts?.hrGe ?? res.counts?.hr_ge ?? res.counts?.['hr.ge'] ?? 0;
           this.hrGeCount.set(hrGe);
+
+          let aworkGe = res.counts?.aworkGe ?? res.counts?.awork ?? res.counts?.['awork.ge'] ?? res.counts?.awork_ge ?? res.counts?.aWork ?? res.counts?.aWorkGe;
+          if (aworkGe === undefined || (aworkGe === 0 && mapped.some(j => j.source === 'awork.ge'))) {
+            aworkGe = mapped.filter(j => j.source === 'awork.ge').length;
+          }
+          this.aworkGeCount.set(aworkGe);
 
           this.hasMoreJobs.set(this.allJobs().length < total && mapped.length > 0);
 
@@ -446,6 +455,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
     if (l.includes('hr.ge')) {
       return 'hr.ge';
+    }
+    if (l.includes('awork.ge') || l.includes('awork')) {
+      return 'awork.ge';
     }
     return 'other';
   }

@@ -51,7 +51,7 @@
             </div>
             <div class="stat-box">
               <div class="stat-label">აქტიური აგრეგატორები</div>
-              <div class="stat-value">2</div>
+              <div class="stat-value">3</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">აქტიური ვაკანსიები</div>
@@ -108,7 +108,7 @@
       <div class="search-header-inner">
         <div class="section-header text-center">
           <h2 class="display-sm">
-            აქტუალური ვაკანსიები
+            აქტიური ვაკანსიები
             @if (totalRecords() > 0) {
               <span class="total-vacancies-badge">{{ dbTotalRecords() | number }}</span>
             }
@@ -118,27 +118,43 @@
 
         <!-- Filters Bar -->
         <div #searchContainer class="filters-bar glass-card">
-          <!-- Source Segmented Control -->
+          <!-- Source Segmented Control Switch -->
           <div class="source-tabs-wrapper">
-            <div class="source-tabs">
-              <button class="source-tab" [class.active]="sourceFilter.value === 'all'" (click)="setSource('all')">
-                ყველა წყარო
+            <div class="source-tabs" role="tablist" aria-label="Job Sources">
+              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'all'" (click)="setSource('all')" role="tab" [attr.aria-selected]="sourceFilter.value === 'all'">
+                <div class="tab-left">
+                  <span class="material-symbols-outlined tab-icon">apps</span>
+                  <span class="tab-label">ყველა</span>
+                </div>
                 @if (dbTotalRecords() > 0) {
-                  <span class="tab-count">({{ dbTotalRecords() | number }})</span>
+                  <span class="tab-count-badge">{{ dbTotalRecords() | number }}</span>
                 }
               </button>
-              <button class="source-tab" [class.active]="sourceFilter.value === 'jobs.ge'" (click)="setSource('jobs.ge')">
-                <img src="/icons/jobs.png" alt="Jobs.ge" class="tab-logo">
-                Jobs.ge
+              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'jobs.ge'" (click)="setSource('jobs.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'jobs.ge'">
+                <div class="tab-left">
+                  <img src="/icons/jobs.png" alt="Jobs.ge" class="tab-logo">
+                  <span class="tab-label">Jobs.ge</span>
+                </div>
                 @if (jobsGeCount() > 0) {
-                  <span class="tab-count">({{ jobsGeCount() | number }})</span>
+                  <span class="tab-count-badge">{{ jobsGeCount() | number }}</span>
                 }
               </button>
-              <button class="source-tab" [class.active]="sourceFilter.value === 'hr.ge'" (click)="setSource('hr.ge')">
-                <img src="/icons/hr.png" alt="HR.ge" class="tab-logo">
-                HR.ge
+              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'hr.ge'" (click)="setSource('hr.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'hr.ge'">
+                <div class="tab-left">
+                  <img src="/icons/hr.png" alt="HR.ge" class="tab-logo">
+                  <span class="tab-label">HR.ge</span>
+                </div>
                 @if (hrGeCount() > 0) {
-                  <span class="tab-count">({{ hrGeCount() | number }})</span>
+                  <span class="tab-count-badge">{{ hrGeCount() | number }}</span>
+                }
+              </button>
+              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'awork.ge'" (click)="setSource('awork.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'awork.ge'">
+                <div class="tab-left">
+                  <img src="/icons/awork.png" alt="Awork.ge" class="tab-logo">
+                  <span class="tab-label">Awork.ge</span>
+                </div>
+                @if (aworkGeCount() > 0) {
+                  <span class="tab-count-badge">{{ aworkGeCount() | number }}</span>
                 }
               </button>
             </div>

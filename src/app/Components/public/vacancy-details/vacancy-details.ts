@@ -6,6 +6,8 @@ import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 
+import { extractSalary } from '../../../Core/Utils/salary-extractor';
+
 @Component({
   selector: 'app-vacancy-details',
   standalone: true,
@@ -19,7 +21,7 @@ export class VacancyDetails implements OnInit {
   public stateStore = inject(StateStore);
 
   extractedEmail = computed(() => {
-    const job = this.stateStore.selectedJob();
+    const job = this.stateStore.selectedJob() || this.data?.job;
     if (!job) return null;
     
     if ((job as any).email && typeof (job as any).email === 'string') {
@@ -29,6 +31,11 @@ export class VacancyDetails implements OnInit {
     const textToSearch = `${job.description || ''} ${job.requirements || ''}`;
     const match = textToSearch.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
     return match ? match[1] : null;
+  });
+
+  extractedSalary = computed(() => {
+    const job = this.stateStore.selectedJob() || this.data?.job;
+    return extractSalary(job);
   });
 
   constructor(
@@ -80,6 +87,7 @@ export class VacancyDetails implements OnInit {
     const l = link.toLowerCase();
     if (l.includes('jobs.ge')) return 'jobs.ge';
     if (l.includes('hr.ge')) return 'hr.ge';
+    if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
     return 'სხვა წყარო';
   }
 

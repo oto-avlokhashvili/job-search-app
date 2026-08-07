@@ -75,7 +75,7 @@
 
             <div class="vacancy-heading">
               <div class="badge-row">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.link) === 'hr.ge'">
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.link) === 'awork.ge'">
                   <span class="material-symbols-outlined badge-icon">language</span>
                   {{ detectSource(j.link) }}
                 </span>
@@ -116,7 +116,7 @@
               </div>
               <div class="meta-info">
                 <span class="meta-label">ხელფასი</span>
-                <span class="meta-value">{{ j.salaryRange || 'შეთანხმებით' }}</span>
+                <span class="meta-value">{{ extractedSalary() }}</span>
               </div>
             </div>
 
