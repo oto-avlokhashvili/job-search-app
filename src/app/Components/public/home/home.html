@@ -300,6 +300,7 @@
               <thead>
                 <tr>
                   <th>ვაკანსია</th>
+                  <th>პროვაიდერი</th>
                   <th>ლოკაცია</th>
                   <th>ხელფასი</th>
                   <th>გამოქვეყნდა</th>
@@ -321,6 +322,22 @@
                           </button>
                           <span class="job-company">{{ job.company }}</span>
                         </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="provider-cell">
+                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'">
+                          @if (job.source === 'jobs.ge') {
+                            <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-logo">
+                          } @else if (job.source === 'hr.ge') {
+                            <img src="/icons/hr.png" alt="HR.ge" class="provider-logo">
+                          } @else if (job.source === 'awork.ge') {
+                            <img src="/icons/awork.png" alt="Awork.ge" class="provider-logo">
+                          } @else {
+                            <span class="material-symbols-outlined provider-icon">language</span>
+                          }
+                          <span>{{ job.source }}</span>
+                        </span>
                       </div>
                     </td>
                     <td>
@@ -359,6 +376,7 @@
                         </div>
                       </div>
                     </td>
+                    <td><div class="provider-cell skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></div></td>
                     <td><div class="location-cell skeleton-text" style="width: 110px; height: 14px;"></div></td>
                     <td><span class="salary-text skeleton-text" style="width: 100px; height: 16px;"></span></td>
                     <td><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
@@ -389,6 +407,10 @@
                 </div>
 
                 <div class="card-details-grid">
+                  <div class="detail-item">
+                    <span class="material-symbols-outlined detail-icon">language</span>
+                    <span class="detail-value">{{ job.source }}</span>
+                  </div>
                   <div class="detail-item">
                     <span class="material-symbols-outlined detail-icon">location_on</span>
                     <span class="detail-value">{{ job.location }}</span>

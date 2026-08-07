@@ -1504,6 +1504,53 @@ $outline-variant-color: #97aed5;
   }
 }
 
+.provider-cell {
+  display: flex;
+  align-items: center;
+
+  .provider-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-container, #dee9ff);
+    color: var(--primary, #0b6096);
+    border: 1px solid var(--border-color, rgba(11, 96, 150, 0.2));
+
+    .provider-logo {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      border-radius: 3px;
+    }
+
+    .provider-icon {
+      font-size: 15px;
+    }
+
+    &.jobs-ge {
+      background: var(--success-bg, #e8f5e9);
+      color: var(--success-text, #2e7d32);
+      border-color: var(--success-border, rgba(46, 125, 50, 0.3));
+    }
+
+    &.hr-ge {
+      background: rgba(168, 85, 247, 0.15);
+      color: #9333ea;
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    &.awork-ge {
+      background: rgba(255, 122, 0, 0.15);
+      color: #e65100;
+      border-color: rgba(255, 122, 0, 0.3);
+    }
+  }
+}
+
 .location-cell {
   display: flex;
   align-items: center;
