@@ -75,9 +75,9 @@
 
             <div class="vacancy-heading">
               <div class="badge-row">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.link) === 'awork.ge'">
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link) === 'myjobs.ge'">
                   <span class="material-symbols-outlined badge-icon">language</span>
-                  {{ detectSource(j.link) }}
+                  {{ detectSource(j.source, j.link) }}
                 </span>
                 <span class="publish-date-badge">
                   <span class="material-symbols-outlined badge-icon">calendar_today</span>

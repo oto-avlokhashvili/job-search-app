@@ -59,6 +59,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   jobsGeCount = signal<number>(0);
   hrGeCount = signal<number>(0);
   aworkGeCount = signal<number>(0);
+  myjobsGeCount = signal<number>(0);
   hasMoreJobs = signal<boolean>(true);
 
   contactEmail = new FormControl<string>('', {
@@ -80,9 +81,18 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   dateRangeFilter = new FormControl<string>('all', { nonNullable: true });
   showAdvancedFilters = signal<boolean>(false);
 
+  isSourceOpen = signal<boolean>(false);
   isLocationOpen = signal<boolean>(false);
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
+
+  sourceOptions = computed(() => [
+    { value: 'all', label: 'ყველა პორტალი', icon: 'apps', count: this.dbTotalRecords(), isCircular: false, logo: '' },
+    { value: 'jobs.ge', label: 'Jobs.ge', icon: '', count: this.jobsGeCount(), isCircular: false, logo: '/icons/jobs.png' },
+    { value: 'hr.ge', label: 'HR.ge', icon: '', count: this.hrGeCount(), isCircular: false, logo: '/icons/hr.png' },
+    { value: 'awork.ge', label: 'Awork.ge', icon: '', count: this.aworkGeCount(), isCircular: false, logo: '/icons/awork.png' },
+    { value: 'myjobs.ge', label: 'Myjobs.ge', icon: '', count: this.myjobsGeCount(), isCircular: true, logo: '/icons/myjobsge.png' }
+  ]);
 
   defaultLocationOptions = [
     { value: 'all', label: 'ყველა ლოკაცია' },
@@ -382,7 +392,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
             vacancy: job.vacancy,
             company: job.company,
             location: job.location || 'Remote',
-            source: this.detectSource(job.link || ''),
+            source: this.detectSource(job.source || '', job.link || ''),
             salaryRange: extractSalary(job),
             publishDate: this.formatDate(job.publishDate),
             deadline: job.deadline ? this.formatDate(job.deadline) : '',
@@ -413,6 +423,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
             aworkGe = mapped.filter(j => j.source === 'awork.ge').length;
           }
           this.aworkGeCount.set(aworkGe);
+
+          let myjobsGe = res.counts?.myjobsGe ?? res.counts?.myjobs_ge ?? res.counts?.['myjobs.ge'] ?? res.counts?.myjobs ?? res.counts?.myJobsGe ?? res.counts?.myJobs;
+          if (myjobsGe === undefined || (myjobsGe === 0 && mapped.some(j => j.source === 'myjobs.ge'))) {
+            myjobsGe = mapped.filter(j => j.source === 'myjobs.ge').length;
+          }
+          this.myjobsGeCount.set(myjobsGe);
 
           this.hasMoreJobs.set(this.allJobs().length < total && mapped.length > 0);
 
@@ -448,12 +464,15 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.showAdvancedFilters.update(v => !v);
   }
 
-  detectSource(link: string): string {
-    const l = link.toLowerCase();
-    if (l.includes('jobs.ge')) {
+  detectSource(sourceOrLink?: string, linkFallback?: string): string {
+    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
+    if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) {
+      return 'myjobs.ge';
+    }
+    if (l.includes('jobs.ge') || l.includes('jobsge')) {
       return 'jobs.ge';
     }
-    if (l.includes('hr.ge')) {
+    if (l.includes('hr.ge') || l.includes('hrge')) {
       return 'hr.ge';
     }
     if (l.includes('awork.ge') || l.includes('awork')) {
@@ -541,6 +560,14 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.loadJobs(this.searchFilter.value);
   }
 
+  toggleSourceCard(source: string) {
+    if (this.sourceFilter.value === source) {
+      this.setSource('all');
+    } else {
+      this.setSource(source);
+    }
+  }
+
   setPopularSearch(keyword: string) {
     this.companyFilter.setValue(keyword);
     this.searchFilter.setValue('');
@@ -559,6 +586,18 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.loadJobs('');
   }
 
+  getSelectedSourceLabel(): string {
+    const val = this.sourceFilter.value;
+    const found = this.sourceOptions().find(o => o.value === val);
+    return found ? found.label : 'ყველა პორტალი';
+  }
+
+  getSelectedSourceLogo(): string | null {
+    const val = this.sourceFilter.value;
+    const found = this.sourceOptions().find(o => o.value === val);
+    return found?.logo || null;
+  }
+
   getSelectedLocationLabel(): string {
     const val = this.locationFilter.value;
     if (val === 'all') return 'ყველა ლოკაცია';
@@ -573,6 +612,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     return option ? option.label : 'ყველა დროის';
   }
 
+  selectSource(value: string) {
+    this.sourceFilter.setValue(value);
+    this.isSourceOpen.set(false);
+    this.loadJobs();
+  }
+
   selectLocation(value: string) {
     this.locationFilter.setValue(value);
     this.isLocationOpen.set(false);
@@ -585,19 +630,29 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.loadJobs();
   }
 
+  toggleSourceDropdown(event: Event) {
+    event.stopPropagation();
+    this.isSourceOpen.update(v => !v);
+    this.isLocationOpen.set(false);
+    this.isDateRangeOpen.set(false);
+  }
+
   toggleLocationDropdown(event: Event) {
     event.stopPropagation();
     this.isLocationOpen.update(v => !v);
+    this.isSourceOpen.set(false);
     this.isDateRangeOpen.set(false);
   }
 
   toggleDateRangeDropdown(event: Event) {
     event.stopPropagation();
     this.isDateRangeOpen.update(v => !v);
+    this.isSourceOpen.set(false);
     this.isLocationOpen.set(false);
   }
 
   closeAllDropdowns() {
+    this.isSourceOpen.set(false);
     this.isLocationOpen.set(false);
     this.isDateRangeOpen.set(false);
     this.locationSearchInput.setValue('');

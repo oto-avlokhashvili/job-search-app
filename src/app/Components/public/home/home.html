@@ -28,6 +28,29 @@
             მოძებნე მარტივად
           </a>
         </div>
+
+        <!-- Integrated Live Portals Strip -->
+        <div class="hero-portals-strip">
+          <span class="strip-label">მხარდაჭერილი პორტალები:</span>
+          <div class="portals-badges-row">
+            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('jobs.ge')">
+              <img src="/icons/jobs.png" alt="Jobs.ge" class="portal-badge-logo">
+              <span>Jobs.ge</span>
+            </button>
+            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('hr.ge')">
+              <img src="/icons/hr.png" alt="HR.ge" class="portal-badge-logo">
+              <span>HR.ge</span>
+            </button>
+            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('awork.ge')">
+              <img src="/icons/awork.png" alt="Awork.ge" class="portal-badge-logo">
+              <span>Awork.ge</span>
+            </button>
+            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('myjobs.ge')">
+              <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="portal-badge-logo circular">
+              <span>Myjobs.ge</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Right Column: Live Logistics Tracker -->
@@ -49,9 +72,25 @@
               <div class="stat-label">აქტიური მომხმარებლები</div>
               <div class="stat-value text-accent">8,942</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-box aggregators-box">
               <div class="stat-label">აქტიური აგრეგატორები</div>
-              <div class="stat-value">3</div>
+              <div class="stat-value-with-logos">
+                <span class="stat-value">4</span>
+                <div class="aggregator-mini-avatars">
+                  <div class="mini-avatar jobs-ge" title="Jobs.ge">
+                    <img src="/icons/jobs.png" alt="Jobs.ge">
+                  </div>
+                  <div class="mini-avatar hr-ge" title="HR.ge">
+                    <img src="/icons/hr.png" alt="HR.ge">
+                  </div>
+                  <div class="mini-avatar awork-ge" title="Awork.ge">
+                    <img src="/icons/awork.png" alt="Awork.ge">
+                  </div>
+                  <div class="mini-avatar myjobs-ge" title="Myjobs.ge">
+                    <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="circular">
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="stat-box">
               <div class="stat-label">აქტიური ვაკანსიები</div>
@@ -80,16 +119,9 @@
 
           <!-- Decorative Footer Info -->
           <div class="card-footer">
-            <div class="user-avatars">
-              <div class="avatar-icon">
-                <span class="material-symbols-outlined">person</span>
-              </div>
-              <div class="avatar-icon">
-                <span class="material-symbols-outlined">person</span>
-              </div>
-              <div class="avatar-icon">
-                <span class="material-symbols-outlined">person</span>
-              </div>
+            <div class="portal-sync-status">
+              <span class="pulse-dot-green"></span>
+              <span class="sync-text">4 პორტალი სინქრონიზებულია</span>
             </div>
             <div class="match-time">
               გათვლის საშუალო დრო: <span class="highlight">1.2 წამი</span>
@@ -118,54 +150,58 @@
 
         <!-- Filters Bar -->
         <div #searchContainer class="filters-bar glass-card">
-          <!-- Source Segmented Control Switch -->
-          <div class="source-tabs-wrapper">
-            <div class="source-tabs" role="tablist" aria-label="Job Sources">
-              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'all'" (click)="setSource('all')" role="tab" [attr.aria-selected]="sourceFilter.value === 'all'">
-                <div class="tab-left">
-                  <span class="material-symbols-outlined tab-icon">apps</span>
-                  <span class="tab-label">ყველა</span>
-                </div>
-                @if (dbTotalRecords() > 0) {
-                  <span class="tab-count-badge">{{ dbTotalRecords() | number }}</span>
-                }
-              </button>
-              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'jobs.ge'" (click)="setSource('jobs.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'jobs.ge'">
-                <div class="tab-left">
-                  <img src="/icons/jobs.png" alt="Jobs.ge" class="tab-logo">
-                  <span class="tab-label">Jobs.ge</span>
-                </div>
-                @if (jobsGeCount() > 0) {
-                  <span class="tab-count-badge">{{ jobsGeCount() | number }}</span>
-                }
-              </button>
-              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'hr.ge'" (click)="setSource('hr.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'hr.ge'">
-                <div class="tab-left">
-                  <img src="/icons/hr.png" alt="HR.ge" class="tab-logo">
-                  <span class="tab-label">HR.ge</span>
-                </div>
-                @if (hrGeCount() > 0) {
-                  <span class="tab-count-badge">{{ hrGeCount() | number }}</span>
-                }
-              </button>
-              <button type="button" class="source-tab" [class.active]="sourceFilter.value === 'awork.ge'" (click)="setSource('awork.ge')" role="tab" [attr.aria-selected]="sourceFilter.value === 'awork.ge'">
-                <div class="tab-left">
-                  <img src="/icons/awork.png" alt="Awork.ge" class="tab-logo">
-                  <span class="tab-label">Awork.ge</span>
-                </div>
-                @if (aworkGeCount() > 0) {
-                  <span class="tab-count-badge">{{ aworkGeCount() | number }}</span>
-                }
-              </button>
-            </div>
-          </div>
-
           <div class="filter-group-main">
             <div class="search-input-wrapper">
               <span class="material-symbols-outlined search-icon">search</span>
               <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value)">
             </div>
             
+            <!-- Source Selector Dropdown -->
+            <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
+              <button type="button" class="custom-select-trigger" [class.open]="isSourceOpen()" (click)="toggleSourceDropdown($event)">
+                @if (getSelectedSourceLogo(); as logo) {
+                  <img [src]="logo" class="select-icon-img" [class.circular]="sourceFilter.value === 'myjobs.ge'" alt="Source">
+                } @else {
+                  <span class="material-symbols-outlined select-icon">language</span>
+                }
+                <span class="selected-value">{{ getSelectedSourceLabel() }}</span>
+                <span class="material-symbols-outlined select-arrow" [class.rotated]="isSourceOpen()">expand_more</span>
+              </button>
+              
+              @if (isSourceOpen()) {
+                <div class="custom-select-dropdown glass-card animated-fade-in">
+                  <div class="options-list">
+                    @for (option of sourceOptions(); track option.value) {
+                      <div 
+                        class="custom-select-option source-option" 
+                        [class.selected]="option.value === sourceFilter.value"
+                        (click)="selectSource(option.value)"
+                      >
+                        <div class="option-left-content">
+                          @if (option.logo) {
+                            <img [src]="option.logo" [alt]="option.label" class="option-logo" [class.circular]="option.isCircular">
+                          } @else {
+                            <span class="material-symbols-outlined option-icon">apps</span>
+                          }
+                          <span class="option-label">{{ option.label }}</span>
+                        </div>
+                        
+                        <div class="option-right-content">
+                          @if (option.count > 0) {
+                            <span class="option-count-badge">{{ option.count | number }}</span>
+                          }
+                          @if (option.value === sourceFilter.value) {
+                            <span class="material-symbols-outlined check-icon">check</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Location Selector Dropdown -->
             <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
               <button type="button" class="custom-select-trigger" [class.open]="isLocationOpen()" (click)="toggleLocationDropdown($event)">
                 <span class="material-symbols-outlined select-icon">location_on</span>
@@ -272,6 +308,169 @@
     </div>
 
     <div class="vacancies-container">
+      <!-- Provider Status Interactive Cards -->
+      <div class="provider-cards-grid">
+        <!-- Jobs.ge Card -->
+        <div 
+          class="provider-status-card glass-card" 
+          [class.active]="sourceFilter.value === 'jobs.ge'" 
+          (click)="toggleSourceCard('jobs.ge')"
+          role="button" 
+          tabindex="0"
+          title="Jobs.ge ვაკანსიების ფილტრი"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container jobs-ge">
+              <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-card-logo">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">Jobs.ge</span>
+            <div class="provider-stats">
+              <span class="provider-count">{{ jobsGeCount() | number }}</span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            @if (sourceFilter.value === 'jobs.ge') {
+              <span class="card-selected-tag">
+                <span class="material-symbols-outlined">check_circle</span>
+                არჩეულია
+              </span>
+            } @else {
+              <span class="card-browse-tag">
+                ფილტრი
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- HR.ge Card -->
+        <div 
+          class="provider-status-card glass-card" 
+          [class.active]="sourceFilter.value === 'hr.ge'" 
+          (click)="toggleSourceCard('hr.ge')"
+          role="button" 
+          tabindex="0"
+          title="HR.ge ვაკანსიების ფილტრი"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container hr-ge">
+              <img src="/icons/hr.png" alt="HR.ge" class="provider-card-logo">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">HR.ge</span>
+            <div class="provider-stats">
+              <span class="provider-count">{{ hrGeCount() | number }}</span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            @if (sourceFilter.value === 'hr.ge') {
+              <span class="card-selected-tag">
+                <span class="material-symbols-outlined">check_circle</span>
+                არჩეულია
+              </span>
+            } @else {
+              <span class="card-browse-tag">
+                ფილტრი
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Awork.ge Card -->
+        <div 
+          class="provider-status-card glass-card" 
+          [class.active]="sourceFilter.value === 'awork.ge'" 
+          (click)="toggleSourceCard('awork.ge')"
+          role="button" 
+          tabindex="0"
+          title="Awork.ge ვაკანსიების ფილტრი"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container awork-ge">
+              <img src="/icons/awork.png" alt="Awork.ge" class="provider-card-logo">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">Awork.ge</span>
+            <div class="provider-stats">
+              <span class="provider-count">{{ aworkGeCount() | number }}</span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            @if (sourceFilter.value === 'awork.ge') {
+              <span class="card-selected-tag">
+                <span class="material-symbols-outlined">check_circle</span>
+                არჩეულია
+              </span>
+            } @else {
+              <span class="card-browse-tag">
+                ფილტრი
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Myjobs.ge Card -->
+        <div 
+          class="provider-status-card glass-card" 
+          [class.active]="sourceFilter.value === 'myjobs.ge'" 
+          (click)="toggleSourceCard('myjobs.ge')"
+          role="button" 
+          tabindex="0"
+          title="Myjobs.ge ვაკანსიების ფილტრი"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container myjobs-ge">
+              <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-card-logo circular">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">Myjobs.ge</span>
+            <div class="provider-stats">
+              <span class="provider-count">{{ myjobsGeCount() | number }}</span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            @if (sourceFilter.value === 'myjobs.ge') {
+              <span class="card-selected-tag">
+                <span class="material-symbols-outlined">check_circle</span>
+                არჩეულია
+              </span>
+            } @else {
+              <span class="card-browse-tag">
+                ფილტრი
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
       <!-- Vacancies Results -->
       <div class="vacancies-results-wrapper">
         @if (!isLoading() && filteredJobs().length > 0) {
@@ -279,6 +478,12 @@
             <span class="results-count">
               @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || companyFilter.value || dateRangeFilter.value !== 'all') {
                 ნაპოვნია <strong>{{ totalRecords() | number }}</strong> ფილტრის შესაბამისი ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
+                @if (sourceFilter.value !== 'all') {
+                  <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
+                    <span>ყველა პორტალზე დაბრუნება</span>
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                }
               } @else {
                 სულ ბაზაშია: <strong>{{ totalRecords() | number }}</strong> აქტიური ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
               }
@@ -326,13 +531,15 @@
                     </td>
                     <td>
                       <div class="provider-cell">
-                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'">
+                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
                           @if (job.source === 'jobs.ge') {
                             <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-logo">
                           } @else if (job.source === 'hr.ge') {
                             <img src="/icons/hr.png" alt="HR.ge" class="provider-logo">
                           } @else if (job.source === 'awork.ge') {
                             <img src="/icons/awork.png" alt="Awork.ge" class="provider-logo">
+                          } @else if (job.source === 'myjobs.ge') {
+                            <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-logo circular">
                           } @else {
                             <span class="material-symbols-outlined provider-icon">language</span>
                           }

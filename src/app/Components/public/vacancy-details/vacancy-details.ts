@@ -82,11 +82,11 @@ export class VacancyDetails implements OnInit {
     }
   }
 
-  detectSource(link?: string): string {
-    if (!link) return 'JobSearch';
-    const l = link.toLowerCase();
-    if (l.includes('jobs.ge')) return 'jobs.ge';
-    if (l.includes('hr.ge')) return 'hr.ge';
+  detectSource(sourceOrLink?: string, linkFallback?: string): string {
+    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
+    if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) return 'myjobs.ge';
+    if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
+    if (l.includes('hr.ge') || l.includes('hrge')) return 'hr.ge';
     if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
     return 'სხვა წყარო';
   }
