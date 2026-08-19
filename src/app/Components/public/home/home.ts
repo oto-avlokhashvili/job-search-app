@@ -705,7 +705,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   handleHeroClick() {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/private/dashboard']);
+      this.router.navigate(['/private/onboarding']);
     } else {
       this.authService.openAuthModal('login');
     }

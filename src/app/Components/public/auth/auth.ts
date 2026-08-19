@@ -48,6 +48,8 @@ export class Auth {
           if (returnUrl) {
             this.router.navigate([returnUrl]);
             this.authService.returnUrl.set(null);
+          } else {
+            this.router.navigate(['/private/onboarding']);
           }
           this.authService.closeAuthModal();
         },

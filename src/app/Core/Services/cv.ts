@@ -26,6 +26,6 @@ export class Cv {
   }
 
   updateSearchQueries(searchQueries: string[]): Observable<any> {
-    return this.http.patch(`${this.url}/cv/cv-summary`, { searchQueries }, { withCredentials: true });
+    return this.http.patch(`${this.url}/cv/cv-summary`, { searchQueries }, { withCredentials: true, context: new HttpContext().set(skipLoading, true) });
   }
 }

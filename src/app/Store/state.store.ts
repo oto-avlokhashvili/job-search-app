@@ -96,6 +96,12 @@ export const StateStore = signalStore(
             });
         },
 
+        updateLocalProfile(data: Partial<User>) {
+            patchState(store, {
+                profile: { ...store.profile(), ...data }
+            });
+        },
+
         getCv(force: boolean = false) {
             if (!force && store.userCv() !== null && !!store.userCv()?.summary) {
                 return;

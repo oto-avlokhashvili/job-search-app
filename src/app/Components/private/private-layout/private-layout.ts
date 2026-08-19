@@ -28,6 +28,7 @@ export class PrivateLayout implements OnInit {
 
   navItems = signal([
     { icon: '🤖', label: 'AI ძიება', route: 'dashboard' },
+    { icon: '✨', label: 'ოსტატი', route: 'onboarding' },
     { icon: '🔔', label: 'შეტყობინებები', route: 'jobs' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' },
   ]);
@@ -44,8 +45,7 @@ export class PrivateLayout implements OnInit {
 
     if (token) {
       this.authService.setToken(token);
-      await this.router.navigate([], {
-        relativeTo: this.route,
+      await this.router.navigate(['/private/onboarding'], {
         queryParams: {},
         replaceUrl: true
       });
