@@ -355,4 +355,29 @@ body.modal-open {
   scroll-margin-top: 72px;
 }
 
+// ─── Custom Tooltip Styling ────────────────────────────────────
+.mat-mdc-tooltip.custom-vacancy-tooltip,
+.custom-vacancy-tooltip {
+  --mdc-plain-tooltip-container-color: #0f172a;
+  --mdc-plain-tooltip-supporting-text-color: #f8fafc;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  max-width: 420px !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+  [data-theme='dark'] & {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
 

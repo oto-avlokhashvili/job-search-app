@@ -1,7 +1,117 @@
 <div class="onboarding-page-container">
   
-  <!-- One Big Unified Split-Layout Card -->
-  <div class="profile-card onboarding-split-card">
+  @if (isInitializing()) {
+    <div class="profile-card onboarding-split-card skeleton-pulse loading-split-card">
+      <div class="table-loading-bar"></div>
+
+      <!-- LEFT SIDEBAR SKELETON -->
+      <aside class="onboarding-stepper-sidebar">
+        <!-- Header Skeleton -->
+        <div class="sidebar-header-block">
+          <div class="sidebar-badge-row">
+            <div class="skeleton-block" style="width: 32px; height: 32px; border-radius: 9px;"></div>
+            <div class="skeleton-text" style="width: 120px; height: 16px;"></div>
+          </div>
+          <div class="progress-stats-row">
+            <div class="skeleton-text" style="width: 80px; height: 12px;"></div>
+            <div class="skeleton-text" style="width: 35px; height: 12px;"></div>
+          </div>
+          <div class="stepper-progress-track">
+            <div class="skeleton-block" style="width: 35%; height: 100%; border-radius: 9999px;"></div>
+          </div>
+        </div>
+
+        <!-- Stepper Items Skeleton -->
+        <div class="vertical-stepper-list">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="vertical-step-item" style="pointer-events: none;">
+              <div class="node-track-col">
+                <div class="step-node-bubble skeleton-block" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                @if (i < 5) {
+                  <div class="node-connector-line"></div>
+                }
+              </div>
+              <div class="step-meta-col" style="flex: 1;">
+                <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '110px' : '135px')" style="height: 14px; margin-bottom: 5px;"></div>
+                <div class="skeleton-text short" style="width: 80px; height: 10px;"></div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Tip Card Skeleton -->
+        <div class="sidebar-tip-card">
+          <div class="tip-icon-title">
+            <div class="skeleton-block" style="width: 24px; height: 24px; border-radius: 7px;"></div>
+            <div class="skeleton-text" style="width: 90px; height: 13px;"></div>
+          </div>
+          <div class="skeleton-text" style="width: 100%; height: 11px; margin-top: 6px;"></div>
+          <div class="skeleton-text" style="width: 75%; height: 11px; margin-top: 4px;"></div>
+        </div>
+      </aside>
+
+      <!-- RIGHT WORKSPACE SKELETON -->
+      <main class="onboarding-workspace">
+        <div class="workspace-body">
+          <div class="panel-head" style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+            <div class="head-title-wrap" style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="skeleton-block" style="width: 38px; height: 38px; border-radius: 11px;"></div>
+              <div>
+                <div class="skeleton-text" style="width: 210px; height: 20px; margin-bottom: 6px;"></div>
+                <div class="skeleton-text" style="width: 340px; height: 13px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-columns-2" style="margin-top: 1.75rem;">
+            <div class="inner-block-card">
+              <div class="inner-card-head" style="display: flex; align-items: center; gap: 10px;">
+                <div class="skeleton-block" style="width: 32px; height: 32px; border-radius: 9px;"></div>
+                <div class="skeleton-text" style="width: 130px; height: 15px;"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 1.15rem; margin-top: 0.5rem;">
+                <div>
+                  <div class="skeleton-text" style="width: 70px; height: 12px; margin-bottom: 6px;"></div>
+                  <div class="skeleton-block" style="width: 100%; height: 44px; border-radius: 12px;"></div>
+                </div>
+                <div>
+                  <div class="skeleton-text" style="width: 70px; height: 12px; margin-bottom: 6px;"></div>
+                  <div class="skeleton-block" style="width: 100%; height: 44px; border-radius: 12px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inner-block-card">
+              <div class="inner-card-head" style="display: flex; align-items: center; gap: 10px;">
+                <div class="skeleton-block" style="width: 32px; height: 32px; border-radius: 9px;"></div>
+                <div class="skeleton-text" style="width: 150px; height: 15px;"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.5rem;">
+                <div class="skeleton-text" style="width: 85%; height: 12px;"></div>
+                <div class="skeleton-block" style="width: 100%; height: 48px; border-radius: 14px;"></div>
+                <div style="display: flex; gap: 6px; margin-top: 0.25rem;">
+                  <div class="skeleton-block" style="width: 90px; height: 26px; border-radius: 20px;"></div>
+                  <div class="skeleton-block" style="width: 115px; height: 26px; border-radius: 20px;"></div>
+                  <div class="skeleton-block" style="width: 85px; height: 26px; border-radius: 20px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="workspace-action-footer">
+          <div>
+            <div class="skeleton-block" style="width: 90px; height: 42px; border-radius: 12px;"></div>
+          </div>
+          <div class="footer-right-actions">
+            <div class="skeleton-block" style="width: 115px; height: 42px; border-radius: 12px;"></div>
+          </div>
+        </footer>
+      </main>
+    </div>
+  } @else {
+    <!-- One Big Unified Split-Layout Card -->
+    <div class="profile-card onboarding-split-card animate-fade">
 
     <!-- ================================================================ -->
     <!-- LEFT SIDEBAR: Redesigned Vertical Stepper Navigation             -->
@@ -12,7 +122,7 @@
       <div class="sidebar-header-block">
         <div class="sidebar-badge-row">
           <span class="material-symbols-outlined sidebar-icon">auto_awesome</span>
-          <span class="sidebar-title">პროფილის ოსტატი</span>
+          <span class="sidebar-title">პროფილის შევსება</span>
         </div>
         <div class="progress-stats-row">
           <span class="progress-step-text">ნაბიჯი 0{{ currentStep() }} / 0{{ totalSteps }}</span>
@@ -29,20 +139,21 @@
           <div
             class="vertical-step-item"
             [class.active]="currentStep() === step.number"
-            [class.completed]="currentStep() > step.number"
+            [class.completed]="isStepValid(step.number)"
+            [class.locked]="!canAccessStep(step.number)"
             (click)="goToStep(step.number)"
           >
             <!-- Step Node & Connecting Track -->
             <div class="node-track-col">
               <div class="step-node-bubble">
-                @if (currentStep() > step.number) {
+                @if (isStepValid(step.number)) {
                   <span class="material-symbols-outlined check-icon">check</span>
                 } @else {
                   <span>0{{ step.number }}</span>
                 }
               </div>
               @if (!last) {
-                <div class="node-connector-line" [class.passed]="currentStep() > step.number"></div>
+                <div class="node-connector-line" [class.passed]="isStepValid(step.number)"></div>
               }
             </div>
 
@@ -245,12 +356,12 @@
                 <p class="section-desc">AI ამ სიტყვების მიხედვით გაფილტრავს ვაკანსიებს.</p>
 
                 <div class="chips-input-container-wrapper">
-                  <div class="chips-input-container">
+                  <div class="chips-input-container" [class.is-invalid]="infoFormSubmitted() && searchQueries().length === 0" [class.loading]="keywordLoading()">
                     <div class="chips-list">
                       @for (query of searchQueries(); track query; let i = $index) {
                         <div class="chip">
                           <span>{{ query }}</span>
-                          <button type="button" class="chip-remove" (click)="removeKeyword(i)">
+                          <button type="button" class="chip-remove" [disabled]="keywordLoading()" (click)="removeKeyword(i)">
                             <span class="material-symbols-outlined">close</span>
                           </button>
                         </div>
@@ -259,6 +370,7 @@
                         type="text"
                         class="chip-input"
                         placeholder="დაამატეთ საკვანძო სიტყვა..."
+                        [disabled]="keywordLoading()"
                         [ngModel]="keywordInput()"
                         (ngModelChange)="keywordInput.set($event)"
                         (keydown.enter)="$event.preventDefault(); addKeyword()"
@@ -268,20 +380,27 @@
                   <button
                     type="button"
                     class="btn-add-keyword"
-                    [disabled]="!keywordInput().trim()"
+                    [disabled]="keywordLoading() || !keywordInput().trim()"
                     (click)="addKeyword()"
                     title="დამატება"
                   >
-                    <span class="material-symbols-outlined">add</span>
+                    @if (keywordLoading()) {
+                      <span class="btn-spinner" style="width: 18px; height: 18px; border-width: 2.5px;"></span>
+                    } @else {
+                      <span class="material-symbols-outlined">add</span>
+                    }
                   </button>
                 </div>
+                @if (infoFormSubmitted() && searchQueries().length === 0) {
+                  <span class="field-error-text">გთხოვთ დაამატოთ მინიმუმ ერთი საძიებო სიტყვა / პოზიცია</span>
+                }
 
                 <div class="suggestions-section">
                   <span class="suggestions-title">პოპულარული პოზიციები:</span>
                   <div class="suggestions-list">
                     @for (item of popularKeywords; track item) {
                       @if (!searchQueries().includes(item)) {
-                        <button type="button" class="suggestion-tag" (click)="addKeyword(item)">
+                        <button type="button" class="suggestion-tag" [disabled]="keywordLoading()" (click)="addKeyword(item)">
                           + {{ item }}
                         </button>
                       }
@@ -632,7 +751,7 @@
         <!-- ============================================================ -->
         @if (currentStep() === 5) {
           <div class="step-panel subscription-onboarding-section animate-fade">
-            @if (!isCompleted()) {
+            @if (!hasSubscription()) {
               <div class="panel-head">
                 <div class="head-title-wrap">
                   <span class="material-symbols-outlined head-icon">credit_card</span>
@@ -646,12 +765,13 @@
                 @for (plan of plans; track plan.key) {
                   <div
                     class="plan-card"
-                    [class.featured]="plan.badge"
-                    [class.selected-tier]="selectedPlan() === plan.key"
+                    [class.featured]="plan.isPopular"
+                    [class.disabled-plan]="plan.disabled"
+                    [class.selected-tier]="selectedPlan() === plan.key && !plan.disabled"
                     (click)="selectPlan(plan.key)"
                   >
                     @if (plan.badge) {
-                      <div class="featured-badge">{{ plan.badge }}</div>
+                      <div class="featured-badge" [class.coming-soon]="plan.disabled">{{ plan.badge }}</div>
                     }
 
                     <div class="plan-header">
@@ -679,48 +799,81 @@
                     <button
                       type="button"
                       class="activate-btn"
-                      [class.featured-btn]="plan.badge"
+                      [class.featured-btn]="plan.isPopular"
+                      [disabled]="plan.disabled"
                       (click)="selectPlan(plan.key)"
                     >
-                      {{ selectedPlan() === plan.key ? 'არჩეულია' : 'არჩევა' }}
+                      {{ plan.disabled ? 'მალე დაემატება' : selectedPlan() === plan.key ? 'არჩეულია' : 'არჩევა' }}
                     </button>
                   </div>
                 }
               </div>
-
-              <!-- Activation Footer -->
-              <div class="finish-activation-bar">
-                <div class="plan-selection-summary">
-                  <span class="summary-label">არჩეული გეგმა:</span>
-                  <span class="summary-val">{{ selectedPlan() === 'PRO' ? 'Pro (8₾/თვე)' : selectedPlan() === 'BASIC' ? 'სტანდარტული (უფასო)' : 'Enterprise' }}</span>
-                </div>
-
-                <button
-                  type="button"
-                  class="btn-finalize-pay"
-                  [disabled]="isProcessingPayment()"
-                  (click)="finishAndPay()"
-                >
-                  @if (isProcessingPayment()) {
-                    <span class="btn-spinner"></span>
-                    მიმდინარეობს გააქტიურება...
-                  } @else {
-                    <span class="material-symbols-outlined">bolt</span>
-                    {{ selectedPlan() === 'PRO' ? 'Pro გეგმის გააქტიურება (8₾) & დაწყება' : 'პროფილის დასრულება' }}
-                  }
-                </button>
-              </div>
             } @else {
               <!-- Celebration Screen -->
-              <div class="celebration-card">
-                <div class="avatar-large celebration-avatar">🎉</div>
-                <h2 class="celebration-title">გილოცავთ! თქვენი პროფილი მზად არის!</h2>
-                <p class="section-desc">თქვენი პროფილი წარმატებით მომზადდა. ჩვენი ხელოვნური ინტელექტი უკვე მზადაა იპოვოს თქვენზე მორგებული საუკეთესო ვაკანსიები!</p>
+              <div class="celebration-card animate-fade">
+                <!-- Ambient Glow Behind Icon -->
+                <div class="celebration-glow-circle"></div>
 
-                <button type="button" class="btn-launch-dashboard" (click)="navigateToDashboard()">
-                  <span>გადასვლა სამუშაო სივრცეში</span>
-                  <span class="material-symbols-outlined">arrow_forward</span>
-                </button>
+                <!-- Animated Icon Cluster -->
+                <div class="celebration-badge-hero">
+                  <div class="celebration-icon-circle">
+                    <span class="material-symbols-outlined main-celebrate-ico">rocket_launch</span>
+                  </div>
+                  <span class="material-symbols-outlined floating-sparkle sparkle-1">auto_awesome</span>
+                  <span class="material-symbols-outlined floating-sparkle sparkle-2">check_circle</span>
+                </div>
+
+                <div class="celebration-text-cluster">
+                  <div class="celebration-pill-tag">
+                    <span class="material-symbols-outlined">verified</span>
+                    <span>პროფილი აქტიურია</span>
+                  </div>
+                  <h2 class="celebration-title">გილოცავთ! თქვენი პროფილი სრულად მზადაა 🎉</h2>
+                  <p class="celebration-desc">
+                    თქვენი მონაცემები წარმატებით დამუშავდა. ხელოვნური ინტელექტი უკვე მზადაა თქვენზე მორგებული საუკეთესო ვაკანსიების მოსაძიებლად.
+                  </p>
+                </div>
+
+                <!-- 3 Feature Stat Badges -->
+                <div class="celebration-summary-grid">
+                  <div class="summary-pill-card" [title]="userCv()?.originalName || 'CV ატვირთულია'">
+                    <div class="pill-icon-box cv">
+                      <span class="material-symbols-outlined">description</span>
+                    </div>
+                    <div class="pill-info">
+                      <span class="pill-label">რეზიუმე</span>
+                      <span class="pill-value">{{ userCv()?.originalName || 'CV ატვირთულია' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="summary-pill-card" [title]="searchQueries().join(', ') || 'საძიებო პოზიციები'">
+                    <div class="pill-icon-box keywords">
+                      <span class="material-symbols-outlined">sell</span>
+                    </div>
+                    <div class="pill-info">
+                      <span class="pill-label">პოზიციები</span>
+                      <span class="pill-value">{{ searchQueries().length > 0 ? searchQueries().length + ' საკვანძო სიტყვა' : 'შერჩეულია' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="summary-pill-card">
+                    <div class="pill-icon-box plan">
+                      <span class="material-symbols-outlined">workspace_premium</span>
+                    </div>
+                    <div class="pill-info">
+                      <span class="pill-label">სააბონენტო გეგმა</span>
+                      <span class="pill-value">{{ (profile().subscription || selectedPlan()) === 'PREMIUM' ? 'Enterprise' : 'Pro პაკეტი' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="celebration-actions-group">
+                  <button type="button" class="btn-launch-dashboard" (click)="navigateToDashboard()">
+                    <span>გადასვლა სამუშაო სივრცეში</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                  </button>
+                </div>
               </div>
             }
           </div>
@@ -729,7 +882,7 @@
       </div>
 
       <!-- Action Navigation Footer -->
-      @if (!isCompleted()) {
+      @if (!hasSubscription()) {
         <footer class="workspace-action-footer">
           <div>
             @if (currentStep() > 1) {
@@ -741,12 +894,24 @@
 
           <div class="footer-right-actions">
             @if (currentStep() < totalSteps) {
-              <button type="button" class="btn-step-action skip" (click)="nextStep()">
-                გამოტოვება
-              </button>
               <button type="button" class="btn-step-action primary" (click)="nextStep()">
                 <span>შემდეგი</span>
                 <span class="material-symbols-outlined">arrow_forward</span>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn-step-action primary btn-finish-pay"
+                [disabled]="isProcessingPayment()"
+                (click)="finishAndPay()"
+              >
+                @if (isProcessingPayment()) {
+                  <span class="btn-spinner"></span>
+                  <span>მიმდინარეობს...</span>
+                } @else {
+                  <span class="material-symbols-outlined">bolt</span>
+                  <span>{{ selectedPlan() === 'PRO' ? 'Pro გეგმის გააქტიურება (8₾)' : 'პროფილის დასრულება' }}</span>
+                }
               </button>
             }
           </div>
@@ -755,6 +920,7 @@
 
     </main>
 
-  </div>
+    </div>
+  }
 
 </div>

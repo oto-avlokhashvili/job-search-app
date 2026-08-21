@@ -102,26 +102,32 @@ export const StateStore = signalStore(
             });
         },
 
-        getCv(force: boolean = false) {
+        async getCv(force: boolean = false) {
             if (!force && store.userCv() !== null && !!store.userCv()?.summary) {
                 return;
             }
             patchState(store, { cvLoading: true });
-            cvService.getCV().subscribe({
-                next: (res) => {
-                    patchState(store, { userCv: res, cvLoading: false, searchQuery: res?.summary?.searchQueries ?? [] });
-                },
-                error: (err) => {
-                    patchState(store, { cvLoading: false });
-                    console.error('Error fetching CV:', err);
-                }
-            });
+            try {
+                const res = await firstValueFrom(cvService.getCV());
+                patchState(store, { userCv: res, cvLoading: false, searchQuery: res?.summary?.searchQueries ?? [] });
+            } catch (err) {
+                patchState(store, { cvLoading: false });
+                console.error('Error fetching CV:', err);
+            }
+        },
+
+        setSearchQueries(searchQuery: string[]) {
+            patchState(store, { searchQuery });
         },
 
         updateSearchQueries(searchQueries: string[]) {
+            // Optimistic update
+            patchState(store, { searchQuery: searchQueries });
             cvService.updateSearchQueries(searchQueries).subscribe({
                 next: (res) => {
-                    patchState(store, { searchQuery: res.summary?.searchQueries ?? [] });
+                    if (res?.summary?.searchQueries) {
+                        patchState(store, { searchQuery: res.summary.searchQueries });
+                    }
                 },
                 error: (err) => {
                     console.error('Error updating search queries:', err);

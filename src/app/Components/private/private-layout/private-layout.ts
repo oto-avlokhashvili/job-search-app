@@ -28,7 +28,6 @@ export class PrivateLayout implements OnInit {
 
   navItems = signal([
     { icon: '🤖', label: 'AI ძიება', route: 'dashboard' },
-    { icon: '✨', label: 'ოსტატი', route: 'onboarding' },
     { icon: '🔔', label: 'შეტყობინებები', route: 'jobs' },
     { icon: '⚙️', label: 'პროფილი', route: 'profile' },
   ]);
@@ -39,6 +38,21 @@ export class PrivateLayout implements OnInit {
   dialog = inject(MatDialog);
 
   isOnChatRoute = signal<boolean>(this.router.url.includes('/dashboard'));
+  isOnboardingRoute = signal<boolean>(this.router.url.includes('/onboarding'));
+
+  isOnboardingCompleted = computed(() => {
+    const p = this.stateStore.profile();
+    const cv = this.stateStore.userCv();
+    const queries = this.stateStore.searchQuery() || [];
+
+    const hasCv = !!cv && !this.stateStore.cvLoading();
+    const hasName = !!p?.firstName?.trim() && !!p?.lastName?.trim();
+    const hasKeywords = queries.length > 0;
+    const hasNotifications = !!p?.receiveMessages && (!!p?.isEmailVerified || !!p?.telegramChatId);
+    const hasSubscription = !!p?.subscription && ['PRO', 'PREMIUM'].includes(p.subscription);
+
+    return hasCv && hasName && hasKeywords && hasNotifications && hasSubscription;
+  });
 
   async ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
@@ -52,7 +66,9 @@ export class PrivateLayout implements OnInit {
     }
 
     // now runs AFTER navigation settles
+    this.isOnboardingRoute.set(this.router.url.includes('/onboarding'));
     this.hideFooterAndHeader.set(this.router.url.includes('/dashboard'));
+
     this.router.events
       .pipe(
         filter(e => e instanceof NavigationEnd),
@@ -60,14 +76,34 @@ export class PrivateLayout implements OnInit {
       )
       .subscribe((e: NavigationEnd) => {
         this.isOnChatRoute.set(e.urlAfterRedirects.includes('/dashboard'));
+        this.isOnboardingRoute.set(e.urlAfterRedirects.includes('/onboarding'));
         this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/dashboard'));
+        this.checkOnboardingGuard(e.urlAfterRedirects);
       });
 
-    this.getProfile();
+    await this.getProfile();
     this.themeService.init();
-    this.getCv();
+    await this.getCv();
+    this.checkOnboardingGuard(this.router.url);
+
     this.loadMatchedJobs(1);
     this.loadSentJobs();
+  }
+
+  checkOnboardingGuard(url: string) {
+    if (!url || !url.startsWith('/private')) return;
+
+    if (!this.isOnboardingCompleted()) {
+      // Incomplete: redirect to onboarding
+      if (!url.includes('/onboarding')) {
+        this.router.navigate(['/private/onboarding'], { replaceUrl: true });
+      }
+    } else {
+      // Completed: if user is on onboarding or base /private, send directly to dashboard!
+      if (url === '/private' || url === '/private/' || url.includes('/onboarding')) {
+        this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+      }
+    }
   }
 
   loadMatchedJobs(page: number) {

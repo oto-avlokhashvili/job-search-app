@@ -240,67 +240,59 @@
               }
             </div>
 
+            <!-- Publish Date Selector Dropdown -->
+            <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
+              <button type="button" class="custom-select-trigger" [class.open]="isDateRangeOpen()" (click)="toggleDateRangeDropdown($event)">
+                <span class="material-symbols-outlined select-icon">calendar_today</span>
+                <span class="selected-value">{{ getSelectedDateRangeLabel() }}</span>
+                <span class="material-symbols-outlined select-arrow" [class.rotated]="isDateRangeOpen()">expand_more</span>
+              </button>
+              
+              @if (isDateRangeOpen()) {
+                <div class="custom-select-dropdown glass-card animated-fade-in">
+                  <div class="options-list">
+                    @for (option of dateRangeOptions; track option.value) {
+                      <div 
+                        class="custom-select-option" 
+                        [class.selected]="option.value === dateRangeFilter.value"
+                        (click)="selectDateRange(option.value)"
+                      >
+                        <span class="option-label">{{ option.label }}</span>
+                        @if (option.value === dateRangeFilter.value) {
+                          <span class="material-symbols-outlined check-icon">check</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
             <button class="btn-search" (click)="loadJobs(searchFilter.value)">ძიება</button>
-            <button class="btn-advanced-toggle" [class.active]="showAdvancedFilters()" (click)="toggleAdvancedFilters()" title="დეტალური ფილტრი">
-              <span class="material-symbols-outlined">tune</span>
-            </button>
           </div>
 
           <!-- Popular Searches -->
           <div class="popular-searches">
             <span class="popular-searches-label">პოპულარული:</span>
             <div class="popular-tags">
-              <button class="popular-tag" (click)="setPopularSearch('თიბისი')">
+              <button 
+                type="button" 
+                class="popular-tag" 
+                [class.active]="searchFilter.value === 'თიბისი ბანკი'" 
+                (click)="setPopularSearch('თიბისი ბანკი')"
+              >
                 <img src="/icons/tbc.jpg" alt="TBC" class="tag-icon">
                 TBC ბანკი
               </button>
-              <button class="popular-tag" (click)="setPopularSearch('საქართველოს ბანკი')">
+              <button 
+                type="button" 
+                class="popular-tag" 
+                [class.active]="searchFilter.value === 'საქართველოს ბანკი'" 
+                (click)="setPopularSearch('საქართველოს ბანკი')"
+              >
                 <img src="/icons/bog.png" alt="BOG" class="tag-icon">
                 საქართველოს ბანკი
               </button>
-            </div>
-          </div>
-
-          <!-- Advanced Collapsible Filters Panel -->
-          <div class="advanced-filters-panel" [class.open]="showAdvancedFilters()">
-            <div class="advanced-filters-grid">
-              <!-- Company search input -->
-              <div class="advanced-filter-item">
-                <label class="filter-label">კომპანია</label>
-                <div class="search-input-wrapper small">
-                  <span class="material-symbols-outlined search-icon">business</span>
-                  <input type="text" [formControl]="companyFilter" placeholder="ჩაწერეთ კომპანიის სახელი..." class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value)">
-                </div>
-              </div>
-
-              <!-- Publish Date selector -->
-              <div class="advanced-filter-item">
-                <label class="filter-label">გამოქვეყნების თარიღი</label>
-                <div class="custom-select-wrapper small" (click)="$event.stopPropagation()">
-                  <button type="button" class="custom-select-trigger" [class.open]="isDateRangeOpen()" (click)="toggleDateRangeDropdown($event)">
-                    <span class="material-symbols-outlined select-icon">calendar_today</span>
-                    <span class="selected-value">{{ getSelectedDateRangeLabel() }}</span>
-                    <span class="material-symbols-outlined select-arrow" [class.rotated]="isDateRangeOpen()">expand_more</span>
-                  </button>
-                  
-                  @if (isDateRangeOpen()) {
-                    <div class="custom-select-dropdown glass-card animated-fade-in">
-                      @for (option of dateRangeOptions; track option.value) {
-                        <div 
-                          class="custom-select-option" 
-                          [class.selected]="option.value === dateRangeFilter.value"
-                          (click)="selectDateRange(option.value)"
-                        >
-                          <span class="option-label">{{ option.label }}</span>
-                          @if (option.value === dateRangeFilter.value) {
-                            <span class="material-symbols-outlined check-icon">check</span>
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -476,7 +468,7 @@
         @if (!isLoading() && filteredJobs().length > 0) {
           <div class="results-meta">
             <span class="results-count">
-              @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || companyFilter.value || dateRangeFilter.value !== 'all') {
+              @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
                 ნაპოვნია <strong>{{ totalRecords() | number }}</strong> ფილტრის შესაბამისი ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
                 @if (sourceFilter.value !== 'all') {
                   <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
@@ -492,11 +484,69 @@
         }
 
         @if (isLoading()) {
-          <div class="loading-state">
-            <div class="spinner-container">
-              <span class="material-symbols-outlined loading-spinner">auto_awesome</span>
-              <p>ვაკანსიები იტვირთება...</p>
-            </div>
+          <!-- Desktop Table Skeleton View -->
+          <div class="vacancies-table-container loading-table">
+            <div class="table-loading-bar"></div>
+            <table class="vacancies-table">
+              <thead>
+                <tr>
+                  <th class="col-vacancy">ვაკანსია</th>
+                  <th class="col-provider">პროვაიდერი</th>
+                  <th class="col-location">ლოკაცია</th>
+                  <th class="col-salary">ხელფასი</th>
+                  <th class="col-published">გამოქვეყნდა</th>
+                  <th class="col-deadline">ბოლო ვადა</th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                  <tr class="skeleton-row skeleton-pulse">
+                    <td class="col-vacancy">
+                      <div class="job-info-cell">
+                        <div class="company-logo-avatar skeleton-block"></div>
+                        <div class="job-titles">
+                          <span class="job-vacancy skeleton-text" [style.width]="(i % 2 === 0 ? '140px' : '170px')" style="height: 15px;"></span>
+                          <span class="job-company skeleton-text short" [style.width]="(i % 2 === 0 ? '80px' : '100px')" style="height: 11px; margin-top: 5px;"></span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
+                    <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
+                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
+                    <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
+                    <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
+                    <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Cards Skeleton View -->
+          <div class="vacancies-cards-container loading-cards">
+            @for (i of [1,2,3,4,5]; track i) {
+              <div class="vacancy-card skeleton-card skeleton-pulse">
+                <div class="card-header-top">
+                  <div class="company-info-group">
+                    <div class="company-logo-avatar skeleton-block"></div>
+                    <div style="flex: 1;">
+                      <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '75%' : '85%')" style="height: 16px; margin-bottom: 6px;"></div>
+                      <div class="skeleton-text" style="width: 45%; height: 12px;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-details-grid">
+                  <div class="detail-item"><div class="skeleton-text" style="width: 70%; height: 12px;"></div></div>
+                  <div class="detail-item"><div class="skeleton-text" style="width: 60%; height: 12px;"></div></div>
+                  <div class="detail-item"><div class="skeleton-text" style="width: 50%; height: 12px;"></div></div>
+                  <div class="detail-item"><div class="skeleton-text" style="width: 65%; height: 12px;"></div></div>
+                </div>
+                <div class="card-action-wrapper">
+                  <div class="skeleton-block" style="width: 100%; height: 36px; border-radius: 8px;"></div>
+                </div>
+              </div>
+            }
           </div>
         } @else if (filteredJobs().length > 0) {
           <!-- Desktop Table View -->
@@ -504,32 +554,41 @@
             <table class="vacancies-table">
               <thead>
                 <tr>
-                  <th>ვაკანსია</th>
-                  <th>პროვაიდერი</th>
-                  <th>ლოკაცია</th>
-                  <th>ხელფასი</th>
-                  <th>გამოქვეყნდა</th>
-                  <th>ბოლო ვადა</th>
-                  <th></th>
+                  <th class="col-vacancy">ვაკანსია</th>
+                  <th class="col-provider">პროვაიდერი</th>
+                  <th class="col-location">ლოკაცია</th>
+                  <th class="col-salary">ხელფასი</th>
+                  <th class="col-published">გამოქვეყნდა</th>
+                  <th class="col-deadline">ბოლო ვადა</th>
+                  <th class="col-action"></th>
                 </tr>
               </thead>
               <tbody>
                 @for (job of filteredJobs(); track job.id) {
                   <tr>
-                    <td>
+                    <td class="col-vacancy">
                       <div class="job-info-cell">
                         <div class="company-logo-avatar">
                           {{ job.company.charAt(0) }}
                         </div>
                         <div class="job-titles">
-                          <button type="button" class="job-vacancy-link" (click)="viewVacancy(job.id)">
+                          <button 
+                            type="button" 
+                            class="job-vacancy-link" 
+                            (click)="viewVacancy(job.id)"
+                            [matTooltip]="job.vacancy"
+                            matTooltipPosition="above"
+                            [matTooltipShowDelay]="150"
+                            matTooltipClass="custom-vacancy-tooltip"
+                            [title]="job.vacancy"
+                          >
                             <span class="job-vacancy">{{ job.vacancy }}</span>
                           </button>
-                          <span class="job-company">{{ job.company }}</span>
+                          <span class="job-company" [title]="job.company">{{ job.company }}</span>
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td class="col-provider">
                       <div class="provider-cell">
                         <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
                           @if (job.source === 'jobs.ge') {
@@ -547,25 +606,25 @@
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td class="col-location">
                       <div class="location-cell">
                         <span class="material-symbols-outlined">location_on</span>
                         <span>{{ job.location }}</span>
                       </div>
                     </td>
-                    <td>
+                    <td class="col-salary">
                       <span class="salary-text">{{ job.salaryRange }}</span>
                     </td>
-                    <td>
+                    <td class="col-published">
                       <span class="date-text">{{ job.publishDate }}</span>
                     </td>
-                    <td>
+                    <td class="col-deadline">
                       @let dStatus = getDeadlineStatus(job.deadline, job.publishDate);
                       <span class="deadline-tag" [ngClass]="dStatus.class">
                         {{ dStatus.text }}
                       </span>
                     </td>
-                    <td>
+                    <td class="col-action">
                       <button type="button" class="btn-fluid btn-sm primary apply-btn" (click)="viewVacancy(job.id)">
                         ნახვა
                       </button>
@@ -573,22 +632,22 @@
                   </tr>
                 }
                 @if (isAppending()) {
-                  <tr class="skeleton-row">
-                    <td>
-                      <div class="job-info-cell skeleton-pulse">
+                  <tr class="skeleton-row skeleton-pulse">
+                    <td class="col-vacancy">
+                      <div class="job-info-cell">
                         <div class="company-logo-avatar skeleton-block"></div>
                         <div class="job-titles">
-                          <span class="job-vacancy skeleton-text" style="width: 150px; height: 16px;"></span>
-                          <span class="job-company skeleton-text short" style="width: 80px; height: 12px; margin-top: 4px;"></span>
+                          <span class="job-vacancy skeleton-text" style="width: 140px; height: 15px;"></span>
+                          <span class="job-company skeleton-text short" style="width: 80px; height: 11px; margin-top: 5px;"></span>
                         </div>
                       </div>
                     </td>
-                    <td><div class="provider-cell skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></div></td>
-                    <td><div class="location-cell skeleton-text" style="width: 110px; height: 14px;"></div></td>
-                    <td><span class="salary-text skeleton-text" style="width: 100px; height: 16px;"></span></td>
-                    <td><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
-                    <td><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
-                    <td><div class="apply-btn skeleton-block" style="width: 80px; height: 34px;"></div></td>
+                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
+                    <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
+                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
+                    <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
+                    <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
+                    <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
                   </tr>
                 }
               </tbody>

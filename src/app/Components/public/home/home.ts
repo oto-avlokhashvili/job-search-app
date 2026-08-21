@@ -8,6 +8,7 @@ import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { environment } from '../../../../environments/environment';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
 import { VacancyDetails } from '../vacancy-details/vacancy-details';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -33,7 +34,7 @@ interface HomeJob {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -77,9 +78,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   locationSearchInput = new FormControl<string>('', { nonNullable: true });
   locationSearch = signal<string>('');
   sourceFilter = new FormControl<string>('all', { nonNullable: true });
-  companyFilter = new FormControl<string>('', { nonNullable: true });
   dateRangeFilter = new FormControl<string>('all', { nonNullable: true });
-  showAdvancedFilters = signal<boolean>(false);
 
   isSourceOpen = signal<boolean>(false);
   isLocationOpen = signal<boolean>(false);
@@ -357,7 +356,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
     const source = this.sourceFilter.value;
     const location = this.locationFilter.value;
-    const company = this.companyFilter.value;
 
     let publishDateParam = 'all';
     const dateRange = this.dateRangeFilter.value;
@@ -380,7 +378,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
     const limit = append ? 50 : 30;
 
-    this.jobsService.getJobs(query, this.currentPage, source, location, company, publishDateParam, limit).subscribe({
+    this.jobsService.getJobs(query, this.currentPage, source, location, '', publishDateParam, limit).subscribe({
       next: (res) => {
         const elapsedTime = Date.now() - startTime;
         const minDuration = 800;
@@ -458,10 +456,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   loadMore() {
     this.currentPage++;
     this.loadJobs(this.searchFilter.value, true);
-  }
-
-  toggleAdvancedFilters() {
-    this.showAdvancedFilters.update(v => !v);
   }
 
   detectSource(sourceOrLink?: string, linkFallback?: string): string {
@@ -569,9 +563,13 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setPopularSearch(keyword: string) {
-    this.companyFilter.setValue(keyword);
-    this.searchFilter.setValue('');
-    this.loadJobs('');
+    if (this.searchFilter.value === keyword) {
+      this.searchFilter.setValue('');
+      this.loadJobs('');
+    } else {
+      this.searchFilter.setValue(keyword);
+      this.loadJobs(keyword);
+    }
   }
 
   clearFilters() {
@@ -579,7 +577,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.locationFilter.setValue('all');
     this.locationSearchInput.setValue('');
     this.sourceFilter.setValue('all');
-    this.companyFilter.setValue('');
     this.dateRangeFilter.setValue('all');
     this.currentPage = 1;
     this.closeAllDropdowns();

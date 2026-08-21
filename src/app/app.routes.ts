@@ -66,7 +66,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'onboarding',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       }
     ]

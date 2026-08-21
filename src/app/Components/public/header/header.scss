@@ -25,12 +25,25 @@ $outline-variant-color: #97aed5;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  @media (max-width: 991px) {
+    padding: 0 20px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0 14px;
+  }
 }
 
 .logo-group {
   display: flex;
   align-items: center;
   gap: 48px;
+  min-width: 0;
+
+  @media (max-width: 991px) {
+    gap: 16px;
+  }
 }
 
 .logo-container {
@@ -38,12 +51,22 @@ $outline-variant-color: #97aed5;
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  flex-shrink: 0;
+
+  @media (max-width: 576px) {
+    gap: 8px;
+  }
 }
 
 .nav-logo {
   height: 40px;
   width: auto;
   object-fit: contain;
+  flex-shrink: 0;
+
+  @media (max-width: 576px) {
+    height: 32px;
+  }
 }
 
 .logo-text {
@@ -51,6 +74,15 @@ $outline-variant-color: #97aed5;
   font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--primary);
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
 }
 
 .nav-links-desktop {
@@ -109,6 +141,15 @@ $outline-variant-color: #97aed5;
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
+
+  @media (max-width: 991px) {
+    gap: 12px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 8px;
+  }
 }
 
 .icon-btn {
@@ -120,6 +161,11 @@ $outline-variant-color: #97aed5;
   padding: 8px;
   border-radius: 50%;
   transition: background-color 0.2s ease, transform 0.2s ease;
+
+  @media (max-width: 576px) {
+    padding: 4px;
+    font-size: 22px;
+  }
 
   &:hover {
     background-color: var(--surface-container);
@@ -171,12 +217,21 @@ $outline-variant-color: #97aed5;
     display: flex;
   }
 
+  @media (max-width: 576px) {
+    gap: 4px;
+    padding: 2px;
+  }
+
   span {
     width: 24px;
     height: 2px;
     background-color: var(--on-surface);
     transition: all 0.3s ease;
     border-radius: 2px;
+
+    @media (max-width: 576px) {
+      width: 20px;
+    }
   }
 
   &.active {
@@ -240,6 +295,13 @@ $outline-variant-color: #97aed5;
   justify-content: center;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(11, 96, 150, 0.2);
+  flex-shrink: 0;
+
+  @media (max-width: 576px) {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
 
   &:hover {
     transform: scale(1.05);
@@ -410,14 +472,8 @@ $outline-variant-color: #97aed5;
   margin-right: 4px;
   flex-shrink: 0;
 
-  @media (max-width: 576px) {
-    padding: 3px 6px;
-    gap: 4px;
-    margin-right: 0;
-
-    .icon {
-      font-size: 16px;
-    }
+  @media (max-width: 640px) {
+    display: none;
   }
 
   .icon {

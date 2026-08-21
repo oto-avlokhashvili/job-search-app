@@ -42,6 +42,10 @@
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "alertifyjs",
+              "qrcode"
             ]
           },
           "configurations": {
@@ -60,8 +64,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "45kb",
-                  "maximumError": "60kb"
+                  "maximumWarning": "65kb",
+                  "maximumError": "100kb"
                 }
               ],
               "outputHashing": "all"

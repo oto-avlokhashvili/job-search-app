@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { QRCodeComponent } from 'angularx-qrcode';
+import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { ThemeService } from '../../../Core/Services/theme.service';
+import { Cv } from '../../../Core/Services/cv';
+import { Users } from '../../../Core/Services/users';
 import { environment } from '../../../../environments/environment';
 
 export interface StepItem {
@@ -18,12 +21,13 @@ export interface StepItem {
 }
 
 export interface PricingPlan {
-  key: 'BASIC' | 'PRO' | 'PREMIUM';
+  key: 'PRO' | 'PREMIUM';
   name: string;
   price: string;
   period: string;
   badge?: string;
   isPopular?: boolean;
+  disabled?: boolean;
   features: string[];
 }
 
@@ -43,8 +47,13 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   private animationFrameId: number | null = null;
   authService = inject(AuthService);
   stateStore = inject(StateStore);
+  private cvService = inject(Cv);
+  private usersService = inject(Users);
   private alertify = inject(AlertifyService);
   themeService = inject(ThemeService);
+
+  private initialStepResolved = false;
+  isInitializing = signal<boolean>(true);
 
   currentStep = signal<number>(1);
   totalSteps = 5;
@@ -62,10 +71,11 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   infoForm = this.fb.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
-    email: [{ value: '', disabled: true }],
+    email: [''],
   });
 
   keywordInput = signal<string>('');
+  keywordLoading = signal<boolean>(false);
   popularKeywords = [
     'Frontend Developer',
     'Full Stack',
@@ -100,23 +110,11 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   private emailTimer: any = null;
 
   // Step 5: Payment & Plans
-  selectedPlan = signal<'BASIC' | 'PRO' | 'PREMIUM'>('PRO');
+  selectedPlan = signal<'PRO' | 'PREMIUM'>('PRO');
   isProcessingPayment = signal<boolean>(false);
   isCompleted = signal<boolean>(false);
 
   plans: PricingPlan[] = [
-    {
-      key: 'BASIC',
-      name: 'სტანდარტული',
-      price: '0₾',
-      period: '/სამუდამოდ',
-      features: [
-        '1 CV-ის შენახვა',
-        'სტანდარტული ვაკანსიების ძიება',
-        'ელ-ფოსტის შეტყობინებები',
-        'ბაზისური ფილტრაცია',
-      ],
-    },
     {
       key: 'PRO',
       name: 'Pro პაკეტი',
@@ -137,6 +135,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       name: 'Enterprise',
       price: 'Custom',
       period: '',
+      disabled: true,
+      badge: 'მალე დაემატება',
       features: [
         'API ინტეგრაცია',
         'პერსონალური მენეჯერი',
@@ -147,11 +147,15 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   userCv = computed(() => this.stateStore.userCv());
-  cvLoading = computed(() => this.stateStore.cvLoading());
+  isUploadingCv = signal<boolean>(false);
+  cvLoading = computed(() => this.stateStore.cvLoading() || this.isUploadingCv());
   profile = computed(() => this.stateStore.profile());
   searchQueries = computed(() => this.stateStore.searchQuery() || []);
   isEmailVerified = computed(() => !!this.profile()?.isEmailVerified);
   isTelegramConnected = computed(() => !!this.profile()?.telegramChatId);
+  hasSubscription = computed(() => {
+    return this.isCompleted() || !!(this.profile()?.subscription && ['PRO', 'PREMIUM'].includes(this.profile()!.subscription!));
+  });
 
   candidateFullName = computed(() => {
     const f = this.infoForm.get('firstName')?.value?.trim();
@@ -181,7 +185,11 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   });
 
   completionPercentage = computed(() => {
-    return Math.round((this.currentStep() / this.totalSteps) * 100);
+    let count = 0;
+    for (let i = 1; i <= this.totalSteps; i++) {
+      if (this.isStepValid(i)) count++;
+    }
+    return Math.round((count / this.totalSteps) * 100);
   });
 
   constructor() {
@@ -194,7 +202,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
           lastName: p.lastName || '',
           email: p.email || '',
         });
-        if (p.subscription && ['BASIC', 'PRO', 'PREMIUM'].includes(p.subscription)) {
+        if (p.subscription && ['PRO', 'PREMIUM'].includes(p.subscription)) {
           this.selectedPlan.set(p.subscription as any);
         }
       }
@@ -202,11 +210,32 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngOnInit() {
-    if (!this.stateStore.profileLoaded() || !this.profile()?.id) {
-      await this.stateStore.loadProfile();
-    }
-    if (!this.stateStore.userCv()) {
-      this.stateStore.getCv();
+    try {
+      if (!this.stateStore.profileLoaded() || !this.profile()?.id) {
+        await this.stateStore.loadProfile();
+      }
+      if (!this.stateStore.userCv()) {
+        await this.stateStore.getCv();
+      }
+
+      const p = this.profile();
+      if (p) {
+        this.infoForm.patchValue({
+          firstName: p.firstName || '',
+          lastName: p.lastName || '',
+          email: p.email || '',
+        });
+        if (p.subscription && ['PRO', 'PREMIUM'].includes(p.subscription)) {
+          this.selectedPlan.set(p.subscription as any);
+        }
+      }
+
+      this.determineInitialStep();
+    } catch (err) {
+      console.error('Error initializing onboarding:', err);
+      this.determineInitialStep();
+    } finally {
+      this.isInitializing.set(false);
     }
   }
 
@@ -288,18 +317,132 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     draw();
   }
 
-  // ── Navigation Between Steps ──────────────────────────────
-  goToStep(step: number) {
-    if (step < 1 || step > this.totalSteps) return;
+  // ── Navigation Between Steps & Validations ───────────────
+  determineInitialStep() {
+    if (this.initialStepResolved) return;
+    this.initialStepResolved = true;
 
-    // Validate if moving forward from step 2 (Personal Info)
-    if (this.currentStep() === 2 && step > 2) {
+    if (!this.isStepValid(1)) {
+      this.currentStep.set(1);
+    } else if (!this.isStepValid(2)) {
+      this.currentStep.set(2);
+    } else if (!this.isStepValid(3)) {
+      this.currentStep.set(3);
+    } else if (!this.isStepValid(5)) {
+      this.currentStep.set(5);
+    } else {
+      // If user has Pro/Premium subscription and all steps are complete, go straight to dashboard!
+      if (!this.isCompleted()) {
+        this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+      } else {
+        this.currentStep.set(5);
+      }
+    }
+  }
+
+  isStepValid(step: number): boolean {
+    if (step === 1) {
+      return !!this.userCv() && !this.cvLoading();
+    }
+    if (step === 2) {
+      const f = this.infoForm.get('firstName')?.value?.trim() || this.profile()?.firstName?.trim();
+      const l = this.infoForm.get('lastName')?.value?.trim() || this.profile()?.lastName?.trim();
+      return !!f && !!l && this.searchQueries().length > 0;
+    }
+    if (step === 3) {
+      return !!this.profile()?.receiveMessages && (this.isEmailVerified() || this.isTelegramConnected());
+    }
+    if (step === 4) {
+      return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
+    }
+    if (step === 5) {
+      return this.hasSubscription();
+    }
+    return true;
+  }
+
+  canAccessStep(targetStep: number): boolean {
+    if (targetStep <= this.currentStep()) {
+      return true;
+    }
+    if (targetStep === 2) return this.isStepValid(1);
+    if (targetStep === 3) return this.isStepValid(1) && this.isStepValid(2);
+    if (targetStep === 4) return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
+    if (targetStep === 5) return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
+    return true;
+  }
+
+  validateStep(step: number): boolean {
+    if (step === 1) {
+      if (this.cvLoading()) {
+        this.alertify.warning('გთხოვთ დაელოდოთ CV-ს ატვირთვას...');
+        return false;
+      }
+      if (!this.userCv()) {
+        this.alertify.error('გთხოვთ ატვირთოთ CV გასაგრძელებლად');
+        return false;
+      }
+      return true;
+    }
+
+    if (step === 2) {
       this.infoFormSubmitted.set(true);
+      if (this.keywordInput().trim()) {
+        this.addKeyword();
+      }
       if (this.infoForm.invalid) {
         this.alertify.error('გთხოვთ შეავსოთ სახელი და გვარი');
-        return;
+        return false;
+      }
+      if (this.searchQueries().length === 0) {
+        this.alertify.error('გთხოვთ დაამატოთ მინიმუმ ერთი საძიებო სიტყვა / პოზიცია');
+        return false;
       }
       this.savePersonalInfo();
+      return true;
+    }
+
+    if (step === 3) {
+      if (!this.profile()?.receiveMessages) {
+        this.alertify.error('გთხოვთ ჩართოთ შეტყობინებების მიღება გასაგრძელებლად');
+        return false;
+      }
+      if (!this.isEmailVerified() && !this.isTelegramConnected()) {
+        this.alertify.error('გთხოვთ დააკავშიროთ Telegram ან დაადასტუროთ Email');
+        return false;
+      }
+      return true;
+    }
+
+    if (step === 4) {
+      if (!this.isStepValid(1)) {
+        this.alertify.error('გთხოვთ ატვირთოთ CV');
+        return false;
+      }
+      if (!this.isStepValid(2)) {
+        this.alertify.error('გთხოვთ შეავსოთ პირადი ინფორმაცია და საძიებო სიტყვები');
+        return false;
+      }
+      if (!this.isStepValid(3)) {
+        this.alertify.error('გთხოვთ ჩართოთ შეტყობინებები');
+        return false;
+      }
+      return true;
+    }
+
+    return true;
+  }
+
+  goToStep(step: number) {
+    if (step < 1 || step > this.totalSteps || step === this.currentStep()) return;
+
+    // Validate sequential steps before allowing forward navigation
+    if (step > this.currentStep()) {
+      for (let s = this.currentStep(); s < step; s++) {
+        if (!this.validateStep(s)) {
+          return;
+        }
+      }
     }
 
     this.currentStep.set(step);
@@ -327,22 +470,56 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  addKeyword(keyword?: string) {
+  async addKeyword(keyword?: string) {
+    if (this.keywordLoading()) return;
     const term = (keyword || this.keywordInput()).trim();
     if (!term) return;
 
     const current = this.searchQueries();
     if (!current.includes(term)) {
       const updated = [...current, term];
-      this.stateStore.updateSearchQueries(updated);
+
+      // 1. Instant optimistic update
+      this.stateStore.setSearchQueries(updated);
+      this.keywordInput.set('');
+
+      // 2. Background sync with server
+      this.keywordLoading.set(true);
+      try {
+        const res: any = await firstValueFrom(this.cvService.updateSearchQueries(updated));
+        if (res?.summary?.searchQueries) {
+          this.stateStore.setSearchQueries(res.summary.searchQueries);
+        }
+      } catch (err) {
+        console.error('Error adding keyword:', err);
+      } finally {
+        this.keywordLoading.set(false);
+      }
+      return;
     }
     this.keywordInput.set('');
   }
 
-  removeKeyword(index: number) {
+  async removeKeyword(index: number) {
+    if (this.keywordLoading()) return;
     const current = this.searchQueries();
     const updated = current.filter((_, i) => i !== index);
-    this.stateStore.updateSearchQueries(updated);
+
+    // 1. Instant optimistic update
+    this.stateStore.setSearchQueries(updated);
+
+    // 2. Background sync with server
+    this.keywordLoading.set(true);
+    try {
+      const res: any = await firstValueFrom(this.cvService.updateSearchQueries(updated));
+      if (res?.summary?.searchQueries) {
+        this.stateStore.setSearchQueries(res.summary.searchQueries);
+      }
+    } catch (err) {
+      console.error('Error removing keyword:', err);
+    } finally {
+      this.keywordLoading.set(false);
+    }
   }
 
   // ── Step 1: CV Upload Handlers ───────────────────────────
@@ -372,7 +549,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  uploadFile(file: File) {
+  async uploadFile(file: File) {
     if (!this.allowedTypes.includes(file.type)) {
       this.alertify.error('გთხოვთ ატვირთოთ PDF ან Word (DOC/DOCX) ფორმატი');
       return;
@@ -382,8 +559,23 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.stateStore.uploadCv(file);
-    this.alertify.success('CV წარმატებით იტვირთება...');
+    // Instant zero-delay loading state
+    this.isUploadingCv.set(true);
+
+    try {
+      await firstValueFrom(this.cvService.upload(file));
+      this.alertify.success('CV წარმატებით აიტვირთა!');
+      await this.stateStore.getCv(true);
+
+      if (this.currentStep() === 1) {
+        this.goToStep(2);
+      }
+    } catch (err) {
+      console.error('CV upload error:', err);
+      this.alertify.error('CV-ს ატვირთვა ვერ მოხერხდა');
+    } finally {
+      this.isUploadingCv.set(false);
+    }
   }
 
   deleteCv() {
@@ -399,10 +591,15 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Step 3: Notification Handlers ────────────────────────
-  toggleReceiveMessages(event: any) {
+  async toggleReceiveMessages(event: any) {
     const checked = event.target.checked;
     if (this.profile()?.id) {
       this.stateStore.updateLocalProfile({ receiveMessages: checked });
+      try {
+        await this.stateStore.updateProfile(this.profile().id, { receiveMessages: checked });
+      } catch (e) {
+        console.error('Failed to sync receiveMessages:', e);
+      }
       this.alertify.success(checked ? 'შეტყობინებები გააქტიურებულია' : 'შეტყობინებები გამორთულია');
     }
   }
@@ -501,28 +698,32 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Step 5: Payment & Finalization ───────────────────────
-  selectPlan(key: 'BASIC' | 'PRO' | 'PREMIUM') {
+  selectPlan(key: 'PRO' | 'PREMIUM') {
+    const plan = this.plans.find(p => p.key === key);
+    if (plan?.disabled) return;
     this.selectedPlan.set(key);
   }
 
   async finishAndPay() {
+    if (this.isProcessingPayment()) return;
     const plan = this.selectedPlan();
     this.isProcessingPayment.set(true);
 
     try {
       if (this.profile()?.id) {
-        await this.stateStore.updateProfile(this.profile().id, { subscription: plan });
-        await this.stateStore.loadProfile(true);
+        const updatedUser: any = await firstValueFrom(this.usersService.getUserById(this.profile().id, { subscription: plan }));
+        this.stateStore.updateLocalProfile(updatedUser || { subscription: plan });
+      } else {
+        this.stateStore.updateLocalProfile({ subscription: plan });
       }
-
-      // Small delay for smooth UX transition
-      await new Promise(res => setTimeout(res, 800));
 
       this.isCompleted.set(true);
       this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
     } catch (err) {
       console.error('Error completing onboarding:', err);
-      this.alertify.error('დაფიქსირდა შეცდომა');
+      this.stateStore.updateLocalProfile({ subscription: plan });
+      this.isCompleted.set(true);
+      this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
     } finally {
       this.isProcessingPayment.set(false);
     }
