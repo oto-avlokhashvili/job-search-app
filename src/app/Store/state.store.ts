@@ -70,6 +70,21 @@ const initialState: State = {
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
+    withComputed((store) => ({
+        isOnboardingCompleted: computed(() => {
+            const p = store.profile();
+            const cv = store.userCv();
+            const queries = store.searchQuery() || [];
+
+            const hasCv = !!cv && !store.cvLoading();
+            const hasName = !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
+            const hasKeywords = queries.length > 0;
+            const hasNotifications = !!p?.receiveMessages && (!!p?.isEmailVerified || !!p?.telegramChatId);
+            const hasSubscription = !!p?.subscription && ['PRO', 'PREMIUM'].includes(p.subscription);
+
+            return hasCv && hasName && hasKeywords && hasNotifications && hasSubscription;
+        })
+    })),
     withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv)) => ({
         async loadProfile(force: boolean = false) {
             if (!force && store.profileLoaded() && store.profile().id !== 0) {

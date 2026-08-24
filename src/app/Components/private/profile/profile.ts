@@ -8,12 +8,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
 import { QrModal } from '../qr-modal/qr-modal';
 import { EmailVerifyModal } from '../dashboard/email-verify-modal/email-verify-modal';
+import { Onboarding } from '../onboarding/onboarding';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule, Onboarding],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -25,6 +26,8 @@ export class Profile {
   private alertify = inject(AlertifyService);
   dialog = inject(MatDialog);
   keywordInputValue = signal<string>('');
+
+  isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
 
   initials = computed(() => {
     const u = this.stateStore.profile();

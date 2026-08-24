@@ -1,7 +1,10 @@
-<div class="profile-container">
-  
-  <!-- Profile Header Card (Initials, Name, Plan badge) -->
-  <div class="profile-header-card">
+@if (!isOnboardingCompleted()) {
+  <app-onboarding></app-onboarding>
+} @else {
+  <div class="profile-container animate-fade">
+    
+    <!-- Profile Header Card (Initials, Name, Plan badge) -->
+    <div class="profile-header-card">
     <div class="avatar-large">{{ initials() }}</div>
     <div class="user-meta">
       <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
@@ -247,4 +250,5 @@
 
     </div>
   </div>
-</div>
+</div>
+}

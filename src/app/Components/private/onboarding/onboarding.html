@@ -3,6 +3,11 @@
   @if (isInitializing()) {
     <div class="profile-card onboarding-split-card skeleton-pulse loading-split-card">
       <div class="table-loading-bar"></div>
+      @if (dialogRef) {
+        <button type="button" class="onboarding-modal-close" (click)="closeModal()" aria-label="Close modal" title="დახურვა">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      }
 
       <!-- LEFT SIDEBAR SKELETON -->
       <aside class="onboarding-stepper-sidebar">
@@ -112,6 +117,11 @@
   } @else {
     <!-- One Big Unified Split-Layout Card -->
     <div class="profile-card onboarding-split-card animate-fade">
+      @if (dialogRef) {
+        <button type="button" class="onboarding-modal-close" (click)="closeModal()" aria-label="Close modal" title="დახურვა">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      }
 
     <!-- ================================================================ -->
     <!-- LEFT SIDEBAR: Redesigned Vertical Stepper Navigation             -->

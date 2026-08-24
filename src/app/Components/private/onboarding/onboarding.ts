@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed, effect, ViewChild, Element
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { firstValueFrom } from 'rxjs';
 import { StateStore } from '../../../Store/state.store';
@@ -34,13 +35,14 @@ export interface PricingPlan {
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, QRCodeComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, QRCodeComponent, MatDialogModule],
   templateUrl: './onboarding.html',
   styleUrl: './onboarding.scss',
 })
 export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
 
+  dialogRef = inject(MatDialogRef<Onboarding>, { optional: true });
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private ngZone = inject(NgZone);
@@ -729,7 +731,19 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  closeModal() {
+    if (this.dialogRef) {
+      this.dialogRef.close(this.isCompleted());
+    } else {
+      this.router.navigate(['/private/dashboard']);
+    }
+  }
+
   navigateToDashboard() {
-    this.router.navigate(['/private/dashboard']);
+    if (this.dialogRef) {
+      this.dialogRef.close(true);
+    } else {
+      this.router.navigate(['/private/dashboard']);
+    }
   }
 }

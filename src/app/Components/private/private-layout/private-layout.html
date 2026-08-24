@@ -1,7 +1,7 @@
 <div class="dashboard-wrapper">
   <div class="private-content-container">
     <!-- Horizontal sub-navbar: only visible when onboarding is completely passed -->
-    @if (isOnboardingCompleted() && !isOnboardingRoute()) {
+    @if (isOnboardingCompleted()) {
       <div class="private-nav-bar">
         <div class="private-nav-links">
           <a *ngFor="let item of navItems()" [routerLink]="item.route" routerLinkActive="active" class="private-nav-link">
@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  @if (isOnboardingCompleted() && !isOnboardingRoute()) {
+  @if (isOnboardingCompleted()) {
     <app-chat-widget></app-chat-widget>
   }
 </div>

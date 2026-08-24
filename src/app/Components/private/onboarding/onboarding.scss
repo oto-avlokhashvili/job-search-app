@@ -13,6 +13,23 @@
   padding: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--on-surface);
+
+  .onboarding-dialog & {
+    max-height: 88vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 6px;
+    }
+  }
 }
 
 /* ========== ONE BIG SPLIT-LAYOUT CARD ========== */
@@ -41,9 +58,56 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.25rem 1rem;
     border-radius: 16px;
     min-height: auto;
+  }
+}
+
+/* Modal Close Button */
+.onboarding-modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 30;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: var(--surface-container);
+    color: var(--on-surface);
+    border-color: var(--primary);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  @media (max-width: 900px) {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
   }
 }
 

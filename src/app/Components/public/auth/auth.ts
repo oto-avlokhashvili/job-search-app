@@ -49,7 +49,7 @@ export class Auth {
             this.router.navigate([returnUrl]);
             this.authService.returnUrl.set(null);
           } else {
-            this.router.navigate(['/private/onboarding']);
+            this.router.navigate(['/private/profile']);
           }
           this.authService.closeAuthModal();
         },

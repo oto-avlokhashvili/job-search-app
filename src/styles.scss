@@ -351,6 +351,56 @@ body.modal-open {
   }
 }
 
+/* ─── Onboarding dialog panel ──────────────────────────────── */
+.onboarding-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+  border-radius: 24px !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35) !important;
+  padding: 0 !important;
+  max-height: 94svh !important;
+  overflow: hidden !important;
+}
+
+.onboarding-dialog .mat-mdc-dialog-surface {
+  border-radius: 24px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.onboarding-dialog.cdk-overlay-pane {
+  max-height: 94svh !important;
+}
+
+@media (max-width: 900px) {
+  .onboarding-dialog {
+    max-width: 100vw !important;
+    width: calc(100vw - 1.5rem) !important;
+    margin: 0 0.75rem !important;
+    max-height: 95svh !important;
+  }
+
+  .onboarding-dialog .mat-mdc-dialog-container,
+  .onboarding-dialog .mat-mdc-dialog-surface {
+    border-radius: 18px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .onboarding-dialog {
+    width: calc(100vw - 1rem) !important;
+    margin: 0 0.5rem !important;
+    max-height: 96svh !important;
+  }
+
+  .onboarding-dialog .mat-mdc-dialog-container,
+  .onboarding-dialog .mat-mdc-dialog-surface {
+    border-radius: 14px !important;
+  }
+}
+
 #features, #pricing, #contact {
   scroll-margin-top: 72px;
 }
