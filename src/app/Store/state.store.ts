@@ -21,6 +21,7 @@ type State = {
 
     userCv: any;
     cvLoading: boolean;
+    cvLoaded: boolean;
 
     chatMatchedJobs: any[];
     chatShowJobs: boolean;
@@ -50,6 +51,7 @@ const initialState: State = {
 
     userCv: null,
     cvLoading: false,
+    cvLoaded: false,
 
     chatMatchedJobs: [],
     chatShowJobs: false,
@@ -152,17 +154,28 @@ export const StateStore = signalStore(
         },
 
         async getCv(force: boolean = false) {
-            if (!force && store.userCv() !== null && !!store.userCv()?.summary) {
+            if (!force && store.cvLoaded() && store.userCv() !== null && !!store.userCv()?.summary) {
                 return;
             }
             patchState(store, { cvLoading: true });
             try {
                 const res = await firstValueFrom(cvService.getCV());
-                patchState(store, { userCv: res, cvLoading: false, searchQuery: res?.summary?.searchQueries ?? [] });
+                patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
             } catch (err) {
-                patchState(store, { cvLoading: false });
+                patchState(store, { cvLoading: false, cvLoaded: true });
                 console.error('Error fetching CV:', err);
             }
+        },
+
+        async ensureDataLoaded(force: boolean = false) {
+            const promises: Promise<any>[] = [];
+            if (force || !store.profileLoaded() || store.profile().id === 0) {
+                promises.push(this.loadProfile(force));
+            }
+            if (force || !store.cvLoaded()) {
+                promises.push(this.getCv(force));
+            }
+            await Promise.all(promises);
         },
 
         setSearchQueries(searchQuery: string[]) {

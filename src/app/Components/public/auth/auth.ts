@@ -42,14 +42,21 @@ export class Auth {
     if (this.loginForm.valid) {
       this.validators.set(false);
       this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
-        next: () => {
-          this.stateStore.loadProfile();
+        next: async () => {
+          try {
+            await this.stateStore.ensureDataLoaded(true);
+          } catch (err) {
+            console.error('Error hydrating store on login:', err);
+          }
+
           const returnUrl = this.authService.returnUrl();
-          if (returnUrl) {
+          if (returnUrl && this.stateStore.isOnboardingCompleted()) {
             this.router.navigate([returnUrl]);
             this.authService.returnUrl.set(null);
+          } else if (!this.stateStore.isOnboardingCompleted()) {
+            this.router.navigate(['/private/onboarding']);
           } else {
-            this.router.navigate(['/private/profile']);
+            this.router.navigate(['/private/dashboard']);
           }
           this.authService.closeAuthModal();
         },
@@ -57,7 +64,6 @@ export class Auth {
           this.alertify.error(err);
         }
       })
-
     }
 
   }

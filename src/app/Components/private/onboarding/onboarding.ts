@@ -169,7 +169,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   isEmailVerified = computed(() => !!this.profile()?.isEmailVerified);
   isTelegramConnected = computed(() => !!this.profile()?.telegramChatId);
   hasSubscription = computed(() => {
-    return this.isCompleted();
+    const sub = this.profile()?.subscription;
+    return this.isCompleted() || (!!sub && ['BASIC', 'PRO', 'PREMIUM'].includes(sub));
   });
 
   candidateFullName = computed(() => {
@@ -738,11 +739,23 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
       this.isCompleted.set(true);
       this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
+
+      if (!this.dialogRef) {
+        setTimeout(() => {
+          this.router.navigate(['/private/dashboard']);
+        }, 1200);
+      }
     } catch (err) {
       console.error('Error completing onboarding:', err);
       this.stateStore.updateLocalProfile({ subscription: plan });
       this.isCompleted.set(true);
       this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
+
+      if (!this.dialogRef) {
+        setTimeout(() => {
+          this.router.navigate(['/private/dashboard']);
+        }, 1200);
+      }
     } finally {
       this.isProcessingPayment.set(false);
     }

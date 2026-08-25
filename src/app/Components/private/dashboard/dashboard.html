@@ -23,12 +23,12 @@
     <div class="search-widget-container">
 
       <!-- Luxury-Grade Circular Progress Onboarding Bar -->
-      @if (!isOnboardingCompleted() && !isBannerDismissed()) {
-        <div class="premium-onboarding-bar animate-fade">
+      @if (!isBannerDismissed()) {
+        <div class="premium-onboarding-bar animate-fade" [class.completed]="isOnboardingCompleted()">
           <div class="bar-ambient-glow"></div>
           
           <!-- 1. Left: Precision SVG Circular Progress Ring -->
-          <div class="ring-progress-wrapper" (click)="openOnboardingModal()" role="button" tabindex="0" title="პროფილის დასრულება">
+          <div class="ring-progress-wrapper" (click)="openOnboardingModal()" role="button" tabindex="0" title="პროფილის პარამეტრები">
             <svg class="ring-svg" viewBox="0 0 36 36">
               <defs>
                 <linearGradient id="ringProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -87,8 +87,8 @@
           <!-- 4. Far Right: Actions at the End of Progress Bar -->
           <div class="bar-actions-end">
             <button type="button" class="btn-continue-action" (click)="openOnboardingModal()">
-              <span>გაგრძელება</span>
-              <span class="material-symbols-outlined arrow-ico">arrow_forward</span>
+              <span>{{ isOnboardingCompleted() ? 'მართვა' : 'გაგრძელება' }}</span>
+              <span class="material-symbols-outlined arrow-ico">{{ isOnboardingCompleted() ? 'tune' : 'arrow_forward' }}</span>
             </button>
             <button type="button" class="btn-dismiss-action" (click)="dismissOnboardingBanner()" title="დამალვა">
               <span class="material-symbols-outlined">close</span>
@@ -108,6 +108,9 @@
 
       <!-- Input Card (CV File Upload Area) -->
       <div #searchContainer class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
+        @if (!stateStore.profileLoaded() || stateStore.cvLoading()) {
+          <div class="table-loading-bar"></div>
+        }
         <!-- File Input (Hidden) -->
         <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
 

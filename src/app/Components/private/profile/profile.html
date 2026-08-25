@@ -2,6 +2,9 @@
   
   <!-- Profile Header Card (Initials, Name, Plan badge, Integrated Setup Progress, Actions) -->
   <div class="profile-header-card">
+    @if (!stateStore.profileLoaded() || stateStore.cvLoading()) {
+      <div class="table-loading-bar"></div>
+    }
     <div class="header-main-row">
       <div class="header-left">
         <div class="avatar-large">{{ initials() }}</div>

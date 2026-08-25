@@ -38,10 +38,18 @@ export class PrivateLayout implements OnInit {
 
     if (token) {
       this.authService.setToken(token);
-      await this.router.navigate(['/private/dashboard'], {
-        queryParams: {},
-        replaceUrl: true
-      });
+      await this.stateStore.ensureDataLoaded(true);
+      if (this.stateStore.isOnboardingCompleted()) {
+        await this.router.navigate(['/private/dashboard'], {
+          queryParams: {},
+          replaceUrl: true
+        });
+      } else {
+        await this.router.navigate(['/private/onboarding'], {
+          queryParams: {},
+          replaceUrl: true
+        });
+      }
     }
 
     this.hideFooterAndHeader.set(this.router.url.includes('/dashboard'));
@@ -57,20 +65,25 @@ export class PrivateLayout implements OnInit {
         this.checkOnboardingGuard(e.urlAfterRedirects);
       });
 
-    await this.getProfile();
+    await this.stateStore.ensureDataLoaded();
     this.themeService.init();
-    await this.getCv();
     this.checkOnboardingGuard(this.router.url);
 
-    this.loadMatchedJobs(1);
-    this.loadSentJobs();
+    if (this.stateStore.isOnboardingCompleted()) {
+      this.loadMatchedJobs(1);
+      this.loadSentJobs();
+    }
   }
 
   checkOnboardingGuard(url: string) {
     if (!url || !url.startsWith('/private')) return;
 
     if (url === '/private' || url === '/private/') {
-      this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+      if (this.stateStore.isOnboardingCompleted()) {
+        this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+      } else {
+        this.router.navigate(['/private/onboarding'], { replaceUrl: true });
+      }
     }
   }
 

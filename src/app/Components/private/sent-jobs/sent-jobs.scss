@@ -5,7 +5,6 @@
   padding: 1.5rem 0;
 }
 
-// ─── Header ─────────────────────────────────────────────────────
 .history-header {
   display: flex;
   align-items: center;
@@ -16,6 +15,25 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+
+  .table-loading-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #0b6096, #4cd7f6, #38bdf8, transparent);
+    background-size: 200% 100%;
+    animation: table-shimmer-bar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    z-index: 10;
+  }
+}
+
+@keyframes table-shimmer-bar {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .quick-toggle-messages {

@@ -24,7 +24,7 @@ export class App {
   stateStore = inject(StateStore);
   themeService = inject(ThemeService);
   hideLayout = signal(false);
-  hideFooter = signal(false);
+  hideFooter = signal(typeof window !== 'undefined' && window.location.pathname.startsWith('/private'));
   showHeroSection = signal(false);
   constructor(private router: Router, private route: ActivatedRoute){
     this.themeService.init();
@@ -36,11 +36,12 @@ export class App {
 
     this.router.events
     .pipe(filter(e => e instanceof NavigationEnd))
-    .subscribe(() => {
+    .subscribe((e: NavigationEnd) => {
       let r = this.route.firstChild;
       while (r?.firstChild) r = r.firstChild;
+      const isPrivate = e.urlAfterRedirects.startsWith('/private') || (typeof window !== 'undefined' && window.location.pathname.startsWith('/private'));
       this.hideLayout.set(r?.snapshot.data['hideLayout'] ?? false);
-      this.hideFooter.set(r?.snapshot.data['hideFooter'] ?? false);
+      this.hideFooter.set(isPrivate || (r?.snapshot.data['hideFooter'] ?? false));
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
     });
   }

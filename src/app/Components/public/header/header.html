@@ -92,6 +92,12 @@
                   <span class="slider round"></span>
                 </label>
               </div>
+              @if (!stateStore.isOnboardingCompleted()) {
+                <a routerLink="/private/onboarding" class="dropdown-item upgrade-btn" style="background: linear-gradient(135deg, #0b6096, #4cd7f6); color: #fff; margin-bottom: 6px;" (click)="closeProfileMenu()">
+                  <span class="icon">✨</span>
+                  <span>პროფილის დასრულება ({{ stateStore.onboardingPercentage() }}%)</span>
+                </a>
+              }
               @if (stateStore.profile().subscription === 'BASIC') {
                 <button class="dropdown-item upgrade-btn" (click)="openUpgradeModal()">
                   <span class="icon">⚡</span> განახლება

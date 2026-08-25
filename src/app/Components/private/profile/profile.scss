@@ -5,7 +5,6 @@
   width: 100%;
 }
 
-/* ========== PROFILE HEADER CARD ========== */
 .profile-header-card {
   display: flex;
   flex-direction: column;
@@ -16,6 +15,20 @@
   border-radius: 20px;
   padding: 1.75rem 2rem;
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+
+  .table-loading-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #0b6096, #4cd7f6, #38bdf8, transparent);
+    background-size: 200% 100%;
+    animation: table-shimmer-bar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    z-index: 10;
+  }
 
   .header-main-row {
     display: flex;

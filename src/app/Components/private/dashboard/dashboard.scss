@@ -239,6 +239,10 @@ $shadow: var(--shadow);
     box-shadow: 0 8px 28px rgba(11, 96, 150, 0.09);
   }
 
+  &.completed {
+    border-color: rgba(var(--primary-rgb), 0.2);
+  }
+
   // Ambient Glow
   .bar-ambient-glow {
     position: absolute;
@@ -644,7 +648,6 @@ $shadow: var(--shadow);
   }
 }
 
-// Input Card
 .search-input-card {
   background: $surface-container-lowest;
   border-radius: 16px;
@@ -655,6 +658,20 @@ $shadow: var(--shadow);
   box-shadow: 0 8px 30px rgba(22, 47, 80, 0.06);
   border: 1px solid rgba(var(--primary-rgb), 0.1);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  .table-loading-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #0b6096, #4cd7f6, #38bdf8, transparent);
+    background-size: 200% 100%;
+    animation: table-shimmer-bar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    z-index: 10;
+  }
 
   &.file-search-card {
     &:not(.has-file) {

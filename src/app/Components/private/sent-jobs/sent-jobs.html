@@ -2,6 +2,9 @@
 
   <!-- Header -->
   <div class="history-header">
+    @if (!stateStore.profileLoaded()) {
+      <div class="table-loading-bar"></div>
+    }
     <div class="history-title-group">
       <div class="history-icon">🔔</div>
       <div>
