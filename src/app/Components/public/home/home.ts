@@ -48,8 +48,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
+  @ViewChild('vacanciesSection') vacanciesSectionRef!: ElementRef;
 
   private animationFrameId: number | null = null;
+  private isInitialLoad = true;
   searchState: 'idle' | 'searching' | 'burst' = 'idle';
   isLoading = signal<boolean>(false);
   isAppending = signal<boolean>(false);
@@ -84,6 +86,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   isLocationOpen = signal<boolean>(false);
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
+  isFilterModalOpen = signal<boolean>(false);
 
   sourceOptions = computed(() => [
     { value: 'all', label: 'ყველა პორტალი', icon: 'apps', count: this.dbTotalRecords(), isCircular: false, logo: '' },
@@ -164,6 +167,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.searchSub) {
       this.searchSub.unsubscribe();
+    }
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('modal-open');
     }
   }
 
@@ -441,6 +447,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
                 this.searchState = 'idle';
               }
             }, 600);
+
+            if (!this.isInitialLoad) {
+              this.scroll('results-container');
+            } else {
+              this.isInitialLoad = false;
+            }
           }
         }, delay);
       },
@@ -663,20 +675,36 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('window:scroll', [])
   onWindowScroll() {
     if (typeof window !== 'undefined') {
-      const container = this.searchContainerRef?.nativeElement;
-      if (container) {
-        const rect = container.getBoundingClientRect();
-        // If the bottom of the search container has scrolled past the top of the viewport
-        const pastFilters = rect.bottom < 0;
-        // Also only show on mobile/tablet (e.g. window.innerWidth <= 768)
-        const isMobile = window.innerWidth <= 768;
-        this.showScrollToFilters.set(pastFilters && isMobile);
+      const vacanciesSec = this.vacanciesSectionRef?.nativeElement;
+      if (vacanciesSec) {
+        const rect = vacanciesSec.getBoundingClientRect();
+        const pastStart = rect.top <= 100;
+        const isMobile = window.innerWidth <= 991;
+        this.showScrollToFilters.set(pastStart && isMobile);
       }
     }
   }
 
+  openFilterModal() {
+    this.isFilterModalOpen.set(true);
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('modal-open');
+    }
+  }
+
+  closeFilterModal() {
+    this.isFilterModalOpen.set(false);
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
   scrollToFilters() {
-    this.searchContainerRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (window.innerWidth <= 991) {
+      this.openFilterModal();
+    } else {
+      this.searchContainerRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   viewVacancy(jobId: number | string) {

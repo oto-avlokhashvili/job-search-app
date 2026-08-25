@@ -10,7 +10,8 @@
         </div>
         
         <h1 class="display-lg">
-          შექმენი საკუთარი <span class="text-gradient">AI აგენტი</span> და მოაძებნინე სამსახური მარტივად
+          <span class="hero-title-main">შექმენი საკუთარი <span class="text-gradient">AI აგენტი</span></span>
+          <span class="hero-title-sub">და მოაძებნინე სამსახური მარტივად</span>
         </h1>
         
         <p class="body-lg subtitle">
@@ -133,7 +134,7 @@
   </section>
 
   <!-- Vacancies Section -->
-  <section class="vacancies-section" id="vacancies">
+  <section class="vacancies-section" id="vacancies" #vacanciesSection>
     <div class="vacancies-search-header-wrapper">
       <canvas #particleCanvas class="particle-canvas"></canvas>
       
@@ -148,151 +149,171 @@
           <p class="body-lg text-on-surface-variant">გაეცანით ბოლო პერიოდის საუკეთესო პოზიციებს წამყვან ქართულ კომპანიებში</p>
         </div>
 
-        <!-- Filters Bar -->
-        <div #searchContainer class="filters-bar glass-card">
-          <div class="filter-group-main">
-            <div class="search-input-wrapper">
-              <span class="material-symbols-outlined search-icon">search</span>
-              <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value)">
-            </div>
+        <!-- Mobile Inline Filters Trigger (Visible only on responsive instead of the inline filters-bar) -->
+        <button type="button" class="mobile-inline-filters-trigger" (click)="openFilterModal()">
+          <span class="material-symbols-outlined">tune</span>
+          <span>ფილტრები და ძებნა</span>
+          @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
+            <span class="active-filters-dot"></span>
+          }
+        </button>
+
+        <!-- Filters Bar Backdrop & Modal Container -->
+        <div class="filters-modal-backdrop" [class.open]="isFilterModalOpen()" (click)="closeFilterModal()">
+          <div #searchContainer class="filters-bar glass-card" (click)="$event.stopPropagation()">
             
-            <!-- Source Selector Dropdown -->
-            <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-              <button type="button" class="custom-select-trigger" [class.open]="isSourceOpen()" (click)="toggleSourceDropdown($event)">
-                @if (getSelectedSourceLogo(); as logo) {
-                  <img [src]="logo" class="select-icon-img" [class.circular]="sourceFilter.value === 'myjobs.ge'" alt="Source">
-                } @else {
-                  <span class="material-symbols-outlined select-icon">language</span>
-                }
-                <span class="selected-value">{{ getSelectedSourceLabel() }}</span>
-                <span class="material-symbols-outlined select-arrow" [class.rotated]="isSourceOpen()">expand_more</span>
+            <!-- Mobile Modal Header -->
+            <div class="mobile-modal-header">
+              <h3>ფილტრები</h3>
+              <button type="button" class="btn-close-filters" (click)="closeFilterModal()">
+                <span class="material-symbols-outlined">close</span>
               </button>
+            </div>
+
+            <div class="filter-group-main">
+              <div class="search-input-wrapper">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value); closeFilterModal()">
+              </div>
               
-              @if (isSourceOpen()) {
-                <div class="custom-select-dropdown glass-card animated-fade-in">
-                  <div class="options-list">
-                    @for (option of sourceOptions(); track option.value) {
-                      <div 
-                        class="custom-select-option source-option" 
-                        [class.selected]="option.value === sourceFilter.value"
-                        (click)="selectSource(option.value)"
-                      >
-                        <div class="option-left-content">
-                          @if (option.logo) {
-                            <img [src]="option.logo" [alt]="option.label" class="option-logo" [class.circular]="option.isCircular">
-                          } @else {
-                            <span class="material-symbols-outlined option-icon">apps</span>
-                          }
-                          <span class="option-label">{{ option.label }}</span>
+              <!-- Source Selector Dropdown -->
+              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
+                <button type="button" class="custom-select-trigger" [class.open]="isSourceOpen()" (click)="toggleSourceDropdown($event)">
+                  @if (getSelectedSourceLogo(); as logo) {
+                    <img [src]="logo" class="select-icon-img" [class.circular]="sourceFilter.value === 'myjobs.ge'" alt="Source">
+                  } @else {
+                    <span class="material-symbols-outlined select-icon">language</span>
+                  }
+                  <span class="selected-value">{{ getSelectedSourceLabel() }}</span>
+                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isSourceOpen()">expand_more</span>
+                </button>
+                
+                @if (isSourceOpen()) {
+                  <div class="custom-select-dropdown glass-card animated-fade-in">
+                    <div class="options-list">
+                      @for (option of sourceOptions(); track option.value) {
+                        <div 
+                          class="custom-select-option source-option" 
+                          [class.selected]="option.value === sourceFilter.value"
+                          (click)="selectSource(option.value)"
+                        >
+                          <div class="option-left-content">
+                            @if (option.logo) {
+                              <img [src]="option.logo" [alt]="option.label" class="option-logo" [class.circular]="option.isCircular">
+                            } @else {
+                              <span class="material-symbols-outlined option-icon">apps</span>
+                            }
+                            <span class="option-label">{{ option.label }}</span>
+                          </div>
+                          
+                          <div class="option-right-content">
+                            @if (option.count > 0) {
+                              <span class="option-count-badge">{{ option.count | number }}</span>
+                            }
+                            @if (option.value === sourceFilter.value) {
+                              <span class="material-symbols-outlined check-icon">check</span>
+                            }
+                          </div>
                         </div>
-                        
-                        <div class="option-right-content">
-                          @if (option.count > 0) {
-                            <span class="option-count-badge">{{ option.count | number }}</span>
-                          }
-                          @if (option.value === sourceFilter.value) {
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Location Selector Dropdown -->
+              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
+                <button type="button" class="custom-select-trigger" [class.open]="isLocationOpen()" (click)="toggleLocationDropdown($event)">
+                  <span class="material-symbols-outlined select-icon">location_on</span>
+                  <span class="selected-value">{{ getSelectedLocationLabel() }}</span>
+                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isLocationOpen()">expand_more</span>
+                </button>
+                
+                @if (isLocationOpen()) {
+                  <div class="custom-select-dropdown glass-card animated-fade-in">
+                    <div class="dropdown-search-wrapper" (click)="$event.stopPropagation()">
+                      <span class="material-symbols-outlined search-icon-small">search</span>
+                      <input type="text" [formControl]="locationSearchInput" placeholder="ძებნა..." class="dropdown-search-input">
+                      @if (locationSearchInput.value) {
+                        <button type="button" class="btn-clear-search-small" (click)="locationSearchInput.setValue('')">
+                          <span class="material-symbols-outlined">close</span>
+                        </button>
+                      }
+                    </div>
+                    <div class="options-list">
+                      @for (option of filteredLocationOptions(); track option.value) {
+                        <div 
+                          class="custom-select-option" 
+                          [class.selected]="option.value === locationFilter.value"
+                          (click)="selectLocation(option.value)"
+                        >
+                          <span class="option-label">{{ option.label }}</span>
+                          @if (option.value === locationFilter.value) {
                             <span class="material-symbols-outlined check-icon">check</span>
                           }
                         </div>
-                      </div>
-                    }
+                      } @empty {
+                        <div class="no-options-found">ქალაქი ვერ მოიძებნა</div>
+                      }
+                    </div>
                   </div>
-                </div>
-              }
+                }
+              </div>
+
+              <!-- Publish Date Selector Dropdown -->
+              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
+                <button type="button" class="custom-select-trigger" [class.open]="isDateRangeOpen()" (click)="toggleDateRangeDropdown($event)">
+                  <span class="material-symbols-outlined select-icon">calendar_today</span>
+                  <span class="selected-value">{{ getSelectedDateRangeLabel() }}</span>
+                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isDateRangeOpen()">expand_more</span>
+                </button>
+                
+                @if (isDateRangeOpen()) {
+                  <div class="custom-select-dropdown glass-card animated-fade-in">
+                    <div class="options-list">
+                      @for (option of dateRangeOptions; track option.value) {
+                        <div 
+                          class="custom-select-option" 
+                          [class.selected]="option.value === dateRangeFilter.value"
+                          (click)="selectDateRange(option.value)"
+                        >
+                          <span class="option-label">{{ option.label }}</span>
+                          @if (option.value === dateRangeFilter.value) {
+                            <span class="material-symbols-outlined check-icon">check</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <button class="btn-search" (click)="loadJobs(searchFilter.value); closeFilterModal()">ძიება</button>
             </div>
 
-            <!-- Location Selector Dropdown -->
-            <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-              <button type="button" class="custom-select-trigger" [class.open]="isLocationOpen()" (click)="toggleLocationDropdown($event)">
-                <span class="material-symbols-outlined select-icon">location_on</span>
-                <span class="selected-value">{{ getSelectedLocationLabel() }}</span>
-                <span class="material-symbols-outlined select-arrow" [class.rotated]="isLocationOpen()">expand_more</span>
-              </button>
-              
-              @if (isLocationOpen()) {
-                <div class="custom-select-dropdown glass-card animated-fade-in">
-                  <div class="dropdown-search-wrapper" (click)="$event.stopPropagation()">
-                    <span class="material-symbols-outlined search-icon-small">search</span>
-                    <input type="text" [formControl]="locationSearchInput" placeholder="ძებნა..." class="dropdown-search-input">
-                    @if (locationSearchInput.value) {
-                      <button type="button" class="btn-clear-search-small" (click)="locationSearchInput.setValue('')">
-                        <span class="material-symbols-outlined">close</span>
-                      </button>
-                    }
-                  </div>
-                  <div class="options-list">
-                    @for (option of filteredLocationOptions(); track option.value) {
-                      <div 
-                        class="custom-select-option" 
-                        [class.selected]="option.value === locationFilter.value"
-                        (click)="selectLocation(option.value)"
-                      >
-                        <span class="option-label">{{ option.label }}</span>
-                        @if (option.value === locationFilter.value) {
-                          <span class="material-symbols-outlined check-icon">check</span>
-                        }
-                      </div>
-                    } @empty {
-                      <div class="no-options-found">ქალაქი ვერ მოიძებნა</div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-
-            <!-- Publish Date Selector Dropdown -->
-            <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-              <button type="button" class="custom-select-trigger" [class.open]="isDateRangeOpen()" (click)="toggleDateRangeDropdown($event)">
-                <span class="material-symbols-outlined select-icon">calendar_today</span>
-                <span class="selected-value">{{ getSelectedDateRangeLabel() }}</span>
-                <span class="material-symbols-outlined select-arrow" [class.rotated]="isDateRangeOpen()">expand_more</span>
-              </button>
-              
-              @if (isDateRangeOpen()) {
-                <div class="custom-select-dropdown glass-card animated-fade-in">
-                  <div class="options-list">
-                    @for (option of dateRangeOptions; track option.value) {
-                      <div 
-                        class="custom-select-option" 
-                        [class.selected]="option.value === dateRangeFilter.value"
-                        (click)="selectDateRange(option.value)"
-                      >
-                        <span class="option-label">{{ option.label }}</span>
-                        @if (option.value === dateRangeFilter.value) {
-                          <span class="material-symbols-outlined check-icon">check</span>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-
-            <button class="btn-search" (click)="loadJobs(searchFilter.value)">ძიება</button>
-          </div>
-
-          <!-- Popular Searches -->
-          <div class="popular-searches">
-            <span class="popular-searches-label">პოპულარული:</span>
-            <div class="popular-tags">
-              <button 
-                type="button" 
-                class="popular-tag" 
-                [class.active]="searchFilter.value === 'თიბისი ბანკი'" 
-                (click)="setPopularSearch('თიბისი ბანკი')"
-              >
-                <img src="/icons/tbc.jpg" alt="TBC" class="tag-icon">
-                TBC ბანკი
-              </button>
-              <button 
-                type="button" 
-                class="popular-tag" 
-                [class.active]="searchFilter.value === 'საქართველოს ბანკი'" 
-                (click)="setPopularSearch('საქართველოს ბანკი')"
-              >
-                <img src="/icons/bog.png" alt="BOG" class="tag-icon">
-                საქართველოს ბანკი
-              </button>
+            <!-- Popular Searches -->
+            <div class="popular-searches">
+              <span class="popular-searches-label">პოპულარული:</span>
+              <div class="popular-tags">
+                <button 
+                  type="button" 
+                  class="popular-tag" 
+                  [class.active]="searchFilter.value === 'თიბისი ბანკი'" 
+                  (click)="setPopularSearch('თიბისი ბანკი'); closeFilterModal()"
+                >
+                  <img src="/icons/tbc.jpg" alt="TBC" class="tag-icon">
+                  TBC ბანკი
+                </button>
+                <button 
+                  type="button" 
+                  class="popular-tag" 
+                  [class.active]="searchFilter.value === 'საქართველოს ბანკი'" 
+                  (click)="setPopularSearch('საქართველოს ბანკი'); closeFilterModal()"
+                >
+                  <img src="/icons/bog.png" alt="BOG" class="tag-icon">
+                  საქართველოს ბანკი
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -464,7 +485,7 @@
       </div>
 
       <!-- Vacancies Results -->
-      <div class="vacancies-results-wrapper">
+      <div class="vacancies-results-wrapper" id="results-container">
         @if (!isLoading() && filteredJobs().length > 0) {
           <div class="results-meta">
             <span class="results-count">
@@ -884,11 +905,17 @@
   </section>
 
   <!-- Floating Scroll to Filters Button (Mobile only) -->
-  @if (showScrollToFilters()) {
-    <button type="button" class="scroll-to-filters-btn animated-fade-in" (click)="scrollToFilters()" title="ფილტრებზე დაბრუნება">
-      <span class="material-symbols-outlined">tune</span>
-      <span>ფილტრები</span>
-      <span class="material-symbols-outlined btn-arrow">arrow_upward</span>
+  @if (showScrollToFilters() && !isFilterModalOpen()) {
+    <button type="button" class="scroll-to-filters-btn animated-fade-in" (click)="openFilterModal()" title="ფილტრები">
+      <svg class="circular-text-svg" viewBox="0 0 100 100">
+        <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+        <text>
+          <textPath href="#circlePath" startOffset="50%" text-anchor="middle">
+            ფილტრები • ფილტრები • ფილტრები •
+          </textPath>
+        </text>
+      </svg>
+      <span class="material-symbols-outlined central-icon">tune</span>
     </button>
   }
 </main>

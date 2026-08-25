@@ -448,81 +448,8 @@
               </label>
             </div>
 
-            <!-- Channels 2-Col Grid (Identical style for Telegram and Email) -->
+            <!-- Channels 2-Col Grid (Identical style for Email and Telegram) -->
             <div class="notification-channels-layout">
-
-              <!-- Telegram Card -->
-              <div class="inner-block-card channel-card" [class.connected]="isTelegramConnected()">
-                <div class="channel-card-top">
-                  <div class="channel-brand-info">
-                    <img src="/icons/telegram.png" alt="Telegram" class="channel-logo" />
-                    <div class="channel-titles">
-                      <h3 class="channel-heading">Telegram შეტყობინებები</h3>
-                      <span class="channel-subheading">მყისიერი შეტყობინებები Telegram ბოტში</span>
-                    </div>
-                  </div>
-                  <span class="channel-status-pill" [class.is-connected]="isTelegramConnected()">
-                    @if (isTelegramConnected()) {
-                      <span class="material-symbols-outlined check-ico">check</span>
-                      <span>დაკავშირებულია</span>
-                    } @else {
-                      <span>არ არის დაკავშირებული</span>
-                    }
-                  </span>
-                </div>
-
-                <div class="channel-card-content">
-                  @if (isTelegramConnected()) {
-                    <div class="channel-success-box">
-                      <span class="material-symbols-outlined text-green-500">verified</span>
-                      <div class="success-text-group">
-                        <span class="success-title">Telegram ანგარიში აქტიურია</span>
-                        <span class="success-desc">ახალი ვაკანსიების შეტყობინებები მომენტალურად გამოიგზავნება ბოტში.</span>
-                      </div>
-                    </div>
-                  } @else {
-                    <p class="channel-instruction">დააკავშირეთ Telegram ბოტი თქვენს ანგარიშთან მყისიერი შეტყობინებების მისაღებად:</p>
-
-                    <button
-                      type="button"
-                      class="btn-channel-trigger tg"
-                      [disabled]="telegramLoading()"
-                      (click)="connectTelegram()"
-                    >
-                      @if (telegramLoading()) {
-                        <span class="btn-spinner"></span>
-                        <span>მიმდინარეობს გენერაცია...</span>
-                      } @else {
-                        <span class="material-symbols-outlined">qr_code_2</span>
-                        <span>Telegram ბოტის დაკავშირება</span>
-                      }
-                    </button>
-
-                    @if (showTelegramQR() && telegramLink()) {
-                      <div class="telegram-qr-wrapper">
-                        <p class="qr-guide-text">დაასკანერეთ QR კოდი კამერით ან გახსენით ბმული:</p>
-                        <div class="qr-frame-box">
-                          <qrcode
-                            [qrdata]="telegramLink()"
-                            [width]="150"
-                            [errorCorrectionLevel]="'M'"
-                            [colorDark]="themeService.isDarkMode() ? '#ffffff' : '#0b6096'"
-                            [colorLight]="themeService.isDarkMode() ? '#1e1e2e' : '#ffffff'"
-                          ></qrcode>
-                        </div>
-                        <div class="qr-buttons-row">
-                          <a [href]="telegramLink()" target="_blank" class="btn-open-link">
-                            <span class="material-symbols-outlined">open_in_new</span> Telegram-ში გახსნა
-                          </a>
-                          <button type="button" class="btn-confirm-tg" (click)="confirmTelegramConnected()">
-                            დავაკავშირე ✅
-                          </button>
-                        </div>
-                      </div>
-                    }
-                  }
-                </div>
-              </div>
 
               <!-- Email Card -->
               <div class="inner-block-card channel-card" [class.connected]="isEmailVerified()">
@@ -611,6 +538,79 @@
                     }
                     @if (emailErrorMsg()) {
                       <span class="status-msg-text text-error">{{ emailErrorMsg() }}</span>
+                    }
+                  }
+                </div>
+              </div>
+
+              <!-- Telegram Card -->
+              <div class="inner-block-card channel-card" [class.connected]="isTelegramConnected()">
+                <div class="channel-card-top">
+                  <div class="channel-brand-info">
+                    <img src="/icons/telegram.png" alt="Telegram" class="channel-logo" />
+                    <div class="channel-titles">
+                      <h3 class="channel-heading">Telegram შეტყობინებები</h3>
+                      <span class="channel-subheading">მყისიერი შეტყობინებები Telegram ბოტში</span>
+                    </div>
+                  </div>
+                  <span class="channel-status-pill" [class.is-connected]="isTelegramConnected()">
+                    @if (isTelegramConnected()) {
+                      <span class="material-symbols-outlined check-ico">check</span>
+                      <span>დაკავშირებულია</span>
+                    } @else {
+                      <span>არ არის დაკავშირებული</span>
+                    }
+                  </span>
+                </div>
+
+                <div class="channel-card-content">
+                  @if (isTelegramConnected()) {
+                    <div class="channel-success-box">
+                      <span class="material-symbols-outlined text-green-500">verified</span>
+                      <div class="success-text-group">
+                        <span class="success-title">Telegram ანგარიში აქტიურია</span>
+                        <span class="success-desc">ახალი ვაკანსიების შეტყობინებები მომენტალურად გამოიგზავნება ბოტში.</span>
+                      </div>
+                    </div>
+                  } @else {
+                    <p class="channel-instruction">დააკავშირეთ Telegram ბოტი თქვენს ანგარიშთან მყისიერი შეტყობინებების მისაღებად:</p>
+
+                    <button
+                      type="button"
+                      class="btn-channel-trigger tg"
+                      [disabled]="telegramLoading()"
+                      (click)="connectTelegram()"
+                    >
+                      @if (telegramLoading()) {
+                        <span class="btn-spinner"></span>
+                        <span>მიმდინარეობს გენერაცია...</span>
+                      } @else {
+                        <span class="material-symbols-outlined">qr_code_2</span>
+                        <span>Telegram ბოტის დაკავშირება</span>
+                      }
+                    </button>
+
+                    @if (showTelegramQR() && telegramLink()) {
+                      <div class="telegram-qr-wrapper">
+                        <p class="qr-guide-text">დაასკანერეთ QR კოდი კამერით ან გახსენით ბმული:</p>
+                        <div class="qr-frame-box">
+                          <qrcode
+                            [qrdata]="telegramLink()"
+                            [width]="150"
+                            [errorCorrectionLevel]="'M'"
+                            [colorDark]="themeService.isDarkMode() ? '#ffffff' : '#0b6096'"
+                            [colorLight]="themeService.isDarkMode() ? '#1e1e2e' : '#ffffff'"
+                          ></qrcode>
+                        </div>
+                        <div class="qr-buttons-row">
+                          <a [href]="telegramLink()" target="_blank" class="btn-open-link">
+                            <span class="material-symbols-outlined">open_in_new</span> Telegram-ში გახსნა
+                          </a>
+                          <button type="button" class="btn-confirm-tg" (click)="confirmTelegramConnected()">
+                            დავაკავშირე ✅
+                          </button>
+                        </div>
+                      </div>
                     }
                   }
                 </div>
@@ -873,7 +873,7 @@
                     </div>
                     <div class="pill-info">
                       <span class="pill-label">სააბონენტო გეგმა</span>
-                      <span class="pill-value">{{ (profile().subscription || selectedPlan()) === 'PREMIUM' ? 'Enterprise' : 'Pro პაკეტი' }}</span>
+                      <span class="pill-value">{{ (profile().subscription || selectedPlan()) === 'PREMIUM' ? 'Enterprise' : (profile().subscription || selectedPlan()) === 'PRO' ? 'Pro პაკეტი' : 'Basic პაკეტი' }}</span>
                     </div>
                   </div>
                 </div>
@@ -905,9 +905,19 @@
 
           <div class="footer-right-actions">
             @if (currentStep() < totalSteps) {
-              <button type="button" class="btn-step-action primary" (click)="nextStep()">
-                <span>შემდეგი</span>
-                <span class="material-symbols-outlined">arrow_forward</span>
+              <button
+                type="button"
+                class="btn-step-action primary"
+                [disabled]="!canProceedNext() || isCurrentStepBusy()"
+                (click)="nextStep()"
+              >
+                @if (isCurrentStepBusy()) {
+                  <span class="btn-spinner"></span>
+                  <span>იტვირთება...</span>
+                } @else {
+                  <span>შემდეგი</span>
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                }
               </button>
             } @else {
               <button

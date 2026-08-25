@@ -112,7 +112,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   private emailTimer: any = null;
 
   // Step 5: Payment & Plans
-  selectedPlan = signal<'BASIC' | 'PRO' | 'PREMIUM'>('PRO');
+  selectedPlan = signal<'BASIC' | 'PRO' | 'PREMIUM'>('BASIC');
   isProcessingPayment = signal<boolean>(false);
   isCompleted = signal<boolean>(false);
 
@@ -168,6 +168,38 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   searchQueries = computed(() => this.stateStore.searchQuery() || []);
   isEmailVerified = computed(() => !!this.profile()?.isEmailVerified);
   isTelegramConnected = computed(() => !!this.profile()?.telegramChatId);
+  isNotificationToggling = signal<boolean>(false);
+
+  isCurrentStepBusy = computed(() => {
+    const step = this.currentStep();
+    if (step === 1) return this.cvLoading();
+    if (step === 2) return this.keywordLoading();
+    if (step === 3) return this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying();
+    return false;
+  });
+
+  canProceedNext = computed(() => {
+    const step = this.currentStep();
+    if (step === 1) {
+      return !this.cvLoading() && !!this.userCv();
+    }
+    if (step === 2) {
+      const f = this.infoForm.get('firstName')?.value?.trim();
+      const l = this.infoForm.get('lastName')?.value?.trim();
+      return !this.keywordLoading() && (this.searchQueries().length > 0) && !!f && !!l;
+    }
+    if (step === 3) {
+      const p = this.profile();
+      const notifEnabled = !!p?.receiveMessages;
+      const channelConnected = this.isEmailVerified() || this.isTelegramConnected();
+      return !this.isNotificationToggling() && !this.telegramLoading() && !this.emailVerifying() && notifEnabled && channelConnected;
+    }
+    if (step === 4) {
+      return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
+    }
+    return true;
+  });
+
   hasSubscription = computed(() => {
     const sub = this.profile()?.subscription;
     return this.isCompleted() || (!!sub && ['BASIC', 'PRO', 'PREMIUM'].includes(sub));
@@ -395,7 +427,6 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   validateStep(step: number): boolean {
     if (step === 1) {
       if (this.cvLoading()) {
-        this.alertify.warning('გთხოვთ დაელოდოთ CV-ს ატვირთვას...');
         return false;
       }
       if (!this.userCv()) {
@@ -406,6 +437,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (step === 2) {
+      if (this.keywordLoading()) {
+        return false;
+      }
       this.infoFormSubmitted.set(true);
       if (this.keywordInput().trim()) {
         this.addKeyword();
@@ -423,6 +457,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (step === 3) {
+      if (this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying()) {
+        return false;
+      }
       if (!this.profile()?.receiveMessages) {
         this.alertify.error('გთხოვთ ჩართოთ შეტყობინებების მიღება გასაგრძელებლად');
         return false;
@@ -584,7 +621,6 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
     try {
       await firstValueFrom(this.cvService.upload(file));
-      this.alertify.success('CV წარმატებით აიტვირთა!');
       await this.stateStore.getCv(true);
 
       if (this.currentStep() === 1) {
@@ -600,7 +636,6 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
   deleteCv() {
     this.stateStore.deleteCv();
-    this.alertify.message('CV წაშლილია');
   }
 
   formatFileSize(bytes?: number): string {
@@ -614,13 +649,15 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   async toggleReceiveMessages(event: any) {
     const checked = event.target.checked;
     if (this.profile()?.id) {
+      this.isNotificationToggling.set(true);
       this.stateStore.updateLocalProfile({ receiveMessages: checked });
       try {
         await this.stateStore.updateProfile(this.profile().id, { receiveMessages: checked });
       } catch (e) {
         console.error('Failed to sync receiveMessages:', e);
+      } finally {
+        this.isNotificationToggling.set(false);
       }
-      this.alertify.success(checked ? 'შეტყობინებები გააქტიურებულია' : 'შეტყობინებები გამორთულია');
     }
   }
 
