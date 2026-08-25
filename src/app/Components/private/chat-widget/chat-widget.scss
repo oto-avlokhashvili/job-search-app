@@ -662,29 +662,48 @@
    ========================================================================== */
 @media (max-width: 991px) {
   .chat-widget-container {
-    bottom: 5.5rem;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
     right: 1.25rem;
+    transition: bottom 0.25s ease;
+
+    &.has-bottom-nav {
+      bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   .chat-window {
     width: calc(100vw - 2.5rem);
     max-width: 380px;
-    height: calc(100vh - 175px);
+    height: calc(100vh - 125px);
+    max-height: 520px;
     bottom: 68px;
     right: 0;
+
+    .has-bottom-nav & {
+      height: calc(100vh - 175px);
+      max-height: 480px;
+    }
   }
 }
 
 @media (max-width: 480px) {
   .chat-widget-container {
-    bottom: 5.25rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     right: 1rem;
+
+    &.has-bottom-nav {
+      bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   .chat-window {
     width: calc(100vw - 2rem);
-    height: calc(100vh - 165px);
+    height: calc(100vh - 110px);
     bottom: 66px;
     right: 0;
+
+    .has-bottom-nav & {
+      height: calc(100vh - 165px);
+    }
   }
 }

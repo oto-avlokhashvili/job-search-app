@@ -1,4 +1,4 @@
-<div class="chat-widget-container">
+<div class="chat-widget-container" [class.has-bottom-nav]="isLoggedIn()">
   <!-- Chat Window -->
   @if (isChatOpen()) {
     <div class="chat-window">

@@ -3060,8 +3060,13 @@ $outline-variant-color: #97aed5;
   @media (max-width: 991px) {
     left: auto;
     right: 1.25rem;
-    bottom: 9.75rem;
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    transition: bottom 0.25s ease;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+
+    &.has-bottom-nav {
+      bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px));
+    }
     
     &:hover {
       transform: translateY(-2px);
@@ -3074,7 +3079,11 @@ $outline-variant-color: #97aed5;
 
   @media (max-width: 480px) {
     right: 1rem;
-    bottom: 9.25rem;
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+
+    &.has-bottom-nav {
+      bottom: calc(9.25rem + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   [data-theme='dark'] & {
