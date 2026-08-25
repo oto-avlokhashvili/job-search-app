@@ -9,10 +9,11 @@ import { filter } from 'rxjs';
 import { ThemeService } from './Core/Services/theme.service';
 import { Auth } from './Components/public/auth/auth';
 import { StateStore } from './Store/state.store';
+import { ChatWidget } from './Components/private/chat-widget/chat-widget';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule, Auth],
+  imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule, Auth, ChatWidget],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

@@ -14,7 +14,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule, Onboarding],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -28,6 +28,11 @@ export class Profile {
   keywordInputValue = signal<string>('');
 
   isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
+  onboardingPercentage = computed(() => this.stateStore.onboardingPercentage());
+  hasCvStep = computed(() => this.stateStore.hasCvStep());
+  hasInfoStep = computed(() => this.stateStore.hasInfoStep());
+  hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
+  hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
 
   initials = computed(() => {
     const u = this.stateStore.profile();
@@ -92,6 +97,26 @@ export class Profile {
   isInvalid(name: string) {
     const control = this.profileForm.get(name);
     return !!(control && control.invalid && (control.touched || this.validators()));
+  }
+
+  popularKeywords = signal<string[]>([
+    'Frontend Developer',
+    'Backend Developer',
+    'Full Stack',
+    'Angular',
+    'React',
+    'Node.js',
+    'Python',
+    'UI/UX Designer',
+    'DevOps',
+  ]);
+
+  addSuggestedKeyword(keyword: string) {
+    const currentKeywords = this.stateStore.searchQuery() || [];
+    if (!currentKeywords.includes(keyword)) {
+      this.stateStore.updateSearchQueries([...currentKeywords, keyword]);
+      this.alertify.success(`დაემატა: ${keyword}`);
+    }
   }
 
   addKeywordFromValue() {
@@ -206,5 +231,25 @@ export class Profile {
 
   switchToEmail() {
     this.stateStore.updateProfile(this.stateStore.profile()?.id, { telegramChatId: '' });
+  }
+
+  openOnboardingWizard(step: number = 1) {
+    const dialogRef = this.dialog.open(Onboarding, {
+      width: '1100px',
+      maxWidth: '96vw',
+      maxHeight: '94vh',
+      panelClass: 'onboarding-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+
+    if (dialogRef.componentInstance) {
+      dialogRef.componentInstance.goToStep(step);
+    }
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.stateStore.loadProfile(true);
+      this.stateStore.getCv(true);
+    });
   }
 }

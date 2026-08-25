@@ -1,4 +1,5 @@
 import { Component, inject, signal, HostListener, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { ThemeService } from '../../../Core/Services/theme.service';
@@ -9,7 +10,7 @@ import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
@@ -23,6 +24,28 @@ export class Header {
   private alertify = inject(AlertifyService);
   activeSection = signal('features');
   profileMenuOpen = signal(false);
+  privateMenuOpen = signal(false);
+
+  privateNavItems = [
+    {
+      title: 'AI ძიება',
+      subtitle: 'ინტელექტუალური ვაკანსიების ძიება',
+      icon: '🤖',
+      route: '/private/dashboard',
+    },
+    {
+      title: 'შეტყობინებები',
+      subtitle: 'ახალი და შერჩეული ვაკანსიები',
+      icon: '🔔',
+      route: '/private/jobs',
+    },
+    {
+      title: 'პროფილი',
+      subtitle: 'პირადი მონაცემები & პარამეტრები',
+      icon: '⚙️',
+      route: '/private/profile',
+    },
+  ];
 
   toggleReceiveMessages(event: any) {
     event.stopPropagation();
@@ -44,8 +67,28 @@ export class Header {
     return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
   });
 
+  togglePrivateMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.privateMenuOpen.set(!this.privateMenuOpen());
+    if (this.privateMenuOpen()) {
+      this.closeProfileMenu();
+    }
+  }
+
+  openPrivateMenu() {
+    this.privateMenuOpen.set(true);
+    this.closeProfileMenu();
+  }
+
+  closePrivateMenu() {
+    this.privateMenuOpen.set(false);
+  }
+
   toggleProfileMenu() {
     this.profileMenuOpen.set(!this.profileMenuOpen());
+    if (this.profileMenuOpen()) {
+      this.closePrivateMenu();
+    }
   }
 
   closeProfileMenu() {
@@ -54,6 +97,7 @@ export class Header {
 
   logout() {
     this.closeProfileMenu();
+    this.closePrivateMenu();
     this.authService.logOut().then(() => {
       this.router.navigate(['/home']);
     });
@@ -61,6 +105,7 @@ export class Header {
 
   openUpgradeModal() {
     this.closeProfileMenu();
+    this.closePrivateMenu();
     this.dialog.open(SubscriptionModal, {
       width: '560px',
       maxWidth: '95vw',
@@ -73,6 +118,9 @@ export class Header {
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {
     const target = event.target as HTMLElement;
+    if (!target.closest('.nav-dropdown-container')) {
+      this.closePrivateMenu();
+    }
     if (!target.closest('.user-profile-menu')) {
       this.closeProfileMenu();
     }

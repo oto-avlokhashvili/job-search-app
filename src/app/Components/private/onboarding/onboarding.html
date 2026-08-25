@@ -761,7 +761,7 @@
         <!-- ============================================================ -->
         @if (currentStep() === 5) {
           <div class="step-panel subscription-onboarding-section animate-fade">
-            @if (!hasSubscription()) {
+            @if (!isCompleted()) {
               <div class="panel-head">
                 <div class="head-title-wrap">
                   <span class="material-symbols-outlined head-icon">credit_card</span>
@@ -789,7 +789,7 @@
                       <div class="price">
                         @if (plan.period) {
                           <span class="currency">₾</span>
-                          <span class="amount">{{ plan.key === 'PRO' ? '8' : '0' }}</span>
+                          <span class="amount">{{ plan.key === 'PRO' ? '8' : plan.key === 'BASIC' ? '0' : '0' }}</span>
                           <span class="period">{{ plan.period }}</span>
                         } @else {
                           <span class="amount custom">{{ plan.price }}</span>
@@ -892,7 +892,7 @@
       </div>
 
       <!-- Action Navigation Footer -->
-      @if (!hasSubscription()) {
+      @if (!isCompleted()) {
         <footer class="workspace-action-footer">
           <div>
             @if (currentStep() > 1) {
@@ -920,7 +920,7 @@
                   <span>მიმდინარეობს...</span>
                 } @else {
                   <span class="material-symbols-outlined">bolt</span>
-                  <span>{{ selectedPlan() === 'PRO' ? 'Pro გეგმის გააქტიურება (8₾)' : 'პროფილის დასრულება' }}</span>
+                  <span>{{ selectedPlan() === 'PRO' ? 'Pro გეგმის გააქტიურება (8₾)' : selectedPlan() === 'BASIC' ? 'Basic გეგმით გაგრძელება (უფასო)' : 'პროფილის დასრულება' }}</span>
                 }
               </button>
             }

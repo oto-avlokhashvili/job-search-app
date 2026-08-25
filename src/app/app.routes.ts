@@ -7,6 +7,8 @@ import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { authGuard } from './Core/Guards/auth-guard';
 
+import { Onboarding } from './Components/private/onboarding/onboarding';
+
 export const routes: Routes = [
   {
     path: '',
@@ -46,6 +48,10 @@ export const routes: Routes = [
         path: 'chat/:id',
         redirectTo: 'dashboard',
         pathMatch: 'full'
+      },
+      {
+        path: 'onboarding',
+        component: Onboarding,
       },
       {
         path: 'profile',

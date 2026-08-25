@@ -352,6 +352,12 @@ body.modal-open {
 }
 
 /* ─── Onboarding dialog panel ──────────────────────────────── */
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  background-color: rgba(15, 23, 42, 0.65) !important;
+}
+
 .onboarding-dialog .mat-mdc-dialog-container {
   --mdc-dialog-container-color: transparent;
   border-radius: 24px !important;
@@ -403,6 +409,12 @@ body.modal-open {
 
 #features, #pricing, #contact {
   scroll-margin-top: 72px;
+}
+
+@media (max-width: 991px) {
+  body {
+    padding-bottom: 64px;
+  }
 }
 
 // ─── Custom Tooltip Styling ────────────────────────────────────

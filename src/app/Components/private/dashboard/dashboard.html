@@ -22,6 +22,82 @@
     <!-- Central Search/Upload Widget -->
     <div class="search-widget-container">
 
+      <!-- Luxury-Grade Circular Progress Onboarding Bar -->
+      @if (!isOnboardingCompleted() && !isBannerDismissed()) {
+        <div class="premium-onboarding-bar animate-fade">
+          <div class="bar-ambient-glow"></div>
+          
+          <!-- 1. Left: Precision SVG Circular Progress Ring -->
+          <div class="ring-progress-wrapper" (click)="openOnboardingModal()" role="button" tabindex="0" title="პროფილის დასრულება">
+            <svg class="ring-svg" viewBox="0 0 36 36">
+              <defs>
+                <linearGradient id="ringProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0b6096" />
+                  <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+              </defs>
+              <path class="ring-track"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path class="ring-value"
+                stroke="url(#ringProgressGrad)"
+                [attr.stroke-dasharray]="onboardingPercentage() + ', 100'"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="ring-number">{{ onboardingPercentage() }}<small>%</small></span>
+          </div>
+
+          <!-- 2. Left Context: Title & Hint -->
+          <div class="bar-title-block" (click)="openOnboardingModal()" role="button" tabindex="0">
+            <div class="title-row">
+              <span class="main-title">პროფილი</span>
+              <span class="fraction-tag">{{ (hasCvStep() ? 1 : 0) + (hasInfoStep() ? 1 : 0) + (hasNotificationStep() ? 1 : 0) + (hasSubscriptionStep() ? 1 : 0) }}/4</span>
+            </div>
+            <span class="subtitle-hint">{{ nextPendingStepHint() }}</span>
+          </div>
+
+          <!-- 3. Center: Connected Step Nodes Chain -->
+          <div class="bar-nodes-chain">
+            <button type="button" class="node-chip" [class.done]="hasCvStep()" (click)="openOnboardingModal(1)" title="1. CV-ს ატვირთვა">
+              <span class="node-bullet">{{ hasCvStep() ? '✓' : '1' }}</span>
+              <span class="node-text">CV</span>
+            </button>
+
+            <span class="node-connector" [class.done]="hasCvStep() && hasInfoStep()"></span>
+
+            <button type="button" class="node-chip" [class.done]="hasInfoStep()" (click)="openOnboardingModal(2)" title="2. პირადი მონაცემები">
+              <span class="node-bullet">{{ hasInfoStep() ? '✓' : '2' }}</span>
+              <span class="node-text">ინფო</span>
+            </button>
+
+            <span class="node-connector" [class.done]="hasInfoStep() && hasNotificationStep()"></span>
+
+            <button type="button" class="node-chip" [class.done]="hasNotificationStep()" (click)="openOnboardingModal(3)" title="3. შეტყობინებები">
+              <span class="node-bullet">{{ hasNotificationStep() ? '✓' : '3' }}</span>
+              <span class="node-text">შეტყობინებები</span>
+            </button>
+
+            <span class="node-connector" [class.done]="hasNotificationStep() && hasSubscriptionStep()"></span>
+
+            <button type="button" class="node-chip" [class.done]="hasSubscriptionStep()" (click)="openOnboardingModal(5)" title="4. გამოწერა">
+              <span class="node-bullet">{{ hasSubscriptionStep() ? '✓' : '4' }}</span>
+              <span class="node-text">გამოწერა</span>
+            </button>
+          </div>
+
+          <!-- 4. Far Right: Actions at the End of Progress Bar -->
+          <div class="bar-actions-end">
+            <button type="button" class="btn-continue-action" (click)="openOnboardingModal()">
+              <span>გაგრძელება</span>
+              <span class="material-symbols-outlined arrow-ico">arrow_forward</span>
+            </button>
+            <button type="button" class="btn-dismiss-action" (click)="dismissOnboardingBanner()" title="დამალვა">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+        </div>
+      }
+
       @if (!showJobs()) {
         <!-- Hero Welcome Section -->
         <div class="hero-section">

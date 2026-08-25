@@ -9,11 +9,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from './subscription-modal/subscription-modal';
-import { ChatWidget } from '../chat-widget/chat-widget';
 
 @Component({
   selector: 'app-private-layout',
-  imports: [RouterModule, CommonModule, ChatWidget],
+  imports: [RouterModule, CommonModule],
   templateUrl: './private-layout.html',
   styleUrl: './private-layout.scss',
 })
@@ -25,12 +24,6 @@ export class PrivateLayout implements OnInit {
   hideFooterAndHeader = signal<boolean>(false);
   destroyRef = inject(DestroyRef);
   route = inject(ActivatedRoute);
-
-  navItems = signal([
-    { icon: '🤖', label: 'AI ძიება', route: 'dashboard' },
-    { icon: '🔔', label: 'შეტყობინებები', route: 'jobs' },
-    { icon: '⚙️', label: 'პროფილი', route: 'profile' },
-  ]);
 
   authService = inject(AuthService);
   stateStore = inject(StateStore);
@@ -45,7 +38,7 @@ export class PrivateLayout implements OnInit {
 
     if (token) {
       this.authService.setToken(token);
-      await this.router.navigate(['/private/profile'], {
+      await this.router.navigate(['/private/dashboard'], {
         queryParams: {},
         replaceUrl: true
       });
@@ -76,14 +69,8 @@ export class PrivateLayout implements OnInit {
   checkOnboardingGuard(url: string) {
     if (!url || !url.startsWith('/private')) return;
 
-    if (!this.isOnboardingCompleted()) {
-      if (url !== '/private/profile') {
-        this.router.navigate(['/private/profile'], { replaceUrl: true });
-      }
-    } else {
-      if (url === '/private' || url === '/private/') {
-        this.router.navigate(['/private/dashboard'], { replaceUrl: true });
-      }
+    if (url === '/private' || url === '/private/') {
+      this.router.navigate(['/private/dashboard'], { replaceUrl: true });
     }
   }
 

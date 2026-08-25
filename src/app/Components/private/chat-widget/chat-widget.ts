@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   inject,
   ViewChild,
   ElementRef,
@@ -11,6 +12,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Ai } from '../../../Core/Services/ai';
 import { firstValueFrom } from 'rxjs';
+
+import { AuthService } from '../../../Core/Services/auth-service';
 
 export interface WidgetChatMessage {
   id: string;
@@ -32,12 +35,18 @@ export class ChatWidget implements OnInit, AfterViewChecked {
   @ViewChild('messagesScroll') private messagesScroll!: ElementRef<HTMLDivElement>;
 
   aiService = inject(Ai);
+  authService = inject(AuthService);
 
+  isLoggedIn = computed(() => this.authService.isLoggedIn());
   isChatOpen = signal<boolean>(false);
   chatInputText = signal<string>('');
   chatMessages = signal<WidgetChatMessage[]>([]);
   isTyping = signal<boolean>(false);
   private shouldScrollToBottom = false;
+
+  openAuthModal() {
+    this.authService.openAuthModal('login');
+  }
 
   ngOnInit() {
     this.loadMessages();

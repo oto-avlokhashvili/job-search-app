@@ -70,21 +70,55 @@ const initialState: State = {
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
-    withComputed((store) => ({
-        isOnboardingCompleted: computed(() => {
+    withComputed((store) => {
+        const hasCvStep = computed(() => !!store.userCv() && !store.cvLoading());
+        const hasInfoStep = computed(() => {
             const p = store.profile();
-            const cv = store.userCv();
             const queries = store.searchQuery() || [];
-
-            const hasCv = !!cv && !store.cvLoading();
             const hasName = !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
             const hasKeywords = queries.length > 0;
-            const hasNotifications = !!p?.receiveMessages && (!!p?.isEmailVerified || !!p?.telegramChatId);
-            const hasSubscription = !!p?.subscription && ['PRO', 'PREMIUM'].includes(p.subscription);
+            return hasName && hasKeywords;
+        });
+        const hasNotificationStep = computed(() => {
+            const p = store.profile();
+            return !!p?.receiveMessages && (!!p?.isEmailVerified || !!p?.telegramChatId);
+        });
+        const hasSubscriptionStep = computed(() => {
+            const p = store.profile();
+            return !!p?.subscription && ['BASIC', 'PRO', 'PREMIUM'].includes(p.subscription);
+        });
 
-            return hasCv && hasName && hasKeywords && hasNotifications && hasSubscription;
-        })
-    })),
+        const onboardingPercentage = computed(() => {
+            let score = 0;
+            if (hasCvStep()) score += 25;
+            if (hasInfoStep()) score += 25;
+            if (hasNotificationStep()) score += 25;
+            if (hasSubscriptionStep()) score += 25;
+            return score;
+        });
+
+        const firstIncompleteStep = computed(() => {
+            if (!hasCvStep()) return 1;
+            if (!hasInfoStep()) return 2;
+            if (!hasNotificationStep()) return 3;
+            if (!hasSubscriptionStep()) return 5;
+            return 1;
+        });
+
+        const isOnboardingCompleted = computed(() => {
+            return hasCvStep() && hasInfoStep() && hasNotificationStep() && hasSubscriptionStep();
+        });
+
+        return {
+            hasCvStep,
+            hasInfoStep,
+            hasNotificationStep,
+            hasSubscriptionStep,
+            onboardingPercentage,
+            firstIncompleteStep,
+            isOnboardingCompleted,
+        };
+    }),
     withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv)) => ({
         async loadProfile(force: boolean = false) {
             if (!force && store.profileLoaded() && store.profile().id !== 0) {

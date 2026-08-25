@@ -1837,12 +1837,12 @@
 .subscription-onboarding-section {
   .plans-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 380px));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: center;
-    gap: 1.5rem;
+    gap: 1rem;
     margin-bottom: 1rem;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
       grid-template-columns: 1fr;
       gap: 1.25rem;
     }

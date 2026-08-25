@@ -27,6 +27,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { environment } from '../../../../environments/environment';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
+import { Onboarding } from '../onboarding/onboarding';
 
 export interface AttachedFile {
   id: string;
@@ -237,6 +238,23 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   authService = inject(AuthService);
   jobService = inject(JobsService);
   private dialog = inject(MatDialog);
+
+  isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
+  onboardingPercentage = computed(() => this.stateStore.onboardingPercentage());
+  firstIncompleteStep = computed(() => this.stateStore.firstIncompleteStep());
+  hasCvStep = computed(() => this.stateStore.hasCvStep());
+  hasInfoStep = computed(() => this.stateStore.hasInfoStep());
+  hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
+  hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
+  isBannerDismissed = signal<boolean>(false);
+
+  nextPendingStepHint = computed(() => {
+    if (!this.hasCvStep()) return 'შემდეგი ნაბიჯი: CV-ს ატვირთვა';
+    if (!this.hasInfoStep()) return 'შემდეგი ნაბიჯი: პირადი მონაცემები & Keywords';
+    if (!this.hasNotificationStep()) return 'შემდეგი ნაბიჯი: შეტყობინებების გააქტიურება';
+    if (!this.hasSubscriptionStep()) return 'შემდეგი ნაბიჯი: სააბონენტო პაკეტის შერჩევა';
+    return 'პროფილი მზად არის!';
+  });
 
   inputText = signal<string>('');
   attachedFiles = signal<AttachedFile[]>([]);
@@ -528,5 +546,30 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   removeKeyword(index: number) {
     const existing = this.stateStore.searchQuery() ?? [];
     this.stateStore.updateSearchQueries(existing.filter((_: any, i: number) => i !== index));
+  }
+
+  openOnboardingModal(targetStep?: number) {
+    const stepToOpen = targetStep || this.firstIncompleteStep();
+    const dialogRef = this.dialog.open(Onboarding, {
+      width: '1100px',
+      maxWidth: '96vw',
+      maxHeight: '94vh',
+      panelClass: 'onboarding-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+
+    if (stepToOpen && dialogRef.componentInstance) {
+      dialogRef.componentInstance.goToStep(stepToOpen);
+    }
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.stateStore.loadProfile(true);
+      this.stateStore.getCv(true);
+    });
+  }
+
+  dismissOnboardingBanner() {
+    this.isBannerDismissed.set(true);
   }
 }

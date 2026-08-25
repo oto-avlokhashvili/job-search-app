@@ -1,16 +1,5 @@
 <div class="dashboard-wrapper">
   <div class="private-content-container">
-    <!-- Horizontal sub-navbar: only visible when onboarding is completely passed -->
-    @if (isOnboardingCompleted()) {
-      <div class="private-nav-bar">
-        <div class="private-nav-links">
-          <a *ngFor="let item of navItems()" [routerLink]="item.route" routerLinkActive="active" class="private-nav-link">
-            <span class="nav-icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </a>
-        </div>
-      </div>
-    }
 
     <!-- Main Content Area -->
     <div class="main-wrapper">
@@ -20,8 +9,4 @@
       </main>
     </div>
   </div>
-
-  @if (isOnboardingCompleted()) {
-    <app-chat-widget></app-chat-widget>
-  }
 </div>

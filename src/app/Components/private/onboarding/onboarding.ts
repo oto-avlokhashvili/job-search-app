@@ -22,7 +22,7 @@ export interface StepItem {
 }
 
 export interface PricingPlan {
-  key: 'PRO' | 'PREMIUM';
+  key: 'BASIC' | 'PRO' | 'PREMIUM';
   name: string;
   price: string;
   period: string;
@@ -112,11 +112,24 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   private emailTimer: any = null;
 
   // Step 5: Payment & Plans
-  selectedPlan = signal<'PRO' | 'PREMIUM'>('PRO');
+  selectedPlan = signal<'BASIC' | 'PRO' | 'PREMIUM'>('PRO');
   isProcessingPayment = signal<boolean>(false);
   isCompleted = signal<boolean>(false);
 
   plans: PricingPlan[] = [
+    {
+      key: 'BASIC',
+      name: 'Basic პაკეტი',
+      price: '0₾',
+      period: '/სამუდამოდ',
+      badge: 'უფასო',
+      features: [
+        'საბაზისო AI ვაკანსიების ძიება',
+        'CV-ს ატვირთვა და AI ანალიზი',
+        'დღიური ვაკანსიების დაიჯესტი',
+        'ელ-ფოსტის შეტყობინებები',
+      ],
+    },
     {
       key: 'PRO',
       name: 'Pro პაკეტი',
@@ -156,7 +169,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   isEmailVerified = computed(() => !!this.profile()?.isEmailVerified);
   isTelegramConnected = computed(() => !!this.profile()?.telegramChatId);
   hasSubscription = computed(() => {
-    return this.isCompleted() || !!(this.profile()?.subscription && ['PRO', 'PREMIUM'].includes(this.profile()!.subscription!));
+    return this.isCompleted();
   });
 
   candidateFullName = computed(() => {
@@ -333,11 +346,15 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     } else if (!this.isStepValid(5)) {
       this.currentStep.set(5);
     } else {
-      // If user has Pro/Premium subscription and all steps are complete, go straight to dashboard!
-      if (!this.isCompleted()) {
-        this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+      // If user has Pro/Premium subscription and all steps are complete:
+      if (!this.dialogRef) {
+        if (!this.isCompleted()) {
+          this.router.navigate(['/private/dashboard'], { replaceUrl: true });
+        } else {
+          this.currentStep.set(5);
+        }
       } else {
-        this.currentStep.set(5);
+        this.currentStep.set(1);
       }
     }
   }
@@ -700,7 +717,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Step 5: Payment & Finalization ───────────────────────
-  selectPlan(key: 'PRO' | 'PREMIUM') {
+  selectPlan(key: 'BASIC' | 'PRO' | 'PREMIUM') {
     const plan = this.plans.find(p => p.key === key);
     if (plan?.disabled) return;
     this.selectedPlan.set(key);
