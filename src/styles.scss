@@ -203,10 +203,14 @@ body.modal-open {
 
 // Apply gradient app background on root containers
 [data-theme='dark'] body,
-[data-theme='dark'] .landing-page,
-[data-theme='dark'] .dashboard-wrapper {
+[data-theme='dark'] .landing-page {
   background: linear-gradient(135deg, #323253, #1c2849) !important;
   min-height: 100vh;
+}
+
+[data-theme='dark'] .dashboard-wrapper {
+  background: linear-gradient(135deg, #323253, #1c2849) !important;
+  min-height: calc(100vh - 72px);
 }
 
 * {

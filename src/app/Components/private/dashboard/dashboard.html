@@ -24,78 +24,110 @@
 
       <!-- Luxury-Grade Circular Progress Onboarding Bar -->
       @if (!isBannerDismissed()) {
-        <div class="premium-onboarding-bar animate-fade" [class.completed]="isOnboardingCompleted()">
-          <div class="bar-ambient-glow"></div>
-          
-          <!-- 1. Left: Precision SVG Circular Progress Ring -->
-          <div class="ring-progress-wrapper" (click)="openOnboardingModal()" role="button" tabindex="0" title="პროფილის პარამეტრები">
-            <svg class="ring-svg" viewBox="0 0 36 36">
-              <defs>
-                <linearGradient id="ringProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#0b6096" />
-                  <stop offset="100%" stop-color="#38bdf8" />
-                </linearGradient>
-              </defs>
-              <path class="ring-track"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path class="ring-value"
-                stroke="url(#ringProgressGrad)"
-                [attr.stroke-dasharray]="onboardingPercentage() + ', 100'"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            </svg>
-            <span class="ring-number">{{ onboardingPercentage() }}<small>%</small></span>
-          </div>
-
-          <!-- 2. Left Context: Title & Hint -->
-          <div class="bar-title-block" (click)="openOnboardingModal()" role="button" tabindex="0">
-            <div class="title-row">
-              <span class="main-title">პროფილი</span>
-              <span class="fraction-tag">{{ (hasCvStep() ? 1 : 0) + (hasInfoStep() ? 1 : 0) + (hasNotificationStep() ? 1 : 0) + (hasSubscriptionStep() ? 1 : 0) }}/4</span>
+        @if (isOnboardingLoading()) {
+          <div class="premium-onboarding-bar skeleton-pulse onboarding-skeleton animate-fade">
+            <div class="bar-ambient-glow"></div>
+            
+            <!-- 1. Skeleton Circular Ring -->
+            <div class="ring-progress-wrapper">
+              <div class="skeleton-block ring-skeleton"></div>
             </div>
-            <span class="subtitle-hint">{{ nextPendingStepHint() }}</span>
+
+            <!-- 2. Skeleton Title & Hint -->
+            <div class="bar-title-block">
+              <div class="title-row">
+                <div class="skeleton-text" style="width: 55px; height: 14px;"></div>
+                <div class="skeleton-block" style="width: 30px; height: 16px; border-radius: 6px;"></div>
+              </div>
+              <div class="skeleton-text short" style="width: 140px; height: 10px; margin-top: 3px;"></div>
+            </div>
+
+            <!-- 3. Skeleton Nodes Chain -->
+            <div class="bar-nodes-chain">
+              <div class="skeleton-block node-chip-skeleton"></div>
+              <span class="node-connector"></span>
+              <div class="skeleton-block node-chip-skeleton"></div>
+              <span class="node-connector"></span>
+              <div class="skeleton-block node-chip-skeleton"></div>
+              <span class="node-connector"></span>
+              <div class="skeleton-block node-chip-skeleton"></div>
+            </div>
+
+            <!-- 4. Skeleton Actions -->
+            <div class="bar-actions-end">
+              <div class="skeleton-block" style="width: 85px; height: 28px; border-radius: 9999px;"></div>
+              <div class="skeleton-block" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+            </div>
           </div>
+        } @else {
+          <div class="premium-onboarding-bar animate-fade" [class.completed]="isOnboardingCompleted()">
+            <div class="bar-ambient-glow"></div>
+            
+            <!-- 1. Left: Precision SVG Circular Progress Ring -->
+            <div class="ring-progress-wrapper" [class.is-complete]="onboardingPercentage() === 100" (click)="handleOnboardingClick()" role="button" tabindex="0" title="პროფილის პარამეტრები">
+              <svg class="ring-svg" viewBox="0 0 36 36">
+                <path class="ring-track"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="ring-value"
+                  [attr.stroke-dasharray]="onboardingPercentage() + ', 100'"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <span class="ring-number" [class.is-hundred]="onboardingPercentage() === 100">
+                {{ onboardingPercentage() }}<span class="percent-sign">%</span>
+              </span>
+            </div>
 
-          <!-- 3. Center: Connected Step Nodes Chain -->
-          <div class="bar-nodes-chain">
-            <button type="button" class="node-chip" [class.done]="hasCvStep()" (click)="openOnboardingModal(1)" title="1. CV-ს ატვირთვა">
-              <span class="node-bullet">{{ hasCvStep() ? '✓' : '1' }}</span>
-              <span class="node-text">CV</span>
-            </button>
+            <!-- 2. Left Context: Title & Hint -->
+            <div class="bar-title-block" (click)="handleOnboardingClick()" role="button" tabindex="0">
+              <div class="title-row">
+                <span class="main-title">პროფილი</span>
+                <span class="fraction-tag">{{ (hasCvStep() ? 1 : 0) + (hasInfoStep() ? 1 : 0) + (hasNotificationStep() ? 1 : 0) + (hasSubscriptionStep() ? 1 : 0) }}/4</span>
+              </div>
+              <span class="subtitle-hint">{{ nextPendingStepHint() }}</span>
+            </div>
 
-            <span class="node-connector" [class.done]="hasCvStep() && hasInfoStep()"></span>
+            <!-- 3. Center: Connected Step Nodes Chain -->
+            <div class="bar-nodes-chain">
+              <button type="button" class="node-chip" [class.done]="hasSubscriptionStep()" (click)="handleOnboardingClick(1)" title="1. სააბონენტო გეგმა">
+                <span class="node-bullet">{{ hasSubscriptionStep() ? '✓' : '1' }}</span>
+                <span class="node-text">გამოწერა</span>
+              </button>
 
-            <button type="button" class="node-chip" [class.done]="hasInfoStep()" (click)="openOnboardingModal(2)" title="2. პირადი მონაცემები">
-              <span class="node-bullet">{{ hasInfoStep() ? '✓' : '2' }}</span>
-              <span class="node-text">ინფო</span>
-            </button>
+              <span class="node-connector" [class.done]="hasSubscriptionStep() && hasCvStep()"></span>
 
-            <span class="node-connector" [class.done]="hasInfoStep() && hasNotificationStep()"></span>
+              <button type="button" class="node-chip" [class.done]="hasCvStep()" (click)="handleOnboardingClick(2)" title="2. CV-ს ატვირთვა">
+                <span class="node-bullet">{{ hasCvStep() ? '✓' : '2' }}</span>
+                <span class="node-text">CV</span>
+              </button>
 
-            <button type="button" class="node-chip" [class.done]="hasNotificationStep()" (click)="openOnboardingModal(3)" title="3. შეტყობინებები">
-              <span class="node-bullet">{{ hasNotificationStep() ? '✓' : '3' }}</span>
-              <span class="node-text">შეტყობინებები</span>
-            </button>
+              <span class="node-connector" [class.done]="hasCvStep() && hasInfoStep()"></span>
 
-            <span class="node-connector" [class.done]="hasNotificationStep() && hasSubscriptionStep()"></span>
+              <button type="button" class="node-chip" [class.done]="hasInfoStep()" (click)="handleOnboardingClick(3)" title="3. პირადი მონაცემები">
+                <span class="node-bullet">{{ hasInfoStep() ? '✓' : '3' }}</span>
+                <span class="node-text">ინფო</span>
+              </button>
 
-            <button type="button" class="node-chip" [class.done]="hasSubscriptionStep()" (click)="openOnboardingModal(5)" title="4. გამოწერა">
-              <span class="node-bullet">{{ hasSubscriptionStep() ? '✓' : '4' }}</span>
-              <span class="node-text">გამოწერა</span>
-            </button>
+              <span class="node-connector" [class.done]="hasInfoStep() && hasNotificationStep()"></span>
+
+              <button type="button" class="node-chip" [class.done]="hasNotificationStep()" (click)="handleOnboardingClick(4)" title="4. შეტყობინებები">
+                <span class="node-bullet">{{ hasNotificationStep() ? '✓' : '4' }}</span>
+                <span class="node-text">შეტყობინებები</span>
+              </button>
+            </div>
+
+            <!-- 4. Far Right: Actions at the End of Progress Bar -->
+            <div class="bar-actions-end">
+              <button type="button" class="btn-continue-action" (click)="handleOnboardingClick()">
+                <span>{{ isOnboardingCompleted() ? 'მართვა' : 'გაგრძელება' }}</span>
+                <span class="material-symbols-outlined arrow-ico">{{ isOnboardingCompleted() ? 'tune' : 'arrow_forward' }}</span>
+              </button>
+              <button type="button" class="btn-dismiss-action" (click)="dismissOnboardingBanner()" title="დამალვა">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
           </div>
-
-          <!-- 4. Far Right: Actions at the End of Progress Bar -->
-          <div class="bar-actions-end">
-            <button type="button" class="btn-continue-action" (click)="openOnboardingModal()">
-              <span>{{ isOnboardingCompleted() ? 'მართვა' : 'გაგრძელება' }}</span>
-              <span class="material-symbols-outlined arrow-ico">{{ isOnboardingCompleted() ? 'tune' : 'arrow_forward' }}</span>
-            </button>
-            <button type="button" class="btn-dismiss-action" (click)="dismissOnboardingBanner()" title="დამალვა">
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
-
-        </div>
+        }
       }
 
       @if (!showJobs()) {
@@ -108,9 +140,6 @@
 
       <!-- Input Card (CV File Upload Area) -->
       <div #searchContainer class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
-        @if (!stateStore.profileLoaded() || stateStore.cvLoading()) {
-          <div class="table-loading-bar"></div>
-        }
         <!-- File Input (Hidden) -->
         <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
 

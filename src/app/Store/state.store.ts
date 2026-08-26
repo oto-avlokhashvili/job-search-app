@@ -78,12 +78,15 @@ export const StateStore = signalStore(
             const p = store.profile();
             const queries = store.searchQuery() || [];
             const hasName = !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
-            const hasKeywords = queries.length > 0;
+            const isPro = p?.subscription === 'PRO' || p?.subscription === 'PREMIUM';
+            const hasKeywords = isPro ? true : queries.length >= 3;
             return hasName && hasKeywords;
         });
         const hasNotificationStep = computed(() => {
             const p = store.profile();
-            return !!p?.receiveMessages && (!!p?.isEmailVerified || !!p?.telegramChatId);
+            const isPro = p?.subscription === 'PRO' || p?.subscription === 'PREMIUM';
+            const channelOk = isPro ? !!p?.isEmailVerified : !!p?.telegramChatId;
+            return !!p?.receiveMessages && channelOk;
         });
         const hasSubscriptionStep = computed(() => {
             const p = store.profile();
@@ -92,23 +95,23 @@ export const StateStore = signalStore(
 
         const onboardingPercentage = computed(() => {
             let score = 0;
+            if (hasSubscriptionStep()) score += 25;
             if (hasCvStep()) score += 25;
             if (hasInfoStep()) score += 25;
             if (hasNotificationStep()) score += 25;
-            if (hasSubscriptionStep()) score += 25;
             return score;
         });
 
         const firstIncompleteStep = computed(() => {
-            if (!hasCvStep()) return 1;
-            if (!hasInfoStep()) return 2;
-            if (!hasNotificationStep()) return 3;
-            if (!hasSubscriptionStep()) return 5;
+            if (!hasSubscriptionStep()) return 1;
+            if (!hasCvStep()) return 2;
+            if (!hasInfoStep()) return 3;
+            if (!hasNotificationStep()) return 4;
             return 1;
         });
 
         const isOnboardingCompleted = computed(() => {
-            return hasCvStep() && hasInfoStep() && hasNotificationStep() && hasSubscriptionStep();
+            return hasSubscriptionStep() && hasCvStep() && hasInfoStep() && hasNotificationStep();
         });
 
         return {

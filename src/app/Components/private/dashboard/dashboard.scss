@@ -243,6 +243,27 @@ $shadow: var(--shadow);
     border-color: rgba(var(--primary-rgb), 0.2);
   }
 
+  &.onboarding-skeleton {
+    pointer-events: none;
+    cursor: default;
+
+    .ring-skeleton {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+    }
+
+    .node-chip-skeleton {
+      width: 68px;
+      height: 24px;
+      border-radius: 9999px;
+
+      @media (max-width: 1024px) {
+        width: 100%;
+      }
+    }
+  }
+
   // Ambient Glow
   .bar-ambient-glow {
     position: absolute;
@@ -267,8 +288,8 @@ $shadow: var(--shadow);
   // 1. Left: Precision SVG Circular Progress Ring
   .ring-progress-wrapper {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
     cursor: pointer;
     display: flex;
@@ -278,38 +299,62 @@ $shadow: var(--shadow);
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     &:hover {
-      transform: scale(1.08);
+      transform: scale(1.06);
     }
 
     .ring-svg {
       width: 100%;
       height: 100%;
       transform: rotate(-90deg);
+      transform-origin: center;
 
       .ring-track {
         fill: none;
-        stroke: var(--surface-container);
-        stroke-width: 3.2;
+        stroke: var(--surface-container-highest);
+        stroke-width: 2.6;
       }
 
       .ring-value {
         fill: none;
-        stroke-width: 3.2;
+        stroke: var(--primary);
+        stroke-width: 2.6;
         stroke-linecap: round;
-        transition: stroke-dasharray 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: stroke-dasharray 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.3s ease;
+      }
+    }
+
+    &.is-complete {
+      .ring-value {
+        stroke: #16a34a;
+      }
+      .ring-number {
+        color: #16a34a;
+        .percent-sign {
+          color: #16a34a;
+        }
       }
     }
 
     .ring-number {
       position: absolute;
-      font-size: 0.68rem;
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      font-size: 0.74rem;
       font-weight: 800;
       color: var(--on-surface);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      line-height: 1;
       font-variant-numeric: tabular-nums;
+      pointer-events: none;
+      user-select: none;
 
-      small {
-        font-size: 0.52rem;
+      &.is-hundred {
+        font-size: 0.62rem;
+      }
+
+      .percent-sign {
+        font-size: 0.46rem;
         font-weight: 700;
         color: var(--primary);
         margin-left: 0.5px;
@@ -527,8 +572,8 @@ $shadow: var(--shadow);
 
     .ring-progress-wrapper {
       grid-area: ring;
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
     }
 
     .bar-title-block {
@@ -584,11 +629,19 @@ $shadow: var(--shadow);
     }
 
     .ring-progress-wrapper {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
 
       .ring-number {
-        font-size: 0.62rem;
+        font-size: 0.65rem;
+
+        &.is-hundred {
+          font-size: 0.54rem;
+        }
+
+        .percent-sign {
+          font-size: 0.42rem;
+        }
       }
     }
 
@@ -660,18 +713,6 @@ $shadow: var(--shadow);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-
-  .table-loading-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #0b6096, #4cd7f6, #38bdf8, transparent);
-    background-size: 200% 100%;
-    animation: table-shimmer-bar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    z-index: 10;
-  }
 
   &.file-search-card {
     &:not(.has-file) {
@@ -1699,23 +1740,6 @@ $shadow: var(--shadow);
   }
 }
 
-.search-input-card.file-search-card {
-  &:not(.has-file) {
-    animation: pulseGlow 3s infinite ease-in-out;
-  }
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 8px 30px rgba(22, 47, 80, 0.06);
-    border-color: rgba(var(--primary-rgb), 0.12);
-  }
-  50% {
-    box-shadow: 0 8px 30px rgba(var(--primary-rgb), 0.15);
-    border-color: $primary;
-  }
-}
-
 .suggested-roles-container {
   display: flex;
   flex-direction: column;
@@ -1970,3 +1994,65 @@ $shadow: var(--shadow);
     }
   }
 }
+
+/* ========== SKELETON SHIMMER ANIMATION ========== */
+.skeleton-pulse {
+  .skeleton-block, .skeleton-text {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-container-low);
+    border-radius: 6px;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: translateX(-100%);
+      animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    }
+
+    [data-theme='dark'] & {
+      background: rgba(255, 255, 255, 0.05);
+
+      &::after {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+      }
+    }
+  }
+
+  .skeleton-text {
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+    
+    &.short {
+      height: 10px;
+    }
+  }
+  
+  .skeleton-block {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+

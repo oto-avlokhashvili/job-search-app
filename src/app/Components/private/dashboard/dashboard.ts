@@ -246,13 +246,14 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   hasInfoStep = computed(() => this.stateStore.hasInfoStep());
   hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
   hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
+  isOnboardingLoading = computed(() => !this.stateStore.profileLoaded() || !this.stateStore.cvLoaded() || this.stateStore.cvLoading());
   isBannerDismissed = signal<boolean>(false);
 
   nextPendingStepHint = computed(() => {
-    if (!this.hasCvStep()) return 'შემდეგი ნაბიჯი: CV-ს ატვირთვა';
-    if (!this.hasInfoStep()) return 'შემდეგი ნაბიჯი: პირადი მონაცემები & Keywords';
-    if (!this.hasNotificationStep()) return 'შემდეგი ნაბიჯი: შეტყობინებების გააქტიურება';
     if (!this.hasSubscriptionStep()) return 'შემდეგი ნაბიჯი: სააბონენტო პაკეტის შერჩევა';
+    if (!this.hasCvStep()) return 'შემდეგი ნაბიჯი: CV-ს ატვირთვა';
+    if (!this.hasInfoStep()) return 'შემდეგი ნაბიჯი: პირადი მონაცემები';
+    if (!this.hasNotificationStep()) return 'შემდეგი ნაბიჯი: შეტყობინებების გააქტიურება';
     return 'პროფილი მზად არის!';
   });
 
@@ -324,6 +325,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.stateStore.ensureDataLoaded();
   }
 
   triggerFileInput() {
@@ -548,25 +550,15 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.stateStore.updateSearchQueries(existing.filter((_: any, i: number) => i !== index));
   }
 
-  openOnboardingModal(targetStep?: number) {
-    const stepToOpen = targetStep || this.firstIncompleteStep();
-    const dialogRef = this.dialog.open(Onboarding, {
-      width: '1100px',
-      maxWidth: '96vw',
-      maxHeight: '94vh',
-      panelClass: 'onboarding-dialog',
-      disableClose: false,
-      autoFocus: false,
-    });
-
-    if (stepToOpen && dialogRef.componentInstance) {
-      dialogRef.componentInstance.goToStep(stepToOpen);
+  handleOnboardingClick(targetStep?: number) {
+    if (this.isOnboardingCompleted()) {
+      this.router.navigate(['/private/profile']);
+    } else {
+      const step = targetStep || this.firstIncompleteStep();
+      this.router.navigate(['/private/onboarding'], {
+        queryParams: step ? { step } : undefined,
+      });
     }
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.stateStore.loadProfile(true);
-      this.stateStore.getCv(true);
-    });
   }
 
   dismissOnboardingBanner() {
