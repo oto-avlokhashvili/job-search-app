@@ -6,9 +6,10 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot): boolean
   const service = inject(AuthService);
   const router = inject(Router);
 
-  // If there's a token in the URL, let it through — layout will extract it
+  // If there's a token in the URL, store it immediately
   const urlToken = route.queryParamMap.get('token');
   if (urlToken) {
+    service.setToken(urlToken);
     return true;
   }
 

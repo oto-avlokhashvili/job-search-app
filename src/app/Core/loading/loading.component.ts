@@ -14,10 +14,9 @@ export class LoadingIndicatorComponent implements OnInit, OnDestroy {
     loading: Signal<boolean> = this.loadingService.loading;
 
     private readonly statusMessages = [
-        'სისტემის ინიციალიზაცია...',
-        'ხელოვნური ინტელექტის მომზადება...',
-        'მონაცემთა ბაზის ანალიზი...',
-        'უსაფრთხო კავშირის დამყარება...'
+        'მონაცემების ჩატვირთვა...',
+        'მიმდინარეობს დამუშავება...',
+        'გთხოვთ დაელოდოთ...'
     ];
 
     statusMessage = signal(this.statusMessages[0]);

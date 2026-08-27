@@ -26,26 +26,33 @@ export class Header {
   profileMenuOpen = signal(false);
   privateMenuOpen = signal(false);
 
-  privateNavItems = [
-    {
-      title: 'AI ძიება',
-      subtitle: 'ინტელექტუალური ვაკანსიების ძიება',
-      icon: '🤖',
-      route: '/private/dashboard',
-    },
-    {
-      title: 'შეტყობინებები',
-      subtitle: 'ახალი და შერჩეული ვაკანსიები',
-      icon: '🔔',
-      route: '/private/jobs',
-    },
-    {
-      title: 'პროფილი',
-      subtitle: 'პირადი მონაცემები & პარამეტრები',
-      icon: '⚙️',
-      route: '/private/profile',
-    },
-  ];
+  privateNavItems = computed(() => {
+    const items = [
+      {
+        title: 'შეტყობინებები',
+        subtitle: 'ახალი და შერჩეული ვაკანსიები',
+        icon: '🔔',
+        route: '/private/jobs',
+      },
+      {
+        title: 'პროფილი',
+        subtitle: 'პირადი მონაცემები & პარამეტრები',
+        icon: '⚙️',
+        route: '/private/profile',
+      },
+    ];
+
+    if (this.stateStore.isPro()) {
+      items.unshift({
+        title: 'AI ძიება',
+        subtitle: 'ინტელექტუალური ვაკანსიების ძიება',
+        icon: '🤖',
+        route: '/private/dashboard',
+      });
+    }
+
+    return items;
+  });
 
   toggleReceiveMessages(event: any) {
     event.stopPropagation();

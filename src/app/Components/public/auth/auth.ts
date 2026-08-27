@@ -50,13 +50,18 @@ export class Auth {
           }
 
           const returnUrl = this.authService.returnUrl();
-          if (returnUrl && this.stateStore.isOnboardingCompleted()) {
+          const hasNullSubscription = !this.stateStore.hasActiveSubscription();
+          const isOnboardingDone = this.stateStore.isOnboardingCompleted();
+
+          if (hasNullSubscription || !isOnboardingDone) {
+            this.router.navigate(['/private/onboarding']);
+          } else if (returnUrl) {
             this.router.navigate([returnUrl]);
             this.authService.returnUrl.set(null);
-          } else if (!this.stateStore.isOnboardingCompleted()) {
-            this.router.navigate(['/private/onboarding']);
-          } else {
+          } else if (this.stateStore.isPro()) {
             this.router.navigate(['/private/dashboard']);
+          } else {
+            this.router.navigate(['/private/profile']);
           }
           this.authService.closeAuthModal();
         },

@@ -73,8 +73,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     const isPro = this.selectedPlan() === 'PRO' || this.selectedPlan() === 'PREMIUM';
     return [
       { number: 1, id: 'payment', title: 'სააბონენტო გეგმა', subtitle: 'პაკეტის არჩევა (უფასო / Pro)', icon: 'payments' },
-      { number: 2, id: 'cv', title: 'CV-ს ატვირთვა', subtitle: 'რეზიუმეს AI ანალიზი', icon: 'upload_file' },
-      { number: 3, id: 'info', title: 'პირადი მონაცემები', subtitle: isPro ? 'სახელი & გვარი (AI Keywords)' : 'სახელი, გვარი & მინ. 3 Keywords', icon: 'person' },
+      { number: 2, id: 'cv', title: 'CV-ს ატვირთვა', subtitle: isPro ? 'რეზიუმეს AI ანალიზი' : 'რეზიუმეს ატვირთვა', icon: 'upload_file' },
+      { number: 3, id: 'info', title: 'პირადი მონაცემები', subtitle: isPro ? 'სახელი & გვარი (AI Keywords)' : 'სახელი, გვარი & პოზიციები', icon: 'person' },
       { number: 4, id: 'notifications', title: 'შეტყობინებები', subtitle: isPro ? 'Email შეტყობინებები' : 'Telegram შეტყობინებები', icon: 'notifications_active' },
       { number: 5, id: 'review', title: 'გადამოწმება & დასრულება', subtitle: 'მონაცემების შემოწმება და გააქტიურება', icon: 'fact_check' },
     ];
@@ -218,7 +218,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   });
 
   hasSubscription = computed(() => {
-    const sub = this.profile()?.subscription;
+    const sub = this.profile()?.subscriptionDetails?.plan || this.profile()?.subscription;
     return this.isCompleted() || (!!sub && ['BASIC', 'PRO', 'PREMIUM'].includes(sub));
   });
 
@@ -292,14 +292,10 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
         });
         if (p.subscription && ['PRO', 'PREMIUM'].includes(p.subscription)) {
           this.selectedPlan.set(p.subscription as any);
-          this.step1Confirmed.set(true);
         }
       }
 
       this.determineInitialStep();
-      if (!this.isTelegramConnected()) {
-        this.ensureTelegramLink();
-      }
     } catch (err) {
       console.error('Error initializing onboarding:', err);
       this.determineInitialStep();
@@ -480,6 +476,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
         return false;
       }
       this.step1Confirmed.set(true);
+      if (!this.isProPlan() && !this.isTelegramConnected()) {
+        this.ensureTelegramLink();
+      }
       return true;
     }
 
@@ -721,9 +720,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     const checked = event.target.checked;
     if (this.profile()?.id) {
       this.isNotificationToggling.set(true);
-      this.stateStore.updateLocalProfile({ receiveMessages: checked });
       try {
-        await this.stateStore.updateProfile(this.profile().id, { receiveMessages: checked });
+        this.stateStore.updateProfile(this.profile().id, { receiveMessages: checked });
       } catch (e) {
         console.error('Failed to sync receiveMessages:', e);
       } finally {
@@ -750,11 +748,10 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
           data: { telegramLink: link },
         });
 
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.afterClosed().subscribe((result) => {
           if (result) {
             if (this.profile()?.id) {
-              await this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
-              await this.stateStore.loadProfile();
+              this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
               this.alertify.success('Telegram წარმატებით დაკავშირდა');
             }
           }
@@ -775,12 +772,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       await this.stateStore.loadProfile(true);
       if (this.isTelegramConnected()) {
         if (this.profile()?.id) {
-          this.stateStore.updateLocalProfile({ receiveMessages: true });
-          try {
-            await this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
-          } catch (e) {
-            console.error('Failed to sync receiveMessages:', e);
-          }
+          this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
         }
         this.alertify.success('Telegram წარმატებით დადასტურდა და შეტყობინებები გააქტიურდა! 🎉');
       } else {
@@ -832,12 +824,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       await this.authService.verifyEmail(email, code);
       this.emailSuccessMsg.set('ელ-ფოსტა წარმატებით დადასტურდა!');
       if (this.profile()?.id) {
-        this.stateStore.updateLocalProfile({ isEmailVerified: true, receiveMessages: true });
-        try {
-          await this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
-        } catch (e) {
-          console.error('Failed to sync receiveMessages:', e);
-        }
+        this.stateStore.updateProfile(this.profile().id, { isEmailVerified: true, receiveMessages: true });
       }
       this.alertify.success('ელ-ფოსტა წარმატებით დადასტურდა და შეტყობინებები გააქტიურდა!');
     } catch (err: any) {
@@ -876,31 +863,18 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
     try {
       if (this.profile()?.id) {
-        const updatedUser: any = await firstValueFrom(this.usersService.getUserById(this.profile().id, { subscription: plan }));
-        this.stateStore.updateLocalProfile(updatedUser || { subscription: plan });
+        await this.stateStore.assignSubscriptionPlan(plan as any);
       } else {
         this.stateStore.updateLocalProfile({ subscription: plan });
+        await this.stateStore.loadProfile(true);
       }
 
       this.isCompleted.set(true);
       this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
-
-      if (!this.dialogRef) {
-        setTimeout(() => {
-          this.router.navigate(['/private/dashboard']);
-        }, 1200);
-      }
     } catch (err) {
       console.error('Error completing onboarding:', err);
-      this.stateStore.updateLocalProfile({ subscription: plan });
       this.isCompleted.set(true);
       this.alertify.success('გილოცავთ! თქვენი პროფილი მზად არის');
-
-      if (!this.dialogRef) {
-        setTimeout(() => {
-          this.router.navigate(['/private/dashboard']);
-        }, 1200);
-      }
     } finally {
       this.isProcessingPayment.set(false);
     }
@@ -910,15 +884,24 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     if (this.dialogRef) {
       this.dialogRef.close(this.isCompleted());
     } else {
-      this.router.navigate(['/private/dashboard']);
+      this.router.navigate(['/private/profile']);
     }
   }
 
-  navigateToDashboard() {
+  async navigateToDashboard() {
     if (this.dialogRef) {
       this.dialogRef.close(true);
-    } else {
-      this.router.navigate(['/private/dashboard']);
+      return;
     }
+
+    try {
+      await this.stateStore.loadProfile(true);
+    } catch (e) {
+      console.error('Error refreshing profile upon onboarding completion:', e);
+    }
+
+    const isPro = this.stateStore.isPro();
+    const targetUrl = isPro ? '/private/dashboard' : '/private/profile';
+    await this.router.navigate([targetUrl], { replaceUrl: true });
   }
 }

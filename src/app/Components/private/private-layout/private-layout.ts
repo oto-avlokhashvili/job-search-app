@@ -77,12 +77,18 @@ export class PrivateLayout implements OnInit {
 
   checkOnboardingGuard(url: string) {
     if (!url || !url.startsWith('/private')) return;
+    if (url.includes('/private/onboarding')) return;
+
+    if (!this.stateStore.isOnboardingCompleted()) {
+      this.router.navigate(['/private/onboarding'], { replaceUrl: true });
+      return;
+    }
 
     if (url === '/private' || url === '/private/') {
-      if (this.stateStore.isOnboardingCompleted()) {
+      if (this.stateStore.isPro()) {
         this.router.navigate(['/private/dashboard'], { replaceUrl: true });
       } else {
-        this.router.navigate(['/private/onboarding'], { replaceUrl: true });
+        this.router.navigate(['/private/profile'], { replaceUrl: true });
       }
     }
   }

@@ -23,7 +23,7 @@
                   <span class="menu-label">პირადი მენიუ</span>
                 </div>
                 <div class="dropdown-items-list">
-                  <a *ngFor="let item of privateNavItems"
+                  <a *ngFor="let item of privateNavItems()"
                      [routerLink]="item.route"
                      [class.active]="router.url.startsWith(item.route)"
                      class="private-dropdown-item"
@@ -80,9 +80,9 @@
               </div>
               <div class="dropdown-info-item">
                 <span class="info-label">გეგმა:</span>
-                <span class="plan-value" [class]="stateStore.profile().subscription.toLowerCase()">
-                  {{ stateStore.profile().subscription === 'BASIC' ? 'სტანდარტული' :
-                     stateStore.profile().subscription === 'PRO' ? 'PRO' : 'PREMIUM' }}
+                <span class="plan-value" [class]="(stateStore.profile().subscriptionDetails?.plan || stateStore.profile().subscription || 'BASIC').toLowerCase()">
+                  {{ stateStore.profile().subscriptionDetails?.plan === 'PRO' || stateStore.profile().subscription === 'PRO' ? 'PRO' :
+                     stateStore.profile().subscriptionDetails?.plan === 'BASIC' || stateStore.profile().subscription === 'BASIC' ? 'BASIC' : 'უფასო' }}
                 </span>
               </div>
               <div class="dropdown-info-item dropdown-toggle-item">
@@ -93,9 +93,12 @@
                 </label>
               </div>
               @if (!stateStore.isOnboardingCompleted()) {
-                <a routerLink="/private/onboarding" class="dropdown-item upgrade-btn" style="background: linear-gradient(135deg, #0b6096, #4cd7f6); color: #fff; margin-bottom: 6px;" (click)="closeProfileMenu()">
-                  <span class="icon">✨</span>
-                  <span>პროფილის დასრულება ({{ stateStore.onboardingPercentage() }}%)</span>
+                <a routerLink="/private/onboarding" class="dropdown-item onboarding-btn" (click)="closeProfileMenu()">
+                  <span class="onboarding-btn-content">
+                    <span class="icon">✨</span>
+                    <span class="label">პროფილის დასრულება</span>
+                  </span>
+                  <span class="pct-badge">{{ stateStore.onboardingPercentage() }}%</span>
                 </a>
               }
               @if (stateStore.profile().subscription === 'BASIC') {

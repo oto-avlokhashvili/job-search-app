@@ -30,7 +30,7 @@ export class App {
     this.themeService.init();
     this.isAuthorized.set(this.authService.isLoggedIn());
     if (this.authService.isLoggedIn()) {
-      this.stateStore.loadProfile();
+      this.stateStore.ensureDataLoaded();
     }
     
 

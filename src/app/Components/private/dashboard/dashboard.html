@@ -182,7 +182,7 @@
       </div>
 
       <!-- Query Parameters & Meta (Below search bar) -->
-      @if (stateStore.profile().subscription === 'PRO') {
+      @if (stateStore.isPro()) {
         <div class="search-meta-row">
           <!-- Telegram Status Badge -->
           @if (stateStore.profile().telegramChatId) {

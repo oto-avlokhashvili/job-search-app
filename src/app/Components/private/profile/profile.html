@@ -11,8 +11,8 @@
         <div class="user-meta">
           <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
           <div class="badge-row">
-            <span class="plan-badge" [class]="(stateStore.profile().subscription || 'BASIC').toLowerCase()">
-              {{ stateStore.profile().subscription === 'PREMIUM' ? 'ENTERPRISE' : stateStore.profile().subscription === 'PRO' ? 'PRO' : 'BASIC' }}
+            <span class="plan-badge" [class]="(stateStore.plan() || 'free').toLowerCase()">
+              {{ stateStore.isPro() ? 'PRO' : stateStore.isBasic() ? 'BASIC' : 'უფასო' }}
             </span>
             <span class="readiness-tag" [class.ready]="isOnboardingCompleted()">
               <span class="material-symbols-outlined">{{ isOnboardingCompleted() ? 'verified' : 'pending' }}</span>
@@ -22,12 +22,7 @@
         </div>
       </div>
 
-      <div class="header-right-actions">
-        <button type="button" class="btn-launch-wizard" (click)="openOnboardingWizard()" title="ონბორდინგის / კონფიგურაციის ოსტატი">
-          <span class="material-symbols-outlined">auto_awesome</span>
-          <span>კონფიგურაციის ოსტატი</span>
-        </button>
-      </div>
+      
     </div>
 
     <!-- Stepper Connection Strip in Header -->
@@ -304,33 +299,37 @@
           </div>
         </div>
         
-        <div class="sub-card-box" [class]="(stateStore.profile().subscription || 'BASIC').toLowerCase()">
+        <div class="sub-card-box" [class]="(stateStore.plan() || 'free').toLowerCase()">
           <div class="plan-hero-row">
-            <span class="plan-title">{{ stateStore.profile().subscription === 'PREMIUM' ? 'Enterprise' : stateStore.profile().subscription === 'PRO' ? 'Pro პაკეტი' : 'Basic (უფასო)' }}</span>
-            <span class="plan-active-badge">აქტიური</span>
+            <span class="plan-title">{{ stateStore.isPro() ? 'Pro პაკეტი' : stateStore.isBasic() ? 'Basic პაკეტი' : 'უფასო (არ არის გამოწერილი)' }}</span>
+            <span class="plan-active-badge" [class.inactive]="!stateStore.hasActiveSubscription()">
+              {{ stateStore.hasActiveSubscription() ? 'აქტიური' : 'უფასო' }}
+            </span>
           </div>
 
           <p class="plan-sub">
-            {{ stateStore.profile().subscription === 'PRO' || stateStore.profile().subscription === 'PREMIUM' 
+            {{ stateStore.isPro() 
                 ? 'პროფესიონალური AI ძიება და მყისიერი Telegram/Email შეტყობინებები გააქტიურებულია!' 
-                : 'მეტი შესაძლებლობებისთვის განაახლეთ გამოწერა Pro ან Enterprise გეგმაზე.' }}
+                : stateStore.isBasic() 
+                ? 'ყოველდღიური Telegram შეტყობინებები გააქტიურებულია! შეუზღუდავი AI ძიებისთვის განაახლეთ Pro გეგმაზე.'
+                : 'მეტი შესაძლებლობებისა და შეტყობინებების მისაღებად გაააქტიურეთ Basic ან Pro გეგმა.' }}
           </p>
 
           <div class="plan-features-mini">
             <div class="mini-feat">
               <span class="material-symbols-outlined check">check_circle</span>
-              <span>{{ stateStore.profile().subscription === 'BASIC' ? 'საბაზისო AI ძიება' : 'AI მყისიერი შეტყობინებები' }}</span>
+              <span>{{ stateStore.isPro() ? 'AI მყისიერი შეტყობინებები & ანალიზი' : stateStore.isBasic() ? 'ყოველდღიური Telegram შეტყობინებები' : 'საბაზისო პლატფორმა' }}</span>
             </div>
             <div class="mini-feat">
               <span class="material-symbols-outlined check">check_circle</span>
-              <span>{{ stateStore.profile().subscription === 'BASIC' ? '1 CV ანალიზი' : 'შეუზღუდავი AI ძიება & ანალიზი' }}</span>
+              <span>{{ stateStore.isPro() ? 'შეუზღუდავი AI ძიება & ანალიზი' : stateStore.isBasic() ? '10 ვაკანსია დღეში' : '3 ვაკანსია დღეში' }}</span>
             </div>
           </div>
 
-          @if (stateStore.profile().subscription === 'BASIC') {
+          @if (!stateStore.isPro()) {
             <button class="btn-upgrade-sub" (click)="openUpgradeModal()">
               <span class="material-symbols-outlined">bolt</span>
-              <span>Pro-ზე განახლება</span>
+              <span>{{ stateStore.isBasic() ? 'Pro-ზე განახლება' : 'გამოწერის გააქტიურება' }}</span>
             </button>
           } @else {
             <button class="btn-manage-sub" (click)="openUpgradeModal()">
@@ -342,4 +341,4 @@
 
     </div>
   </div>
-</div>
+</div>

@@ -7,33 +7,45 @@ import { AuthService } from '../Services/auth-service';
  * Ensures user has completed onboarding before accessing private application features (dashboard, profile, jobs, etc.).
  * If onboarding is incomplete, redirects to /private/onboarding.
  */
-export const onboardingGuard: CanActivateFn = (route, state): boolean | UrlTree => {
+export const onboardingGuard: CanActivateFn = async (route, state): Promise<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const stateStore = inject(StateStore);
   const router = inject(Router);
+
+  const urlToken = route.queryParamMap.get('token');
+  if (urlToken) {
+    authService.setToken(urlToken);
+  }
 
   // If not logged in, authGuard will handle redirecting to /home
   if (!authService.isLoggedIn()) {
     return true;
   }
 
-  // If data is already hydrated and onboarding is incomplete, redirect immediately
-  if (stateStore.profileLoaded() && stateStore.cvLoaded() && !stateStore.isOnboardingCompleted()) {
+  // Ensure user profile and CV data is fully loaded before determining onboarding completion
+  await stateStore.ensureDataLoaded();
+
+  // If onboarding is incomplete, redirect immediately to onboarding wizard
+  if (!stateStore.isOnboardingCompleted()) {
     return router.createUrlTree(['/private/onboarding']);
   }
 
-  // Otherwise allow component to mount immediately so user sees instant progress bar / skeleton
   return true;
 };
 
 /**
  * Protects /private/onboarding route: if user has already completed onboarding,
- * redirects them to /private/dashboard unless they explicitly request edit mode (?edit=true).
+ * redirects them to /private/dashboard (if PRO) or /private/profile unless they explicitly request edit mode (?edit=true).
  */
-export const onboardingPageGuard: CanActivateFn = (route, state): boolean | UrlTree => {
+export const onboardingPageGuard: CanActivateFn = async (route, state): Promise<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const stateStore = inject(StateStore);
   const router = inject(Router);
+
+  const urlToken = route.queryParamMap.get('token');
+  if (urlToken) {
+    authService.setToken(urlToken);
+  }
 
   if (!authService.isLoggedIn()) {
     return true;
@@ -41,11 +53,15 @@ export const onboardingPageGuard: CanActivateFn = (route, state): boolean | UrlT
 
   const allowEdit = route.queryParamMap.get('edit') === 'true';
 
-  // If already loaded in state and onboarding is 100% complete, redirect to dashboard
-  if (stateStore.profileLoaded() && stateStore.cvLoaded() && stateStore.isOnboardingCompleted() && !allowEdit) {
-    return router.createUrlTree(['/private/dashboard']);
+  await stateStore.ensureDataLoaded();
+
+  // If already completed onboarding and not in explicit edit mode, redirect to appropriate private route
+  if (stateStore.isOnboardingCompleted() && !allowEdit) {
+    if (stateStore.isPro()) {
+      return router.createUrlTree(['/private/dashboard']);
+    }
+    return router.createUrlTree(['/private/profile']);
   }
 
-  // Otherwise allow component to mount immediately so it renders skeleton without delay
   return true;
 };

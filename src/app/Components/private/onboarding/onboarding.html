@@ -182,11 +182,11 @@
         }
       </div>
 
-      <!-- Helpful AI Tip Box at Sidebar Bottom -->
+      <!-- Helpful Tip Box at Sidebar Bottom -->
       <div class="sidebar-tip-card">
         <div class="tip-icon-title">
-          <span class="material-symbols-outlined text-primary">psychology</span>
-          <span class="tip-title">AI ასისტენტი</span>
+          <span class="material-symbols-outlined text-primary">{{ isProPlan() ? 'psychology' : 'lightbulb' }}</span>
+          <span class="tip-title">{{ isProPlan() ? 'AI ასისტენტი' : 'სასარგებლო რჩევა' }}</span>
         </div>
         <p class="tip-text">
           {{ isProPlan() 
@@ -287,7 +287,7 @@
         }
 
         <!-- ============================================================ -->
-        <!-- ── STEP 2: CV Upload & AI Analysis                           -->
+        <!-- ── STEP 2: CV Upload & Analysis                              -->
         <!-- ============================================================ -->
         @if (currentStep() === 2) {
           <div class="step-panel cv-section animate-fade">
@@ -296,25 +296,29 @@
                 <span class="material-symbols-outlined head-icon">upload_file</span>
                 <h2>რეზიუმეს (CV) ატვირთვა</h2>
               </div>
-              <p class="panel-desc">ატვირთეთ თქვენი CV, რათა ხელოვნურმა ინტელექტმა ავტომატურად ამოიცნოს თქვენი გამოცდილება და უნარები.</p>
+              <p class="panel-desc">
+                {{ isProPlan() 
+                  ? 'ატვირთეთ თქვენი CV, რათა ხელოვნურმა ინტელექტმა ავტომატურად ამოიცნოს თქვენი გამოცდილება და უნარები.' 
+                  : 'ატვირთეთ თქვენი CV (PDF ან Word ფორმატში).' }}
+              </p>
             </div>
 
             @if (cvLoading()) {
               <!-- Loading State -->
               <div class="cv-loading-card animate-fade">
                 <div class="loading-icon-pulse">
-                  <span class="material-symbols-outlined upload-icon-spin">auto_awesome</span>
+                  <span class="material-symbols-outlined upload-icon-spin">{{ isProPlan() ? 'auto_awesome' : 'hourglass_top' }}</span>
                 </div>
                 <div class="loading-text-wrap">
                   <h3 class="loading-title">მიმდინარეობს რეზიუმეს დამუშავება...</h3>
-                  <p class="loading-desc">AI აანალიზებს თქვენს გამოცდილებას, უნარებსა და საკვანძო მიმართულებებს.</p>
+                  <p class="loading-desc">{{ isProPlan() ? 'AI აანალიზებს თქვენს გამოცდილებას, უნარებსა და საკვანძო მიმართულებებს.' : 'მიმდინარეობს ფაილის ატვირთვა და ფორმატის გადამოწმება.' }}</p>
                 </div>
                 <div class="loading-progress-bar">
                   <div class="loading-bar-fill"></div>
                 </div>
               </div>
             } @else if (userCv()) {
-              <!-- Uploaded Showcase Card -->
+              <!-- Redesigned Modern Uploaded CV Showcase Card -->
               <div class="uploaded-cv-premium-card animate-fade">
                 <div class="cv-card-top-row">
                   <div class="file-lead-info">
@@ -340,7 +344,7 @@
                       <div class="doc-meta-info">
                         <span>{{ formatFileSize(userCv()?.size) }}</span>
                         <span class="meta-separator">•</span>
-                        <span>მზადაა AI ვაკანსიების ძიებისთვის</span>
+                        <span>{{ isProPlan() ? 'მზადაა AI ვაკანსიების ძიებისთვის' : 'მზადაა შემდეგი ნაბიჯისთვის' }}</span>
                       </div>
                     </div>
                   </div>
@@ -353,22 +357,40 @@
                     </button>
                     <button type="button" class="btn-cv-action danger" (click)="deleteCv()" title="CV-ს წაშლა">
                       <span class="material-symbols-outlined">delete</span>
+                      <span>წაშლა</span>
                     </button>
                   </div>
                 </div>
 
+                @if (userCv()?.summary?.detectedRole || (userCv()?.summary?.primarySkills && userCv()?.summary?.primarySkills.length > 0)) {
+                  <div class="cv-extracted-preview-box">
+                    @if (userCv()?.summary?.detectedRole) {
+                      <div class="preview-item">
+                        <span class="preview-label">გამოვლენილი პროფილი:</span>
+                        <span class="preview-val">{{ userCv()?.summary?.detectedRole }}</span>
+                      </div>
+                    }
+                    @if (userCv()?.summary?.primarySkills && userCv()?.summary?.primarySkills.length > 0) {
+                      <div class="preview-item skills">
+                        <span class="preview-label">ძირითადი უნარები:</span>
+                        <div class="preview-tags-list">
+                          @for (skill of userCv()?.summary?.primarySkills?.slice(0, 6); track skill) {
+                            <span class="preview-skill-tag">{{ skill }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
                 <div class="cv-status-highlight-strip">
                   <div class="strip-item">
-                    <span class="material-symbols-outlined text-green-500">task_alt</span>
-                    <span>რეზიუმე წარმატებით მიღებულია</span>
+                    <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    <span>ფაილი წარმატებით მიღებულია</span>
                   </div>
                   <div class="strip-item">
-                    <span class="material-symbols-outlined text-green-500">task_alt</span>
+                    <span class="material-symbols-outlined text-green-500">check_circle</span>
                     <span>ფორმატი ვალიდურია ({{ (userCv()?.originalName?.toLowerCase()?.endsWith('.doc') || userCv()?.originalName?.toLowerCase()?.endsWith('.docx')) ? 'Word' : 'PDF' }})</span>
-                  </div>
-                  <div class="strip-item">
-                    <span class="material-symbols-outlined text-green-500">task_alt</span>
-                    <span>მზადაა შემდეგი ნაბიჯისთვის</span>
                   </div>
                 </div>
               </div>
@@ -494,7 +516,7 @@
                       {{ searchQueries().length }}/3
                     </span>
                   </div>
-                  <p class="section-desc">AI ამ სიტყვების მიხედვით გაფილტრავს ვაკანსიებს. აუცილებელია მინიმუმ 3 სიტყვა.</p>
+                  <p class="section-desc">ამ სიტყვების მიხედვით გაიფილტრება თქვენთვის ვაკანსიები. აუცილებელია მინიმუმ 3 სიტყვა.</p>
 
                   <div class="chips-input-container-wrapper">
                     <div class="chips-input-container" [class.is-invalid]="infoFormSubmitted() && searchQueries().length < 3" [class.loading]="keywordLoading()">
@@ -904,9 +926,9 @@
                       </span>
                     </div>
                     <div class="review-item-row">
-                      <span class="review-label">AI შესაძლებლობები:</span>
+                      <span class="review-label">{{ isProPlan() ? 'AI შესაძლებლობები:' : 'ფუნქციონალი:' }}</span>
                       <span class="review-val text-success">
-                        {{ isProPlan() ? 'სრული AI ანალიზი & ავტო-Keywords' : 'საბაზისო AI ვაკანსიების ძიება' }}
+                        {{ isProPlan() ? 'სრული AI ანალიზი & ავტო-Keywords' : 'საძიებო სიტყვებით ფილტრაცია & Telegram' }}
                       </span>
                     </div>
                   </div>

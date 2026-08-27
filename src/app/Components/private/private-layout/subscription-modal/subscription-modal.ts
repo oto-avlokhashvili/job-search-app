@@ -3,12 +3,10 @@ import { Component, inject, signal } from '@angular/core';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { StateStore } from '../../../../Store/state.store';
 import { AlertifyService } from '../../../../Core/Services/alertify.service';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../../environments/environment';
+import { SubscriptionPlan } from '../../../../Core/Interfaces/user';
 
 interface Plan {
-  key: 'PRO' | 'PREMIUM';
+  key: SubscriptionPlan | 'PREMIUM';
   name: string;
   price: string;
   period: string;
@@ -18,6 +16,7 @@ interface Plan {
 
 @Component({
   selector: 'app-subscription-modal',
+  standalone: true,
   imports: [CommonModule, MatDialogModule],
   templateUrl: './subscription-modal.html',
   styleUrl: './subscription-modal.scss',
@@ -26,11 +25,20 @@ export class SubscriptionModal {
   dialogRef = inject(MatDialogRef<SubscriptionModal>);
   stateStore = inject(StateStore);
   alertify = inject(AlertifyService);
-  http = inject(HttpClient);
-  store = inject(StateStore);
   loading = signal<string | null>(null);
 
   plans: Plan[] = [
+    {
+      key: 'BASIC',
+      name: 'Basic',
+      price: '4',
+      period: '/თვე',
+      features: [
+        'ყოველდღიური Telegram შეტყობინებები',
+        '10 შესაბამისი ვაკანსია დღეში',
+        'საბაზისო CV ანალიზი',
+      ],
+    },
     {
       key: 'PRO',
       name: 'Pro',
@@ -38,10 +46,10 @@ export class SubscriptionModal {
       period: '/თვე',
       badge: 'რეკომენდირებული',
       features: [
-        'შეუზღუდავი ძიება',
-        'AI რეზიუმეს ოპტიმიზაცია',
-        'პრიორიტეტული მხარდაჭერა',
-        'სტატისტიკა და ანალიტიკა',
+        'შეუზღუდავი AI ძიება & ანალიზი',
+        'AI რეზიუმეს ოპტიმიზაცია & ხელფასის ანალიზი',
+        'ყოველდღიური Email & Telegram შეტყობინებები',
+        'პრიორიტეტული AI შესაბამისობის ქულები',
       ],
     },
     {
@@ -62,8 +70,15 @@ export class SubscriptionModal {
     if (plan.key === 'PREMIUM') return;
 
     this.loading.set(plan.key);
-    await this.store.updateProfile(this.store.profile().id, { subscription: plan.key });
-    this.close();
+    try {
+      await this.stateStore.assignSubscriptionPlan(plan.key);
+      this.alertify.success(`გეგმა ${plan.name} წარმატებით გააქტიურდა!`);
+      this.close();
+    } catch (err) {
+      this.alertify.error('გეგმის გააქტიურება ვერ მოხერხდა');
+    } finally {
+      this.loading.set(null);
+    }
   }
 
   close() {

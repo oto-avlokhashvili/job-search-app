@@ -2,12 +2,13 @@ import { signalStore, withState, withMethods, patchState, withComputed } from '@
 import { computed, inject } from "@angular/core";
 import { JobsService } from '../Core/Services/jobs-service';
 import { AuthService } from '../Core/Services/auth-service';
-import { User } from '../Core/Interfaces/user';
+import { User, SubscriptionPlan, SubscriptionDetails } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
 import { AiMatchedJobsResponse, Job, SentJobsResponse } from '../Core/Interfaces/jobs';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
+import { SubscriptionService } from '../Core/Services/subscription.service';
 
 type State = {
     profile: User;
@@ -40,7 +41,7 @@ type State = {
 }
 
 const initialState: State = {
-    profile: { id: 0, firstName: '---', lastName: '---', email: '', subscription: 'BASIC', searchQuery: [], createdAt: '' },
+    profile: { id: 0, firstName: '---', lastName: '---', email: '', subscriptionDetails: null, subscription: null, searchQuery: [], createdAt: '' },
     profileLoaded: false,
     matchedJobsCount: 0,
     sentJobsCount: 0,
@@ -69,28 +70,52 @@ const initialState: State = {
     selectedJobError: null,
 }
 
+let inFlightProfilePromise: Promise<void> | null = null;
+let inFlightCvPromise: Promise<void> | null = null;
+
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
     withComputed((store) => {
+        const plan = computed(() => {
+            const p = store.profile();
+            return p?.subscriptionDetails?.plan ?? (p?.subscription as SubscriptionPlan) ?? null;
+        });
+
+        const isPro = computed(() => {
+            const p = store.profile();
+            const isSubActive = p?.subscriptionDetails?.status === 'ACTIVE' || p?.subscriptionDetails?.status === 'TRIALING';
+            return (p?.subscriptionDetails?.plan === 'PRO' && isSubActive) || p?.subscription === 'PRO';
+        });
+
+        const isBasic = computed(() => {
+            const p = store.profile();
+            const isSubActive = p?.subscriptionDetails?.status === 'ACTIVE' || p?.subscriptionDetails?.status === 'TRIALING';
+            return (p?.subscriptionDetails?.plan === 'BASIC' && isSubActive) || p?.subscription === 'BASIC';
+        });
+
+        const hasActiveSubscription = computed(() => {
+            const p = store.profile();
+            const sub = p?.subscriptionDetails;
+            const isSubActive = sub?.status === 'ACTIVE' || sub?.status === 'TRIALING';
+            return isSubActive || ['BASIC', 'PRO', 'PREMIUM'].includes(p?.subscription || '');
+        });
+
         const hasCvStep = computed(() => !!store.userCv() && !store.cvLoading());
         const hasInfoStep = computed(() => {
             const p = store.profile();
             const queries = store.searchQuery() || [];
             const hasName = !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
-            const isPro = p?.subscription === 'PRO' || p?.subscription === 'PREMIUM';
-            const hasKeywords = isPro ? true : queries.length >= 3;
+            const hasKeywords = isPro() ? true : (queries.length >= 1 || (p?.searchQuery && p.searchQuery.length >= 1));
             return hasName && hasKeywords;
         });
         const hasNotificationStep = computed(() => {
             const p = store.profile();
-            const isPro = p?.subscription === 'PRO' || p?.subscription === 'PREMIUM';
-            const channelOk = isPro ? !!p?.isEmailVerified : !!p?.telegramChatId;
-            return !!p?.receiveMessages && channelOk;
+            const channelOk = isPro() ? !!p?.isEmailVerified : (!!p?.telegramChatId || !!p?.receiveMessages);
+            return !!p?.receiveMessages || channelOk;
         });
         const hasSubscriptionStep = computed(() => {
-            const p = store.profile();
-            return !!p?.subscription && ['BASIC', 'PRO', 'PREMIUM'].includes(p.subscription);
+            return hasActiveSubscription();
         });
 
         const onboardingPercentage = computed(() => {
@@ -115,6 +140,10 @@ export const StateStore = signalStore(
         });
 
         return {
+            plan,
+            isPro,
+            isBasic,
+            hasActiveSubscription,
             hasCvStep,
             hasInfoStep,
             hasNotificationStep,
@@ -124,30 +153,115 @@ export const StateStore = signalStore(
             isOnboardingCompleted,
         };
     }),
-    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv)) => ({
-        async loadProfile(force: boolean = false) {
+    withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv), subscriptionService = inject(SubscriptionService)) => ({
+        async loadProfile(force: boolean = false): Promise<void> {
             if (!force && store.profileLoaded() && store.profile().id !== 0) {
                 return;
             }
-            try {
-                const profile = await authService.getUserProfile();
-                patchState(store, {
-                    profile, profileLoaded: true
-                });
-            } catch (err) {
-                console.error('Error loading profile:', err);
+            if (!force && inFlightProfilePromise) {
+                return inFlightProfilePromise;
             }
+
+            inFlightProfilePromise = (async () => {
+                try {
+                    const profile = await authService.getUserProfile();
+                    patchState(store, {
+                        profile,
+                        profileLoaded: true,
+                        searchQuery: (profile?.searchQuery && profile.searchQuery.length > 0) ? profile.searchQuery : (store.searchQuery() || [])
+                    });
+                } catch (err) {
+                    console.error('Error loading profile:', err);
+                } finally {
+                    inFlightProfilePromise = null;
+                }
+            })();
+
+            return inFlightProfilePromise;
         },
 
         updateProfile(id: number, data: any) {
+            if (!id || !data || Object.keys(data).length === 0) return;
+
+            const current = store.profile();
+            let hasDifference = false;
+            for (const key of Object.keys(data)) {
+                if ((current as any)[key] !== data[key]) {
+                    hasDifference = true;
+                    break;
+                }
+            }
+
             patchState(store, {
                 profile: { ...store.profile(), ...data }
             });
-            userService.getUserById(id, data).subscribe(res => {
-                patchState(store, {
-                    profile: res
-                });
+
+            // If the state already has these values saved, skip unnecessary network call
+            if (!hasDifference) {
+                return;
+            }
+
+            userService.getUserById(id, data).subscribe({
+                next: (res) => {
+                    patchState(store, {
+                        profile: res
+                    });
+                },
+                error: (err) => {
+                    console.error('Error updating profile:', err);
+                }
             });
+        },
+
+        async assignSubscriptionPlan(plan: SubscriptionPlan, durationDays: number = 30) {
+            const user = store.profile();
+            if (!user || !user.id) return;
+
+            const fallbackDetails: SubscriptionDetails = {
+                id: user.subscriptionDetails?.id || 'sub-local',
+                userId: user.id,
+                plan,
+                status: 'ACTIVE',
+                cancelAtPeriodEnd: false,
+            };
+
+            try {
+                const res: any = await firstValueFrom(subscriptionService.assignPlan(user.id, plan, durationDays));
+                const details = res?.subscriptionDetails || (res?.plan ? res : null);
+                const updatedUser = res?.user || (res?.email ? res : null);
+
+                if (updatedUser) {
+                    patchState(store, {
+                        profile: {
+                            ...store.profile(),
+                            ...updatedUser,
+                            subscription: plan,
+                            subscriptionDetails: details || updatedUser.subscriptionDetails || fallbackDetails,
+                        }
+                    });
+                } else {
+                    patchState(store, {
+                        profile: {
+                            ...store.profile(),
+                            subscription: plan,
+                            subscriptionDetails: details || fallbackDetails,
+                        }
+                    });
+                }
+
+                // Reload fresh profile from server to guarantee sync
+                await this.loadProfile(true);
+            } catch (err) {
+                console.error('Error assigning subscription plan:', err);
+                patchState(store, {
+                    profile: {
+                        ...store.profile(),
+                        subscription: plan,
+                        subscriptionDetails: fallbackDetails,
+                    }
+                });
+                await this.loadProfile(true);
+            }
         },
 
         updateLocalProfile(data: Partial<User>) {
@@ -156,21 +270,32 @@ export const StateStore = signalStore(
             });
         },
 
-        async getCv(force: boolean = false) {
+        async getCv(force: boolean = false): Promise<void> {
             if (!force && store.cvLoaded() && store.userCv() !== null && !!store.userCv()?.summary) {
                 return;
             }
-            patchState(store, { cvLoading: true });
-            try {
-                const res = await firstValueFrom(cvService.getCV());
-                patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
-            } catch (err) {
-                patchState(store, { cvLoading: false, cvLoaded: true });
-                console.error('Error fetching CV:', err);
+            if (!force && inFlightCvPromise) {
+                return inFlightCvPromise;
             }
+
+            patchState(store, { cvLoading: true });
+
+            inFlightCvPromise = (async () => {
+                try {
+                    const res = await firstValueFrom(cvService.getCV());
+                    patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
+                } catch (err) {
+                    patchState(store, { cvLoading: false, cvLoaded: true });
+                    console.error('Error fetching CV:', err);
+                } finally {
+                    inFlightCvPromise = null;
+                }
+            })();
+
+            return inFlightCvPromise;
         },
 
-        async ensureDataLoaded(force: boolean = false) {
+        async ensureDataLoaded(force: boolean = false): Promise<void> {
             const promises: Promise<any>[] = [];
             if (force || !store.profileLoaded() || store.profile().id === 0) {
                 promises.push(this.loadProfile(force));

@@ -1248,15 +1248,19 @@
   .uploaded-cv-premium-card {
     background: var(--surface-container-low);
     border: 1.5px solid rgba(34, 197, 94, 0.35);
-    border-radius: 20px;
-    padding: 2rem 1.75rem;
+    border-radius: 18px;
+    padding: 1.5rem 1.6rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
     flex: 1;
-    min-height: 320px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+
+    @media (max-width: 576px) {
+      padding: 1.15rem;
+      gap: 1rem;
+    }
 
     .cv-card-top-row {
       display: flex;
@@ -1265,15 +1269,23 @@
       gap: 1rem;
       flex-wrap: wrap;
 
+      @media (max-width: 576px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+      }
+
       .file-lead-info {
         display: flex;
         align-items: center;
         gap: 1rem;
+        min-width: 0;
+        flex: 1;
 
         .doc-type-badge-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 14px;
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1281,19 +1293,19 @@
           flex-shrink: 0;
 
           &.pdf {
-            background: #fee2e2;
+            background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
-            border: 1px solid #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.25);
           }
 
           &.word {
-            background: #e0f2fe;
+            background: rgba(2, 132, 199, 0.12);
             color: #0284c7;
-            border: 1px solid #bae6fd;
+            border: 1px solid rgba(2, 132, 199, 0.25);
           }
 
           .material-symbols-outlined {
-            font-size: 24px;
+            font-size: 22px;
             line-height: 1;
           }
 
@@ -1310,24 +1322,26 @@
           display: flex;
           flex-direction: column;
           gap: 3px;
+          min-width: 0;
+          flex: 1;
 
           .name-status-row {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
 
             .doc-file-name {
               font-size: 15px;
               font-weight: 700;
               color: var(--on-surface);
-              max-width: 320px;
+              max-width: 260px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
 
               @media (max-width: 576px) {
-                max-width: 180px;
+                max-width: 170px;
               }
             }
 
@@ -1366,14 +1380,19 @@
       .file-actions-bar {
         display: flex;
         align-items: center;
-        gap: 0.65rem;
+        gap: 0.5rem;
+
+        @media (max-width: 576px) {
+          width: 100%;
+          justify-content: flex-start;
+        }
 
         .btn-cv-action {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 14px;
-          border-radius: 10px;
+          padding: 7px 13px;
+          border-radius: 9px;
           font-size: 12.5px;
           font-weight: 700;
           cursor: pointer;
@@ -1384,19 +1403,75 @@
           font-family: inherit;
 
           .material-symbols-outlined {
-            font-size: 17px;
+            font-size: 16px;
           }
 
           &.secondary:hover {
             border-color: var(--primary);
             color: var(--primary);
-            background: rgba(var(--primary-rgb), 0.08);
+            background: rgba(11, 96, 150, 0.08);
           }
 
-          &.danger:hover {
-            border-color: #ef4444;
+          &.danger {
             color: #ef4444;
-            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.06);
+
+            &:hover {
+              border-color: #ef4444;
+              background: rgba(239, 68, 68, 0.14);
+            }
+          }
+        }
+      }
+    }
+
+    .cv-extracted-preview-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      background: var(--surface-container);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+
+      .preview-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 13px;
+
+        .preview-label {
+          color: var(--on-surface-variant);
+          font-weight: 600;
+          font-size: 12px;
+          flex-shrink: 0;
+        }
+
+        .preview-val {
+          color: var(--on-surface);
+          font-weight: 700;
+        }
+
+        &.skills {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.4rem;
+        }
+
+        .preview-tags-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+
+          .preview-skill-tag {
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: var(--surface-container-high);
+            color: var(--primary);
+            border: 1px solid rgba(11, 96, 150, 0.2);
           }
         }
       }
@@ -1405,13 +1480,12 @@
     .cv-status-highlight-strip {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 1.25rem;
       flex-wrap: wrap;
-      gap: 0.75rem;
       background: rgba(34, 197, 94, 0.06);
       border: 1px solid rgba(34, 197, 94, 0.2);
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
+      border-radius: 11px;
+      padding: 0.6rem 0.9rem;
 
       .strip-item {
         display: flex;

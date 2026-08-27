@@ -7,6 +7,7 @@ import { SentJobs } from './Components/private/sent-jobs/sent-jobs';
 import { Analytics } from './Components/private/analytics/analytics';
 import { authGuard } from './Core/Guards/auth-guard';
 import { onboardingGuard, onboardingPageGuard } from './Core/Guards/onboarding.guard';
+import { proGuard } from './Core/Guards/pro.guard';
 
 import { Onboarding } from './Components/private/onboarding/onboarding';
 
@@ -36,12 +37,12 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: Dashboard,
-        canActivate: [onboardingGuard],
+        canActivate: [onboardingGuard, proGuard],
       },
       {
         path: 'dashboard/:id',
         component: Dashboard,
-        canActivate: [onboardingGuard],
+        canActivate: [onboardingGuard, proGuard],
       },
       {
         path: 'chat',
@@ -75,7 +76,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'profile',
         pathMatch: 'full'
       }
     ]
