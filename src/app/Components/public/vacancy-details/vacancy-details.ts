@@ -1,6 +1,7 @@
-import { Component, Inject, inject, OnInit, Optional, computed } from '@angular/core';
+import { Component, Inject, inject, OnInit, Optional, computed, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Job } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -19,6 +20,7 @@ export class VacancyDetails implements OnInit {
   public alertify = inject(AlertifyService);
   public authService = inject(AuthService);
   public stateStore = inject(StateStore);
+  private sanitizer = inject(DomSanitizer);
 
   extractedEmail = computed(() => {
     const job = this.stateStore.selectedJob() || this.data?.job;
@@ -37,6 +39,139 @@ export class VacancyDetails implements OnInit {
     const job = this.stateStore.selectedJob() || this.data?.job;
     return extractSalary(job);
   });
+
+  formattedDescription = computed<SafeHtml | null>(() => {
+    const job = this.stateStore.selectedJob() || this.data?.job;
+    if (!job) return null;
+
+    const raw = (job.description && job.description.trim().length > 0)
+      ? job.description
+      : (job.requirements && job.requirements.trim().length > 0)
+        ? job.requirements
+        : null;
+
+    if (!raw) return null;
+
+    const formattedHtml = this.formatDescriptionText(raw);
+    return this.sanitizer.bypassSecurityTrustHtml(formattedHtml);
+  });
+
+  private formatDescriptionText(text: string): string {
+    if (!text) return '';
+
+    // Check if the text already contains rich HTML tags
+    const hasHtmlTags = /<\s*(p|br|div|ul|ol|li|table|tr|td|h[1-6]|strong|b|em|span)\b[^>]*>/i.test(text);
+
+    if (hasHtmlTags) {
+      // Clean up hardcoded colors/backgrounds from scraped HTML so it adapts to dark/light theme
+      let cleanHtml = text
+        .replace(/style="([^"]*)"/gi, (match, styleContent) => {
+          const cleaned = styleContent
+            .replace(/color\s*:\s*[^;"]+;?/gi, '')
+            .replace(/background(-color)?\s*:\s*[^;"]+;?/gi, '')
+            .replace(/font-family\s*:\s*[^;"]+;?/gi, '')
+            .replace(/font-size\s*:\s*[^;"]+;?/gi, '')
+            .trim();
+          return cleaned.length > 0 ? `style="${cleaned}"` : '';
+        })
+        .replace(/color="[^"]*"/gi, '')
+        .replace(/bgcolor="[^"]*"/gi, '')
+        .replace(/<font[^>]*>/gi, '')
+        .replace(/<\/font>/gi, '');
+
+      return cleanHtml;
+    }
+
+    // Plain text parser: preserve formatting, bullets, headers, spacing
+    const normalized = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .trim();
+
+    const lines = normalized.split('\n');
+    const result: string[] = [];
+    let inList = false;
+    let listType: 'ul' | 'ol' = 'ul';
+
+    const bulletRegex = /^(\s*)([•*–—\-✓✔▪▫+●]|\d+[\.\)])\s*(.+)$/;
+    const headerRegex = /^(\s*)(ძირითადი მოვალეობები|მოვალეობები|მოთხოვნები|საკვალიფიკაციო მოთხოვნები|პიროვნული თვისებები|სამუშაო პირობები|რას გთავაზობთ|გთავაზობთ|ანაზღაურება|დამატებითი ინფორმაცია|საკონტაქტო ინფორმაცია|Job Description|Responsibilities|Requirements|Qualifications|We Offer|About Company|Contact):?\s*$/i;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      if (!line) {
+        if (inList) {
+          result.push(`</${listType}>`);
+          inList = false;
+        }
+        continue;
+      }
+
+      // Check for bullet items
+      const bulletMatch = line.match(bulletRegex);
+      if (bulletMatch) {
+        const bulletMarker = bulletMatch[2];
+        const itemContent = bulletMatch[3];
+        const isNumeric = /^\d+[\.\)]/.test(bulletMarker);
+        const currentListType = isNumeric ? 'ol' : 'ul';
+
+        if (!inList) {
+          listType = currentListType;
+          result.push(`<${listType} class="formatted-bullet-list">`);
+          inList = true;
+        } else if (listType !== currentListType) {
+          result.push(`</${listType}>`);
+          listType = currentListType;
+          result.push(`<${listType} class="formatted-bullet-list">`);
+        }
+
+        result.push(`<li>${this.escapeAndLinkify(itemContent)}</li>`);
+        continue;
+      }
+
+      // If we were in a list and this line is not a bullet item
+      if (inList) {
+        result.push(`</${listType}>`);
+        inList = false;
+      }
+
+      // Check for section headers
+      if (headerRegex.test(line) || (line.endsWith(':') && line.length < 80)) {
+        result.push(`<h3 class="formatted-section-heading">${this.escapeAndLinkify(line)}</h3>`);
+      } else {
+        result.push(`<p class="formatted-paragraph">${this.escapeAndLinkify(line)}</p>`);
+      }
+    }
+
+    if (inList) {
+      result.push(`</${listType}>`);
+    }
+
+    return result.join('');
+  }
+
+  private escapeAndLinkify(str: string): string {
+    if (!str) return '';
+    // Basic entity escaping
+    let escaped = str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Auto-link email addresses
+    escaped = escaped.replace(
+      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+      '<a href="mailto:$1" class="formatted-email-link">$1</a>'
+    );
+
+    // Auto-link URLs
+    escaped = escaped.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer" class="formatted-web-link">$1</a>'
+    );
+
+    return escaped;
+  }
 
   constructor(
     @Optional() public dialogRef?: MatDialogRef<VacancyDetails>,
