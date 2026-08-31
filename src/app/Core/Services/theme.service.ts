@@ -8,13 +8,12 @@ export class ThemeService {
 
   init() {
     const saved = localStorage.getItem('app-theme');
-    if (saved === 'light') {
-      this.isDarkMode.set(false);
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else {
-      this.isDarkMode.set(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    const isDark = saved !== 'light';
+    this.isDarkMode.set(isDark);
+    const theme = isDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.removeProperty('background-color');
+    document.body.style.removeProperty('background-color');
   }
 
   toggle() {
@@ -22,6 +21,9 @@ export class ThemeService {
     this.isDarkMode.set(next);
     const theme = next ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.removeProperty('background-color');
+    document.body.style.removeProperty('background-color');
     localStorage.setItem('app-theme', theme);
   }
 }
+

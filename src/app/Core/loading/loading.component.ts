@@ -1,4 +1,4 @@
-import { Component, inject, signal, Signal, OnInit, OnDestroy, ViewChild, ElementRef } from "@angular/core";
+import { Component, inject, signal, Signal, OnInit, OnDestroy } from "@angular/core";
 import { LoadingService } from "../Services/loading.service";
 import { CommonModule } from "@angular/common";
 
@@ -9,7 +9,6 @@ import { CommonModule } from "@angular/common";
     imports: [CommonModule]
 })
 export class LoadingIndicatorComponent implements OnInit, OnDestroy {
-
     private loadingService = inject(LoadingService);
     loading: Signal<boolean> = this.loadingService.loading;
 
@@ -31,21 +30,8 @@ export class LoadingIndicatorComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        clearInterval(this.interval);
-    }
-
-    @ViewChild('starsContainer') starsContainer!: ElementRef;
-
-    ngAfterViewInit() {
-        if (!this.starsContainer) return;
-        for (let i = 0; i < 40; i++) {
-            const s = document.createElement('div');
-            s.className = 'star-dot';
-            s.style.left = Math.random() * 100 + 'vw';
-            s.style.top = Math.random() * 100 + 'vh';
-            s.style.animationDelay = (Math.random() * 3) + 's';
-            s.style.opacity = String(0.2 + Math.random() * 0.8);
-            this.starsContainer.nativeElement.appendChild(s);
+        if (this.interval) {
+            clearInterval(this.interval);
         }
     }
 }

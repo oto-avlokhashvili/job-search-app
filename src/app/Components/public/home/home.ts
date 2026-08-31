@@ -2,16 +2,22 @@ import { Component, ElementRef, inject, OnInit, signal, computed, ViewChild, Aft
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../Core/Services/auth-service';
+import { WaitlistService } from '../../../Core/Services/waitlist.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { environment } from '../../../../environments/environment';
+
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
+
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
+import { WaitlistModal } from '../waitlist-modal/waitlist-modal';
+
 import { VacancyDetails } from '../vacancy-details/vacancy-details';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+
 
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { Job } from '../../../Core/Interfaces/jobs';
@@ -41,8 +47,10 @@ interface HomeJob {
 export class Home implements OnInit, AfterViewInit, OnDestroy {
   authService = inject(AuthService);
   stateStore = inject(StateStore);
+  waitlistService = inject(WaitlistService);
   private dialog = inject(MatDialog);
   private router = inject(Router);
+
   private jobsService = inject(JobsService);
   private ngZone = inject(NgZone);
 
@@ -736,13 +744,52 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  joinProWaitlist() {
+    if (this.waitlistService.isEnrolled('PRO')) {
+      this.alertify.success('თქვენ უკვე დარეგისტრირებული ხართ Pro პაკეტის Waitlist-ში! 🎉');
+      return;
+    }
+    this.dialog.open(WaitlistModal, {
+      width: '480px',
+      maxWidth: '95vw',
+      panelClass: 'waitlist-dialog',
+      disableClose: false,
+      autoFocus: false,
+      data: { plan: 'PRO', source: 'landing_pricing' }
+    });
+  }
+
+  joinEnterpriseWaitlist() {
+    if (this.waitlistService.isEnrolled('ENTERPRISE')) {
+      this.alertify.success('თქვენ უკვე დარეგისტრირებული ხართ Enterprise Waitlist-ში! 🎉');
+      return;
+    }
+    this.dialog.open(WaitlistModal, {
+      width: '480px',
+      maxWidth: '95vw',
+      panelClass: 'waitlist-dialog',
+      disableClose: false,
+      autoFocus: false,
+      data: { plan: 'ENTERPRISE', source: 'landing_enterprise_card' }
+    });
+  }
+
   handlePlanClick(planKey: string) {
+    if (planKey === 'PRO') {
+      this.joinProWaitlist();
+      return;
+    }
+    if (planKey === 'PREMIUM' || planKey === 'ENTERPRISE') {
+      this.joinEnterpriseWaitlist();
+      return;
+    }
     if (this.authService.isLoggedIn()) {
       this.openUpgradeModal();
     } else {
       this.authService.openAuthModal('register');
     }
   }
+
 
   openUpgradeModal() {
     this.dialog.open(SubscriptionModal, {
@@ -753,6 +800,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       autoFocus: false,
     });
   }
+
 
   sendContactEmail() {
     if (this.contactEmail.invalid || this.contactComment.invalid) {

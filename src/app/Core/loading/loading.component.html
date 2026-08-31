@@ -1,22 +1,9 @@
 @if (loading()) {
-  <div class="overlay">
-    <!-- Floating background data nodes -->
-    <div class="stars" #starsContainer></div>
-
-    <div class="ai-loader-container">
-      <div class="ai-orbit orbit-1"></div>
-      <div class="ai-orbit orbit-2"></div>
-      <div class="ai-orbit orbit-3"></div>
-      <div class="ai-core">
-        <div class="core-pulse"></div>
-      </div>
+  <div class="loader-overlay">
+    <div class="spinner-dual">
+      <div class="spinner-arc"></div>
+      <div class="spinner-inner"></div>
     </div>
-
-    <div class="progress-wrap">
-      <div class="bar-track">
-        <div class="bar-fill"></div>
-      </div>
-      <div class="status">{{ statusMessage() }}</div>
-    </div>
+    <span class="loader-label">{{ statusMessage() }}</span>
   </div>
 }

@@ -185,6 +185,101 @@
 }
 
 /* ==========================================================================
+   Chat Quota Bar
+   ========================================================================== */
+.chat-quota-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 1rem;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08), rgba(var(--primary-rgb), 0.03));
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.74rem;
+
+  .quota-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--on-surface-variant);
+
+    .quota-icon {
+      font-size: 14px;
+      color: #e6af2e;
+    }
+
+    strong {
+      color: var(--primary);
+      font-weight: 700;
+    }
+  }
+
+  .upgrade-link-btn {
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    transition: color 0.2s;
+
+    &:hover {
+      color: rgba(var(--primary-rgb), 0.8);
+    }
+  }
+
+  &.limit-exhausted {
+    background: rgba(239, 83, 80, 0.1);
+    border-bottom: 1px solid rgba(239, 83, 80, 0.25);
+
+    .quota-info {
+      color: #d32f2f;
+      [data-theme='dark'] & {
+        color: #ff8a80;
+      }
+      .quota-icon {
+        color: #d32f2f;
+      }
+      strong {
+        color: #d32f2f;
+      }
+    }
+  }
+
+  &.profile-pending-bar {
+    background: rgba(245, 158, 11, 0.08);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.22);
+    cursor: pointer;
+
+    .profile-pending-icon {
+      color: #f59e0b !important;
+    }
+
+    .quota-text {
+      color: #d97706;
+      font-weight: 600;
+
+      [data-theme='dark'] & {
+        color: #fbbf24;
+      }
+    }
+
+    .upgrade-link-btn {
+      color: #d97706;
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.12);
+
+      &:hover {
+        background: #f59e0b;
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+
+/* ==========================================================================
    Chat Body
    ========================================================================== */
 .chat-body {
@@ -237,6 +332,17 @@
     }
   }
 
+  .profile-icon-circle {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    color: #d97706 !important;
+
+    [data-theme='dark'] & {
+      color: #fbbf24 !important;
+      background: rgba(245, 158, 11, 0.16) !important;
+    }
+  }
+
   h4 {
     font-size: 1rem;
     font-weight: 800;
@@ -269,9 +375,14 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 0.25rem;
 
+    &.btn-chat-profile {
+      background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+    }
+
     span {
       font-size: 18px;
     }
+
 
     &:hover {
       background: rgba(var(--primary-rgb), 0.92);
@@ -548,6 +659,76 @@
       background: rgba(var(--primary-rgb), 0.08);
       color: var(--primary);
       border-color: var(--primary);
+    }
+  }
+
+  .chat-footer-profile-required {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.65rem 1rem;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px dashed rgba(245, 158, 11, 0.35);
+    border-radius: 12px;
+    color: #d97706;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    [data-theme='dark'] & {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    span.material-symbols-outlined {
+      font-size: 18px;
+      color: #f59e0b;
+    }
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.16);
+      transform: scale(1.01);
+    }
+  }
+
+  .chat-footer-exhausted {
+
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.65rem 1rem;
+    background: rgba(239, 83, 80, 0.08);
+    border: 1px dashed rgba(239, 83, 80, 0.3);
+    border-radius: 12px;
+    color: #d32f2f;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    [data-theme='dark'] & {
+      color: #ff8a80;
+      background: rgba(239, 83, 80, 0.12);
+      border-color: rgba(239, 83, 80, 0.35);
+    }
+
+    span.material-symbols-outlined {
+      font-size: 16px;
+      color: #d32f2f;
+      [data-theme='dark'] & {
+        color: #ff8a80;
+      }
+    }
+
+    &:hover {
+      background: rgba(239, 83, 80, 0.16);
+      transform: scale(1.01);
     }
   }
 }

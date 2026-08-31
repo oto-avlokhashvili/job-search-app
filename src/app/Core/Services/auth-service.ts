@@ -80,7 +80,7 @@ export class AuthService {
 
   async getUserProfile(): Promise<any> {
 
-    const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true })
+    const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true , context: new HttpContext().set(skipLoading, true) } )
     const profile = firstValueFrom(profile$)
     return profile;
   }
@@ -107,7 +107,7 @@ export class AuthService {
   }
 
   async generateTelegramToken() {
-    const telegramToken$ = this.http.get(this.url + "/telegram/generate-link-token")
+    const telegramToken$ = this.http.get(this.url + "/telegram/generate-link-token", { context: new HttpContext().set(skipLoading, true) })
     const res: any = await firstValueFrom(telegramToken$)
     return res.token;
   }

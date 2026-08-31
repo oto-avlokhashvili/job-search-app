@@ -1,0 +1,110 @@
+<div class="waitlist-modal-container">
+  <!-- Close Button -->
+  <button class="close-btn" (click)="close()" aria-label="Close">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+
+  @if (!isSuccess()) {
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        <span>მალე დაემატება · Waitlist</span>
+      </div>
+
+      <div class="icon-circle" [class.enterprise]="isEnterprise()">
+        <span class="material-symbols-outlined">{{ isEnterprise() ? 'corporate_fare' : 'rocket_launch' }}</span>
+      </div>
+
+      <h2>{{ isEnterprise() ? 'Enterprise Waitlist' : 'Pro პაკეტის Waitlist' }}</h2>
+      <p class="subtitle">
+        {{ isEnterprise() 
+          ? 'დარეგისტრირდით და მიიღეთ პრიორიტეტული წვდომა კანდიდატების AI მოძიებასა და HR მართვის პანელზე.' 
+          : 'იყავით პირველი, ვინც გამოსცდის AI-ით გაძლიერებულ ჭკვიან ძიებასა და რეზიუმეს ოპტიმიზაციას.' }}
+      </p>
+    </div>
+
+    <!-- Highlights Preview -->
+    <div class="highlights-box">
+      <div class="highlight-item">
+        <span class="material-symbols-outlined check-ico">verified</span>
+        <span>{{ isEnterprise() ? 'კანდიდატების AI მოძიება ვაკანსიებზე' : 'CV-ს სიღრმისეული AI ანალიზი' }}</span>
+      </div>
+      <div class="highlight-item">
+        <span class="material-symbols-outlined check-ico">verified</span>
+        <span>{{ isEnterprise() ? 'HR პანელი & კანდიდატების Match ქულები' : 'შეუზღუდავი პერსონალური შეტყობინებები' }}</span>
+      </div>
+      <div class="highlight-item">
+        <span class="material-symbols-outlined check-ico">verified</span>
+        <span>პირველი შეტყობინება და ექსკლუზიური საწყისი პირობები</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="waitlist-form">
+      <div class="form-group">
+        <label for="waitlist-email">
+          <span>ელ-ფოსტა</span>
+          <span class="required-star">*</span>
+        </label>
+        <div class="input-wrap" [class.error]="form.get('email')?.invalid && form.get('email')?.touched">
+          <span class="material-symbols-outlined input-icon">mail</span>
+          <input
+            id="waitlist-email"
+            type="email"
+            formControlName="email"
+            placeholder="თქვენი ელ-ფოსტის მისამართი"
+            autocomplete="email"
+          />
+        </div>
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <span class="error-msg">გთხოვთ მიუთითოთ ვალიდური ელ-ფოსტა</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="waitlist-notes">
+          <span>{{ isEnterprise() ? 'კომპანიის სახელი / შენიშვნა' : 'დამატებითი კომენტარი' }}</span>
+          <span class="optional-tag">(არასავალდებულო)</span>
+        </label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined input-icon">{{ isEnterprise() ? 'business' : 'edit_note' }}</span>
+          <input
+            id="waitlist-notes"
+            type="text"
+            formControlName="notes"
+            [placeholder]="isEnterprise() ? 'მაგ. შპს კომპანია, 10 დეველოპერი' : 'რა ფუნქციონალი გაინტერესებთ ყველაზე მეტად?'"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="loading()">
+        @if (loading()) {
+          <span class="btn-spinner"></span>
+          <span>რეგისტრაცია...</span>
+        } @else {
+          <span class="material-symbols-outlined">notifications_active</span>
+          <span>შემატყობინე გაშვებისას</span>
+        }
+      </button>
+
+      <p class="privacy-notice">🔒 თქვენი მონაცემები დაცულია. სპამს არ ვაგზავნით.</p>
+    </form>
+  } @else {
+    <!-- Success State -->
+    <div class="success-container animate-pop">
+      <div class="success-icon-circle">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+      <h2>გილოცავთ! 🎉</h2>
+      <p class="success-desc">{{ successMessage() }}</p>
+      <div class="success-card">
+        <span class="material-symbols-outlined info-icon">mark_email_read</span>
+        <span>როგორც კი {{ isEnterprise() ? 'Enterprise' : 'Pro' }} პაკეტი ჩაეშვება, შეტყობინებას თქვენს ელ-ფოსტაზე მიიღებთ.</span>
+      </div>
+      <button class="submit-btn done-btn" (click)="close()">
+        <span>გასაგებია</span>
+      </button>
+    </div>
+  }
+</div>

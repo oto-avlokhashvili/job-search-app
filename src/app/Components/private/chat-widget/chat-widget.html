@@ -26,6 +26,35 @@
         </div>
       </div>
 
+      <!-- Quota Bar for Basic / Non-PRO users -->
+      @if (isLoggedIn() && !stateStore.isPro()) {
+        @if (!stateStore.isOnboardingCompleted()) {
+          <div class="chat-quota-bar profile-pending-bar" (click)="openOnboarding()">
+            <div class="quota-info">
+              <span class="material-symbols-outlined quota-icon profile-pending-icon">account_circle</span>
+              <span class="quota-text">
+                გთხოვთ შეავსოთ პროფილი
+              </span>
+            </div>
+            <button class="upgrade-link-btn" (click)="$event.stopPropagation(); openOnboarding()" title="პროფილის შევსება">
+              შევსება →
+            </button>
+          </div>
+        } @else {
+          <div class="chat-quota-bar" [class.limit-exhausted]="chatQuota()?.remaining === 0">
+            <div class="quota-info">
+              <span class="material-symbols-outlined quota-icon">bolt</span>
+              <span class="quota-text">
+                დღიური ლიმიტი: <strong>{{ chatQuota()?.remaining ?? 3 }}/{{ chatQuota()?.limit ?? 3 }}</strong>
+              </span>
+            </div>
+            <button class="upgrade-link-btn" (click)="openUpgradeModal()" title="განაახლეთ Pro-ზე">
+              Pro (შეუზღუდავი)
+            </button>
+          </div>
+        }
+      }
+
       <!-- Chat Messages Body -->
       <div class="chat-body" #messagesScroll>
         @if (!isLoggedIn()) {
@@ -38,6 +67,18 @@
             <button class="btn-chat-auth" (click)="openAuthModal()">
               <span class="material-symbols-outlined">login</span>
               ავტორიზაცია
+            </button>
+          </div>
+        } @else if (!stateStore.isOnboardingCompleted()) {
+          <div class="auth-required-state profile-required-state">
+            <div class="lock-icon-circle profile-icon-circle">
+              <span class="material-symbols-outlined">account_circle</span>
+            </div>
+            <h4>შეავსეთ თქვენი პროფილი</h4>
+            <p>AI ასისტენტთან სასაუბროდ და პერსონალური რეკომენდაციების მისაღებად, გთხოვთ დაასრულოთ პროფილის შევსება.</p>
+            <button class="btn-chat-auth btn-chat-profile" (click)="openOnboarding()">
+              <span class="material-symbols-outlined">edit_note</span>
+              პროფილის შევსება
             </button>
           </div>
         } @else if (chatMessages().length === 0) {
@@ -101,6 +142,16 @@
             <span class="material-symbols-outlined">lock</span>
             <span>შეტყობინების გასაგზავნად გაიარეთ ავტორიზაცია</span>
           </div>
+        } @else if (!stateStore.isOnboardingCompleted()) {
+          <div class="chat-footer-profile-required" (click)="openOnboarding()">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>გთხოვთ შეავსოთ პროფილი სასაუბროდ</span>
+          </div>
+        } @else if (!stateStore.isPro() && chatQuota() && chatQuota()!.remaining <= 0) {
+          <div class="chat-footer-exhausted" (click)="openUpgradeModal()">
+            <span class="material-symbols-outlined">bolt</span>
+            <span>დღიური ლიმიტი ამოიწურა (3/3) • განაახლეთ Pro-ზე</span>
+          </div>
         } @else {
           <textarea
             [(ngModel)]="chatInputText"
@@ -114,6 +165,7 @@
           </button>
         }
       </div>
+
     </div>
   }
 

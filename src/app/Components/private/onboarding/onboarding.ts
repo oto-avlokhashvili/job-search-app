@@ -9,10 +9,12 @@ import { StateStore } from '../../../Store/state.store';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { ThemeService } from '../../../Core/Services/theme.service';
+import { WaitlistService } from '../../../Core/Services/waitlist.service';
 import { Cv } from '../../../Core/Services/cv';
 import { Users } from '../../../Core/Services/users';
 import { environment } from '../../../../environments/environment';
 import { QrModal } from '../dashboard/qr-modal/qr-modal';
+
 
 export interface StepItem {
   number: number;
@@ -52,10 +54,12 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   private animationFrameId: number | null = null;
   authService = inject(AuthService);
   stateStore = inject(StateStore);
+  waitlistService = inject(WaitlistService);
   private cvService = inject(Cv);
   private usersService = inject(Users);
   private alertify = inject(AlertifyService);
   themeService = inject(ThemeService);
+
 
   private initialStepResolved = false;
   isInitializing = signal<boolean>(true);
@@ -76,8 +80,10 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       { number: 2, id: 'cv', title: 'CV-ს ატვირთვა', subtitle: isPro ? 'რეზიუმეს AI ანალიზი' : 'რეზიუმეს ატვირთვა', icon: 'upload_file' },
       { number: 3, id: 'info', title: 'პირადი მონაცემები', subtitle: isPro ? 'სახელი & გვარი (AI Keywords)' : 'სახელი, გვარი & პოზიციები', icon: 'person' },
       { number: 4, id: 'notifications', title: 'შეტყობინებები', subtitle: isPro ? 'Email შეტყობინებები' : 'Telegram შეტყობინებები', icon: 'notifications_active' },
-      { number: 5, id: 'review', title: 'გადამოწმება & დასრულება', subtitle: 'მონაცემების შემოწმება და გააქტიურება', icon: 'fact_check' },
+      { number: 5, id: 'review', title: 'გადამოწმება & დასრულება', subtitle: 'მონაცემების შემოწმება', icon: 'fact_check' },
     ];
+
+
   });
 
   // Step 3: Info Form
@@ -143,8 +149,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       name: 'Pro პაკეტი',
       price: '8₾',
       period: '/თვე',
-      badge: 'რეკომენდებული',
-      isPopular: true,
+      badge: 'მალე დაემატება',
+      disabled: true,
+      isPopular: false,
       features: [
         'CV-ს ატვირთვა',
         'ვაკანსიების შეტყობინებების მიღება Email-ზე',
@@ -155,21 +162,37 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       key: 'PREMIUM',
-      name: 'Enterprise',
-      price: 'Custom',
+      name: 'Enterprise (კომპანიებისთვის)',
+      price: 'შეთანხმებით',
       period: '',
       disabled: true,
-      badge: 'მალე დაემატება',
+      badge: 'HR & კომპანიები',
+
       features: [
-        'API ინტეგრაცია',
-        'პერსონალური მენეჯერი',
-        'გუნდური მართვა & მრავალპროფილიანი წვდომა',
-        'ყველა Pro შესაძლებლობა',
+        'HR & რეკრუტერების პანელი',
+        'კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე',
+        'კანდიდატების CV-ების AI ანალიზი & Match Score',
+        'ვაკანსიების მართვა & პირდაპირი კონტაქტი',
+        'API ინტეგრაცია & პერსონალური მენეჯერი',
       ],
     },
   ];
 
+  async joinWaitlistFromOnboarding(planKey: string) {
+    if (this.waitlistService.isEnrolled(planKey)) {
+      this.alertify.success(`თქვენ უკვე დარეგისტრირებული ხართ ${planKey} Waitlist-ში! 🎉`);
+      return;
+    }
+    try {
+      const res = await this.waitlistService.join({ plan: planKey, source: 'onboarding' });
+      this.alertify.success(res.message || 'გმადლობთ! თქვენ წარმატებით დაემატეთ Waitlist-ში 🎉');
+    } catch (e) {
+      this.alertify.error('დაფიქსირდა შეცდომა');
+    }
+  }
+
   userCv = computed(() => this.stateStore.userCv());
+
   isUploadingCv = signal<boolean>(false);
   cvLoading = computed(() => this.stateStore.cvLoading() || this.isUploadingCv());
   profile = computed(() => this.stateStore.profile());
@@ -189,6 +212,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     return this.isProcessingPayment();
   });
 
+  step4Submitted = signal<boolean>(false);
+
   canProceedNext = computed(() => {
     const step = this.currentStep();
     if (step === 1) {
@@ -198,24 +223,17 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       return !this.cvLoading() && !!this.userCv();
     }
     if (step === 3) {
-      const f = this.infoForm.get('firstName')?.value?.trim();
-      const l = this.infoForm.get('lastName')?.value?.trim();
-      const isPro = this.isProPlan();
-      const hasKeywords = isPro ? true : this.searchQueries().length >= 3;
-      return !this.keywordLoading() && hasKeywords && !!f && !!l;
+      return !this.keywordLoading();
     }
     if (step === 4) {
-      const p = this.profile();
-      const notifEnabled = !!p?.receiveMessages;
-      const isPro = this.isProPlan();
-      const channelConnected = isPro ? this.isEmailVerified() : this.isTelegramConnected();
-      return !this.isNotificationToggling() && !this.telegramLoading() && !this.emailVerifying() && notifEnabled && channelConnected;
+      return !this.isNotificationToggling() && !this.telegramLoading() && !this.emailVerifying();
     }
     if (step === 5) {
       return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3) && this.isStepValid(4);
     }
     return true;
   });
+
 
   hasSubscription = computed(() => {
     const sub = this.profile()?.subscriptionDetails?.plan || this.profile()?.subscription;
@@ -469,7 +487,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     return true;
   }
 
-  validateStep(step: number): boolean {
+  async validateStep(step: number): Promise<boolean> {
     if (step === 1) {
       if (!this.selectedPlan()) {
         this.alertify.error('გთხოვთ აირჩიოთ სააბონენტო პაკეტი');
@@ -498,37 +516,75 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
         return false;
       }
       this.infoFormSubmitted.set(true);
+      this.infoForm.markAllAsTouched();
       const isPro = this.isProPlan();
       if (!isPro && this.keywordInput().trim()) {
         this.addKeyword();
       }
-      if (this.infoForm.invalid) {
+
+      const fn = this.infoForm.get('firstName')?.value?.trim();
+      const ln = this.infoForm.get('lastName')?.value?.trim();
+      if (!fn && !ln) {
         this.alertify.error('გთხოვთ შეავსოთ სახელი და გვარი');
         return false;
       }
-      if (!isPro && this.searchQueries().length < 3) {
-        this.alertify.error(`გთხოვთ დაამატოთ მინიმუმ 3 საძიებო სიტყვა / პოზიცია (დამატებულია: ${this.searchQueries().length}/3)`);
+      if (!fn) {
+        this.alertify.error('გთხოვთ შეიყვანოთ სახელი');
         return false;
+      }
+      if (!ln) {
+        this.alertify.error('გთხოვთ შეიყვანოთ გვარი');
+        return false;
+      }
+      if (this.infoForm.invalid) {
+        this.alertify.error('გთხოვთ სწორად შეავსოთ სახელი და გვარი');
+        return false;
+      }
+
+      if (!isPro) {
+        if (this.searchQueries().length === 0) {
+          this.alertify.error('საძიებო სიტყვები არ არის მითითებული');
+          return false;
+        }
+        if (this.searchQueries().length < 3) {
+          this.alertify.error(`გთხოვთ მიუთითოთ მინიმუმ 3 საძიებო სიტყვა (მითითებულია: ${this.searchQueries().length}/3)`);
+          return false;
+        }
       }
       this.savePersonalInfo();
       return true;
     }
 
+
     if (step === 4) {
-      if (this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying()) {
+      if (this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying() || this.telegramVerifying()) {
         return false;
       }
-      if (!this.profile()?.receiveMessages) {
-        this.alertify.error('გთხოვთ ჩართოთ შეტყობინებების მიღება გასაგრძელებლად');
-        return false;
-      }
+      this.step4Submitted.set(true);
+
       const isPro = this.isProPlan();
+      if (!isPro && !this.isTelegramConnected()) {
+        this.telegramVerifying.set(true);
+        try {
+          await this.stateStore.loadProfile(true);
+        } catch (e) {
+          // ignore
+        } finally {
+          this.telegramVerifying.set(false);
+        }
+      }
+
+      if (!this.profile()?.receiveMessages) {
+        this.alertify.error('შეტყობინებების მიღება არ არის აქტიური');
+        return false;
+      }
+
       if (isPro && !this.isEmailVerified()) {
-        this.alertify.error('გთხოვთ დაადასტუროთ თქვენი Email');
+        this.alertify.error('ელ-ფოსტა არ არის დადასტურებული');
         return false;
       }
       if (!isPro && !this.isTelegramConnected()) {
-        this.alertify.error('გთხოვთ დააკავშიროთ Telegram ბოტი');
+        this.alertify.error('Telegram ბოტი არ არის დაკავშირებული');
         return false;
       }
       return true;
@@ -557,13 +613,14 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     return true;
   }
 
-  goToStep(step: number) {
+  async goToStep(step: number) {
     if (step < 1 || step > this.totalSteps || step === this.currentStep()) return;
 
     // Validate sequential steps before allowing forward navigation
     if (step > this.currentStep()) {
       for (let s = this.currentStep(); s < step; s++) {
-        if (!this.validateStep(s)) {
+        const valid = await this.validateStep(s);
+        if (!valid) {
           return;
         }
       }
@@ -576,13 +633,14 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  nextStep() {
-    this.goToStep(this.currentStep() + 1);
+  async nextStep() {
+    await this.goToStep(this.currentStep() + 1);
   }
 
   prevStep() {
     this.goToStep(this.currentStep() - 1);
   }
+
 
   // ── Step 2: Personal Info & Keywords ─────────────────────
   savePersonalInfo() {
@@ -750,10 +808,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe((result) => {
           if (result) {
-            if (this.profile()?.id) {
-              this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
-              this.alertify.success('Telegram წარმატებით დაკავშირდა');
-            }
+            this.alertify.success('Telegram წარმატებით დაკავშირდა');
           }
         });
       }
@@ -771,10 +826,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     try {
       await this.stateStore.loadProfile(true);
       if (this.isTelegramConnected()) {
-        if (this.profile()?.id) {
-          this.stateStore.updateProfile(this.profile().id, { receiveMessages: true });
-        }
-        this.alertify.success('Telegram წარმატებით დადასტურდა და შეტყობინებები გააქტიურდა! 🎉');
+        this.alertify.success('Telegram წარმატებით დადასტურდა! 🎉');
       } else {
         this.alertify.warning('Telegram ბოტი ჯერ არ არის დაკავშირებული. გთხოვთ გახსნათ ბოტი Telegram-ში, დააჭიროთ Start-ს და შემდეგ სცადოთ ხელახლა.');
       }
@@ -824,9 +876,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       await this.authService.verifyEmail(email, code);
       this.emailSuccessMsg.set('ელ-ფოსტა წარმატებით დადასტურდა!');
       if (this.profile()?.id) {
-        this.stateStore.updateProfile(this.profile().id, { isEmailVerified: true, receiveMessages: true });
+        this.stateStore.updateProfile(this.profile().id, { isEmailVerified: true });
       }
-      this.alertify.success('ელ-ფოსტა წარმატებით დადასტურდა და შეტყობინებები გააქტიურდა!');
+      this.alertify.success('ელ-ფოსტა წარმატებით დადასტურდა!');
     } catch (err: any) {
       console.error('Email verification error:', err);
       this.emailErrorMsg.set(err.error?.message || 'არასწორი კოდი. გთხოვთ სცადოთ ხელახლა.');
@@ -834,6 +886,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       this.emailVerifying.set(false);
     }
   }
+
 
   private startEmailCooldown() {
     this.emailResendCooldown.set(60);

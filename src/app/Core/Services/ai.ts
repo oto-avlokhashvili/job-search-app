@@ -11,6 +11,7 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class Ai {
   http = inject(HttpClient);
   url = environment.apiUrl;
+
   askChat(message: string, history: { role: 'user' | 'model'; text: string }[] = []): Observable<any> {
     return this.http.post<any>(
       `${this.url}/ai/chat`,
@@ -18,6 +19,13 @@ export class Ai {
       { context: new HttpContext().set(skipLoading, true) }
     );
   }
+
+  getChatQuota(): Observable<{ used: number; limit: number; remaining: number; plan: string; isPro: boolean }> {
+    return this.http.get<any>(`${this.url}/ai/chat-quota`, {
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
   searchJobsWithAi() {
     return this.http.post<any>(`${this.url}/ai/search-job`, null, { context: new HttpContext().set(skipLoading, true) });
   }

@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { StateStore } from '../../../../Store/state.store';
 import { AlertifyService } from '../../../../Core/Services/alertify.service';
+import { WaitlistService } from '../../../../Core/Services/waitlist.service';
 import { SubscriptionPlan } from '../../../../Core/Interfaces/user';
 
 interface Plan {
@@ -25,6 +26,7 @@ export class SubscriptionModal {
   dialogRef = inject(MatDialogRef<SubscriptionModal>);
   stateStore = inject(StateStore);
   alertify = inject(AlertifyService);
+  waitlistService = inject(WaitlistService);
   loading = signal<string | null>(null);
 
   plans: Plan[] = [
@@ -44,7 +46,7 @@ export class SubscriptionModal {
       name: 'Pro',
       price: '8',
       period: '/თვე',
-      badge: 'რეკომენდირებული',
+      badge: 'მალე დაემატება',
       features: [
         'შეუზღუდავი AI ძიება & ანალიზი',
         'AI რეზიუმეს ოპტიმიზაცია & ხელფასის ანალიზი',
@@ -54,20 +56,38 @@ export class SubscriptionModal {
     },
     {
       key: 'PREMIUM',
-      name: 'Enterprise',
-      price: 'Custom',
+      name: 'Enterprise (კომპანიებისთვის)',
+      price: 'შეთანხმებით',
       period: '',
+      badge: 'HR & კომპანიები',
+
       features: [
-        'API წვდომა',
-        'პერსონალური მენეჯერი',
-        'გუნდური მართვა',
-        'ყველა Pro შესაძლებლობა',
+        'კანდიდატების AI მოძიება ვაკანსიებზე',
+        'CV-ების დეტალური AI ანალიზი & Match Score',
+        'HR მართვის პანელი & გუნდური წვდომა',
+        'API ინტეგრაცია & პერსონალური მენეჯერი',
       ],
     },
   ];
 
+
   async activate(plan: Plan) {
-    if (plan.key === 'PREMIUM') return;
+    if (plan.key === 'PRO' || plan.key === 'PREMIUM') {
+      if (this.waitlistService.isEnrolled(plan.key)) {
+        this.alertify.success(`თქვენ უკვე დარეგისტრირებული ხართ ${plan.name} Waitlist-ში! 🎉`);
+        return;
+      }
+      this.loading.set(plan.key);
+      try {
+        const res = await this.waitlistService.join({ plan: plan.key === 'PREMIUM' ? 'ENTERPRISE' : 'PRO', source: 'subscription_modal' });
+        this.alertify.success(res.message || 'გმადლობთ! თქვენ წარმატებით დაემატეთ Waitlist-ში 🎉');
+      } catch (err) {
+        this.alertify.error('დაფიქსირდა შეცდომა');
+      } finally {
+        this.loading.set(null);
+      }
+      return;
+    }
 
     this.loading.set(plan.key);
     try {
@@ -85,3 +105,4 @@ export class SubscriptionModal {
     this.dialogRef.close(false);
   }
 }
+

@@ -12,8 +12,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Ai } from '../../../Core/Services/ai';
 import { firstValueFrom } from 'rxjs';
-
 import { AuthService } from '../../../Core/Services/auth-service';
+import { StateStore } from '../../../Store/state.store';
+import { MatDialog } from '@angular/material/dialog';
+import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
+import { Onboarding } from '../onboarding/onboarding';
 
 export interface WidgetChatMessage {
   id: string;
@@ -22,6 +25,12 @@ export interface WidgetChatMessage {
   timestamp: Date;
   isError?: boolean;
   jobs?: any[];
+}
+
+export interface ChatQuota {
+  used: number;
+  limit: number;
+  remaining: number;
 }
 
 @Component({
@@ -36,20 +45,58 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   aiService = inject(Ai);
   authService = inject(AuthService);
+  stateStore = inject(StateStore);
+  dialog = inject(MatDialog);
 
   isLoggedIn = computed(() => this.authService.isLoggedIn());
   isChatOpen = signal<boolean>(false);
   chatInputText = signal<string>('');
   chatMessages = signal<WidgetChatMessage[]>([]);
   isTyping = signal<boolean>(false);
+  chatQuota = signal<ChatQuota | null>(null);
   private shouldScrollToBottom = false;
 
   openAuthModal() {
     this.authService.openAuthModal('login');
   }
 
-  ngOnInit() {
+  openOnboarding(step: number = 1) {
+    const dialogRef = this.dialog.open(Onboarding, {
+      width: '1100px',
+      maxWidth: '96vw',
+      maxHeight: '94vh',
+      panelClass: 'onboarding-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+
+    if (dialogRef.componentInstance) {
+      dialogRef.componentInstance.goToStep(step);
+    }
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.stateStore.loadProfile(true);
+      this.stateStore.getCv(true);
+      this.loadQuota();
+    });
+  }
+
+  openUpgradeModal() {
+    this.dialog.open(SubscriptionModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      panelClass: 'subscription-dialog',
+      disableClose: false,
+      autoFocus: false,
+    });
+  }
+
+
+  async ngOnInit() {
     this.loadMessages();
+    if (this.isLoggedIn()) {
+      await this.loadQuota();
+    }
   }
 
   ngAfterViewChecked() {
@@ -59,16 +106,41 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     }
   }
 
-  toggleChat() {
-    this.isChatOpen.set(!this.isChatOpen());
-    if (this.isChatOpen()) {
+  async toggleChat() {
+    const nextState = !this.isChatOpen();
+    this.isChatOpen.set(nextState);
+    if (nextState) {
       this.shouldScrollToBottom = true;
+      if (this.isLoggedIn()) {
+        await this.loadQuota();
+      }
+    }
+  }
+
+  async loadQuota() {
+    if (!this.isLoggedIn() || this.stateStore.isPro()) return;
+    try {
+      const res = await firstValueFrom(this.aiService.getChatQuota());
+      if (res) {
+        this.chatQuota.set({
+          used: res.used,
+          limit: res.limit,
+          remaining: res.remaining,
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to load chat quota:', err);
     }
   }
 
   async sendChatMessage() {
     const prompt = this.chatInputText().trim();
     if (!prompt || this.isTyping()) return;
+
+    // If non-PRO user has exhausted daily limit (0 remaining)
+    if (!this.stateStore.isPro() && this.chatQuota() && this.chatQuota()!.remaining <= 0) {
+      return;
+    }
 
     // Clear input
     this.chatInputText.set('');
@@ -91,7 +163,6 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
     try {
       // Map existing messages to history format required by backend service
-      // History should exclude the message we are currently sending
       const history = this.chatMessages()
         .filter((msg) => msg.id !== userMsgId && !msg.isError)
         .map((msg) => ({
@@ -101,6 +172,11 @@ export class ChatWidget implements OnInit, AfterViewChecked {
         .slice(-6); // Limit to last 6 messages for context length optimization
 
       const res = await firstValueFrom(this.aiService.askChat(prompt, history));
+
+      // Update quota if returned in response
+      if (res?.quota) {
+        this.chatQuota.set(res.quota);
+      }
 
       const isSearchEmpty = res?.searchTriggered && (!res?.jobs || res?.jobs.length === 0);
 
@@ -114,12 +190,18 @@ export class ChatWidget implements OnInit, AfterViewChecked {
       };
 
       this.chatMessages.update((msgs) => [...msgs, botMessage]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Widget chat error:', err);
+      const serverMessage = err?.error?.message || err?.message;
+
+      if (err?.status === 429) {
+        this.chatQuota.update((q) => (q ? { ...q, remaining: 0 } : { used: 3, limit: 3, remaining: 0 }));
+      }
+
       const errorMessage: WidgetChatMessage = {
         id: Math.random().toString(36).substring(7),
         role: 'assistant',
-        content: 'უკავშირდები სერვერს... გთხოვთ სცადოთ მოგვიანებით.',
+        content: serverMessage || 'სამწუხაროდ, პასუხის მიღება ვერ მოხერხდა. გთხოვთ სცადოთ მოგვიანებით.',
         timestamp: new Date(),
         isError: true,
       };

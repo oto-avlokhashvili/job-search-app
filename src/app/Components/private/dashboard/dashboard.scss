@@ -2000,8 +2000,9 @@ $shadow: var(--shadow);
   .skeleton-block, .skeleton-text {
     position: relative;
     overflow: hidden;
-    background: var(--surface-container-low);
-    border-radius: 6px;
+    background: var(--surface-container, #dee9ff);
+    border: 1px solid var(--border-color, rgba(151, 174, 213, 0.25));
+    border-radius: 8px;
     
     &::after {
       content: '';
@@ -2013,23 +2014,24 @@ $shadow: var(--shadow);
       background: linear-gradient(
         90deg,
         rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.45) 50%,
+        rgba(255, 255, 255, 0.65) 50%,
         rgba(255, 255, 255, 0) 100%
       );
       transform: translateX(-100%);
-      animation: skeleton-shimmer 1.6s ease-in-out infinite;
+      animation: skeleton-shimmer 1.5s ease-in-out infinite;
     }
 
     [data-theme='dark'] & {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(91, 155, 213, 0.16) !important;
+      border-color: rgba(127, 190, 250, 0.18) !important;
 
       &::after {
         background: linear-gradient(
           90deg,
           rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.22) 50%,
           rgba(255, 255, 255, 0) 100%
-        );
+        ) !important;
       }
     }
   }
@@ -2055,4 +2057,5 @@ $shadow: var(--shadow);
     transform: translateX(100%);
   }
 }
+
 

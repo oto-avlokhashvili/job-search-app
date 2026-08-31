@@ -786,7 +786,7 @@
 
       <div class="pricing-grid">
         <!-- Starter Plan -->
-        <div class="pricing-card glass-card">
+        <div class="pricing-card glass-card" (click)="handlePlanClick('BASIC')">
           <div class="card-header">
             <h3 class="plan-name">Starter</h3>
             <div class="price">
@@ -802,17 +802,17 @@
           </ul>
 
           @if (authService.isLoggedIn()) {
-            <button class="btn-fluid secondary" [disabled]="true">
+            <button class="btn-fluid secondary" [disabled]="true" (click)="$event.stopPropagation()">
               {{ stateStore.profile().subscription === 'BASIC' ? 'მიმდინარე გეგმა' : 'Starter' }}
             </button>
           } @else {
-            <button class="btn-fluid secondary" (click)="handlePlanClick('BASIC')">დაწყება</button>
+            <button class="btn-fluid secondary" (click)="$event.stopPropagation(); handlePlanClick('BASIC')">დაწყება</button>
           }
         </div>
 
         <!-- Pro Plan (Featured) -->
-        <div class="pricing-card glass-card featured">
-          <div class="featured-badge">რეკომენდირებული</div>
+        <div class="pricing-card glass-card featured" (click)="joinProWaitlist()">
+          <div class="featured-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">მალე დაემატება</div>
           <div class="card-header">
             <h3 class="plan-name">Pro</h3>
             <div class="price">
@@ -828,41 +828,44 @@
             <li><span class="material-symbols-outlined">check_circle</span> სტატისტიკა და ანალიტიკა</li>
           </ul>
 
-          @if (authService.isLoggedIn()) {
-            <button class="btn-fluid primary" 
-                    [disabled]="stateStore.profile().subscription === 'PRO' || stateStore.profile().subscription === 'PREMIUM'" 
-                    (click)="handlePlanClick('PRO')">
-              @if (stateStore.profile().subscription === 'PRO') {
-                უკვე გაქვს Pro გეგმა
-              } @else if (stateStore.profile().subscription === 'PREMIUM') {
-                მიმდინარე გეგმა
-              } @else {
-                გახდი Pro
-              }
-            </button>
-          } @else {
-            <button class="btn-fluid primary" (click)="handlePlanClick('PRO')">გახდი Pro</button>
-          }
+          <button class="btn-fluid secondary" 
+                  [disabled]="waitlistService.isEnrolled('PRO')" 
+                  (click)="$event.stopPropagation(); joinProWaitlist()">
+            {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
+          </button>
         </div>
 
+
         <!-- Enterprise Plan -->
-        <div class="pricing-card glass-card">
+        <div class="pricing-card glass-card" (click)="joinEnterpriseWaitlist()">
+          <div class="featured-badge" style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);">მალე დაემატება</div>
           <div class="card-header">
             <h3 class="plan-name">Enterprise</h3>
             <div class="price">
-              <span class="amount">Custom</span>
+              <span class="amount" style="font-size: 1.8rem;">შეთანხმებით</span>
             </div>
+            <p style="font-size: 13px; color: var(--on-surface-variant); margin-top: 4px; font-weight: 500;">HR მენეჯერებისა და კომპანიებისთვის</p>
           </div>
+
           <ul class="features">
-            <li><span class="material-symbols-outlined">check_circle</span> API წვდომა</li>
-            <li><span class="material-symbols-outlined">check_circle</span> პერსონალური მენეჯერი</li>
-            <li><span class="material-symbols-outlined">check_circle</span> გუნდური მართვა</li>
+            <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე</li>
+            <li><span class="material-symbols-outlined">check_circle</span> რეზიუმეების AI ანალიზი & Match ქულები</li>
+            <li><span class="material-symbols-outlined">check_circle</span> HR პანელი & კანდიდატების მართვა</li>
+            <li><span class="material-symbols-outlined">check_circle</span> API ინტეგრაცია & პერსონალური მენეჯერი</li>
           </ul>
-          <button class="btn-fluid secondary" (click)="scroll('contact')">დაგვიკავშირდით</button>
+          <button class="btn-fluid secondary" 
+                  [disabled]="waitlistService.isEnrolled('ENTERPRISE')" 
+                  (click)="$event.stopPropagation(); joinEnterpriseWaitlist()">
+            {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
+          </button>
         </div>
       </div>
+
+
     </div>
   </section>
+
+
 
   <!-- Contact Us Section -->
   <section class="newsletter-section" id="contact">

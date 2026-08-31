@@ -77,9 +77,10 @@ $my-theme: mat.m2-define-light-theme((
   --glass-border: rgba(255, 255, 255, 0.4);
   --featured-bg: linear-gradient(180deg, var(--surface-container-low) 0%, var(--surface-container-lowest) 100%);
   --featured-bg-hover: linear-gradient(180deg, var(--surface-container) 0%, var(--surface-container-lowest) 100%);
-  --featured-shadow: 0 12px 24px rgba(11, 96, 150, 0.1);
+  --loader-overlay-bg: rgba(244, 246, 255, 0.75);
   color-scheme: light;
 }
+
 
 // ─── Dark Mode ────────────────────────────────────────────────
 [data-theme='dark'] {
@@ -121,8 +122,10 @@ $my-theme: mat.m2-define-light-theme((
   --featured-bg: linear-gradient(180deg, rgba(91, 155, 213, 0.18) 0%, rgba(30, 30, 46, 0.95) 100%);
   --featured-bg-hover: linear-gradient(180deg, rgba(91, 155, 213, 0.26) 0%, rgba(30, 30, 46, 0.9) 100%);
   --featured-shadow: 0 0 0 1px var(--primary), 0 12px 24px rgba(0, 0, 0, 0.35);
+  --loader-overlay-bg: rgba(28, 40, 73, 0.88);
   color-scheme: dark;
 }
+
 
 html {
   height: 100%;
@@ -201,7 +204,18 @@ body.modal-open {
   overflow: hidden !important;
 }
 
-// Apply gradient app background on root containers
+// Apply theme backgrounds on root containers
+[data-theme='light'] body,
+[data-theme='light'] .landing-page {
+  background: #f4f6ff !important;
+  min-height: 100vh;
+}
+
+[data-theme='light'] .dashboard-wrapper {
+  background: #f4f6ff !important;
+  min-height: calc(100vh - 72px);
+}
+
 [data-theme='dark'] body,
 [data-theme='dark'] .landing-page {
   background: linear-gradient(135deg, #323253, #1c2849) !important;
@@ -212,6 +226,7 @@ body.modal-open {
   background: linear-gradient(135deg, #323253, #1c2849) !important;
   min-height: calc(100vh - 72px);
 }
+
 
 * {
   margin: 0;
@@ -298,6 +313,69 @@ body.modal-open {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── Global High-Contrast Skeleton Styles ─── */
+.skeleton-pulse {
+  .skeleton-block, .skeleton-text {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-container, #dee9ff);
+    border: 1px solid var(--border-color, rgba(151, 174, 213, 0.25));
+    border-radius: 8px;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: translateX(-100%);
+      animation: global-skeleton-shimmer 1.5s ease-in-out infinite;
+    }
+
+    [data-theme='dark'] & {
+      background: rgba(91, 155, 213, 0.16) !important;
+      border-color: rgba(127, 190, 250, 0.18) !important;
+
+      &::after {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.2) 50%,
+          rgba(255, 255, 255, 0) 100%
+        ) !important;
+      }
+    }
+  }
+
+  .skeleton-text {
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+    
+    &.short {
+      height: 10px;
+    }
+  }
+  
+  .skeleton-block {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+@keyframes global-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* ─── Subscription dialog panel ───────────────────────────── */
 
 // Transparent container so .sub-modal's own background shows through
@@ -355,7 +433,46 @@ body.modal-open {
   }
 }
 
+/* ─── Waitlist dialog panel ───────────────────────────────── */
+.waitlist-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+  background: transparent !important;
+  border-radius: 24px !important;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+  padding: 0 !important;
+  max-height: 90svh !important;
+  overflow: visible !important;
+}
+
+.waitlist-dialog .mat-mdc-dialog-surface {
+  border-radius: 24px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.waitlist-dialog.cdk-overlay-pane {
+  max-height: 90svh !important;
+}
+
+@media (max-width: 600px) {
+  .waitlist-dialog {
+    max-width: 100vw !important;
+    width: calc(100vw - 2rem) !important;
+    margin: 0 1rem !important;
+  }
+
+  .waitlist-dialog .mat-mdc-dialog-container,
+  .waitlist-dialog .mat-mdc-dialog-surface {
+    border-radius: 20px !important;
+  }
+}
+
 /* ─── Onboarding dialog panel ──────────────────────────────── */
+
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
@@ -411,9 +528,93 @@ body.modal-open {
   }
 }
 
+/* ─── Onboarding Dark Mode Stepper Overrides ──────────────── */
+[data-theme='dark'] {
+
+  .vertical-step-item {
+    &:hover:not(.locked) {
+      background: rgba(255, 255, 255, 0.04) !important;
+    }
+
+    &.active {
+      background: rgba(59, 130, 246, 0.1) !important;
+      border-color: rgba(59, 130, 246, 0.3) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+
+      .step-node-bubble {
+        background: #0b6096 !important;
+        border-color: #38bdf8 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+      }
+
+      .step-name {
+        color: #ffffff !important;
+      }
+
+      .step-sub {
+        color: #94a3b8 !important;
+      }
+
+      .active-dot {
+        background: #38bdf8 !important;
+        box-shadow: 0 0 6px #38bdf8 !important;
+      }
+    }
+
+    &.completed:not(.active) {
+      .step-node-bubble {
+        background: rgba(16, 185, 129, 0.14) !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
+        color: #34d399 !important;
+
+        .check-icon {
+          color: #34d399 !important;
+        }
+      }
+
+      .step-name {
+        color: #e2e8f0 !important;
+      }
+
+      .step-sub {
+        color: #94a3b8 !important;
+      }
+    }
+
+    &.locked {
+      .step-node-bubble {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #475569 !important;
+      }
+
+      .step-name {
+        color: #475569 !important;
+      }
+
+      .step-sub {
+        color: #334155 !important;
+      }
+    }
+
+    .step-node-bubble {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #94a3b8 !important;
+    }
+  }
+
+  .sidebar-tip-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
 #features, #pricing, #contact {
   scroll-margin-top: 72px;
 }
+
 
 @media (max-width: 991px) {
   body, .landing-page {

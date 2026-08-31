@@ -20,7 +20,7 @@
   <!-- Plans -->
   <div class="plans-grid">
     @for (plan of plans; track plan.key) {
-      <div class="plan-card" [class.featured]="plan.badge">
+      <div class="plan-card" [class.featured]="plan.badge" (click)="activate(plan)">
         @if (plan.badge) {
           <div class="featured-badge">{{ plan.badge }}</div>
         }
@@ -49,17 +49,24 @@
 
         <button
           class="activate-btn"
-          [class.featured-btn]="plan.badge"
-          [disabled]="loading() === plan.key || plan.key === 'PREMIUM' || stateStore.plan() === plan.key"
-          (click)="activate(plan)">
+          [disabled]="loading() === plan.key || (plan.key === 'PRO' && waitlistService.isEnrolled('PRO')) || (plan.key === 'PREMIUM' && waitlistService.isEnrolled('ENTERPRISE')) || stateStore.plan() === plan.key"
+          (click)="$event.stopPropagation(); activate(plan)">
+
           @if (loading() === plan.key) {
             <span class="btn-spinner"></span>
           } @else if (stateStore.plan() === plan.key) {
             აქტიურია ({{ plan.name }})
+          } @else if (plan.key === 'PRO') {
+            {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
+          } @else if (plan.key === 'PREMIUM') {
+            {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
           } @else {
-            {{ plan.badge ? 'გახდი ' + plan.name : (plan.key === 'PREMIUM' ? 'დაემატება მალე...' : 'აირჩიე ' + plan.name) }}
+            {{ 'აირჩიე ' + plan.name }}
           }
         </button>
+
+
+
       </div>
     }
   </div>

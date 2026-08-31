@@ -69,6 +69,8 @@
             </div>
           </div>
 
+
+
           <div class="step-columns-2" style="margin-top: 1.75rem;">
             <div class="inner-block-card">
               <div class="inner-card-head" style="display: flex; align-items: center; gap: 10px;">
@@ -154,7 +156,7 @@
             [class.locked]="!canAccessStep(step.number)"
             (click)="goToStep(step.number)"
           >
-            <!-- Step Node & Connecting Track -->
+            <!-- Step Node Icon -->
             <div class="node-track-col">
               <div class="step-node-bubble">
                 @if (isStepValid(step.number)) {
@@ -163,10 +165,8 @@
                   <span>0{{ step.number }}</span>
                 }
               </div>
-              @if (!last) {
-                <div class="node-connector-line" [class.passed]="isStepValid(step.number)"></div>
-              }
             </div>
+
 
             <!-- Step Title & Subtitle -->
             <div class="step-meta-col">
@@ -213,9 +213,9 @@
             <div class="panel-head">
               <div class="head-title-wrap">
                 <span class="material-symbols-outlined head-icon">payments</span>
-                <h2>აირჩიეთ სააბონენტო გეგმა</h2>
+                <h2>სააბონენტო გეგმა</h2>
               </div>
-              <p class="panel-desc">აირჩიეთ თქვენთვის სასურველი სააბონენტო გეგმა. <strong>Basic (უფასო)</strong> პაკეტის არჩევისას საბანკო ბარათის დამატება არ არის საჭირო.</p>
+              <p class="panel-desc">ამ ეტაპზე აქტიურია <strong>Basic (უფასო)</strong> პაკეტი (საბანკო ბარათის დამატება არ არის საჭირო). <strong>Pro</strong> და <strong>Enterprise</strong> პაკეტები მალე დაემატება — შეგიძლიათ 1 კლიკით დაემატოთ <strong>Waitlist-ში</strong>, თუმცა მათი არჩევა ჯერ შეუძლებელია.</p>
             </div>
 
             <!-- Plans Grid -->
@@ -226,7 +226,7 @@
                   [class.featured]="plan.isPopular"
                   [class.disabled-plan]="plan.disabled"
                   [class.selected-tier]="selectedPlan() === plan.key && !plan.disabled"
-                  (click)="selectPlan(plan.key)"
+                  (click)="plan.disabled ? joinWaitlistFromOnboarding(plan.key) : selectPlan(plan.key)"
                 >
                   @if (plan.badge) {
                     <div class="featured-badge" [class.coming-soon]="plan.disabled" [class.free-badge]="plan.key === 'BASIC'">{{ plan.badge }}</div>
@@ -254,16 +254,32 @@
                     }
                   </ul>
 
+                  @if (plan.disabled) {
+                    <div class="waitlist-hint-box">
+                      <span class="material-symbols-outlined">schedule</span>
+                      <span>გეგმა მუშავდება, დაემატეთ Waitlist-ში რათა არ გამოტოვოთ</span>
+                    </div>
+                  }
+
+
                   <button
                     type="button"
                     class="activate-btn"
-                    [class.featured-btn]="plan.isPopular"
-                    [disabled]="plan.disabled"
-                    (click)="selectPlan(plan.key)"
+                    (click)="$event.stopPropagation(); plan.disabled ? joinWaitlistFromOnboarding(plan.key) : selectPlan(plan.key)"
                   >
-                    {{ plan.disabled ? 'მალე დაემატება' : selectedPlan() === plan.key ? (plan.key === 'BASIC' ? 'არჩეულია (უფასო) ✓' : 'არჩეულია ✓') : 'არჩევა' }}
+                    @if (plan.key === 'PRO') {
+                      {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
+                    } @else if (plan.key === 'PREMIUM') {
+                      {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
+                    } @else if (plan.disabled) {
+                      მალე დაემატება
+                    } @else {
+                      {{ selectedPlan() === plan.key ? 'არჩეულია (უფასო) ✓' : 'არჩევა' }}
+                    }
                   </button>
+
                 </div>
+
               }
             </div>
 
@@ -274,17 +290,16 @@
               </div>
               <div class="helper-text-block">
                 <span class="helper-title">
-                  {{ isProPlan() ? 'არჩეულია Pro პაკეტი (8₾ / თვე)' : 'არჩეულია Basic უფასო პაკეტი (0₾ · ბარათის გარეშე)' }}
+                  აქტიური სააბონენტო გეგმა: Basic (უფასო · 0₾ · ბარათის გარეშე)
                 </span>
                 <p class="helper-desc">
-                  {{ isProPlan() 
-                    ? 'Pro პაკეტში ხელოვნური ინტელექტი აანალიზებს თქვენს CV-სა და ვაკანსიებს, გამოგიგზავნით შეფასებულ ვაკანსიებს Email-ზე და ავტომატურად განსაზღვრავს საძიებო სიტყვებს.'
-                    : 'Basic უფასო პაკეტში შეგიძლიათ ატვირთოთ CV, მოიძიოთ ვაკანსიები საძიებო სიტყვებით და მიიღოთ შეტყობინებები Telegram-ზე. საბანკო ბარათის მითითება საჭირო არ არის.' }}
+                  თქვენ ავტომატურად სარგებლობთ Basic უფასო პაკეტით (CV-ს ატვირთვა, ვაკანსიების ძიება და Telegram შეტყობინებები). Pro და Enterprise პაკეტები მალე გააქტიურდება — დააჭირეთ „შემატყობინე გაშვებისას“-ს, რათა მიიღოთ პრიორიტეტული შეტყობინება.
                 </p>
               </div>
             </div>
           </div>
         }
+
 
         <!-- ============================================================ -->
         <!-- ── STEP 2: CV Upload & Analysis                              -->
@@ -453,13 +468,13 @@
               <!-- Personal Info Inputs Card -->
               <div class="inner-block-card">
                 <div class="inner-card-head">
-                  <span class="material-symbols-outlined card-head-icon">badge</span>
-                  <h3 class="inner-title">პირადი მონაცემები</h3>
+                  <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="infoFormSubmitted() && infoForm.invalid">badge</span>
+                  <h3 class="inner-title" [class.is-invalid-title]="infoFormSubmitted() && infoForm.invalid">პირადი მონაცემები</h3>
                 </div>
 
                 <form [formGroup]="infoForm" class="profile-form-grid">
                   <div class="form-group">
-                    <label for="firstName">სახელი <span class="required-star">*</span></label>
+                    <label for="firstName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('firstName')?.invalid">სახელი <span class="required-star">*</span></label>
                     <input
                       id="firstName"
                       type="text"
@@ -474,7 +489,7 @@
                   </div>
 
                   <div class="form-group">
-                    <label for="lastName">გვარი <span class="required-star">*</span></label>
+                    <label for="lastName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('lastName')?.invalid">გვარი <span class="required-star">*</span></label>
                     <input
                       id="lastName"
                       type="text"
@@ -508,14 +523,16 @@
               @if (!isProPlan()) {
                 <div class="inner-block-card">
                   <div class="inner-card-head with-action">
+
                     <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">tag</span>
-                      <h3 class="inner-title">საძიებო სიტყვები (მინიმუმ 3)</h3>
+                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="infoFormSubmitted() && searchQueries().length < 3">tag</span>
+                      <h3 class="inner-title" [class.is-invalid-title]="infoFormSubmitted() && searchQueries().length < 3">საძიებო სიტყვები (მინიმუმ 3)</h3>
                     </div>
-                    <span class="keyword-count-badge" [class.success]="searchQueries().length >= 3">
+                    <span class="keyword-count-badge" [class.success]="searchQueries().length >= 3" [class.has-error]="infoFormSubmitted() && searchQueries().length < 3">
                       {{ searchQueries().length }}/3
                     </span>
                   </div>
+
                   <p class="section-desc">ამ სიტყვების მიხედვით გაიფილტრება თქვენთვის ვაკანსიები. აუცილებელია მინიმუმ 3 სიტყვა.</p>
 
                   <div class="chips-input-container-wrapper">
@@ -532,7 +549,7 @@
                         <input
                           type="text"
                           class="chip-input"
-                          placeholder="დაამატეთ საკვანძო სიტყვა..."
+                          placeholder="დაამატეთ საძიებო სიტყვა..."
                           [disabled]="keywordLoading()"
                           [ngModel]="keywordInput()"
                           (ngModelChange)="keywordInput.set($event)"
@@ -554,9 +571,14 @@
                       }
                     </button>
                   </div>
-                  @if (infoFormSubmitted() && searchQueries().length < 3) {
-                    <span class="field-error-text">გთხოვთ დაამატოთ მინიმუმ 3 საძიებო სიტყვა / პოზიცია (დამატებულია: {{ searchQueries().length }}/3)</span>
+                  @if (infoFormSubmitted()) {
+                    @if (searchQueries().length === 0) {
+                      <span class="field-error-text">საძიებო სიტყვები არ არის მითითებული (მინიმუმ 3)</span>
+                    } @else if (searchQueries().length < 3) {
+                      <span class="field-error-text">გთხოვთ მიუთითოთ მინიმუმ 3 საძიებო სიტყვა (მითითებულია: {{ searchQueries().length }}/3)</span>
+                    }
                   }
+
 
                   <div class="suggestions-section">
                     <span class="suggestions-title">პოპულარული პოზიციები:</span>
@@ -644,7 +666,7 @@
                     <div class="channel-brand-info">
                       <img src="/icons/gmail.png" alt="Email" class="channel-logo" />
                       <div class="channel-titles">
-                        <h3 class="inner-title">Email შეტყობინებები (Pro)</h3>
+                        <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !profile().receiveMessages">Email შეტყობინებები (Pro)</h3>
                         <span class="channel-subheading">ვაკანსიების დაიჯესტი თქვენს მეილზე</span>
                       </div>
                     </div>
@@ -675,7 +697,7 @@
                       </div>
                     </div>
 
-                    <div class="card-inner-toggle">
+                    <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
                       <div class="toggle-text-wrap">
                         <span class="toggle-lbl">შეტყობინებების მიღება</span>
                         <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
@@ -685,6 +707,9 @@
                         <span class="slider round"></span>
                       </label>
                     </div>
+                    @if (step4Submitted() && !profile().receiveMessages) {
+                      <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
+                    }
                   </div>
                 </div>
 
@@ -692,10 +717,12 @@
                 <div class="inner-block-card email-verification-station-card">
                   <div class="inner-card-head">
                     <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">verified_user</span>
-                      <h3 class="inner-title">ელ-ფოსტის დადასტურება</h3>
+                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="step4Submitted() && !isEmailVerified()">verified_user</span>
+                      <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !isEmailVerified()">ელ-ფოსტის დადასტურება</h3>
                     </div>
                   </div>
+
+
 
                   <div class="email-station-body">
                     @if (isEmailVerified()) {
@@ -762,6 +789,10 @@
                       @if (emailErrorMsg()) {
                         <span class="status-msg-text text-error">{{ emailErrorMsg() }}</span>
                       }
+                      @if (step4Submitted() && !isEmailVerified() && !emailErrorMsg()) {
+                        <span class="field-error-text" style="display: block; margin-top: 0.5rem;">ელ-ფოსტა არ არის დადასტურებული</span>
+                      }
+
                     }
                   </div>
                 </div>
@@ -777,7 +808,7 @@
                     <div class="channel-brand-info">
                       <img src="/icons/telegram.png" alt="Telegram" class="channel-logo" />
                       <div class="channel-titles">
-                        <h3 class="inner-title">Telegram შეტყობინებები</h3>
+                        <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !profile().receiveMessages">Telegram შეტყობინებები</h3>
                         <span class="channel-subheading">მყისიერი შეტყობინებები Telegram ბოტში</span>
                       </div>
                     </div>
@@ -811,7 +842,7 @@
                       </div>
                     </div>
 
-                    <div class="card-inner-toggle">
+                    <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
                       <div class="toggle-text-wrap">
                         <span class="toggle-lbl">შეტყობინებების მიღება</span>
                         <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
@@ -821,6 +852,9 @@
                         <span class="slider round"></span>
                       </label>
                     </div>
+                    @if (step4Submitted() && !profile().receiveMessages) {
+                      <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
+                    }
                   </div>
                 </div>
 
@@ -828,10 +862,11 @@
                 <div class="inner-block-card tg-qr-station-card">
                   <div class="inner-card-head">
                     <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">qr_code_2</span>
-                      <h3 class="inner-title">დაკავშირების QR კოდი</h3>
+                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="step4Submitted() && !isTelegramConnected()">qr_code_2</span>
+                      <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !isTelegramConnected()">დაკავშირების QR კოდი</h3>
                     </div>
                   </div>
+
 
                   <div class="tg-station-body">
                     @if (isTelegramConnected()) {
@@ -847,7 +882,7 @@
                     } @else {
                       <p class="qr-guide-caption">დაასკანერეთ QR კოდი ტელეფონის კამერით ან გახსენით ბმულით:</p>
 
-                      <div class="tg-qr-box-frame">
+                      <div class="tg-qr-box-frame" [class.has-error]="step4Submitted() && !isTelegramConnected()">
                         @if (telegramLink()) {
                           <qrcode
                             [qrdata]="telegramLink()"
@@ -868,23 +903,16 @@
                           <span class="material-symbols-outlined">open_in_new</span>
                           <span>Telegram-ში გახსნა</span>
                         </a>
-                        <button
-                          type="button"
-                          class="btn-confirm-connection"
-                          [disabled]="telegramVerifying()"
-                          (click)="verifyTelegramConnection()"
-                        >
-                          @if (telegramVerifying()) {
-                            <span class="btn-spinner" style="width: 14px; height: 14px; border-width: 2px;"></span>
-                            <span>მოწმდება...</span>
-                          } @else {
-                            <span>დავაკავშირე ✅</span>
-                          }
-                        </button>
                       </div>
+
+                      @if (step4Submitted() && !isTelegramConnected()) {
+                        <span class="field-error-text" style="display: block; margin-top: 0.75rem; text-align: center;">Telegram ბოტი არ არის დაკავშირებული</span>
+                      }
                     }
                   </div>
                 </div>
+
+
               </div>
             }
           </div>
