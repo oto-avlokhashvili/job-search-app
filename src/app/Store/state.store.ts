@@ -271,7 +271,7 @@ export const StateStore = signalStore(
         },
 
         async getCv(force: boolean = false): Promise<void> {
-            if (!force && store.cvLoaded() && store.userCv() !== null && !!store.userCv()?.summary) {
+            if (!force && store.cvLoaded()) {
                 return;
             }
             if (!force && inFlightCvPromise) {
@@ -285,7 +285,7 @@ export const StateStore = signalStore(
                     const res = await firstValueFrom(cvService.getCV());
                     patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
                 } catch (err) {
-                    patchState(store, { cvLoading: false, cvLoaded: true });
+                    patchState(store, { userCv: null, cvLoading: false, cvLoaded: true });
                     console.error('Error fetching CV:', err);
                 } finally {
                     inFlightCvPromise = null;
@@ -294,6 +294,7 @@ export const StateStore = signalStore(
 
             return inFlightCvPromise;
         },
+
 
         async ensureDataLoaded(force: boolean = false): Promise<void> {
             const promises: Promise<any>[] = [];

@@ -4,9 +4,16 @@
     <!-- Main Content Area -->
     <div class="main-wrapper">
       <main class="main-content">
-        <!-- Router Outlet for Page Content -->
-        <router-outlet></router-outlet>
+        @if (!isLayoutReady() && !isOnboardingRoute()) {
+          <div class="private-layout-skeleton skeleton-pulse animate-fade">
+            <div class="skeleton-block" style="width: 100%; height: 160px; border-radius: 20px; margin-bottom: 1.5rem;"></div>
+            <div class="skeleton-block" style="width: 100%; height: 380px; border-radius: 20px;"></div>
+          </div>
+        } @else {
+          <!-- Router Outlet for Page Content -->
+          <router-outlet></router-outlet>
+        }
       </main>
     </div>
   </div>
-</div>
+</div>

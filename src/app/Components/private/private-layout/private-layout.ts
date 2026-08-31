@@ -32,14 +32,16 @@ export class PrivateLayout implements OnInit {
 
   isOnChatRoute = signal<boolean>(this.router.url.includes('/dashboard'));
   isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
+  isLayoutReady = signal<boolean>(this.stateStore.profileLoaded());
+  isOnboardingRoute = computed(() => this.router.url.includes('/onboarding'));
 
   async ngOnInit() {
     const token = this.route.snapshot.queryParamMap.get('token');
 
     if (token) {
       this.authService.setToken(token);
-      await this.stateStore.ensureDataLoaded(true);
-      if (this.stateStore.isOnboardingCompleted()) {
+      await this.stateStore.loadProfile(true);
+      if (this.stateStore.isOnboardingCompleted() && this.stateStore.hasActiveSubscription()) {
         await this.router.navigate(['/private/dashboard'], {
           queryParams: {},
           replaceUrl: true
@@ -65,9 +67,12 @@ export class PrivateLayout implements OnInit {
         this.checkOnboardingGuard(e.urlAfterRedirects);
       });
 
-    await this.stateStore.ensureDataLoaded();
+    if (!this.stateStore.profileLoaded()) {
+      await this.stateStore.loadProfile();
+    }
     this.themeService.init();
     this.checkOnboardingGuard(this.router.url);
+    this.isLayoutReady.set(true);
 
     if (this.stateStore.isOnboardingCompleted()) {
       this.loadMatchedJobs(1);
@@ -75,11 +80,12 @@ export class PrivateLayout implements OnInit {
     }
   }
 
+
   checkOnboardingGuard(url: string) {
     if (!url || !url.startsWith('/private')) return;
     if (url.includes('/private/onboarding')) return;
 
-    if (!this.stateStore.isOnboardingCompleted()) {
+    if (!this.stateStore.hasActiveSubscription() || !this.stateStore.isOnboardingCompleted()) {
       this.router.navigate(['/private/onboarding'], { replaceUrl: true });
       return;
     }
@@ -92,6 +98,7 @@ export class PrivateLayout implements OnInit {
       }
     }
   }
+
 
   loadMatchedJobs(page: number) {
     this.stateStore.loadAIMatchedJobs(page, 6);

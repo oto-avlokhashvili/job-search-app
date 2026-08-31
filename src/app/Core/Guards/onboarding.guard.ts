@@ -22,16 +22,19 @@ export const onboardingGuard: CanActivateFn = async (route, state): Promise<bool
     return true;
   }
 
-  // Ensure user profile and CV data is fully loaded before determining onboarding completion
-  await stateStore.ensureDataLoaded();
+  // Load profile first to quickly determine onboarding and subscription status
+  if (!stateStore.profileLoaded() || stateStore.profile().id === 0) {
+    await stateStore.loadProfile();
+  }
 
-  // If onboarding is incomplete, redirect immediately to onboarding wizard
-  if (!stateStore.isOnboardingCompleted()) {
+  // If onboarding is incomplete or subscription missing, redirect immediately to onboarding wizard
+  if (!stateStore.hasActiveSubscription() || !stateStore.isOnboardingCompleted()) {
     return router.createUrlTree(['/private/onboarding']);
   }
 
   return true;
 };
+
 
 /**
  * Protects /private/onboarding route: if user has already completed onboarding,
@@ -53,15 +56,17 @@ export const onboardingPageGuard: CanActivateFn = async (route, state): Promise<
 
   const allowEdit = route.queryParamMap.get('edit') === 'true';
 
-  await stateStore.ensureDataLoaded();
-
-  // If already completed onboarding and not in explicit edit mode, redirect to appropriate private route
-  if (stateStore.isOnboardingCompleted() && !allowEdit) {
-    if (stateStore.isPro()) {
-      return router.createUrlTree(['/private/dashboard']);
+  // If already loaded and completed onboarding without edit mode, redirect
+  if (stateStore.profileLoaded() && stateStore.cvLoaded()) {
+    if (stateStore.isOnboardingCompleted() && !allowEdit) {
+      if (stateStore.isPro()) {
+        return router.createUrlTree(['/private/dashboard']);
+      }
+      return router.createUrlTree(['/private/profile']);
     }
-    return router.createUrlTree(['/private/profile']);
   }
 
+  // Allow immediate navigation so user instantly sees onboarding board and its loading state
   return true;
 };
+

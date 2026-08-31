@@ -75,7 +75,6 @@ export class Profile {
   });
 
   constructor() {
-    this.stateStore.getCv();
     effect(() => {
       const profile = this.stateStore.profile();
       const loaded = this.stateStore.profileLoaded();
@@ -83,6 +82,7 @@ export class Profile {
       if (loaded && profile) {
         this.profileForm.patchValue({
           firstName: profile.firstName || '',
+
           lastName: profile.lastName || '',
           email: profile.email || '',
           subscription: profile.subscription || '',

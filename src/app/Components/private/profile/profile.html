@@ -7,9 +7,19 @@
     }
     <div class="header-main-row">
       <div class="header-left">
-        <div class="avatar-large">{{ initials() }}</div>
+        <div class="avatar-large">
+          @if (stateStore.profileLoaded()) {
+            {{ initials() }}
+          } @else {
+            <span class="btn-spinner" style="width: 22px; height: 22px; border-width: 2.5px;"></span>
+          }
+        </div>
         <div class="user-meta">
-          <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
+          @if (stateStore.profileLoaded()) {
+            <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
+          } @else {
+            <div class="skeleton-block" style="width: 180px; height: 24px; border-radius: 6px; margin-bottom: 6px;"></div>
+          }
           <div class="badge-row">
             <span class="plan-badge" [class]="(stateStore.plan() || 'free').toLowerCase()">
               {{ stateStore.isPro() ? 'PRO' : stateStore.isBasic() ? 'BASIC' : 'უფასო' }}
@@ -21,6 +31,7 @@
           </div>
         </div>
       </div>
+
 
       
     </div>

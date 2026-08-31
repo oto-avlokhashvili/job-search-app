@@ -37,41 +37,49 @@ export class Auth {
     confirmPassword: ['', Validators.required],
   })
 
+  isLoggingIn = signal(false);
+
   logIn() {
     this.validators.set(true);
     if (this.loginForm.valid) {
       this.validators.set(false);
+      this.isLoggingIn.set(true);
       this.authService.login(this.loginForm.get('email')?.value!, this.loginForm.get('password')?.value!).subscribe({
         next: async () => {
           try {
-            await this.stateStore.ensureDataLoaded(true);
+            await this.stateStore.loadProfile(true);
           } catch (err) {
-            console.error('Error hydrating store on login:', err);
+            console.error('Error hydrating profile on login:', err);
           }
 
           const returnUrl = this.authService.returnUrl();
           const hasNullSubscription = !this.stateStore.hasActiveSubscription();
           const isOnboardingDone = this.stateStore.isOnboardingCompleted();
 
-          if (hasNullSubscription || !isOnboardingDone) {
-            this.router.navigate(['/private/onboarding']);
-          } else if (returnUrl) {
-            this.router.navigate([returnUrl]);
+          let targetUrl = '/private/onboarding';
+          if (returnUrl) {
+            targetUrl = returnUrl;
             this.authService.returnUrl.set(null);
-          } else if (this.stateStore.isPro()) {
-            this.router.navigate(['/private/dashboard']);
-          } else {
-            this.router.navigate(['/private/profile']);
+          } else if (isOnboardingDone && !hasNullSubscription) {
+            targetUrl = this.stateStore.isPro() ? '/private/dashboard' : '/private/profile';
           }
-          this.authService.closeAuthModal();
+
+          try {
+            await this.router.navigateByUrl(targetUrl);
+          } finally {
+            this.authService.closeAuthModal();
+            this.isLoggingIn.set(false);
+          }
         },
         error: (err) => {
+          this.isLoggingIn.set(false);
           this.alertify.error(err);
         }
-      })
+      });
     }
-
   }
+
+
   register() {
     this.validators.set(true);
     if (this.registerForm.valid && this.registerForm.get('password')?.value === this.registerForm.get('confirmPassword')?.value) {
