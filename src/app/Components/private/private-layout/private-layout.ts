@@ -41,8 +41,9 @@ export class PrivateLayout implements OnInit {
     if (token) {
       this.authService.setToken(token);
       await this.stateStore.loadProfile(true);
-      if (this.stateStore.isOnboardingCompleted() && this.stateStore.hasActiveSubscription()) {
-        await this.router.navigate(['/private/dashboard'], {
+      if (this.stateStore.hasActiveSubscription()) {
+        const target = this.stateStore.isPro() ? '/private/dashboard' : '/private/profile';
+        await this.router.navigate([target], {
           queryParams: {},
           replaceUrl: true
         });
@@ -64,17 +65,19 @@ export class PrivateLayout implements OnInit {
       .subscribe((e: NavigationEnd) => {
         this.isOnChatRoute.set(e.urlAfterRedirects.includes('/dashboard'));
         this.hideFooterAndHeader.set(e.urlAfterRedirects.includes('/dashboard'));
-        this.checkOnboardingGuard(e.urlAfterRedirects);
+        if (this.stateStore.profileLoaded() && this.stateStore.profile().id !== 0) {
+          this.checkOnboardingGuard(e.urlAfterRedirects);
+        }
       });
 
-    if (!this.stateStore.profileLoaded()) {
+    if (!this.stateStore.profileLoaded() || this.stateStore.profile().id === 0) {
       await this.stateStore.loadProfile();
     }
     this.themeService.init();
     this.checkOnboardingGuard(this.router.url);
     this.isLayoutReady.set(true);
 
-    if (this.stateStore.isOnboardingCompleted()) {
+    if (this.stateStore.hasActiveSubscription()) {
       this.loadMatchedJobs(1);
       this.loadSentJobs();
     }
@@ -85,7 +88,11 @@ export class PrivateLayout implements OnInit {
     if (!url || !url.startsWith('/private')) return;
     if (url.includes('/private/onboarding')) return;
 
-    if (!this.stateStore.hasActiveSubscription() || !this.stateStore.isOnboardingCompleted()) {
+    if (!this.stateStore.profileLoaded() || this.stateStore.profile().id === 0) {
+      return;
+    }
+
+    if (!this.stateStore.hasActiveSubscription()) {
       this.router.navigate(['/private/onboarding'], { replaceUrl: true });
       return;
     }

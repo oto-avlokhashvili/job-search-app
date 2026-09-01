@@ -671,11 +671,6 @@ body.modal-open {
 }
 
 
-@media (max-width: 991px) {
-  body, .landing-page {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 
 // ─── Custom Tooltip Styling ────────────────────────────────────
 .mat-mdc-tooltip.custom-vacancy-tooltip,

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ThemeService } from '../../../Core/Services/theme.service';
+import { AuthService } from '../../../Core/Services/auth-service';
 
 @Component({
   selector: 'app-footer',
@@ -9,4 +10,5 @@ import { ThemeService } from '../../../Core/Services/theme.service';
 })
 export class Footer {
   themeService = inject(ThemeService);
+  authService = inject(AuthService);
 }

@@ -14,6 +14,10 @@
   margin-top: 72px;
   padding: 2rem 0;
   width: 100%;
+
+  @media (max-width: 991px) {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .private-content-container {

@@ -69,6 +69,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
   // Step 1: Payment & Plans
   selectedPlan = signal<'BASIC' | 'PRO' | 'PREMIUM'>('BASIC');
+  expandedPlan = signal<string>('BASIC');
   step1Confirmed = signal<boolean>(false);
   isProcessingPayment = signal<boolean>(false);
   isCompleted = signal<boolean>(false);
@@ -86,8 +87,88 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
   });
 
-  // Step 3: Info Form
+  // Step 3: Info Form & Accordion State
   infoFormSubmitted = signal<boolean>(false);
+  infoSectionExpanded = signal<boolean>(false);
+  keywordsSectionExpanded = signal<boolean>(true);
+
+  initStep3AccordionState() {
+    const infoValid = this.isInfoSectionValid();
+    const keywordsRequired = !this.isProPlan() && this.searchQueries().length < 3;
+
+    if (infoValid) {
+      this.infoSectionExpanded.set(false);
+      this.keywordsSectionExpanded.set(keywordsRequired);
+    } else {
+      this.infoSectionExpanded.set(true);
+      this.keywordsSectionExpanded.set(false);
+    }
+  }
+
+  toggleStep3Section(section: 'info' | 'keywords') {
+    if (section === 'info') {
+      this.infoSectionExpanded.update(v => !v);
+    } else if (section === 'keywords') {
+      this.keywordsSectionExpanded.update(v => !v);
+    }
+  }
+
+  isInfoSectionValid = computed(() => {
+    const fn = this.infoForm.get('firstName')?.value?.trim();
+    const ln = this.infoForm.get('lastName')?.value?.trim();
+    return !!fn && !!ln && !this.infoForm.get('firstName')?.invalid && !this.infoForm.get('lastName')?.invalid;
+  });
+
+  isKeywordsSectionValid = computed(() => {
+    if (this.isProPlan()) return true;
+    return this.searchQueries().length >= 3;
+  });
+
+  // Step 4: Notifications Accordion State
+  channelOverviewExpanded = signal<boolean>(false);
+  channelConnectExpanded = signal<boolean>(false);
+
+  initStep4AccordionState() {
+    this.channelOverviewExpanded.set(false);
+    this.channelConnectExpanded.set(false);
+  }
+
+  toggleStep4Section(section: 'overview' | 'connect') {
+    if (section === 'overview') {
+      this.channelOverviewExpanded.update(v => !v);
+    } else if (section === 'connect') {
+      this.channelConnectExpanded.update(v => !v);
+    }
+  }
+
+  isChannelOverviewValid = computed(() => {
+    return !!this.profile()?.receiveMessages;
+  });
+
+  isChannelConnectValid = computed(() => {
+    return this.isProPlan() ? this.isEmailVerified() : this.isTelegramConnected();
+  });
+
+  // Step 5: Review Accordion State
+  reviewPlanExpanded = signal<boolean>(false);
+  reviewCvExpanded = signal<boolean>(false);
+  reviewInfoExpanded = signal<boolean>(false);
+  reviewChannelExpanded = signal<boolean>(false);
+
+  initStep5AccordionState() {
+    this.reviewPlanExpanded.set(false);
+    this.reviewCvExpanded.set(false);
+    this.reviewInfoExpanded.set(false);
+    this.reviewChannelExpanded.set(false);
+  }
+
+  toggleReviewSection(section: 'plan' | 'cv' | 'info' | 'channel') {
+    if (section === 'plan') this.reviewPlanExpanded.update(v => !v);
+    else if (section === 'cv') this.reviewCvExpanded.update(v => !v);
+    else if (section === 'info') this.reviewInfoExpanded.update(v => !v);
+    else if (section === 'channel') this.reviewChannelExpanded.update(v => !v);
+  }
+
   infoForm = this.fb.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
@@ -208,7 +289,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     if (step === 1) return false;
     if (step === 2) return this.cvLoading();
     if (step === 3) return this.keywordLoading();
-    if (step === 4) return this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying();
+    if (step === 4) return this.isNotificationToggling() || this.telegramLoading() || this.emailVerifying() || this.telegramVerifying();
     return this.isProcessingPayment();
   });
 
@@ -226,7 +307,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       return !this.keywordLoading();
     }
     if (step === 4) {
-      return !this.isNotificationToggling() && !this.telegramLoading() && !this.emailVerifying();
+      return !this.isNotificationToggling() && !this.telegramLoading() && !this.emailVerifying() && !this.telegramVerifying();
     }
     if (step === 5) {
       return this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3) && this.isStepValid(4);
@@ -268,11 +349,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   });
 
   completionPercentage = computed(() => {
-    let count = 0;
-    for (let i = 1; i <= this.totalSteps; i++) {
-      if (this.isStepValid(i)) count++;
-    }
-    return Math.round((count / this.totalSteps) * 100);
+    return Math.round((this.currentStep() / this.totalSteps) * 100);
   });
 
   constructor() {
@@ -314,9 +391,11 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.determineInitialStep();
+      this.initStep3AccordionState();
     } catch (err) {
       console.error('Error initializing onboarding:', err);
       this.determineInitialStep();
+      this.initStep3AccordionState();
     } finally {
       this.isInitializing.set(false);
     }
@@ -421,6 +500,13 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     if (this.initialStepResolved) return;
     this.initialStepResolved = true;
 
+    const editParam = this.route?.snapshot?.queryParamMap?.get('edit') === 'true';
+    if (this.hasSubscription() && !editParam && !this.dialogRef && !this.isCompleted()) {
+      const targetUrl = this.isProPlan() ? '/private/dashboard' : '/private/profile';
+      this.router.navigate([targetUrl], { replaceUrl: true });
+      return;
+    }
+
     const stepParam = Number(this.route?.snapshot?.queryParamMap?.get('step'));
     if (stepParam && stepParam >= 1 && stepParam <= 5 && this.canAccessStep(stepParam)) {
       this.currentStep.set(stepParam);
@@ -435,19 +521,8 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       this.currentStep.set(3);
     } else if (!this.isStepValid(4)) {
       this.currentStep.set(4);
-    } else if (!this.hasSubscription()) {
-      this.currentStep.set(5);
     } else {
-      // If user has subscription and all steps are complete:
-      if (!this.dialogRef) {
-        if (!this.isCompleted()) {
-          this.router.navigate(['/private/dashboard'], { replaceUrl: true });
-        } else {
-          this.currentStep.set(5);
-        }
-      } else {
-        this.currentStep.set(1);
-      }
+      this.currentStep.set(5);
     }
   }
 
@@ -525,28 +600,34 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       const fn = this.infoForm.get('firstName')?.value?.trim();
       const ln = this.infoForm.get('lastName')?.value?.trim();
       if (!fn && !ln) {
+        this.infoSectionExpanded.set(true);
         this.alertify.error('გთხოვთ შეავსოთ სახელი და გვარი');
         return false;
       }
       if (!fn) {
+        this.infoSectionExpanded.set(true);
         this.alertify.error('გთხოვთ შეიყვანოთ სახელი');
         return false;
       }
       if (!ln) {
+        this.infoSectionExpanded.set(true);
         this.alertify.error('გთხოვთ შეიყვანოთ გვარი');
         return false;
       }
       if (this.infoForm.invalid) {
+        this.infoSectionExpanded.set(true);
         this.alertify.error('გთხოვთ სწორად შეავსოთ სახელი და გვარი');
         return false;
       }
 
       if (!isPro) {
         if (this.searchQueries().length === 0) {
+          this.keywordsSectionExpanded.set(true);
           this.alertify.error('საძიებო სიტყვები არ არის მითითებული');
           return false;
         }
         if (this.searchQueries().length < 3) {
+          this.keywordsSectionExpanded.set(true);
           this.alertify.error(`გთხოვთ მიუთითოთ მინიმუმ 3 საძიებო სიტყვა (მითითებულია: ${this.searchQueries().length}/3)`);
           return false;
         }
@@ -567,6 +648,9 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
         this.telegramVerifying.set(true);
         try {
           await this.stateStore.loadProfile(true);
+          if (this.isTelegramConnected()) {
+            this.alertify.success('Telegram წარმატებით დადასტურდა! 🎉');
+          }
         } catch (e) {
           // ignore
         } finally {
@@ -575,16 +659,19 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (!this.profile()?.receiveMessages) {
-        this.alertify.error('შეტყობინებების მიღება არ არის აქტიური');
+        this.channelOverviewExpanded.set(true);
+        this.alertify.error('შეტყობინებების მიღება არ არის აქტიური (გთხოვთ ჩართოთ)');
         return false;
       }
 
       if (isPro && !this.isEmailVerified()) {
+        this.channelConnectExpanded.set(true);
         this.alertify.error('ელ-ფოსტა არ არის დადასტურებული');
         return false;
       }
       if (!isPro && !this.isTelegramConnected()) {
-        this.alertify.error('Telegram ბოტი არ არის დაკავშირებული');
+        this.channelConnectExpanded.set(true);
+        this.alertify.error('Telegram ბოტი არ არის დაკავშირებული. გთხოვთ გახსნათ ბოტი Telegram-ში, დააჭიროთ Start-ს და შემდეგ სცადოთ ხელახლა.');
         return false;
       }
       return true;
@@ -627,8 +714,17 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.currentStep.set(step);
-    if (step === 4 && !this.isProPlan()) {
-      this.ensureTelegramLink();
+    if (step === 3) {
+      this.initStep3AccordionState();
+    }
+    if (step === 4) {
+      this.initStep4AccordionState();
+      if (!this.isProPlan()) {
+        this.ensureTelegramLink();
+      }
+    }
+    if (step === 5) {
+      this.initStep5AccordionState();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -902,11 +998,20 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
     }, 1000);
   }
 
-  // ── Step 5: Payment & Finalization ───────────────────────
+  // ── Step 1: Plans Accordion & Selection ─────────────────────
+  togglePlanAccordion(key: string) {
+    if (this.expandedPlan() === key) {
+      this.expandedPlan.set('');
+    } else {
+      this.expandedPlan.set(key);
+    }
+  }
+
   selectPlan(key: 'BASIC' | 'PRO' | 'PREMIUM') {
     const plan = this.plans.find(p => p.key === key);
     if (plan?.disabled) return;
     this.selectedPlan.set(key);
+    this.expandedPlan.set(key);
   }
 
   async finishAndPay() {

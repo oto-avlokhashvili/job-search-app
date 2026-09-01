@@ -53,14 +53,13 @@ export class Auth {
           }
 
           const returnUrl = this.authService.returnUrl();
-          const hasNullSubscription = !this.stateStore.hasActiveSubscription();
-          const isOnboardingDone = this.stateStore.isOnboardingCompleted();
+          const hasSubscription = this.stateStore.hasActiveSubscription();
 
           let targetUrl = '/private/onboarding';
           if (returnUrl) {
             targetUrl = returnUrl;
             this.authService.returnUrl.set(null);
-          } else if (isOnboardingDone && !hasNullSubscription) {
+          } else if (hasSubscription) {
             targetUrl = this.stateStore.isPro() ? '/private/dashboard' : '/private/profile';
           }
 

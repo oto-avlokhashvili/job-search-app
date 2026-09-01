@@ -546,25 +546,18 @@
 
           <!-- Mobile Cards Skeleton View -->
           <div class="vacancies-cards-container loading-cards">
-            @for (i of [1,2,3,4,5]; track i) {
-              <div class="vacancy-card skeleton-card skeleton-pulse">
-                <div class="card-header-top">
-                  <div class="company-info-group">
-                    <div class="company-logo-avatar skeleton-block"></div>
-                    <div style="flex: 1;">
-                      <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '75%' : '85%')" style="height: 16px; margin-bottom: 6px;"></div>
-                      <div class="skeleton-text" style="width: 45%; height: 12px;"></div>
-                    </div>
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="vacancy-card skeleton-card skeleton-pulse compact-job-card">
+                <div class="job-card-top">
+                  <div class="company-logo-avatar skeleton-block"></div>
+                  <div class="job-header-info" style="flex: 1;">
+                    <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '75%' : '88%')" style="height: 14px; margin-bottom: 4px;"></div>
+                    <div class="skeleton-text" style="width: 45%; height: 10px;"></div>
                   </div>
                 </div>
-                <div class="card-details-grid">
-                  <div class="detail-item"><div class="skeleton-text" style="width: 70%; height: 12px;"></div></div>
-                  <div class="detail-item"><div class="skeleton-text" style="width: 60%; height: 12px;"></div></div>
-                  <div class="detail-item"><div class="skeleton-text" style="width: 50%; height: 12px;"></div></div>
-                  <div class="detail-item"><div class="skeleton-text" style="width: 65%; height: 12px;"></div></div>
-                </div>
-                <div class="card-action-wrapper">
-                  <div class="skeleton-block" style="width: 100%; height: 36px; border-radius: 8px;"></div>
+                <div class="job-card-bottom-pills" style="margin-top: 6px;">
+                  <div class="skeleton-text" style="width: 65px; height: 18px; border-radius: 12px;"></div>
+                  <div class="skeleton-text" style="width: 75px; height: 18px; border-radius: 12px;"></div>
                 </div>
               </div>
             }
@@ -675,74 +668,74 @@
             </table>
           </div>
 
-          <!-- Mobile Cards View -->
+          <!-- Mobile Compact Cards View -->
           <div class="vacancies-cards-container">
             @for (job of filteredJobs(); track job.id) {
-              <div class="vacancy-card glass-card">
-                <div class="card-header-top">
-                  <div class="company-info-group">
-                    <div class="company-logo-avatar">
-                      {{ job.company.charAt(0) }}
+              <div class="vacancy-card glass-card compact-job-card" (click)="viewVacancy(job.id)" role="button" tabindex="0">
+                <div class="job-card-top">
+                  <div class="company-logo-avatar">
+                    {{ job.company.charAt(0) }}
+                  </div>
+                  <div class="job-header-info">
+                    <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
+                    <div class="job-sub-info">
+                      <span class="card-company-name">{{ job.company }}</span>
+                      <span class="meta-dot">•</span>
+                      <span class="card-location">
+                        <span class="material-symbols-outlined mini-icon">location_on</span>
+                        {{ job.location }}
+                      </span>
                     </div>
-                    <div>
-                      <button type="button" class="job-vacancy-link" (click)="viewVacancy(job.id)">
-                        <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
-                      </button>
-                      <p class="card-company-name">{{ job.company }}</p>
-                    </div>
+                  </div>
+                  <div class="card-chevron-wrap">
+                    <span class="material-symbols-outlined">chevron_right</span>
                   </div>
                 </div>
 
-                <div class="card-details-grid">
-                  <div class="detail-item">
-                    <span class="material-symbols-outlined detail-icon">language</span>
-                    <span class="detail-value">{{ job.source }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="material-symbols-outlined detail-icon">location_on</span>
-                    <span class="detail-value">{{ job.location }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="material-symbols-outlined detail-icon">payments</span>
-                    <span class="detail-value">{{ job.salaryRange }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="material-symbols-outlined detail-icon">calendar_today</span>
-                    <span class="detail-value">{{ job.publishDate }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="material-symbols-outlined detail-icon">schedule</span>
-                    @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
-                    <span class="deadline-tag" [ngClass]="mStatus.class">
-                      {{ mStatus.text }}
+                <div class="job-card-bottom-pills">
+                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
+                    @if (job.source === 'jobs.ge') {
+                      <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-mini-icon">
+                    } @else if (job.source === 'hr.ge') {
+                      <img src="/icons/hr.png" alt="HR.ge" class="provider-mini-icon">
+                    } @else if (job.source === 'awork.ge') {
+                      <img src="/icons/awork.png" alt="Awork.ge" class="provider-mini-icon">
+                    } @else if (job.source === 'myjobs.ge') {
+                      <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-mini-icon circular">
+                    }
+                    <span>{{ job.source }}</span>
+                  </span>
+
+                  @if (job.salaryRange && job.salaryRange !== 'შეთანხმებით' && job.salaryRange !== 'N/A') {
+                    <span class="salary-pill-mini">
+                      <span class="material-symbols-outlined mini-icon">payments</span>
+                      {{ job.salaryRange }}
                     </span>
-                  </div>
-                </div>
+                  }
 
-                <div class="card-action-wrapper">
-                  <button type="button" class="btn-fluid primary btn-sm apply-btn" (click)="viewVacancy(job.id)">
-                    ნახვა
-                  </button>
+                  @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
+                  <span class="deadline-tag mini" [ngClass]="mStatus.class">
+                    {{ mStatus.text }}
+                  </span>
                 </div>
               </div>
             }
             @if (isAppending()) {
-              <div class="vacancy-card skeleton-card skeleton-pulse">
-                <div class="card-header-top">
-                  <div class="company-info-group">
+              @for (i of [1,2,3]; track i) {
+                <div class="vacancy-card skeleton-card skeleton-pulse compact-job-card">
+                  <div class="job-card-top">
                     <div class="company-logo-avatar skeleton-block"></div>
-                    <div style="flex: 1;">
-                      <div class="skeleton-text" style="width: 70%; height: 16px; margin-bottom: 6px;"></div>
-                      <div class="skeleton-text" style="width: 40%; height: 12px;"></div>
+                    <div class="job-header-info" style="flex: 1;">
+                      <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '70%' : '85%')" style="height: 14px; margin-bottom: 4px;"></div>
+                      <div class="skeleton-text" style="width: 45%; height: 10px;"></div>
                     </div>
                   </div>
+                  <div class="job-card-bottom-pills" style="margin-top: 6px;">
+                    <div class="skeleton-text" style="width: 65px; height: 18px; border-radius: 12px;"></div>
+                    <div class="skeleton-text" style="width: 75px; height: 18px; border-radius: 12px;"></div>
+                  </div>
                 </div>
-                <div class="card-details-grid">
-                  <div class="detail-item"><div class="skeleton-text" style="width: 80%; height: 12px;"></div></div>
-                  <div class="detail-item"><div class="skeleton-text" style="width: 50%; height: 12px;"></div></div>
-                  <div class="detail-item"><div class="skeleton-text" style="width: 40%; height: 12px;"></div></div>
-                </div>
-              </div>
+              }
             }
           </div>
 
@@ -788,7 +781,10 @@
         <!-- Starter Plan -->
         <div class="pricing-card glass-card" (click)="handlePlanClick('BASIC')">
           <div class="card-header">
-            <h3 class="plan-name">Starter</h3>
+            <div class="plan-title-badge-row">
+              <h3 class="plan-name">Starter</h3>
+              <span class="plan-badge starter-badge">უფასო</span>
+            </div>
             <div class="price">
               <span class="currency">₾</span>
               <span class="amount">0</span>
@@ -812,9 +808,12 @@
 
         <!-- Pro Plan (Featured) -->
         <div class="pricing-card glass-card featured" (click)="joinProWaitlist()">
-          <div class="featured-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">მალე დაემატება</div>
+          <div class="featured-badge">მალე დაემატება</div>
           <div class="card-header">
-            <h3 class="plan-name">Pro</h3>
+            <div class="plan-title-badge-row">
+              <h3 class="plan-name">Pro</h3>
+              <span class="plan-badge pro-badge">პოპულარული</span>
+            </div>
             <div class="price">
               <span class="currency">₾</span>
               <span class="amount">8</span>
@@ -828,30 +827,32 @@
             <li><span class="material-symbols-outlined">check_circle</span> სტატისტიკა და ანალიტიკა</li>
           </ul>
 
-          <button class="btn-fluid secondary" 
+          <button class="btn-fluid primary" 
                   [disabled]="waitlistService.isEnrolled('PRO')" 
                   (click)="$event.stopPropagation(); joinProWaitlist()">
             {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
           </button>
         </div>
 
-
         <!-- Enterprise Plan -->
         <div class="pricing-card glass-card" (click)="joinEnterpriseWaitlist()">
-          <div class="featured-badge" style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);">მალე დაემატება</div>
+          <div class="featured-badge enterprise-top-badge">მალე დაემატება</div>
           <div class="card-header">
-            <h3 class="plan-name">Enterprise</h3>
-            <div class="price">
-              <span class="amount" style="font-size: 1.8rem;">შეთანხმებით</span>
+            <div class="plan-title-badge-row">
+              <h3 class="plan-name">Enterprise</h3>
+              <span class="plan-badge enterprise-badge">ბიზნესისთვის</span>
             </div>
-            <p style="font-size: 13px; color: var(--on-surface-variant); margin-top: 4px; font-weight: 500;">HR მენეჯერებისა და კომპანიებისთვის</p>
+            <div class="price price-custom">
+              <span class="amount custom-amount">შეთანხმებით</span>
+            </div>
+            <p class="enterprise-sub">HR მენეჯერებისა და კომპანიებისთვის</p>
           </div>
 
           <ul class="features">
-            <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე</li>
-            <li><span class="material-symbols-outlined">check_circle</span> რეზიუმეების AI ანალიზი & Match ქულები</li>
-            <li><span class="material-symbols-outlined">check_circle</span> HR პანელი & კანდიდატების მართვა</li>
-            <li><span class="material-symbols-outlined">check_circle</span> API ინტეგრაცია & პერსონალური მენეჯერი</li>
+            <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების AI მოძიება</li>
+            <li><span class="material-symbols-outlined">check_circle</span> რეზიუმეების AI Match ქულები</li>
+            <li><span class="material-symbols-outlined">check_circle</span> HR პანელი & მართვა</li>
+            <li><span class="material-symbols-outlined">check_circle</span> API ინტეგრაცია</li>
           </ul>
           <button class="btn-fluid secondary" 
                   [disabled]="waitlistService.isEnrolled('ENTERPRISE')" 

@@ -4,8 +4,8 @@ import { StateStore } from '../../Store/state.store';
 import { AuthService } from '../Services/auth-service';
 
 /**
- * Ensures user has completed onboarding before accessing private application features (dashboard, profile, jobs, etc.).
- * If onboarding is incomplete, redirects to /private/onboarding.
+ * Ensures user has an active subscription before accessing private application features (dashboard, profile, jobs, etc.).
+ * If subscription is null or missing, keeps/redirects the user to /private/onboarding.
  */
 export const onboardingGuard: CanActivateFn = async (route, state): Promise<boolean | UrlTree> => {
   const authService = inject(AuthService);
@@ -22,13 +22,13 @@ export const onboardingGuard: CanActivateFn = async (route, state): Promise<bool
     return true;
   }
 
-  // Load profile first to quickly determine onboarding and subscription status
+  // Load profile first to quickly determine subscription status
   if (!stateStore.profileLoaded() || stateStore.profile().id === 0) {
     await stateStore.loadProfile();
   }
 
-  // If onboarding is incomplete or subscription missing, redirect immediately to onboarding wizard
-  if (!stateStore.hasActiveSubscription() || !stateStore.isOnboardingCompleted()) {
+  // If subscription is null or missing, keep user on onboarding wizard
+  if (!stateStore.hasActiveSubscription()) {
     return router.createUrlTree(['/private/onboarding']);
   }
 
@@ -37,7 +37,7 @@ export const onboardingGuard: CanActivateFn = async (route, state): Promise<bool
 
 
 /**
- * Protects /private/onboarding route: if user has already completed onboarding,
+ * Protects /private/onboarding route: if user has already chosen a subscription,
  * redirects them to /private/dashboard (if PRO) or /private/profile unless they explicitly request edit mode (?edit=true).
  */
 export const onboardingPageGuard: CanActivateFn = async (route, state): Promise<boolean | UrlTree> => {
@@ -56,17 +56,18 @@ export const onboardingPageGuard: CanActivateFn = async (route, state): Promise<
 
   const allowEdit = route.queryParamMap.get('edit') === 'true';
 
-  // If already loaded and completed onboarding without edit mode, redirect
-  if (stateStore.profileLoaded() && stateStore.cvLoaded()) {
-    if (stateStore.isOnboardingCompleted() && !allowEdit) {
-      if (stateStore.isPro()) {
-        return router.createUrlTree(['/private/dashboard']);
-      }
-      return router.createUrlTree(['/private/profile']);
-    }
+  if (!stateStore.profileLoaded() || stateStore.profile().id === 0) {
+    await stateStore.loadProfile();
   }
 
-  // Allow immediate navigation so user instantly sees onboarding board and its loading state
+  // If user already has an active subscription and is not in edit mode, redirect to appropriate workspace
+  if (stateStore.hasActiveSubscription() && !allowEdit) {
+    if (stateStore.isPro()) {
+      return router.createUrlTree(['/private/dashboard']);
+    }
+    return router.createUrlTree(['/private/profile']);
+  }
+
   return true;
 };
 

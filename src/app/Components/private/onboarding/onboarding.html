@@ -14,16 +14,22 @@
       <aside class="onboarding-stepper-sidebar">
         <!-- Header Skeleton -->
         <div class="sidebar-header-block">
-          <div class="sidebar-badge-row">
-            <div class="skeleton-block" style="width: 32px; height: 32px; border-radius: 9px;"></div>
-            <div class="skeleton-text" style="width: 120px; height: 16px;"></div>
+          <div class="sidebar-top-meta">
+            <div class="sidebar-badge-row">
+              <div class="skeleton-block" style="width: 32px; height: 32px; border-radius: 9px;"></div>
+              <div class="skeleton-text" style="width: 120px; height: 16px;"></div>
+            </div>
+            <div class="progress-stats-row">
+              <div class="skeleton-text" style="width: 80px; height: 12px;"></div>
+              <div class="skeleton-text" style="width: 35px; height: 12px;"></div>
+            </div>
           </div>
-          <div class="progress-stats-row">
-            <div class="skeleton-text" style="width: 80px; height: 12px;"></div>
-            <div class="skeleton-text" style="width: 35px; height: 12px;"></div>
-          </div>
-          <div class="stepper-progress-track">
-            <div class="skeleton-block" style="width: 35%; height: 100%; border-radius: 9999px;"></div>
+          <div class="stepper-segmented-track">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <div class="progress-step-segment">
+                <div class="skeleton-block" style="width: 100%; height: 100%; border-radius: 9999px;" [style.opacity]="i === 1 ? '1' : '0.3'"></div>
+              </div>
+            }
           </div>
         </div>
 
@@ -119,7 +125,7 @@
     </div>
   } @else {
     <!-- One Big Unified Split-Layout Card -->
-    <div class="profile-card onboarding-split-card animate-fade">
+    <div class="profile-card onboarding-split-card animate-fade" [class.is-completed-card]="isCompleted()">
       @if (dialogRef) {
         <button type="button" class="onboarding-modal-close" (click)="closeModal()" aria-label="Close modal" title="დახურვა">
           <span class="material-symbols-outlined">close</span>
@@ -129,20 +135,34 @@
     <!-- ================================================================ -->
     <!-- LEFT SIDEBAR: Redesigned Vertical Stepper Navigation             -->
     <!-- ================================================================ -->
-    <aside class="onboarding-stepper-sidebar">
+    @if (!isCompleted()) {
+      <aside class="onboarding-stepper-sidebar">
       
       <!-- Sidebar Header & Progress Tracker -->
       <div class="sidebar-header-block">
-        <div class="sidebar-badge-row">
-          <span class="material-symbols-outlined sidebar-icon">auto_awesome</span>
-          <span class="sidebar-title">პროფილის შევსება</span>
+        <div class="sidebar-top-meta">
+          <div class="sidebar-badge-row">
+            <span class="material-symbols-outlined sidebar-icon">auto_awesome</span>
+            <span class="sidebar-title">პროფილის შევსება</span>
+          </div>
+          <div class="progress-stats-row">
+            <span class="progress-step-text">ნაბიჯი 0{{ currentStep() }}/0{{ totalSteps }}<span class="step-title-inline"> · {{ steps()[currentStep() - 1]?.title }}</span></span>
+            <span class="progress-percent-badge">{{ completionPercentage() }}%</span>
+          </div>
         </div>
-        <div class="progress-stats-row">
-          <span class="progress-step-text">ნაბიჯი 0{{ currentStep() }} / 0{{ totalSteps }}</span>
-          <span class="progress-percent-text">{{ completionPercentage() }}%</span>
-        </div>
-        <div class="stepper-progress-track">
-          <div class="stepper-progress-fill" [style.width.%]="completionPercentage()"></div>
+
+        <!-- Segmented Step Progress Bar (5 Steps with Spaces) -->
+        <div class="stepper-segmented-track" role="progressbar" [attr.aria-valuenow]="currentStep()" aria-valuemin="1" [attr.aria-valuemax]="totalSteps">
+          @for (step of steps(); track step.number) {
+            <div
+              class="progress-step-segment"
+              [class.completed]="currentStep() > step.number || isStepValid(step.number)"
+              [class.active]="currentStep() === step.number"
+              [title]="'ნაბიჯი ' + step.number + ': ' + step.title"
+            >
+              <div class="segment-fill"></div>
+            </div>
+          }
         </div>
       </div>
 
@@ -196,6 +216,7 @@
       </div>
 
     </aside>
+    }
 
     <!-- ================================================================ -->
     <!-- RIGHT CONTENT: Active Step Workspace & Actions                   -->
@@ -206,7 +227,7 @@
       <div class="workspace-body">
 
         <!-- ============================================================ -->
-        <!-- ── STEP 1: Plan Selection (Default Free Basic)               -->
+        <!-- ── STEP 1: Plan Selection (Accordion Layout)                -->
         <!-- ============================================================ -->
         @if (currentStep() === 1) {
           <div class="step-panel subscription-onboarding-section animate-fade">
@@ -215,71 +236,142 @@
                 <span class="material-symbols-outlined head-icon">payments</span>
                 <h2>სააბონენტო გეგმა</h2>
               </div>
-              <p class="panel-desc">ამ ეტაპზე აქტიურია <strong>Basic (უფასო)</strong> პაკეტი (საბანკო ბარათის დამატება არ არის საჭირო). <strong>Pro</strong> და <strong>Enterprise</strong> პაკეტები მალე დაემატება — შეგიძლიათ 1 კლიკით დაემატოთ <strong>Waitlist-ში</strong>, თუმცა მათი არჩევა ჯერ შეუძლებელია.</p>
+              <p class="panel-desc">Basic პაკეტი სრულიად უფასოა. Pro და Enterprise-ზე შეგიძლიათ დაემატოთ Waitlist-ში.</p>
             </div>
 
-            <!-- Plans Grid -->
-            <div class="plans-grid">
+            <!-- Plans Accordion List -->
+            <div class="plans-accordion-list">
               @for (plan of plans; track plan.key) {
                 <div
-                  class="plan-card"
-                  [class.featured]="plan.isPopular"
-                  [class.disabled-plan]="plan.disabled"
+                  class="plan-accordion-card"
+                  [class.expanded]="expandedPlan() === plan.key"
                   [class.selected-tier]="selectedPlan() === plan.key && !plan.disabled"
-                  (click)="plan.disabled ? joinWaitlistFromOnboarding(plan.key) : selectPlan(plan.key)"
+                  [class.disabled-plan]="plan.disabled"
                 >
-                  @if (plan.badge) {
-                    <div class="featured-badge" [class.coming-soon]="plan.disabled" [class.free-badge]="plan.key === 'BASIC'">{{ plan.badge }}</div>
-                  }
+                  <!-- Accordion Header Bar -->
+                  <div
+                    class="plan-accordion-header"
+                    (click)="togglePlanAccordion(plan.key)"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div class="plan-radio-circle" [class.checked]="selectedPlan() === plan.key && !plan.disabled" [class.is-waitlist]="plan.disabled">
+                        @if (selectedPlan() === plan.key && !plan.disabled) {
+                          <span class="material-symbols-outlined checked-icon">check</span>
+                        } @else if (plan.disabled) {
+                          <span class="material-symbols-outlined waitlist-icon">hourglass_top</span>
+                        }
+                      </div>
 
-                  <div class="plan-header">
-                    <h3 class="plan-name">{{ plan.name }}</h3>
-                    <div class="price">
-                      @if (plan.period) {
-                        <span class="currency">₾</span>
-                        <span class="amount">{{ plan.key === 'PRO' ? '8' : plan.key === 'BASIC' ? '0' : '0' }}</span>
-                        <span class="period">{{ plan.period }}</span>
-                      } @else {
-                        <span class="amount custom">{{ plan.price }}</span>
-                      }
+                      <div class="plan-header-titles">
+                        <div class="title-badge-row">
+                          <h3 class="plan-name">{{ plan.name }}</h3>
+                          @if (plan.badge) {
+                            <span class="plan-badge-pill" [class.free-badge]="plan.key === 'BASIC'" [class.pro-badge]="plan.key === 'PRO'" [class.enterprise-badge]="plan.key === 'PREMIUM'">
+                              {{ plan.badge }}
+                            </span>
+                          }
+                        </div>
+                        <p class="plan-subtitle-summary">
+                          @if (plan.key === 'BASIC') {
+                            სრული ძირითადი ფუნქციონალი უფასოდ
+                          } @else if (plan.key === 'PRO') {
+                            ხელოვნური ინტელექტი & AI ანალიზი
+                          } @else {
+                            HR მენეჯერებისა და კომპანიებისთვის
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="header-trailing-group">
+                      <div class="price-pill">
+                        @if (plan.period) {
+                          <span class="currency">₾</span>
+                          <span class="amount">{{ plan.key === 'PRO' ? '8' : '0' }}</span>
+                          <span class="period">{{ plan.period }}</span>
+                        } @else {
+                          <span class="amount custom">{{ plan.price }}</span>
+                        }
+                      </div>
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="expandedPlan() === plan.key">
+                        expand_more
+                      </span>
                     </div>
                   </div>
 
-                  <ul class="features">
-                    @for (f of plan.features; track f) {
-                      <li>
-                        <span class="check-icon">✓</span>
-                        {{ f }}
-                      </li>
-                    }
-                  </ul>
+                  <!-- Accordion Body Content -->
+                  @if (expandedPlan() === plan.key) {
+                    <div class="plan-accordion-body animate-fade">
+                      <div class="features-summary-block">
+                        <span class="features-heading">პაკეტის შესაძლებლობები:</span>
+                        <ul class="features-list">
+                          @for (f of plan.features; track f) {
+                            <li>
+                              <span class="material-symbols-outlined check-ico">check_circle</span>
+                              <span>{{ f }}</span>
+                            </li>
+                          }
+                        </ul>
+                      </div>
 
-                  @if (plan.disabled) {
-                    <div class="waitlist-hint-box">
-                      <span class="material-symbols-outlined">schedule</span>
-                      <span>გეგმა მუშავდება, დაემატეთ Waitlist-ში რათა არ გამოტოვოთ</span>
+                      @if (plan.disabled) {
+                        <div class="waitlist-callout-card">
+                          <div class="callout-icon-box">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                          </div>
+                          <div class="callout-text">
+                            <span class="callout-title">გეგმა მალე გაეშვება</span>
+                            <p class="callout-desc">დაემატეთ Waitlist-ში პრიორიტეტული წვდომისთვის.</p>
+                          </div>
+                        </div>
+                      }
+
+                      <div class="plan-action-row">
+                        @if (plan.key === 'BASIC') {
+                          <button
+                            type="button"
+                            class="btn-plan-action primary"
+                            (click)="selectPlan('BASIC')"
+                          >
+                            {{ selectedPlan() === 'BASIC' ? 'არჩეულია (უფასო) ✓' : 'Basic პაკეტის არჩევა' }}
+                          </button>
+                        } @else if (plan.key === 'PRO') {
+                          <button
+                            type="button"
+                            class="btn-plan-action waitlist-btn pro"
+                            [disabled]="waitlistService.isEnrolled('PRO')"
+                            (click)="joinWaitlistFromOnboarding('PRO')"
+                          >
+                            @if (waitlistService.isEnrolled('PRO')) {
+                              <span class="material-symbols-outlined">check</span>
+                              <span>Waitlist-ში ხართ ✓</span>
+                            } @else {
+                              <span class="material-symbols-outlined">notification_add</span>
+                              <span>შემატყობინე (Waitlist)</span>
+                            }
+                          </button>
+                        } @else if (plan.key === 'PREMIUM') {
+                          <button
+                            type="button"
+                            class="btn-plan-action waitlist-btn enterprise"
+                            [disabled]="waitlistService.isEnrolled('ENTERPRISE')"
+                            (click)="joinWaitlistFromOnboarding('ENTERPRISE')"
+                          >
+                            @if (waitlistService.isEnrolled('ENTERPRISE')) {
+                              <span class="material-symbols-outlined">check</span>
+                              <span>Waitlist-ში ხართ ✓</span>
+                            } @else {
+                              <span class="material-symbols-outlined">notification_add</span>
+                              <span>შემატყობინე (Waitlist)</span>
+                            }
+                          </button>
+                        }
+                      </div>
                     </div>
                   }
-
-
-                  <button
-                    type="button"
-                    class="activate-btn"
-                    (click)="$event.stopPropagation(); plan.disabled ? joinWaitlistFromOnboarding(plan.key) : selectPlan(plan.key)"
-                  >
-                    @if (plan.key === 'PRO') {
-                      {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
-                    } @else if (plan.key === 'PREMIUM') {
-                      {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
-                    } @else if (plan.disabled) {
-                      მალე დაემატება
-                    } @else {
-                      {{ selectedPlan() === plan.key ? 'არჩეულია (უფასო) ✓' : 'არჩევა' }}
-                    }
-                  </button>
-
                 </div>
-
               }
             </div>
 
@@ -290,10 +382,10 @@
               </div>
               <div class="helper-text-block">
                 <span class="helper-title">
-                  აქტიური სააბონენტო გეგმა: Basic (უფასო · 0₾ · ბარათის გარეშე)
+                  აქტიური გეგმა: Basic (უფასო · 0₾)
                 </span>
                 <p class="helper-desc">
-                  თქვენ ავტომატურად სარგებლობთ Basic უფასო პაკეტით (CV-ს ატვირთვა, ვაკანსიების ძიება და Telegram შეტყობინებები). Pro და Enterprise პაკეტები მალე გააქტიურდება — დააჭირეთ „შემატყობინე გაშვებისას“-ს, რათა მიიღოთ პრიორიტეტული შეტყობინება.
+                  ბარათის დამატება არ არის საჭირო.
                 </p>
               </div>
             </div>
@@ -335,7 +427,7 @@
             } @else if (userCv()) {
               <!-- Redesigned Modern Uploaded CV Showcase Card -->
               <div class="uploaded-cv-premium-card animate-fade">
-                <div class="cv-card-top-row">
+                <div class="cv-card-main-header">
                   <div class="file-lead-info">
                     <div
                       class="doc-type-badge-icon"
@@ -359,21 +451,9 @@
                       <div class="doc-meta-info">
                         <span>{{ formatFileSize(userCv()?.size) }}</span>
                         <span class="meta-separator">•</span>
-                        <span>{{ isProPlan() ? 'მზადაა AI ვაკანსიების ძიებისთვის' : 'მზადაა შემდეგი ნაბიჯისთვის' }}</span>
+                        <span>{{ (userCv()?.originalName?.toLowerCase()?.endsWith('.doc') || userCv()?.originalName?.toLowerCase()?.endsWith('.docx')) ? 'Word დოკუმენტი' : 'PDF ფაილი' }}</span>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="file-actions-bar">
-                    <input #replaceFileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
-                    <button type="button" class="btn-cv-action secondary" (click)="replaceFileInput.click()" title="სხვა ფაილის არჩევა">
-                      <span class="material-symbols-outlined">cached</span>
-                      <span>შეცვლა</span>
-                    </button>
-                    <button type="button" class="btn-cv-action danger" (click)="deleteCv()" title="CV-ს წაშლა">
-                      <span class="material-symbols-outlined">delete</span>
-                      <span>წაშლა</span>
-                    </button>
                   </div>
                 </div>
 
@@ -381,15 +461,15 @@
                   <div class="cv-extracted-preview-box">
                     @if (userCv()?.summary?.detectedRole) {
                       <div class="preview-item">
-                        <span class="preview-label">გამოვლენილი პროფილი:</span>
+                        <span class="preview-label">პროფილი:</span>
                         <span class="preview-val">{{ userCv()?.summary?.detectedRole }}</span>
                       </div>
                     }
                     @if (userCv()?.summary?.primarySkills && userCv()?.summary?.primarySkills.length > 0) {
                       <div class="preview-item skills">
-                        <span class="preview-label">ძირითადი უნარები:</span>
+                        <span class="preview-label">უნარები:</span>
                         <div class="preview-tags-list">
-                          @for (skill of userCv()?.summary?.primarySkills?.slice(0, 6); track skill) {
+                          @for (skill of userCv()?.summary?.primarySkills?.slice(0, 5); track skill) {
                             <span class="preview-skill-tag">{{ skill }}</span>
                           }
                         </div>
@@ -398,15 +478,17 @@
                   </div>
                 }
 
-                <div class="cv-status-highlight-strip">
-                  <div class="strip-item">
-                    <span class="material-symbols-outlined text-green-500">check_circle</span>
-                    <span>ფაილი წარმატებით მიღებულია</span>
-                  </div>
-                  <div class="strip-item">
-                    <span class="material-symbols-outlined text-green-500">check_circle</span>
-                    <span>ფორმატი ვალიდურია ({{ (userCv()?.originalName?.toLowerCase()?.endsWith('.doc') || userCv()?.originalName?.toLowerCase()?.endsWith('.docx')) ? 'Word' : 'PDF' }})</span>
-                  </div>
+                <!-- Action Buttons Row -->
+                <div class="cv-actions-row">
+                  <input #replaceFileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
+                  <button type="button" class="btn-cv-action secondary" (click)="replaceFileInput.click()" title="სხვა ფაილის არჩევა">
+                    <span class="material-symbols-outlined">cached</span>
+                    <span>ფაილის შეცვლა</span>
+                  </button>
+                  <button type="button" class="btn-cv-action danger" (click)="deleteCv()" title="CV-ს წაშლა">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>წაშლა</span>
+                  </button>
                 </div>
               </div>
             } @else {
@@ -448,7 +530,7 @@
         }
 
         <!-- ============================================================ -->
-        <!-- ── STEP 3: Consumer Information & Keywords (Basic / Pro)    -->
+        <!-- ── STEP 3: Consumer Information & Keywords (Accordion Layout)-->
         <!-- ============================================================ -->
         @if (currentStep() === 3) {
           <div class="step-panel animate-fade">
@@ -459,178 +541,285 @@
               </div>
               <p class="panel-desc">
                 {{ isProPlan() 
-                  ? 'შეავსეთ თქვენი სახელი და გვარი. Pro პაკეტში საძიებო სიტყვებს AI ავტომატურად განსაზღვრავს თქვენი რეზიუმედან.' 
-                  : 'შეავსეთ თქვენი სახელი, გვარი და მიუთითეთ მინიმუმ 3 სასურველი პოზიციის საკვანძო სიტყვა.' }}
+                  ? 'შეავსეთ თქვენი სახელი და გვარი. Pro პაკეტში საძიებო სიტყვებს AI განსაზღვრავს.' 
+                  : 'შეავსეთ პირადი მონაცემები და მიუთითეთ მინიმუმ 3 საძიებო სიტყვა.' }}
               </p>
             </div>
 
-            <div class="step-columns-2">
-              <!-- Personal Info Inputs Card -->
-              <div class="inner-block-card">
-                <div class="inner-card-head">
-                  <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="infoFormSubmitted() && infoForm.invalid">badge</span>
-                  <h3 class="inner-title" [class.is-invalid-title]="infoFormSubmitted() && infoForm.invalid">პირადი მონაცემები</h3>
-                </div>
+            <div class="step3-accordion-list">
+              <!-- Accordion 1: Personal Info -->
+              <div
+                class="step3-accordion-card"
+                [class.expanded]="infoSectionExpanded()"
+                [class.has-error]="infoFormSubmitted() && !isInfoSectionValid()"
+                [class.is-valid]="isInfoSectionValid()"
+              >
+                <!-- Accordion Header Bar -->
+                <div
+                  class="step3-accordion-header"
+                  (click)="toggleStep3Section('info')"
+                  role="button"
+                  tabindex="0"
+                >
+                  <div class="header-lead-group">
+                    <div
+                      class="accordion-icon-box"
+                      [class.error-icon]="infoFormSubmitted() && !isInfoSectionValid()"
+                      [class.valid-icon]="isInfoSectionValid()"
+                    >
+                      <span class="material-symbols-outlined">
+                        {{ (infoFormSubmitted() && !isInfoSectionValid()) ? 'error' : (isInfoSectionValid() ? 'check_circle' : 'badge') }}
+                      </span>
+                    </div>
 
-                <form [formGroup]="infoForm" class="profile-form-grid">
-                  <div class="form-group">
-                    <label for="firstName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('firstName')?.invalid">სახელი <span class="required-star">*</span></label>
-                    <input
-                      id="firstName"
-                      type="text"
-                      formControlName="firstName"
-                      class="form-input"
-                      placeholder="სახელი"
-                      [class.is-invalid]="infoFormSubmitted() && infoForm.get('firstName')?.invalid"
-                    />
-                    @if (infoFormSubmitted() && infoForm.get('firstName')?.invalid) {
-                      <span class="field-error-text">გთხოვთ შეიყვანოთ სახელი</span>
-                    }
-                  </div>
-
-                  <div class="form-group">
-                    <label for="lastName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('lastName')?.invalid">გვარი <span class="required-star">*</span></label>
-                    <input
-                      id="lastName"
-                      type="text"
-                      formControlName="lastName"
-                      class="form-input"
-                      placeholder="გვარი"
-                      [class.is-invalid]="infoFormSubmitted() && infoForm.get('lastName')?.invalid"
-                    />
-                    @if (infoFormSubmitted() && infoForm.get('lastName')?.invalid) {
-                      <span class="field-error-text">გთხოვთ შეიყვანოთ გვარი</span>
-                    }
-                  </div>
-
-                  <div class="form-group full-width">
-                    <label for="email">ელ-ფოსტა</label>
-                    <div class="input-with-icon">
-                      <input
-                        id="email"
-                        type="email"
-                        formControlName="email"
-                        class="form-input"
-                        readonly
-                      />
-                      <span class="material-symbols-outlined field-icon lock">lock</span>
+                    <div class="header-titles">
+                      <div class="title-status-row">
+                        <h3 class="section-title">პირადი მონაცემები</h3>
+                        <!-- Error / Status badge on shrinked/expanded header -->
+                        @if (infoFormSubmitted() && !isInfoSectionValid()) {
+                          <span class="accordion-badge error-badge">
+                            <span class="material-symbols-outlined">warning</span>
+                            შესავსებია
+                          </span>
+                        } @else if (isInfoSectionValid()) {
+                          <span class="accordion-badge success-badge">
+                            <span class="material-symbols-outlined">check</span>
+                            {{ infoForm.get('firstName')?.value }} {{ infoForm.get('lastName')?.value }}
+                          </span>
+                        }
+                      </div>
+                      <p class="section-summary-sub">
+                        {{ isInfoSectionValid() ? (infoForm.get('email')?.value || 'მონაცემები მზადაა') : 'სახელი, გვარი და საკონტაქტო მეილი' }}
+                      </p>
                     </div>
                   </div>
-                </form>
-              </div>
 
-              <!-- Search Queries Card (FOR BASIC PLAN: Min 3 keywords required) -->
-              @if (!isProPlan()) {
-                <div class="inner-block-card">
-                  <div class="inner-card-head with-action">
-
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="infoFormSubmitted() && searchQueries().length < 3">tag</span>
-                      <h3 class="inner-title" [class.is-invalid-title]="infoFormSubmitted() && searchQueries().length < 3">საძიებო სიტყვები (მინიმუმ 3)</h3>
-                    </div>
-                    <span class="keyword-count-badge" [class.success]="searchQueries().length >= 3" [class.has-error]="infoFormSubmitted() && searchQueries().length < 3">
-                      {{ searchQueries().length }}/3
+                  <div class="header-trailing-group">
+                    <span class="material-symbols-outlined accordion-arrow" [class.rotated]="infoSectionExpanded()">
+                      expand_more
                     </span>
                   </div>
+                </div>
 
-                  <p class="section-desc">ამ სიტყვების მიხედვით გაიფილტრება თქვენთვის ვაკანსიები. აუცილებელია მინიმუმ 3 სიტყვა.</p>
-
-                  <div class="chips-input-container-wrapper">
-                    <div class="chips-input-container" [class.is-invalid]="infoFormSubmitted() && searchQueries().length < 3" [class.loading]="keywordLoading()">
-                      <div class="chips-list">
-                        @for (query of searchQueries(); track query; let i = $index) {
-                          <div class="chip">
-                            <span>{{ query }}</span>
-                            <button type="button" class="chip-remove" [disabled]="keywordLoading()" (click)="removeKeyword(i)">
-                              <span class="material-symbols-outlined">close</span>
-                            </button>
-                          </div>
-                        }
+                <!-- Collapsible Body -->
+                @if (infoSectionExpanded()) {
+                  <div class="step3-accordion-body animate-fade">
+                    <form [formGroup]="infoForm" class="profile-form-grid">
+                      <div class="form-group">
+                        <label for="firstName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('firstName')?.invalid">
+                          სახელი <span class="required-star">*</span>
+                        </label>
                         <input
+                          id="firstName"
                           type="text"
-                          class="chip-input"
-                          placeholder="დაამატეთ საძიებო სიტყვა..."
-                          [disabled]="keywordLoading()"
-                          [ngModel]="keywordInput()"
-                          (ngModelChange)="keywordInput.set($event)"
-                          (keydown.enter)="$event.preventDefault(); addKeyword()"
+                          formControlName="firstName"
+                          class="form-input"
+                          placeholder="სახელი"
+                          [class.is-invalid]="infoFormSubmitted() && infoForm.get('firstName')?.invalid"
                         />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      class="btn-add-keyword"
-                      [disabled]="keywordLoading() || !keywordInput().trim()"
-                      (click)="addKeyword()"
-                      title="დამატება"
-                    >
-                      @if (keywordLoading()) {
-                        <span class="btn-spinner" style="width: 18px; height: 18px; border-width: 2.5px;"></span>
-                      } @else {
-                        <span class="material-symbols-outlined">add</span>
-                      }
-                    </button>
-                  </div>
-                  @if (infoFormSubmitted()) {
-                    @if (searchQueries().length === 0) {
-                      <span class="field-error-text">საძიებო სიტყვები არ არის მითითებული (მინიმუმ 3)</span>
-                    } @else if (searchQueries().length < 3) {
-                      <span class="field-error-text">გთხოვთ მიუთითოთ მინიმუმ 3 საძიებო სიტყვა (მითითებულია: {{ searchQueries().length }}/3)</span>
-                    }
-                  }
-
-
-                  <div class="suggestions-section">
-                    <span class="suggestions-title">პოპულარული პოზიციები:</span>
-                    <div class="suggestions-list">
-                      @for (item of popularKeywords; track item) {
-                        @if (!searchQueries().includes(item)) {
-                          <button type="button" class="suggestion-tag" [disabled]="keywordLoading()" (click)="addKeyword(item)">
-                            + {{ item }}
-                          </button>
+                        @if (infoFormSubmitted() && infoForm.get('firstName')?.invalid) {
+                          <span class="field-error-text">გთხოვთ შეიყვანოთ სახელი</span>
                         }
-                      }
-                    </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="lastName" [class.is-invalid-title]="infoFormSubmitted() && infoForm.get('lastName')?.invalid">
+                          გვარი <span class="required-star">*</span>
+                        </label>
+                        <input
+                          id="lastName"
+                          type="text"
+                          formControlName="lastName"
+                          class="form-input"
+                          placeholder="გვარი"
+                          [class.is-invalid]="infoFormSubmitted() && infoForm.get('lastName')?.invalid"
+                        />
+                        @if (infoFormSubmitted() && infoForm.get('lastName')?.invalid) {
+                          <span class="field-error-text">გთხოვთ შეიყვანოთ გვარი</span>
+                        }
+                      </div>
+
+                      <div class="form-group full-width">
+                        <label for="email">ელ-ფოსტა</label>
+                        <div class="input-with-icon">
+                          <input
+                            id="email"
+                            type="email"
+                            formControlName="email"
+                            class="form-input"
+                            readonly
+                          />
+                          <span class="material-symbols-outlined field-icon lock">lock</span>
+                        </div>
+                      </div>
+                    </form>
                   </div>
-                </div>
-              } @else {
-                <!-- FOR PRO PLAN: AI Auto-Keyword Extraction Feature Box -->
-                <div class="inner-block-card pro-ai-keywords-showcase">
-                  <div class="pro-ai-glow"></div>
-                  <div class="inner-card-head">
-                    <div class="pro-badge-head">
-                      <span class="material-symbols-outlined text-primary">auto_awesome</span>
-                      <h3 class="inner-title">AI ავტომატური გენერაცია</h3>
+                }
+              </div>
+
+              <!-- Accordion 2: Search Keywords (or Pro AI Showcase) -->
+              <div
+                class="step3-accordion-card"
+                [class.expanded]="keywordsSectionExpanded()"
+                [class.has-error]="infoFormSubmitted() && !isKeywordsSectionValid()"
+                [class.is-valid]="isKeywordsSectionValid()"
+              >
+                <!-- Accordion Header Bar -->
+                <div
+                  class="step3-accordion-header"
+                  (click)="toggleStep3Section('keywords')"
+                  role="button"
+                  tabindex="0"
+                >
+                  <div class="header-lead-group">
+                    <div
+                      class="accordion-icon-box"
+                      [class.error-icon]="infoFormSubmitted() && !isKeywordsSectionValid()"
+                      [class.valid-icon]="isKeywordsSectionValid()"
+                      [class.pro-icon]="isProPlan()"
+                    >
+                      <span class="material-symbols-outlined">
+                        {{ (infoFormSubmitted() && !isKeywordsSectionValid()) ? 'error' : (isProPlan() ? 'psychology' : (isKeywordsSectionValid() ? 'check_circle' : 'tag')) }}
+                      </span>
                     </div>
-                    <span class="pro-tag-pill">Pro უპირატესობა</span>
+
+                    <div class="header-titles">
+                      <div class="title-status-row">
+                        <h3 class="section-title">საძიებო სიტყვები</h3>
+                        <!-- Error / Status badge on shrinked/expanded header -->
+                        @if (isProPlan()) {
+                          <span class="accordion-badge pro-badge">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                            AI ავტომატური
+                          </span>
+                        } @else if (infoFormSubmitted() && !isKeywordsSectionValid()) {
+                          <span class="accordion-badge error-badge">
+                            <span class="material-symbols-outlined">warning</span>
+                            მინიმუმ 3 სიტყვა ({{ searchQueries().length }}/3)
+                          </span>
+                        } @else if (isKeywordsSectionValid()) {
+                          <span class="accordion-badge success-badge">
+                            <span class="material-symbols-outlined">check</span>
+                            {{ searchQueries().length }} სიტყვა
+                          </span>
+                        } @else {
+                          <span class="accordion-badge neutral-badge">
+                            {{ searchQueries().length }}/3
+                          </span>
+                        }
+                      </div>
+                      <p class="section-summary-sub">
+                        @if (isProPlan()) {
+                          AI ავტომატურად განსაზღვრავს რეზიუმედან
+                        } @else {
+                          ვაკანსიების გასაფილტრი პოზიციები (მინ. 3)
+                        }
+                      </p>
+                    </div>
                   </div>
 
-                  <div class="pro-ai-content-box">
-                    <div class="ai-sparkle-hero-icon">
-                      <span class="material-symbols-outlined">psychology</span>
-                    </div>
-                    <h4 class="pro-hero-title">საძიებო სიტყვების შეყვანა არ არის საჭირო!</h4>
-                    <p class="pro-hero-desc">
-                      Pro გეგმის ფარგლებში, ხელოვნური ინტელექტი თქვენი CV (<strong>{{ userCv()?.originalName || 'CV' }}</strong>)-დან თავად ამოიცნობს და დააგენერირებს ოპტიმალურ საძიებო პოზიციებსა და უნარებს.
-                    </p>
-
-                    <div class="ai-features-highlight-list">
-                      <div class="highlight-item">
-                        <span class="material-symbols-outlined text-green-500">check_circle</span>
-                        <span>ავტომატური უნარებისა და ტექნოლოგიების ექსტრაქცია</span>
-                      </div>
-                      <div class="highlight-item">
-                        <span class="material-symbols-outlined text-green-500">check_circle</span>
-                        <span>დინამიური AI ვაკანსიების შესაბამისობა (Match ქულები)</span>
-                      </div>
-                      <div class="highlight-item">
-                        <span class="material-symbols-outlined text-green-500">check_circle</span>
-                        <span>ყოველდღიური ჭკვიანი ადაპტაცია ახალ ვაკანსიებზე</span>
-                      </div>
-                    </div>
+                  <div class="header-trailing-group">
+                    <span class="material-symbols-outlined accordion-arrow" [class.rotated]="keywordsSectionExpanded()">
+                      expand_more
+                    </span>
                   </div>
                 </div>
-              }
+
+                <!-- Collapsible Body -->
+                @if (keywordsSectionExpanded()) {
+                  <div class="step3-accordion-body animate-fade">
+                    @if (!isProPlan()) {
+                      <div class="search-keywords-body-content">
+                        <div class="keywords-instruction-row">
+                          <p class="section-desc">ამ სიტყვების მიხედვით გაიფილტრება თქვენთვის ვაკანსიები. აუცილებელია მინიმუმ 3 სიტყვა.</p>
+                          <span class="keywords-counter-pill" [class.complete]="searchQueries().length >= 3">
+                            <span class="material-symbols-outlined check-icon">check_circle</span>
+                            {{ searchQueries().length }}/3
+                          </span>
+                        </div>
+
+                        <div class="chips-input-container-wrapper">
+                          <div class="chips-input-container" [class.is-invalid]="infoFormSubmitted() && searchQueries().length < 3" [class.loading]="keywordLoading()">
+                            <div class="chips-list">
+                              @for (query of searchQueries(); track query; let i = $index) {
+                                <div class="chip">
+                                  <span class="chip-text">{{ query }}</span>
+                                  <button type="button" class="chip-remove" [disabled]="keywordLoading()" (click)="removeKeyword(i)" title="წაშლა">
+                                    <span class="material-symbols-outlined">close</span>
+                                  </button>
+                                </div>
+                              }
+                              <input
+                                type="text"
+                                class="chip-input"
+                                placeholder="დაამატეთ საძიებო სიტყვა..."
+                                [disabled]="keywordLoading()"
+                                [ngModel]="keywordInput()"
+                                (ngModelChange)="keywordInput.set($event)"
+                                (keydown.enter)="$event.preventDefault(); addKeyword()"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            class="btn-add-keyword"
+                            [disabled]="keywordLoading() || !keywordInput().trim()"
+                            (click)="addKeyword()"
+                            title="დამატება"
+                          >
+                            @if (keywordLoading()) {
+                              <span class="btn-spinner" style="width: 18px; height: 18px; border-width: 2.5px;"></span>
+                            } @else {
+                              <span class="material-symbols-outlined">add</span>
+                            }
+                          </button>
+                        </div>
+
+                        @if (infoFormSubmitted() && searchQueries().length < 3) {
+                          <span class="field-error-text">
+                            {{ searchQueries().length === 0 ? 'საძიებო სიტყვები არ არის მითითებული (მინიმუმ 3)' : 'გთხოვთ მიუთითოთ მინიმუმ 3 საძიებო სიტყვა (მითითებულია: ' + searchQueries().length + '/3)' }}
+                          </span>
+                        }
+
+                        <div class="suggestions-section">
+                          <span class="suggestions-title">პოპულარული პოზიციები:</span>
+                          <div class="suggestions-list">
+                            @for (item of popularKeywords; track item) {
+                              @if (!searchQueries().includes(item)) {
+                                <button type="button" class="suggestion-tag" [disabled]="keywordLoading()" (click)="addKeyword(item)">
+                                  <span class="material-symbols-outlined">add</span>
+                                  <span>{{ item }}</span>
+                                </button>
+                              }
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Pro AI Showcase inside Accordion -->
+                      <div class="pro-ai-content-box">
+                        <div class="ai-sparkle-hero-icon">
+                          <span class="material-symbols-outlined">psychology</span>
+                        </div>
+                        <h4 class="pro-hero-title">საძიებო სიტყვების შეყვანა არ არის საჭირო!</h4>
+                        <p class="pro-hero-desc">
+                          Pro გეგმის ფარგლებში, ხელოვნური ინტელექტი თქვენი CV (<strong>{{ userCv()?.originalName || 'CV' }}</strong>)-დან თავად ამოიცნობს და დააგენერირებს ოპტიმალურ საძიებო პოზიციებსა და უნარებს.
+                        </p>
+                        <div class="ai-features-highlight-list">
+                          <div class="highlight-item">
+                            <span class="material-symbols-outlined text-green-500">check_circle</span>
+                            <span>ავტომატური უნარებისა და ტექნოლოგიების ექსტრაქცია</span>
+                          </div>
+                          <div class="highlight-item">
+                            <span class="material-symbols-outlined text-green-500">check_circle</span>
+                            <span>დინამიური AI ვაკანსიების შესაბამისობა (Match ქულები)</span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             </div>
           </div>
         }
@@ -639,7 +828,7 @@
 
 
         <!-- ============================================================ -->
-        <!-- ── STEP 4: Notifications (Basic = Telegram, Pro = Email)     -->
+        <!-- ── STEP 4: Notifications (Accordion Layout)                  -->
         <!-- ============================================================ -->
         @if (currentStep() === 4) {
           <div class="step-panel notification-channel-section animate-fade">
@@ -657,262 +846,450 @@
               </p>
             </div>
 
-            <!-- PRO PLAN: 2-Column Email Section -->
+            <!-- PRO PLAN ACCORDIONS -->
             @if (isProPlan()) {
-              <div class="step-columns-2 animate-fade">
-                <!-- Left Card: Email Overview -->
-                <div class="inner-block-card channel-overview-card" [class.connected]="isEmailVerified()">
-                  <div class="inner-card-head">
-                    <div class="channel-brand-info">
-                      <img src="/icons/gmail.png" alt="Email" class="channel-logo" />
-                      <div class="channel-titles">
-                        <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !profile().receiveMessages">Email შეტყობინებები (Pro)</h3>
-                        <span class="channel-subheading">ვაკანსიების დაიჯესტი თქვენს მეილზე</span>
+              <div class="step3-accordion-list animate-fade">
+                <!-- Accordion 1: Email Overview & Toggle -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="channelOverviewExpanded()"
+                  [class.has-error]="step4Submitted() && !isChannelOverviewValid()"
+                  [class.is-valid]="isChannelOverviewValid()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleStep4Section('overview')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div
+                        class="accordion-icon-box"
+                        [class.error-icon]="step4Submitted() && !isChannelOverviewValid()"
+                        [class.valid-icon]="isChannelOverviewValid()"
+                      >
+                        <span class="material-symbols-outlined">
+                          {{ (step4Submitted() && !isChannelOverviewValid()) ? 'error' : (isChannelOverviewValid() ? 'check_circle' : 'mail') }}
+                        </span>
                       </div>
-                    </div>
-                    <span class="channel-status-pill" [class.is-connected]="isEmailVerified()">
-                      @if (isEmailVerified()) {
-                        <span class="material-symbols-outlined check-ico">check</span>
-                        <span>დადასტურებულია</span>
-                      } @else {
-                        <span>დაუდასტურებელი</span>
-                      }
-                    </span>
-                  </div>
 
-                  <div class="channel-body-content">
-                    <div class="channel-identity-line">
-                      <span class="material-symbols-outlined">mail</span>
-                      <span class="email-value">{{ profile().email }}</span>
-                    </div>
-
-                    <div class="channel-features-list">
-                      <div class="feat-item">
-                        <span class="material-symbols-outlined text-primary">auto_awesome</span>
-                        <span>Pro AI ვაკანსიების დეტალური ანალიზი & Match Score</span>
-                      </div>
-                      <div class="feat-item">
-                        <span class="material-symbols-outlined text-primary">mark_email_read</span>
-                        <span>მყისიერი დაიჯესტი და რეკომენდაციები ელ-ფოსტაზე</span>
-                      </div>
-                    </div>
-
-                    <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
-                      <div class="toggle-text-wrap">
-                        <span class="toggle-lbl">შეტყობინებების მიღება</span>
-                        <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
-                      </div>
-                      <label class="switch">
-                        <input type="checkbox" [checked]="profile().receiveMessages" (change)="toggleReceiveMessages($event)">
-                        <span class="slider round"></span>
-                      </label>
-                    </div>
-                    @if (step4Submitted() && !profile().receiveMessages) {
-                      <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Right Card: Email Code Entry -->
-                <div class="inner-block-card email-verification-station-card">
-                  <div class="inner-card-head">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="step4Submitted() && !isEmailVerified()">verified_user</span>
-                      <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !isEmailVerified()">ელ-ფოსტის დადასტურება</h3>
-                    </div>
-                  </div>
-
-
-
-                  <div class="email-station-body">
-                    @if (isEmailVerified()) {
-                      <div class="tg-connected-hero">
-                        <div class="connected-icon-circle">
-                          <span class="material-symbols-outlined">verified</span>
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">Email შეტყობინებები (Pro)</h3>
+                          @if (step4Submitted() && !isChannelOverviewValid()) {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              გამორთულია
+                            </span>
+                          } @else if (isChannelOverviewValid()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              ჩართულია
+                            </span>
+                          }
                         </div>
-                        <h4 class="connected-hero-title">ელ-ფოსტა დადასტურებულია!</h4>
-                        <p class="connected-hero-desc">
-                          თქვენი ელ-ფოსტა ({{ profile().email }}) წარმატებით დადასტურდა. შეტყობინებები გამოიგზავნება ამ მისამართზე.
+                        <p class="section-summary-sub">
+                          {{ profile().email }} · {{ isChannelOverviewValid() ? 'შეტყობინებები აქტიურია' : 'მიღება გამორთულია' }}
                         </p>
                       </div>
-                    } @else {
-                      <p class="qr-guide-caption">შეტყობინებების მისაღებად გთხოვთ დაადასტუროთ თქვენი ელ-ფოსტა:</p>
+                    </div>
 
-                      @if (!emailCodeSent()) {
-                        <button
-                          type="button"
-                          class="btn-channel-trigger email"
-                          [disabled]="emailVerifying() || emailResendCooldown() > 0"
-                          (click)="sendEmailVerificationCode()"
-                        >
-                          @if (emailVerifying()) {
-                            <span class="btn-spinner"></span>
-                            <span>იგზავნება...</span>
-                          } @else {
-                            <span class="material-symbols-outlined">send</span>
-                            <span>დადასტურების კოდის გაგზავნა</span>
-                          }
-                        </button>
-                      } @else {
-                        <div class="email-code-entry-box">
-                          <div class="code-input-row">
-                            <input
-                              type="text"
-                              maxlength="6"
-                              [ngModel]="emailVerificationCode()"
-                              (ngModelChange)="emailVerificationCode.set($event)"
-                              placeholder="6-ნიშნა კოდი"
-                              class="form-input code-input"
-                            />
-                            <button type="button" class="btn-submit-code" [disabled]="emailVerifying()" (click)="verifyEmailCode()">
-                              @if (emailVerifying()) {
-                                <span class="btn-spinner"></span>
-                              } @else {
-                                დადასტურება
-                              }
-                            </button>
+                    <div class="header-trailing-group">
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="channelOverviewExpanded()">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (channelOverviewExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="channel-body-content">
+                        <div class="channel-identity-line">
+                          <span class="material-symbols-outlined">mail</span>
+                          <span class="email-value">{{ profile().email }}</span>
+                        </div>
+
+                        <div class="channel-features-list">
+                          <div class="feat-item">
+                            <span class="material-symbols-outlined text-primary">auto_awesome</span>
+                            <span>Pro AI ვაკანსიების დეტალური ანალიზი & Match Score</span>
                           </div>
+                          <div class="feat-item">
+                            <span class="material-symbols-outlined text-primary">mark_email_read</span>
+                            <span>მყისიერი დაიჯესტი და რეკომენდაციები ელ-ფოსტაზე</span>
+                          </div>
+                        </div>
 
-                          @if (emailResendCooldown() > 0) {
-                            <span class="resend-timer-caption">ხელახალი გაგზავნა შესაძლებელია ({{ emailResendCooldown() }} წმ)</span>
+                        <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
+                          <div class="toggle-text-wrap">
+                            <span class="toggle-lbl">შეტყობინებების მიღება</span>
+                            <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
+                          </div>
+                          <label class="switch">
+                            <input type="checkbox" [checked]="profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        @if (step4Submitted() && !profile().receiveMessages) {
+                          <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Accordion 2: Email Verification Station -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="channelConnectExpanded()"
+                  [class.has-error]="step4Submitted() && !isEmailVerified()"
+                  [class.is-valid]="isEmailVerified()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleStep4Section('connect')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div
+                        class="accordion-icon-box"
+                        [class.error-icon]="step4Submitted() && !isEmailVerified()"
+                        [class.valid-icon]="isEmailVerified()"
+                      >
+                        <span class="material-symbols-outlined">
+                          {{ (step4Submitted() && !isEmailVerified()) ? 'error' : (isEmailVerified() ? 'check_circle' : 'verified_user') }}
+                        </span>
+                      </div>
+
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">ელ-ფოსტის დადასტურება</h3>
+                          @if (isEmailVerified()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              დადასტურებულია
+                            </span>
+                          } @else if (step4Submitted() && !isEmailVerified()) {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              დაუდასტურებელი
+                            </span>
                           } @else {
-                            <button type="button" class="btn-resend-clean" (click)="sendEmailVerificationCode()">
-                              კოდის ხელახლა გაგზავნა
-                            </button>
+                            <span class="accordion-badge neutral-badge">
+                              კოდის შეყვანა
+                            </span>
                           }
                         </div>
-                      }
+                        <p class="section-summary-sub">
+                          {{ isEmailVerified() ? 'ელ-ფოსტა წარმატებით დადასტურებულია' : 'საჭიროა 6-ნიშნა კოდის დადასტურება' }}
+                        </p>
+                      </div>
+                    </div>
 
-                      @if (emailSuccessMsg()) {
-                        <span class="status-msg-text text-success">{{ emailSuccessMsg() }}</span>
-                      }
-                      @if (emailErrorMsg()) {
-                        <span class="status-msg-text text-error">{{ emailErrorMsg() }}</span>
-                      }
-                      @if (step4Submitted() && !isEmailVerified() && !emailErrorMsg()) {
-                        <span class="field-error-text" style="display: block; margin-top: 0.5rem;">ელ-ფოსტა არ არის დადასტურებული</span>
-                      }
-
-                    }
+                    <div class="header-trailing-group">
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="channelConnectExpanded()">
+                        expand_more
+                      </span>
+                    </div>
                   </div>
+
+                  @if (channelConnectExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="email-station-body">
+                        @if (isEmailVerified()) {
+                          <div class="tg-connected-hero">
+                            <div class="connected-icon-circle">
+                              <span class="material-symbols-outlined">verified</span>
+                            </div>
+                            <h4 class="connected-hero-title">ელ-ფოსტა დადასტურებულია!</h4>
+                            <p class="connected-hero-desc">
+                              თქვენი ელ-ფოსტა ({{ profile().email }}) წარმატებით დადასტურდა. შეტყობინებები გამოიგზავნება ამ მისამართზე.
+                            </p>
+                          </div>
+                        } @else {
+                          <p class="qr-guide-caption">შეტყობინებების მისაღებად გთხოვთ დაადასტუროთ თქვენი ელ-ფოსტა:</p>
+
+                          @if (!emailCodeSent()) {
+                            <button
+                              type="button"
+                              class="btn-channel-trigger email"
+                              [disabled]="emailVerifying() || emailResendCooldown() > 0"
+                              (click)="sendEmailVerificationCode()"
+                            >
+                              @if (emailVerifying()) {
+                                <span class="btn-spinner"></span>
+                                <span>იგზავნება...</span>
+                              } @else {
+                                <span class="material-symbols-outlined">send</span>
+                                <span>დადასტურების კოდის გაგზავნა</span>
+                              }
+                            </button>
+                          } @else {
+                            <div class="email-code-entry-box">
+                              <div class="code-input-row">
+                                <input
+                                  type="text"
+                                  maxlength="6"
+                                  [ngModel]="emailVerificationCode()"
+                                  (ngModelChange)="emailVerificationCode.set($event)"
+                                  placeholder="6-ნიშნა კოდი"
+                                  class="form-input code-input"
+                                />
+                                <button type="button" class="btn-submit-code" [disabled]="emailVerifying()" (click)="verifyEmailCode()">
+                                  @if (emailVerifying()) {
+                                    <span class="btn-spinner"></span>
+                                  } @else {
+                                    დადასტურება
+                                  }
+                                </button>
+                              </div>
+
+                              @if (emailResendCooldown() > 0) {
+                                <span class="resend-timer-caption">ხელახალი გაგზავნა შესაძლებელია ({{ emailResendCooldown() }} წმ)</span>
+                              } @else {
+                                <button type="button" class="btn-resend-clean" (click)="sendEmailVerificationCode()">
+                                  კოდის ხელახლა გაგზავნა
+                                </button>
+                              }
+                            </div>
+                          }
+
+                          @if (emailSuccessMsg()) {
+                            <span class="status-msg-text text-success">{{ emailSuccessMsg() }}</span>
+                          }
+                          @if (emailErrorMsg()) {
+                            <span class="status-msg-text text-error">{{ emailErrorMsg() }}</span>
+                          }
+                          @if (step4Submitted() && !isEmailVerified() && !emailErrorMsg()) {
+                            <span class="field-error-text" style="display: block; margin-top: 0.5rem;">ელ-ფოსტა არ არის დადასტურებული</span>
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
               </div>
             }
 
-            <!-- BASIC PLAN: 2-Column Telegram Section with QR Station -->
+            <!-- BASIC PLAN ACCORDIONS -->
             @if (!isProPlan()) {
-              <div class="step-columns-2 animate-fade">
-                <!-- Left Card: Channel Info & Features -->
-                <div class="inner-block-card channel-overview-card" [class.connected]="isTelegramConnected()">
-                  <div class="inner-card-head">
-                    <div class="channel-brand-info">
-                      <img src="/icons/telegram.png" alt="Telegram" class="channel-logo" />
-                      <div class="channel-titles">
-                        <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !profile().receiveMessages">Telegram შეტყობინებები</h3>
-                        <span class="channel-subheading">მყისიერი შეტყობინებები Telegram ბოტში</span>
+              <div class="step3-accordion-list animate-fade">
+                <!-- Accordion 1: Telegram Overview & Toggle -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="channelOverviewExpanded()"
+                  [class.has-error]="step4Submitted() && !isChannelOverviewValid()"
+                  [class.is-valid]="isChannelOverviewValid()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleStep4Section('overview')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div
+                        class="accordion-icon-box"
+                        [class.error-icon]="step4Submitted() && !isChannelOverviewValid()"
+                        [class.valid-icon]="isChannelOverviewValid()"
+                      >
+                        <span class="material-symbols-outlined">
+                          {{ (step4Submitted() && !isChannelOverviewValid()) ? 'error' : (isChannelOverviewValid() ? 'check_circle' : 'send') }}
+                        </span>
                       </div>
-                    </div>
-                    <span class="channel-status-pill" [class.is-connected]="isTelegramConnected()">
-                      @if (isTelegramConnected()) {
-                        <span class="material-symbols-outlined check-ico">check</span>
-                        <span>დაკავშირებულია</span>
-                      } @else {
-                        <span>არააქტიური</span>
-                      }
-                    </span>
-                  </div>
 
-                  <div class="channel-body-content">
-                    <p class="channel-main-desc">
-                      დააკავშირეთ Telegram ბოტი თქვენს ანგარიშთან, რათა მიიღოთ უახლესი ვაკანსიების მყისიერი შეტყობინებები რეალურ დროში.
-                    </p>
-
-                    <div class="channel-features-list">
-                      <div class="feat-item">
-                        <span class="material-symbols-outlined text-primary">bolt</span>
-                        <span>ვაკანსიის გამოქვეყნებისთანავე მომენტალური შეტყობინება</span>
-                      </div>
-                      <div class="feat-item">
-                        <span class="material-symbols-outlined text-primary">filter_alt</span>
-                        <span>მხოლოდ თქვენს საძიებო სიტყვებზე მორგებული შეთავაზებები</span>
-                      </div>
-                      <div class="feat-item">
-                        <span class="material-symbols-outlined text-primary">devices</span>
-                        <span>მარტივი დათვალიერება და გადასვლა მობილურიდან</span>
-                      </div>
-                    </div>
-
-                    <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
-                      <div class="toggle-text-wrap">
-                        <span class="toggle-lbl">შეტყობინებების მიღება</span>
-                        <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
-                      </div>
-                      <label class="switch">
-                        <input type="checkbox" [checked]="profile().receiveMessages" (change)="toggleReceiveMessages($event)">
-                        <span class="slider round"></span>
-                      </label>
-                    </div>
-                    @if (step4Submitted() && !profile().receiveMessages) {
-                      <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Right Card: QR Code Station (Desktop) & Mobile Redirect -->
-                <div class="inner-block-card tg-qr-station-card">
-                  <div class="inner-card-head">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon" [class.is-invalid-icon]="step4Submitted() && !isTelegramConnected()">qr_code_2</span>
-                      <h3 class="inner-title" [class.is-invalid-title]="step4Submitted() && !isTelegramConnected()">დაკავშირების QR კოდი</h3>
-                    </div>
-                  </div>
-
-
-                  <div class="tg-station-body">
-                    @if (isTelegramConnected()) {
-                      <div class="tg-connected-hero">
-                        <div class="connected-icon-circle">
-                          <span class="material-symbols-outlined">verified</span>
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">Telegram შეტყობინებები</h3>
+                          @if (step4Submitted() && !isChannelOverviewValid()) {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              გამორთულია
+                            </span>
+                          } @else if (isChannelOverviewValid()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              ჩართულია
+                            </span>
+                          }
                         </div>
-                        <h4 class="connected-hero-title">Telegram დაკავშირებულია!</h4>
-                        <p class="connected-hero-desc">
-                          თქვენი Telegram ანგარიში წარმატებით არის გააქტიურებული. ვაკანსიების შეტყობინებები მომენტალურად გამოიგზავნება ბოტში.
+                        <p class="section-summary-sub">
+                          {{ isTelegramConnected() ? 'ბოტი დაკავშირებულია' : 'ბოტი დაუკავშირებელია' }} · {{ isChannelOverviewValid() ? 'მიღება აქტიურია' : 'მიღება გამორთულია' }}
                         </p>
                       </div>
-                    } @else {
-                      <p class="qr-guide-caption">დაასკანერეთ QR კოდი ტელეფონის კამერით ან გახსენით ბმულით:</p>
+                    </div>
 
-                      <div class="tg-qr-box-frame" [class.has-error]="step4Submitted() && !isTelegramConnected()">
-                        @if (telegramLink()) {
-                          <qrcode
-                            [qrdata]="telegramLink()"
-                            [width]="160"
-                            [errorCorrectionLevel]="'M'"
-                            [colorDark]="themeService.isDarkMode() ? '#ffffff' : '#0b6096'"
-                            [colorLight]="themeService.isDarkMode() ? '#1e1e2e' : '#ffffff'"
-                          ></qrcode>
-                        } @else {
-                          <div class="qr-placeholder-loading">
-                            <span class="btn-spinner" style="width: 28px; height: 28px;"></span>
+                    <div class="header-trailing-group">
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="channelOverviewExpanded()">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (channelOverviewExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="channel-body-content">
+                        <p class="channel-main-desc">
+                          დააკავშირეთ Telegram ბოტი თქვენს ანგარიშთან, რათა მიიღოთ უახლესი ვაკანსიების მყისიერი შეტყობინებები რეალურ დროში.
+                        </p>
+
+                        <div class="channel-features-list">
+                          <div class="feat-item">
+                            <span class="material-symbols-outlined text-primary">bolt</span>
+                            <span>ვაკანსიის გამოქვეყნებისთანავე მომენტალური შეტყობინება</span>
                           </div>
+                          <div class="feat-item">
+                            <span class="material-symbols-outlined text-primary">filter_alt</span>
+                            <span>მხოლოდ თქვენს საძიებო სიტყვებზე მორგებული შეთავაზებები</span>
+                          </div>
+                          <div class="feat-item">
+                            <span class="material-symbols-outlined text-primary">devices</span>
+                            <span>მარტივი დათვალიერება და გადასვლა მობილურიდან</span>
+                          </div>
+                        </div>
+
+                        <div class="card-inner-toggle" [class.has-error]="step4Submitted() && !profile().receiveMessages">
+                          <div class="toggle-text-wrap">
+                            <span class="toggle-lbl">შეტყობინებების მიღება</span>
+                            <span class="toggle-sub">ჩართეთ ან გამორთეთ ნებისმიერ დროს</span>
+                          </div>
+                          <label class="switch">
+                            <input type="checkbox" [checked]="profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        @if (step4Submitted() && !profile().receiveMessages) {
+                          <span class="field-error-text" style="display: block; margin-top: 0.5rem;">შეტყობინებების მიღება არ არის აქტიური</span>
                         }
                       </div>
-
-                      <div class="tg-station-actions">
-                        <a [href]="telegramLink()" target="_blank" class="btn-open-telegram">
-                          <span class="material-symbols-outlined">open_in_new</span>
-                          <span>Telegram-ში გახსნა</span>
-                        </a>
-                      </div>
-
-                      @if (step4Submitted() && !isTelegramConnected()) {
-                        <span class="field-error-text" style="display: block; margin-top: 0.75rem; text-align: center;">Telegram ბოტი არ არის დაკავშირებული</span>
-                      }
-                    }
-                  </div>
+                    </div>
+                  }
                 </div>
 
+                <!-- Accordion 2: QR Station / Connection -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="channelConnectExpanded()"
+                  [class.has-error]="step4Submitted() && !isTelegramConnected()"
+                  [class.is-valid]="isTelegramConnected()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleStep4Section('connect')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div
+                        class="accordion-icon-box"
+                        [class.error-icon]="step4Submitted() && !isTelegramConnected()"
+                        [class.valid-icon]="isTelegramConnected()"
+                      >
+                        <span class="material-symbols-outlined">
+                          {{ (step4Submitted() && !isTelegramConnected()) ? 'error' : (isTelegramConnected() ? 'check_circle' : 'qr_code_2') }}
+                        </span>
+                      </div>
 
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">Telegram-ის დაკავშირება</h3>
+                          @if (isTelegramConnected()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              დაკავშირებულია
+                            </span>
+                          } @else if (step4Submitted() && !isTelegramConnected()) {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              დაუკავშირებელი
+                            </span>
+                          } @else {
+                            <span class="accordion-badge neutral-badge">
+                              გასააქტიურებელი
+                            </span>
+                          }
+                        </div>
+                        <p class="section-summary-sub">
+                          {{ isTelegramConnected() ? 'Telegram ბოტი წარმატებით არის გააქტიურებული' : 'გახსენით ბოტი შეტყობინებების მისაღებად' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="header-trailing-group">
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="channelConnectExpanded()">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (channelConnectExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="tg-station-body">
+                        @if (isTelegramConnected()) {
+                          <div class="tg-connected-hero">
+                            <div class="connected-icon-circle">
+                              <span class="material-symbols-outlined">verified</span>
+                            </div>
+                            <h4 class="connected-hero-title">Telegram დაკავშირებულია!</h4>
+                            <p class="connected-hero-desc">
+                              თქვენი Telegram ანგარიში წარმატებით არის გააქტიურებული. ვაკანსიების შეტყობინებები მომენტალურად გამოიგზავნება ბოტში.
+                            </p>
+                          </div>
+                        } @else {
+                          <!-- MOBILE VIEW (Button-Only Clean Native Card) -->
+                          <div class="tg-mobile-connect-box">
+                            <div class="tg-mobile-hero-icon">
+                              <img src="/icons/telegram.png" alt="Telegram" class="tg-logo-img" />
+                            </div>
+                            <div class="tg-mobile-text-group">
+                              <p class="tg-mobile-desc">
+                                დააჭირეთ ღილაკს, გააქტიურეთ ბოტი (<strong>Start</strong>) და შემდეგ გააგრძელეთ <strong>„შემდეგი“</strong>-თ.
+                              </p>
+                            </div>
+
+                            <a [href]="telegramLink()" target="_blank" class="btn-open-telegram-mobile">
+                              <span class="material-symbols-outlined">send</span>
+                              <span>Telegram-ში გახსნა</span>
+                            </a>
+                          </div>
+
+                          <!-- DESKTOP QR VIEW (Shown on Desktop screens >= 769px) -->
+                          <div class="tg-desktop-qr-box">
+                            <p class="qr-guide-caption">დაასკანერეთ QR კოდი ტელეფონის კამერით ან გახსენით ბმულით:</p>
+
+                            <div class="tg-qr-box-frame" [class.has-error]="step4Submitted() && !isTelegramConnected()">
+                              @if (telegramLink()) {
+                                <qrcode
+                                  [qrdata]="telegramLink()"
+                                  [width]="160"
+                                  [errorCorrectionLevel]="'M'"
+                                  [colorDark]="themeService.isDarkMode() ? '#ffffff' : '#0b6096'"
+                                  [colorLight]="themeService.isDarkMode() ? '#1e1e2e' : '#ffffff'"
+                                ></qrcode>
+                              } @else {
+                                <div class="qr-placeholder-loading">
+                                  <span class="btn-spinner" style="width: 28px; height: 28px;"></span>
+                                </div>
+                              }
+                            </div>
+
+                            <div class="tg-station-actions">
+                              <a [href]="telegramLink()" target="_blank" class="btn-open-telegram">
+                                <span class="material-symbols-outlined">open_in_new</span>
+                                <span>Telegram-ში გახსნა</span>
+                              </a>
+                            </div>
+                          </div>
+
+                          @if (step4Submitted() && !isTelegramConnected()) {
+                            <span class="field-error-text" style="display: block; margin-top: 0.5rem; text-align: center;">Telegram ბოტი არ არის დაკავშირებული</span>
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
               </div>
             }
           </div>
@@ -932,142 +1309,308 @@
                 <p class="panel-desc">გადაამოწმეთ ყველა შეყვანილი ინფორმაცია და დაადასტურეთ თქვენი პროფილი.</p>
               </div>
 
-              <div class="review-grid-2x2">
+              <div class="step3-accordion-list animate-fade">
                 
-                <!-- Review Card 1: Subscription Plan -->
-                <div class="inner-block-card">
-                  <div class="inner-card-head with-action">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">workspace_premium</span>
-                      <h3 class="inner-title">სააბონენტო გეგმა</h3>
+                <!-- Review Accordion 1: Subscription Plan -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="reviewPlanExpanded()"
+                  [class.is-valid]="!!selectedPlan()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleReviewSection('plan')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div class="accordion-icon-box valid-icon">
+                        <span class="material-symbols-outlined">workspace_premium</span>
+                      </div>
+
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">სააბონენტო გეგმა</h3>
+                          <span class="accordion-badge success-badge">
+                            <span class="material-symbols-outlined">check</span>
+                            {{ selectedPlan() === 'PRO' ? 'Pro პაკეტი (8₾)' : selectedPlan() === 'PREMIUM' ? 'Enterprise' : 'Basic (უფასო)' }}
+                          </span>
+                        </div>
+                        <p class="section-summary-sub">
+                          {{ selectedPlan() === 'PRO' ? 'სრული AI ავტომატიზაცია' : 'საძიებო სიტყვებით ფილტრაცია & Telegram' }}
+                        </p>
+                      </div>
                     </div>
-                    <button type="button" class="btn-edit-shortcut" (click)="goToStep(1)">
-                      <span class="material-symbols-outlined">edit</span> შეცვლა
-                    </button>
+
+                    <div class="header-trailing-group">
+                      <button type="button" class="btn-edit-shortcut" (click)="$event.stopPropagation(); goToStep(1)" title="გეგმის შეცვლა">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span class="edit-btn-text">შეცვლა</span>
+                      </button>
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="reviewPlanExpanded()">
+                        expand_more
+                      </span>
+                    </div>
                   </div>
 
-                  <div class="review-data-list">
-                    <div class="review-item-row">
-                      <span class="review-label">არჩეული პაკეტი:</span>
-                      <span class="review-val font-bold" [class.text-primary]="isProPlan()">
-                        {{ selectedPlan() === 'PRO' ? 'Pro პაკეტი (8₾ / თვე)' : selectedPlan() === 'PREMIUM' ? 'Enterprise' : 'Basic პაკეტი (0₾ / უფასო)' }}
-                      </span>
+                  @if (reviewPlanExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="review-data-list">
+                        <div class="review-item-row">
+                          <span class="review-label">არჩეული პაკეტი:</span>
+                          <span class="review-val font-bold" [class.text-primary]="isProPlan()">
+                            {{ selectedPlan() === 'PRO' ? 'Pro პაკეტი (8₾ / თვე)' : selectedPlan() === 'PREMIUM' ? 'Enterprise' : 'Basic პაკეტი (0₾ / უფასო)' }}
+                          </span>
+                        </div>
+                        <div class="review-item-row">
+                          <span class="review-label">{{ isProPlan() ? 'AI შესაძლებლობები:' : 'ფუნქციონალი:' }}</span>
+                          <span class="review-val text-success">
+                            {{ isProPlan() ? 'სრული AI ანალიზი & ავტო-Keywords' : 'საძიებო სიტყვებით ფილტრაცია & Telegram' }}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="review-item-row">
-                      <span class="review-label">{{ isProPlan() ? 'AI შესაძლებლობები:' : 'ფუნქციონალი:' }}</span>
-                      <span class="review-val text-success">
-                        {{ isProPlan() ? 'სრული AI ანალიზი & ავტო-Keywords' : 'საძიებო სიტყვებით ფილტრაცია & Telegram' }}
-                      </span>
-                    </div>
-                  </div>
+                  }
                 </div>
 
-                <!-- Review Card 2: CV & AI Analysis -->
-                <div class="inner-block-card">
-                  <div class="inner-card-head with-action">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">description</span>
-                      <h3 class="inner-title">რეზიუმე (CV)</h3>
-                    </div>
-                    <button type="button" class="btn-edit-shortcut" (click)="goToStep(2)">
-                      <span class="material-symbols-outlined">edit</span> შეცვლა
-                    </button>
-                  </div>
-
-                  <div class="review-data-list">
-                    <div class="review-item-row">
-                      <span class="review-label">ფაილის სახელი:</span>
-                      @if (userCv()) {
-                        <span class="review-val font-bold">{{ userCv()?.originalName }}</span>
-                      } @else {
-                        <span class="review-val text-muted">არ არის ატვირთული</span>
-                      }
-                    </div>
-                    <div class="review-item-row">
-                      <span class="review-label">სტატუსი:</span>
-                      @if (userCv()) {
-                        <span class="review-val text-success">
-                          <span class="material-symbols-outlined inline-icon">check_circle</span>
-                          ატვირთულია ({{ formatFileSize(userCv()?.size) }})
+                <!-- Review Accordion 2: CV & AI Analysis -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="reviewCvExpanded()"
+                  [class.is-valid]="!!userCv()"
+                  [class.has-error]="!userCv()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleReviewSection('cv')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div class="accordion-icon-box" [class.valid-icon]="!!userCv()" [class.error-icon]="!userCv()">
+                        <span class="material-symbols-outlined">
+                          {{ userCv() ? 'description' : 'error' }}
                         </span>
-                      } @else {
-                        <span class="review-val text-muted">გამოტოვებულია</span>
-                      }
-                    </div>
-                  </div>
-                </div>
+                      </div>
 
-                <!-- Review Card 3: Personal Information & Keywords -->
-                <div class="inner-block-card">
-                  <div class="inner-card-head with-action">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">person</span>
-                      <h3 class="inner-title">პირადი მონაცემები</h3>
-                    </div>
-                    <button type="button" class="btn-edit-shortcut" (click)="goToStep(3)">
-                      <span class="material-symbols-outlined">edit</span> შეცვლა
-                    </button>
-                  </div>
-
-                  <div class="review-data-list">
-                    <div class="review-item-row">
-                      <span class="review-label">სახელი და გვარი:</span>
-                      <span class="review-val font-bold">{{ infoForm.get('firstName')?.value }} {{ infoForm.get('lastName')?.value }}</span>
-                    </div>
-                    <div class="review-item-row">
-                      <span class="review-label">საძიებო მიმართულება:</span>
-                      @if (isProPlan()) {
-                        <span class="review-val text-primary font-bold">✨ AI ავტომატური გენერაცია</span>
-                      } @else if (searchQueries().length > 0) {
-                        <div class="chips-list mt-1">
-                          @for (query of searchQueries(); track query) {
-                            <div class="chip">
-                              <span>{{ query }}</span>
-                            </div>
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">რეზიუმე (CV)</h3>
+                          @if (userCv()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              ატვირთულია
+                            </span>
+                          } @else {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              არ არის ატვირთული
+                            </span>
                           }
                         </div>
-                      } @else {
-                        <span class="review-val text-muted">საკვანძო სიტყვები მითითებული არ არის</span>
-                      }
+                        <p class="section-summary-sub">
+                          {{ userCv() ? userCv()?.originalName : 'ფაილი არ არის ატვირთული' }}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <!-- Review Card 4: Notification Channels -->
-                <div class="inner-block-card">
-                  <div class="inner-card-head with-action">
-                    <div class="head-lead">
-                      <span class="material-symbols-outlined card-head-icon">notifications_active</span>
-                      <h3 class="inner-title">შეტყობინებების არხი</h3>
-                    </div>
-                    <button type="button" class="btn-edit-shortcut" (click)="goToStep(4)">
-                      <span class="material-symbols-outlined">edit</span> შეცვლა
-                    </button>
-                  </div>
-
-                  <div class="review-data-list">
-                    <div class="review-item-row">
-                      <span class="review-label">შეტყობინებები:</span>
-                      <span class="review-val" [class.text-success]="profile().receiveMessages">
-                        {{ profile().receiveMessages ? 'ჩართულია ✓' : 'გამორთულია' }}
+                    <div class="header-trailing-group">
+                      <button type="button" class="btn-edit-shortcut" (click)="$event.stopPropagation(); goToStep(2)" title="CV-ის შეცვლა">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span class="edit-btn-text">შეცვლა</span>
+                      </button>
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="reviewCvExpanded()">
+                        expand_more
                       </span>
                     </div>
-                    @if (isProPlan()) {
-                      <div class="review-item-row">
-                        <span class="review-label">Email (Pro):</span>
-                        <span class="review-val" [class.text-success]="isEmailVerified()">
-                          {{ isEmailVerified() ? 'დადასტურებულია ✓' : 'დაუდასტურებელი' }}
-                        </span>
-                      </div>
-                    } @else {
-                      <div class="review-item-row">
-                        <span class="review-label">Telegram (Basic):</span>
-                        <span class="review-val" [class.text-success]="isTelegramConnected()">
-                          {{ isTelegramConnected() ? 'დაკავშირებულია ✓' : 'არააქტიური' }}
-                        </span>
-                      </div>
-                    }
                   </div>
+
+                  @if (reviewCvExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="review-data-list">
+                        <div class="review-item-row">
+                          <span class="review-label">ფაილის სახელი:</span>
+                          @if (userCv()) {
+                            <span class="review-val font-bold">{{ userCv()?.originalName }}</span>
+                          } @else {
+                            <span class="review-val text-muted">არ არის ატვირთული</span>
+                          }
+                        </div>
+                        <div class="review-item-row">
+                          <span class="review-label">სტატუსი:</span>
+                          @if (userCv()) {
+                            <span class="review-val text-success">
+                              <span class="material-symbols-outlined inline-icon">check_circle</span>
+                              ატვირთულია ({{ formatFileSize(userCv()?.size) }})
+                            </span>
+                          } @else {
+                            <span class="review-val text-muted">გამოტოვებულია</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Review Accordion 3: Personal Info & Keywords -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="reviewInfoExpanded()"
+                  [class.is-valid]="isInfoSectionValid() && isKeywordsSectionValid()"
+                  [class.has-error]="!isInfoSectionValid() || !isKeywordsSectionValid()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleReviewSection('info')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div class="accordion-icon-box" [class.valid-icon]="isInfoSectionValid() && isKeywordsSectionValid()" [class.error-icon]="!isInfoSectionValid() || !isKeywordsSectionValid()">
+                        <span class="material-symbols-outlined">
+                          {{ (isInfoSectionValid() && isKeywordsSectionValid()) ? 'person' : 'error' }}
+                        </span>
+                      </div>
+
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">პირადი მონაცემები</h3>
+                          @if (isInfoSectionValid() && isKeywordsSectionValid()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              შევსებულია
+                            </span>
+                          } @else {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              შესავსებია
+                            </span>
+                          }
+                        </div>
+                        <p class="section-summary-sub">
+                          {{ infoForm.get('firstName')?.value || 'სახელი' }} {{ infoForm.get('lastName')?.value || 'გვარი' }} · {{ isProPlan() ? 'AI მიმართულება' : searchQueries().length + ' საძიებო სიტყვა' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="header-trailing-group">
+                      <button type="button" class="btn-edit-shortcut" (click)="$event.stopPropagation(); goToStep(3)" title="მონაცემების შეცვლა">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span class="edit-btn-text">შეცვლა</span>
+                      </button>
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="reviewInfoExpanded()">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (reviewInfoExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="review-data-list">
+                        <div class="review-item-row">
+                          <span class="review-label">სახელი და გვარი:</span>
+                          <span class="review-val font-bold">{{ infoForm.get('firstName')?.value }} {{ infoForm.get('lastName')?.value }}</span>
+                        </div>
+                        <div class="review-item-row">
+                          <span class="review-label">საძიებო მიმართულება:</span>
+                          @if (isProPlan()) {
+                            <span class="review-val text-primary font-bold">✨ AI ავტომატური გენერაცია</span>
+                          } @else if (searchQueries().length > 0) {
+                            <div class="chips-list mt-1">
+                              @for (query of searchQueries(); track query) {
+                                <div class="chip">
+                                  <span>{{ query }}</span>
+                                </div>
+                              }
+                            </div>
+                          } @else {
+                            <span class="review-val text-muted">საკვანძო სიტყვები მითითებული არ არის</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Review Accordion 4: Notification Channels -->
+                <div
+                  class="step3-accordion-card"
+                  [class.expanded]="reviewChannelExpanded()"
+                  [class.is-valid]="isChannelConnectValid() && isChannelOverviewValid()"
+                  [class.has-error]="!isChannelConnectValid() || !isChannelOverviewValid()"
+                >
+                  <div
+                    class="step3-accordion-header"
+                    (click)="toggleReviewSection('channel')"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="header-lead-group">
+                      <div class="accordion-icon-box" [class.valid-icon]="isChannelConnectValid() && isChannelOverviewValid()" [class.error-icon]="!isChannelConnectValid() || !isChannelOverviewValid()">
+                        <span class="material-symbols-outlined">
+                          {{ (isChannelConnectValid() && isChannelOverviewValid()) ? 'notifications_active' : 'error' }}
+                        </span>
+                      </div>
+
+                      <div class="header-titles">
+                        <div class="title-status-row">
+                          <h3 class="section-title">შეტყობინებების არხი</h3>
+                          @if (isChannelConnectValid() && isChannelOverviewValid()) {
+                            <span class="accordion-badge success-badge">
+                              <span class="material-symbols-outlined">check</span>
+                              აქტიურია
+                            </span>
+                          } @else {
+                            <span class="accordion-badge error-badge">
+                              <span class="material-symbols-outlined">warning</span>
+                              შესამოწმებელია
+                            </span>
+                          }
+                        </div>
+                        <p class="section-summary-sub">
+                          {{ isProPlan() ? (isEmailVerified() ? 'Email დადასტურებულია' : 'Email დაუდასტურებელია') : (isTelegramConnected() ? 'Telegram დაკავშირებულია' : 'Telegram დაუკავშირებელია') }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="header-trailing-group">
+                      <button type="button" class="btn-edit-shortcut" (click)="$event.stopPropagation(); goToStep(4)" title="არხის შეცვლა">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span class="edit-btn-text">შეცვლა</span>
+                      </button>
+                      <span class="material-symbols-outlined accordion-arrow" [class.rotated]="reviewChannelExpanded()">
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (reviewChannelExpanded()) {
+                    <div class="step3-accordion-body animate-fade">
+                      <div class="review-data-list">
+                        <div class="review-item-row">
+                          <span class="review-label">შეტყობინებები:</span>
+                          <span class="review-val" [class.text-success]="profile().receiveMessages">
+                            {{ profile().receiveMessages ? 'ჩართულია ✓' : 'გამორთულია' }}
+                          </span>
+                        </div>
+                        @if (isProPlan()) {
+                          <div class="review-item-row">
+                            <span class="review-label">Email (Pro):</span>
+                            <span class="review-val" [class.text-success]="isEmailVerified()">
+                              {{ isEmailVerified() ? 'დადასტურებულია ✓' : 'დაუდასტურებელი' }}
+                            </span>
+                          </div>
+                        } @else {
+                          <div class="review-item-row">
+                            <span class="review-label">Telegram (Basic):</span>
+                            <span class="review-val" [class.text-success]="isTelegramConnected()">
+                              {{ isTelegramConnected() ? 'დაკავშირებულია ✓' : 'არააქტიური' }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
 
               </div>
@@ -1089,15 +1632,15 @@
                 <div class="celebration-text-cluster">
                   <div class="celebration-pill-tag">
                     <span class="material-symbols-outlined">verified</span>
-                    <span>პროფილი აქტიურია</span>
+                    <span>პროფილი სრულად გააქტიურებულია</span>
                   </div>
-                  <h2 class="celebration-title">გილოცავთ! თქვენი პროფილი სრულად მზადაა 🎉</h2>
+                  <h2 class="celebration-title">გილოცავთ! თქვენი პროფილი მზადაა 🎉</h2>
                   <p class="celebration-desc">
-                    თქვენი მონაცემები წარმატებით დამუშავდა. ხელოვნური ინტელექტი უკვე მზადაა თქვენზე მორგებული საუკეთესო ვაკანსიების მოსაძიებლად.
+                    თქვენი მონაცემები წარმატებით დამუშავდა. სისტემა უკვე მზადაა თქვენზე მორგებული საუკეთესო ვაკანსიების მოსაძიებლად.
                   </p>
                 </div>
 
-                <!-- 3 Feature Stat Badges -->
+                <!-- 4 Feature Stat Badges in Responsive Grid -->
                 <div class="celebration-summary-grid">
                   <div class="summary-pill-card" [title]="userCv()?.originalName || 'CV ატვირთულია'">
                     <div class="pill-icon-box cv">
@@ -1106,6 +1649,7 @@
                     <div class="pill-info">
                       <span class="pill-label">რეზიუმე</span>
                       <span class="pill-value">{{ userCv()?.originalName || 'CV ატვირთულია' }}</span>
+                      <span class="pill-sub-status">დამუშავებულია ✓</span>
                     </div>
                   </div>
 
@@ -1116,6 +1660,7 @@
                     <div class="pill-info">
                       <span class="pill-label">პოზიციები</span>
                       <span class="pill-value">{{ isProPlan() ? 'AI გენერაცია' : (searchQueries().length > 0 ? searchQueries().length + ' საკვანძო სიტყვა' : 'შერჩეულია') }}</span>
+                      <span class="pill-sub-status">აქტიურია ✓</span>
                     </div>
                   </div>
 
@@ -1125,7 +1670,19 @@
                     </div>
                     <div class="pill-info">
                       <span class="pill-label">სააბონენტო გეგმა</span>
-                      <span class="pill-value">{{ (profile().subscription || selectedPlan()) === 'PREMIUM' ? 'Enterprise' : (profile().subscription || selectedPlan()) === 'PRO' ? 'Pro პაკეტი' : 'Basic პაკეტი' }}</span>
+                      <span class="pill-value">{{ (profile().subscription || selectedPlan()) === 'PREMIUM' ? 'Enterprise' : (profile().subscription || selectedPlan()) === 'PRO' ? 'Pro პაკეტი (8₾)' : 'Basic პაკეტი' }}</span>
+                      <span class="pill-sub-status">გააქტიურებულია ✓</span>
+                    </div>
+                  </div>
+
+                  <div class="summary-pill-card">
+                    <div class="pill-icon-box channel">
+                      <span class="material-symbols-outlined">notifications_active</span>
+                    </div>
+                    <div class="pill-info">
+                      <span class="pill-label">შეტყობინებები</span>
+                      <span class="pill-value">{{ isProPlan() ? 'Email (Pro)' : 'Telegram ბოტი' }}</span>
+                      <span class="pill-sub-status">დაკავშირებულია ✓</span>
                     </div>
                   </div>
                 </div>
@@ -1133,8 +1690,9 @@
                 <!-- Action Button -->
                 <div class="celebration-actions-group">
                   <button type="button" class="btn-launch-dashboard" (click)="navigateToDashboard()">
-                    <span>გადასვლა სამუშაო სივრცეში</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                    <span>სამუშაო სივრცეში გადასვლა</span>
+                    <span class="material-symbols-outlined arrow-ico">arrow_forward</span>
                   </button>
                 </div>
               </div>
