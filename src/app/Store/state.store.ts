@@ -271,6 +271,11 @@ export const StateStore = signalStore(
         },
 
         async getCv(force: boolean = false): Promise<void> {
+            // Ensure profile is always loaded before fetching CV
+            if (!store.profileLoaded() || store.profile().id === 0 || inFlightProfilePromise) {
+                await this.loadProfile();
+            }
+
             if (!force && store.cvLoaded()) {
                 return;
             }
@@ -282,6 +287,10 @@ export const StateStore = signalStore(
 
             inFlightCvPromise = (async () => {
                 try {
+                    // Double check profile readiness before triggering CV service call
+                    if (!store.profileLoaded() || store.profile().id === 0 || inFlightProfilePromise) {
+                        await this.loadProfile();
+                    }
                     const res = await firstValueFrom(cvService.getCV());
                     patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
                 } catch (err) {
@@ -297,14 +306,12 @@ export const StateStore = signalStore(
 
 
         async ensureDataLoaded(force: boolean = false): Promise<void> {
-            const promises: Promise<any>[] = [];
             if (force || !store.profileLoaded() || store.profile().id === 0) {
-                promises.push(this.loadProfile(force));
+                await this.loadProfile(force);
             }
             if (force || !store.cvLoaded()) {
-                promises.push(this.getCv(force));
+                await this.getCv(force);
             }
-            await Promise.all(promises);
         },
 
         setSearchQueries(searchQuery: string[]) {

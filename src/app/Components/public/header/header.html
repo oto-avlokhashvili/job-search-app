@@ -157,14 +157,16 @@
     </a>
 
     <!-- 2. AI ძიება -->
-    <a class="bottom-nav-item"
-       [routerLink]="'/private/dashboard'"
-       [class.active]="router.url.includes('/private/dashboard')">
-      <div class="nav-icon-wrap">
-        <span class="material-symbols-outlined nav-icon">smart_toy</span>
-      </div>
-      <span class="nav-label">AI ძიება</span>
-    </a>
+    @if (stateStore.isPro()) {
+      <a class="bottom-nav-item"
+         [routerLink]="'/private/dashboard'"
+         [class.active]="router.url.includes('/private/dashboard')">
+        <div class="nav-icon-wrap">
+          <span class="material-symbols-outlined nav-icon">smart_toy</span>
+        </div>
+        <span class="nav-label">AI ძიება</span>
+      </a>
+    }
 
     <!-- 3. შეტყობინებები -->
     <a class="bottom-nav-item"

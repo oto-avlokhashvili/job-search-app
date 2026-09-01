@@ -1,355 +1,722 @@
-<div class="profile-container animate-fade">
+<div class="profile-layout-container animate-fade">
   
-  <!-- Profile Header Card (Initials, Name, Plan badge, Integrated Setup Progress, Actions) -->
-  <div class="profile-header-card">
-    @if (!stateStore.profileLoaded() || stateStore.cvLoading()) {
-      <div class="table-loading-bar"></div>
-    }
-    <div class="header-main-row">
-      <div class="header-left">
-        <div class="avatar-large">
-          @if (stateStore.profileLoaded()) {
-            {{ initials() }}
-          } @else {
-            <span class="btn-spinner" style="width: 22px; height: 22px; border-width: 2.5px;"></span>
-          }
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- LEFT COLUMN: SINGLE INTEGRATED PROFILE SUMMARY CARD           -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <aside class="profile-sidebar-column">
+    <div class="profile-overview-card" [class.skeleton-pulse]="!stateStore.profileLoaded()">
+      @if (!stateStore.profileLoaded() || stateStore.cvLoading()) {
+        <div class="card-shimmer-bar"></div>
+      }
+
+      @if (!stateStore.profileLoaded()) {
+        <!-- Skeleton Left Overview State -->
+        <div class="overview-avatar-section">
+          <div class="skeleton-block avatar-circle-skeleton"></div>
+          <div class="user-identity-text">
+            <div class="skeleton-block" style="width: 140px; height: 22px; border-radius: 6px; margin-bottom: 6px;"></div>
+            <div class="skeleton-block" style="width: 180px; height: 14px; border-radius: 4px;"></div>
+          </div>
         </div>
-        <div class="user-meta">
-          @if (stateStore.profileLoaded()) {
-            <h2>{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
-          } @else {
-            <div class="skeleton-block" style="width: 180px; height: 24px; border-radius: 6px; margin-bottom: 6px;"></div>
-          }
-          <div class="badge-row">
-            <span class="plan-badge" [class]="(stateStore.plan() || 'free').toLowerCase()">
-              {{ stateStore.isPro() ? 'PRO' : stateStore.isBasic() ? 'BASIC' : 'უფასო' }}
+
+        <div class="skeleton-block" style="width: 100%; height: 68px; border-radius: 16px;"></div>
+
+        <div class="overview-steps-section">
+          <div class="steps-heading-row">
+            <div class="skeleton-block" style="width: 120px; height: 14px; border-radius: 4px;"></div>
+            <div class="skeleton-block" style="width: 36px; height: 18px; border-radius: 12px;"></div>
+          </div>
+          <div class="stepper-segmented-track">
+            <div class="progress-step-segment"><div class="skeleton-block" style="width: 100%; height: 100%;"></div></div>
+            <div class="progress-step-segment"><div class="skeleton-block" style="width: 100%; height: 100%;"></div></div>
+            <div class="progress-step-segment"><div class="skeleton-block" style="width: 100%; height: 100%;"></div></div>
+            <div class="progress-step-segment"><div class="skeleton-block" style="width: 100%; height: 100%;"></div></div>
+            <div class="progress-step-segment"><div class="skeleton-block" style="width: 100%; height: 100%;"></div></div>
+          </div>
+          <div class="skeleton-block" style="width: 130px; height: 12px; border-radius: 4px; margin-top: 4px;"></div>
+        </div>
+      } @else {
+        <!-- Loaded Profile Overview Content -->
+        
+        <!-- 1. Avatar & Identity (Top-Left Aligned) -->
+        <div class="overview-avatar-section">
+          <div class="avatar-ring-container">
+            <div class="avatar-circle">
+              <span class="initials-text">{{ initials() }}</span>
+            </div>
+            <span class="avatar-status-dot" 
+                  [class.active]="completedPercentage() === 100" 
+                  [title]="completedPercentage() === 100 ? 'პროფილი სრულადაა შევსებული' : 'პროფილი დასასრულებელია'">
             </span>
-            <span class="readiness-tag" [class.ready]="isOnboardingCompleted()">
-              <span class="material-symbols-outlined">{{ isOnboardingCompleted() ? 'verified' : 'pending' }}</span>
-              <span>{{ isOnboardingCompleted() ? 'პროფილი სრულად მზადაა' : 'კონფიგურაცია: ' + onboardingPercentage() + '%' }}</span>
-            </span>
+          </div>
+
+          <div class="user-identity-text">
+            <h2 class="user-full-name">{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</h2>
+            <span class="user-email-tag" [title]="stateStore.profile().email">{{ stateStore.profile().email || '...' }}</span>
           </div>
         </div>
-      </div>
 
-
-      
-    </div>
-
-    <!-- Stepper Connection Strip in Header -->
-    <div class="profile-stepper-strip">
-      <div class="strip-nodes">
-        <button type="button" class="strip-node" [class.done]="hasCvStep()" (click)="openOnboardingWizard(1)" title="1. CV-ს ატვირთვა">
-          <span class="node-bullet">{{ hasCvStep() ? '✓' : '1' }}</span>
-          <span class="node-label">1. CV</span>
-        </button>
-
-        <span class="strip-connector" [class.done]="hasCvStep() && hasInfoStep()"></span>
-
-        <button type="button" class="strip-node" [class.done]="hasInfoStep()" (click)="openOnboardingWizard(2)" title="2. პირადი მონაცემები">
-          <span class="node-bullet">{{ hasInfoStep() ? '✓' : '2' }}</span>
-          <span class="node-label">2. ინფო</span>
-        </button>
-
-        <span class="strip-connector" [class.done]="hasInfoStep() && hasNotificationStep()"></span>
-
-        <button type="button" class="strip-node" [class.done]="hasNotificationStep()" (click)="openOnboardingWizard(3)" title="3. შეტყობინებები">
-          <span class="node-bullet">{{ hasNotificationStep() ? '✓' : '3' }}</span>
-          <span class="node-label">3. შეტყობინებები</span>
-        </button>
-
-        <span class="strip-connector" [class.done]="hasNotificationStep() && hasSubscriptionStep()"></span>
-
-        <button type="button" class="strip-node" [class.done]="hasSubscriptionStep()" (click)="openOnboardingWizard(5)" title="4. გამოწერა">
-          <span class="node-bullet">{{ hasSubscriptionStep() ? '✓' : '4' }}</span>
-          <span class="node-label">4. გამოწერა</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="profile-grid">
-    <!-- Left Column: Edit Profile Form, Keywords, Notification Channel -->
-    <div class="profile-main-column">
-      
-      <!-- Personal Info Card -->
-      <div class="profile-card edit-profile-section">
-        <div class="card-header-clean">
-          <div class="header-title-wrap">
-            <span class="material-symbols-outlined icon">person</span>
-            <h3>პირადი ინფორმაცია</h3>
-          </div>
-        </div>
-        
-        <form [formGroup]="profileForm" class="profile-form-grid">
-          <div class="form-group">
-            <label for="firstName">სახელი</label>
-            <input formControlName="firstName" type="text" id="firstName" class="form-input" 
-                   placeholder="სახელი" required [class.is-invalid]="isInvalid('firstName')">
-          </div>
-          
-          <div class="form-group">
-            <label for="lastName">გვარი</label>
-            <input formControlName="lastName" type="text" id="lastName" class="form-input" 
-                   placeholder="გვარი" required [class.is-invalid]="isInvalid('lastName')">
-          </div>
-          
-          <div class="form-group full-width">
-            <label for="email">ელ-ფოსტა</label>
-            <div class="input-with-icon">
-              <input formControlName="email" type="email" id="email" class="form-input" 
-                     readonly required [class.is-invalid]="isInvalid('email')">
-              <span class="material-symbols-outlined field-icon lock">lock</span>
+        <!-- 2. Subscription Status Badge & Quick Info -->
+        <div class="overview-plan-badge-box" [class]="(stateStore.plan() || 'free').toLowerCase()">
+          <div class="plan-header-row">
+            <div class="plan-label-group">
+              <span class="plan-name-text">{{ stateStore.isPro() ? 'PRO გამოწერა' : stateStore.isBasic() ? 'BASIC გამოწერა' : 'უფასო პაკეტი' }}</span>
             </div>
-          </div>
-
-          <button type="button" (click)="save()" class="btn-save" [disabled]="profileForm.invalid">
-            <span class="material-symbols-outlined">save</span> შენახვა
-          </button>
-        </form>
-      </div>
-
-      <!-- Keywords / Search Queries Card -->
-      <div class="profile-card keywords-section">
-        <div class="card-header-clean">
-          <div class="header-title-wrap">
-            <span class="material-symbols-outlined icon">tag</span>
-            <h3>საძიებო საკვანძო სიტყვები</h3>
-          </div>
-        </div>
-        <p class="section-desc">ხელოვნური ინტელექტი ამ სიტყვების მიხედვით შეგირჩევთ თქვენზე მორგებულ საუკეთესო ვაკანსიებს.</p>
-        
-        <div class="chips-input-container-wrapper">
-          <div class="chips-input-container">
-            <div class="chips-list">
-              <div class="chip" *ngFor="let query of stateStore.searchQuery(); let i = index">
-                <span>{{ query }}</span>
-                <button class="chip-remove" (click)="removeKeyword(i)">
-                  <span class="material-symbols-outlined">close</span>
-                </button>
-              </div>
-              <input type="text" class="chip-input" placeholder="დაამატეთ საძიებო სიტყვა..." 
-                     [(ngModel)]="keywordInputValue" (keydown.enter)="addKeywordFromValue()">
-            </div>
-          </div>
-          <button class="btn-add-keyword" [disabled]="!keywordInputValue().trim()" (click)="addKeywordFromValue()" title="დამატება">
-            <span class="material-symbols-outlined">add</span>
-          </button>
-        </div>
-
-        <!-- Suggested Popular Keywords -->
-        <div class="suggested-keywords-row">
-          <span class="suggested-label">რეკომენდებული:</span>
-          <div class="suggested-pills-list">
-            @for (k of popularKeywords(); track k) {
-              <button type="button" class="suggested-pill" (click)="addSuggestedKeyword(k)" [disabled]="stateStore.searchQuery().includes(k)">
-                <span>+ {{ k }}</span>
-              </button>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Notification Channel Card -->
-      <div class="profile-card notification-channel-section">
-        <div class="card-header-clean">
-          <div class="header-title-wrap">
-            <span class="material-symbols-outlined icon">notifications</span>
-            <h3>შეტყობინებების არხი</h3>
-          </div>
-        </div>
-        
-        <!-- Toggle switch for receiving messages -->
-        <div class="receive-messages-toggle-card">
-          <div class="toggle-info">
-            <span class="toggle-title">ვაკანსიების შეტყობინებები</span>
-            <span class="toggle-desc">გსურთ მიიღოთ მყისიერი შეტყობინებები ახალ ვაკანსიებზე?</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
-            <span class="slider round"></span>
-          </label>
-        </div>
-        
-        @if (stateStore.profile().telegramChatId) {
-          <!-- Telegram is active -->
-          <div class="channel-status active-telegram">
-            <div class="status-indicator">
-              <span class="dot telegram-dot"></span>
-              <span class="channel-title">აქტიურია: Telegram არხი</span>
-            </div>
-            <p class="status-desc">AI ვაკანსიების მყისიერი შეტყობინებები იგზავნება თქვენს Telegram-ზე (ID: {{ stateStore.profile().telegramChatId }}).</p>
-            
-            <button class="btn-switch-channel to-email" (click)="switchToEmail()">
-              <span class="material-symbols-outlined">mail</span> ელ-ფოსტაზე გადართვა
-            </button>
-          </div>
-        } @else {
-          <!-- Email is active -->
-          <div class="channel-status active-email">
-            <div class="status-indicator">
-              <span class="dot email-dot" [class.unverified]="!stateStore.profile().isEmailVerified"></span>
-              <span class="channel-title">აქტიურია: ელ-ფოსტა</span>
-            </div>
-            
-            @if (stateStore.profile().isEmailVerified) {
-              <p class="status-desc">შეტყობინებები იგზავნება ელ-ფოსტაზე: <strong>{{ stateStore.profile().email }}</strong>.</p>
-            } @else {
-              <p class="status-desc warning-text">ელ-ფოსტა <strong>{{ stateStore.profile().email }}</strong> დაუდასტურებელია. შეტყობინებების მისაღებად გთხოვთ დაადასტუროთ.</p>
-              <button class="btn-verify-email-inline" (click)="openEmailVerification()">
-                ელ-ფოსტის დადასტურება
-              </button>
-            }
-            
-            <button class="btn-switch-channel to-telegram" (click)="generateTelegramToken()">
-              <span class="material-symbols-outlined">send</span> Telegram-ზე გადართვა
-            </button>
-          </div>
-        }
-      </div>
-
-    </div>
-
-    <!-- Right Column: Step 1 CV & Step 4 Subscription -->
-    <div class="profile-sidebar-grid">
-      
-      <!-- Analyzed CV Card -->
-      <div class="profile-card cv-section">
-        <div class="card-header-clean">
-          <div class="header-title-wrap">
-            <span class="material-symbols-outlined icon">description</span>
-            <h3>ატვირთული რეზიუმე</h3>
-          </div>
-        </div>
-        
-        @if (stateStore.userCv()) {
-          <div class="cv-file-details">
-            <div class="cv-meta-row">
-              <div class="file-icon-badge" [class.word]="isWordFile()" [class.pdf]="!isWordFile()">
-                <span class="material-symbols-outlined file-type-icon">
-                  {{ isWordFile() ? 'description' : 'picture_as_pdf' }}
-                </span>
-              </div>
-              <div class="file-name-size">
-                <span class="filename">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
-                <span class="filesize">ატვირთულია & დამუშავებულია</span>
-              </div>
-              <button class="btn-delete-cv" (click)="deleteCv()" title="CV-ს წაშლა">
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </div>
-            
-            <div class="cv-analysis-summary">
-              @if (cvTextSummary()) {
-                <div class="analysis-item">
-                  <span class="label">რეზიუმეს მიმოხილვა:</span>
-                  <p class="summary-text-box">
-                    {{ cvTextSummary() }}
-                  </p>
-                </div>
-              }
-
-              <div class="analysis-item">
-                <span class="label">გამოვლენილი პოზიცია:</span>
-                <span class="value">{{ stateStore.userCv()?.summary?.detectedRole || 'მითითებული არ არის' }}</span>
-              </div>
-              <div class="analysis-item">
-                <span class="label">სასურველი ლოკაცია:</span>
-                <span class="value">{{ stateStore.userCv()?.summary?.locationPreference || 'მითითებული არ არის' }}</span>
-              </div>
-              
-              <!-- Salary Estimates Section -->
-              <div class="analysis-item" *ngIf="stateStore.userCv()?.summary?.salaryEstimates">
-                <span class="label">ხელფასის პროგნოზი:</span>
-                <div class="salary-estimates-container">
-                  <div class="salary-estimate-box" *ngIf="stateStore.userCv()?.summary?.salaryEstimates?.georgia">
-                    <span class="flag">🇬🇪</span>
-                    <div class="est-info">
-                      <span class="loc-label">თბილისი</span>
-                      <span class="amount">{{ stateStore.userCv()?.summary?.salaryEstimates?.georgia }}</span>
-                    </div>
-                  </div>
-                  <div class="salary-estimate-box" *ngIf="stateStore.userCv()?.summary?.salaryEstimates?.remote">
-                    <span class="flag">🌍</span>
-                    <div class="est-info">
-                      <span class="loc-label">Remote</span>
-                      <span class="amount">{{ stateStore.userCv()?.summary?.salaryEstimates?.remote }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="analysis-item skills">
-                <span class="label">ძირითადი უნარები:</span>
-                <div class="skills-badges-list">
-                  <span class="skill-badge" *ngFor="let skill of stateStore.userCv()?.summary?.primarySkills">
-                    {{ skill }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        } @else {
-          <div class="cv-empty-state">
-            <span class="material-symbols-outlined upload-cloud-icon">cloud_upload</span>
-            <p class="empty-desc">თქვენი CV არ არის ატვირთული. ატვირთეთ ფაილი ავტომატური AI ანალიზისთვის.</p>
-            <input #cvFileInput type="file" (change)="uploadCv($event)" accept=".pdf,.doc,.docx" style="display: none;">
-            <button class="btn-upload-cv" (click)="cvFileInput.click()">
-              <span class="material-symbols-outlined">upload</span> CV-ს ატვირთვა
-            </button>
-          </div>
-        }
-      </div>
-
-      <!-- Subscription Card -->
-      <div class="profile-card subscription-section">
-        <div class="card-header-clean">
-          <div class="header-title-wrap">
-            <span class="material-symbols-outlined icon">credit_card</span>
-            <h3>სააბონენტო პაკეტი</h3>
-          </div>
-        </div>
-        
-        <div class="sub-card-box" [class]="(stateStore.plan() || 'free').toLowerCase()">
-          <div class="plan-hero-row">
-            <span class="plan-title">{{ stateStore.isPro() ? 'Pro პაკეტი' : stateStore.isBasic() ? 'Basic პაკეტი' : 'უფასო (არ არის გამოწერილი)' }}</span>
-            <span class="plan-active-badge" [class.inactive]="!stateStore.hasActiveSubscription()">
+            <span class="plan-status-pill" [class.active]="stateStore.hasActiveSubscription()">
               {{ stateStore.hasActiveSubscription() ? 'აქტიური' : 'უფასო' }}
             </span>
           </div>
+          <button type="button" class="btn-quick-plan" (click)="openUpgradeModal()">
+            <span>{{ stateStore.isPro() ? 'გეგმის მართვა' : 'განახლება Pro-ზე' }}</span>
+            <span class="material-symbols-outlined icon">arrow_forward</span>
+          </button>
+        </div>
 
-          <p class="plan-sub">
-            {{ stateStore.isPro() 
-                ? 'პროფესიონალური AI ძიება და მყისიერი Telegram/Email შეტყობინებები გააქტიურებულია!' 
-                : stateStore.isBasic() 
-                ? 'ყოველდღიური Telegram შეტყობინებები გააქტიურებულია! შეუზღუდავი AI ძიებისთვის განაახლეთ Pro გეგმაზე.'
-                : 'მეტი შესაძლებლობებისა და შეტყობინებების მისაღებად გაააქტიურეთ Basic ან Pro გეგმა.' }}
-          </p>
-
-          <div class="plan-features-mini">
-            <div class="mini-feat">
-              <span class="material-symbols-outlined check">check_circle</span>
-              <span>{{ stateStore.isPro() ? 'AI მყისიერი შეტყობინებები & ანალიზი' : stateStore.isBasic() ? 'ყოველდღიური Telegram შეტყობინებები' : 'საბაზისო პლატფორმა' }}</span>
+        <!-- 3. Passed Steps & Onboarding Progress -->
+        <div class="overview-steps-section">
+          
+          <!-- ── DESKTOP FULL VIEW ── -->
+          <div class="steps-desktop-view">
+            <div class="steps-heading-row">
+              <span class="steps-title">შევსებული ეტაპები</span>
+              <span class="steps-percentage-badge">{{ completedPercentage() }}%</span>
             </div>
-            <div class="mini-feat">
-              <span class="material-symbols-outlined check">check_circle</span>
-              <span>{{ stateStore.isPro() ? 'შეუზღუდავი AI ძიება & ანალიზი' : stateStore.isBasic() ? '10 ვაკანსია დღეში' : '3 ვაკანსია დღეში' }}</span>
+
+            <!-- Progress Bar (Desktop) -->
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="completedPercentage()"></div>
+            </div>
+
+            <!-- 4 Step Informative List (Desktop) -->
+            <div class="passed-steps-list">
+              <!-- Step 1: CV -->
+              <div class="step-check-item" [class.completed]="hasCvStep()">
+                <div class="step-bullet-icon">
+                  <span class="material-symbols-outlined">{{ hasCvStep() ? 'check' : 'description' }}</span>
+                </div>
+                <div class="step-meta">
+                  <span class="step-name">1. CV-ს ატვირთვა</span>
+                  <span class="step-state">{{ hasCvStep() ? 'ატვირთულია' : 'არ არის ატვირთული' }}</span>
+                </div>
+              </div>
+
+              <!-- Step 2: Info -->
+              <div class="step-check-item" [class.completed]="hasNameStep()">
+                <div class="step-bullet-icon">
+                  <span class="material-symbols-outlined">{{ hasNameStep() ? 'check' : 'badge' }}</span>
+                </div>
+                <div class="step-meta">
+                  <span class="step-name">2. პირადი მონაცემები</span>
+                  <span class="step-state">{{ hasNameStep() ? 'შევსებულია' : 'შესავსებია' }}</span>
+                </div>
+              </div>
+
+              <!-- Step 3: Notifications -->
+              <div class="step-check-item" [class.completed]="hasNotificationStep()">
+                <div class="step-bullet-icon">
+                  <span class="material-symbols-outlined">{{ hasNotificationStep() ? 'check' : 'notifications' }}</span>
+                </div>
+                <div class="step-meta">
+                  <span class="step-name">3. შეტყობინებები</span>
+                  <span class="step-state">{{ hasNotificationStep() ? 'ჩართულია' : 'გამორთულია' }}</span>
+                </div>
+              </div>
+
+              <!-- Step 4: Subscription -->
+              <div class="step-check-item" [class.completed]="hasSubscriptionStep()">
+                <div class="step-bullet-icon">
+                  <span class="material-symbols-outlined">{{ hasSubscriptionStep() ? 'check' : 'workspace_premium' }}</span>
+                </div>
+                <div class="step-meta">
+                  <span class="step-name">4. სააბონენტო გეგმა</span>
+                  <span class="step-state">{{ hasSubscriptionStep() ? 'გააქტიურებულია' : 'არჩეული არ არის' }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          @if (!stateStore.isPro()) {
-            <button class="btn-upgrade-sub" (click)="openUpgradeModal()">
-              <span class="material-symbols-outlined">bolt</span>
-              <span>{{ stateStore.isBasic() ? 'Pro-ზე განახლება' : 'გამოწერის გააქტიურება' }}</span>
-            </button>
-          } @else {
-            <button class="btn-manage-sub" (click)="openUpgradeModal()">
-              <span>გეგმის მართვა</span>
-            </button>
-          }
+          <!-- ── MOBILE SHORTENED 5-SEGMENT VIEW ── -->
+          <div class="steps-mobile-view">
+            <div class="steps-heading-row">
+              <span class="steps-title">პროფილის შევსება</span>
+              <span class="steps-percentage-badge">{{ completedPercentage() }}%</span>
+            </div>
+
+            <!-- 5 Segmented Step Progress Bar -->
+            <div class="stepper-segmented-track" role="progressbar">
+              <div class="progress-step-segment" [class.completed]="hasNameStep()" title="1. პირადი მონაცემები">
+                <div class="segment-fill"></div>
+              </div>
+              <div class="progress-step-segment" [class.completed]="hasCvStep()" title="2. CV">
+                <div class="segment-fill"></div>
+              </div>
+              <div class="progress-step-segment" [class.completed]="hasKeywordsStep()" title="3. საკვანძო სიტყვები">
+                <div class="segment-fill"></div>
+              </div>
+              <div class="progress-step-segment" [class.completed]="hasNotificationStep()" title="4. შეტყობინებები">
+                <div class="segment-fill"></div>
+              </div>
+              <div class="progress-step-segment" [class.completed]="hasSubscriptionStep()" title="5. გამოწერა">
+                <div class="segment-fill"></div>
+              </div>
+            </div>
+
+            <div class="steps-stats-line">
+              <span class="steps-stats-text">{{ completedStepsCount() }}/5 ეტაპი დასრულებულია</span>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  </aside>
+
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- RIGHT COLUMN: DETAILED ACCORDION PANELS                       -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <main class="profile-accordions-column">
+    
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- ACCORDION 1: პირადი მონაცემები (Personal Information)       -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div class="accordion-card" [class.open]="isAccordionOpen('info')">
+      <div class="accordion-header" (click)="toggleAccordion('info')" role="button" tabindex="0">
+        <div class="header-left-title">
+          <div class="accordion-icon-box primary">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <div class="header-text-block">
+            <h3 class="accordion-title">პირადი ინფორმაცია</h3>
+            <p class="accordion-subtitle">სახელი, გვარი და საკონტაქტო მონაცემები</p>
+          </div>
+        </div>
+        <div class="header-right-meta">
+          <span class="material-symbols-outlined chevron-arrow">expand_more</span>
         </div>
       </div>
 
+      <div class="accordion-collapse-wrapper">
+        <div class="accordion-collapse-inner">
+          <div class="accordion-body-content">
+            @if (!stateStore.profileLoaded()) {
+              <div class="skeleton-pulse personal-form-skeleton">
+                <div class="form-row-duo">
+                  <div>
+                    <div class="skeleton-block" style="width: 60px; height: 14px; margin-bottom: 8px; border-radius: 4px;"></div>
+                    <div class="skeleton-block" style="width: 100%; height: 46px; border-radius: 14px;"></div>
+                  </div>
+                  <div>
+                    <div class="skeleton-block" style="width: 60px; height: 14px; margin-bottom: 8px; border-radius: 4px;"></div>
+                    <div class="skeleton-block" style="width: 100%; height: 46px; border-radius: 14px;"></div>
+                  </div>
+                </div>
+                <div style="margin-top: 1.15rem;">
+                  <div class="skeleton-block" style="width: 80px; height: 14px; margin-bottom: 8px; border-radius: 4px;"></div>
+                  <div class="skeleton-block" style="width: 100%; height: 46px; border-radius: 14px;"></div>
+                </div>
+              </div>
+            } @else {
+              <form [formGroup]="profileForm" class="personal-form-grid">
+                <div class="form-row-duo">
+                  <div class="custom-field-group">
+                    <label for="firstName" class="field-label">სახელი</label>
+                    <div class="input-container">
+                      <span class="material-symbols-outlined prefix-icon">badge</span>
+                      <input formControlName="firstName" type="text" id="firstName" class="custom-input" 
+                            placeholder="შეიყვანეთ სახელი" required [class.is-invalid]="isInvalid('firstName')">
+                    </div>
+                  </div>
+
+                  <div class="custom-field-group">
+                    <label for="lastName" class="field-label">გვარი</label>
+                    <div class="input-container">
+                      <span class="material-symbols-outlined prefix-icon">badge</span>
+                      <input formControlName="lastName" type="text" id="lastName" class="custom-input" 
+                            placeholder="შეიყვანეთ გვარი" required [class.is-invalid]="isInvalid('lastName')">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="custom-field-group full-width">
+                  <label for="email" class="field-label">ელ-ფოსტის მისამართი</label>
+                  <div class="input-container locked">
+                    <span class="material-symbols-outlined prefix-icon">mail</span>
+                    <input formControlName="email" type="email" id="email" class="custom-input readonly-input" 
+                          readonly required>
+                    <span class="material-symbols-outlined lock-tag-icon" title="ელ-ფოსტის შეცვლა შეუძლებელია">lock</span>
+                  </div>
+                </div>
+
+                <div class="form-submit-row">
+                  <button type="button" (click)="save()" class="btn-primary-save" [disabled]="profileForm.invalid">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>ცვლილებების შენახვა</span>
+                  </button>
+                </div>
+              </form>
+            }
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- ACCORDION 2: საძიებო საკვანძო სიტყვები (Search Keywords)    -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div class="accordion-card" [class.open]="isAccordionOpen('keywords')">
+      <div class="accordion-header" (click)="toggleAccordion('keywords')" role="button" tabindex="0">
+        <div class="header-left-title">
+          <div class="accordion-icon-box accent">
+            <span class="material-symbols-outlined">tag</span>
+          </div>
+          <div class="header-text-block">
+            <div class="title-with-badge">
+              <h3 class="accordion-title">საძიებო საკვანძო სიტყვები</h3>
+              <span class="count-pill">{{ stateStore.searchQuery().length || 0 }}</span>
+            </div>
+            <p class="accordion-subtitle">ხელოვნური ინტელექტი ამ სიტყვების მიხედვით შეგირჩევთ ვაკანსიებს</p>
+          </div>
+        </div>
+        <div class="header-right-meta">
+          <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+        </div>
+      </div>
+
+      <div class="accordion-collapse-wrapper">
+        <div class="accordion-collapse-inner">
+          <div class="accordion-body-content">
+            @if (!stateStore.profileLoaded()) {
+              <div class="skeleton-pulse keywords-skeleton">
+                <div class="skeleton-block" style="width: 100%; height: 56px; border-radius: 16px; margin-bottom: 1.15rem;"></div>
+                <div class="skeleton-block" style="width: 160px; height: 14px; border-radius: 4px; margin-bottom: 10px;"></div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <div class="skeleton-block" style="width: 100px; height: 28px; border-radius: 20px;"></div>
+                  <div class="skeleton-block" style="width: 110px; height: 28px; border-radius: 20px;"></div>
+                  <div class="skeleton-block" style="width: 90px; height: 28px; border-radius: 20px;"></div>
+                  <div class="skeleton-block" style="width: 120px; height: 28px; border-radius: 20px;"></div>
+                </div>
+              </div>
+            } @else {
+              <div class="keywords-interactive-box">
+                <div class="chips-flex-wrap">
+                  @for (query of stateStore.searchQuery(); track query; let i = $index) {
+                    <div class="keyword-pill-item">
+                      <span class="pill-text">{{ query }}</span>
+                      <button type="button" class="btn-remove-pill" (click)="removeKeyword(i)" title="წაშლა">
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
+                    </div>
+                  }
+
+                  <div class="chip-input-inline">
+                    <input type="text" class="new-keyword-input" placeholder="ახალი საკვანძო სიტყვა..." 
+                          [(ngModel)]="keywordInputValue" (keydown.enter)="addKeywordFromValue()">
+                    <button type="button" class="btn-add-inline" [disabled]="!keywordInputValue().trim()" (click)="addKeywordFromValue()" title="დამატება">
+                      <span class="material-symbols-outlined">add</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Suggested Keywords Section -->
+              <div class="suggested-section-block">
+                <span class="suggested-heading">
+                  <span>რეკომენდებული პოზიციები:</span>
+                </span>
+                <div class="suggested-pill-grid">
+                  @for (k of popularKeywords(); track k) {
+                    <button type="button" class="suggested-tag-btn" (click)="addSuggestedKeyword(k)" [disabled]="stateStore.searchQuery().includes(k)">
+                      <span class="material-symbols-outlined add-icon">add</span>
+                      <span>{{ k }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- ACCORDION 3: შეტყობინებების არხი (Notifications & Delivery) -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div class="accordion-card" [class.open]="isAccordionOpen('notifications')">
+      <div class="accordion-header" (click)="toggleAccordion('notifications')" role="button" tabindex="0">
+        <div class="header-left-title">
+          <div class="accordion-icon-box success">
+            <span class="material-symbols-outlined">notifications_active</span>
+          </div>
+          <div class="header-text-block">
+            <div class="title-with-badge">
+              <h3 class="accordion-title">შეტყობინებების არხი</h3>
+              <span class="channel-status-tag" [class.active]="stateStore.profile().receiveMessages">
+                {{ stateStore.profile().receiveMessages ? 'ჩართულია' : 'გამორთულია' }}
+              </span>
+            </div>
+            <p class="accordion-subtitle">მიიღეთ მყისიერი შეტყობინებები Telegram-ზე ან ელ-ფოსტაზე</p>
+          </div>
+        </div>
+        <div class="header-right-meta">
+          <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+        </div>
+      </div>
+
+      <div class="accordion-collapse-wrapper">
+        <div class="accordion-collapse-inner">
+          <div class="accordion-body-content">
+            @if (!stateStore.profileLoaded()) {
+              <div class="skeleton-pulse notifications-skeleton">
+                <div class="skeleton-block" style="width: 100%; height: 72px; border-radius: 16px; margin-bottom: 1.25rem;"></div>
+                <div class="skeleton-block" style="width: 100%; height: 130px; border-radius: 16px;"></div>
+              </div>
+            } @else {
+              <!-- Master Toggle Banner -->
+              <div class="master-toggle-banner" [class.enabled]="stateStore.profile().receiveMessages">
+                <div class="toggle-text-block">
+                  <div class="toggle-title-row">
+                    <span class="material-symbols-outlined toggle-symbol">{{ stateStore.profile().receiveMessages ? 'notifications' : 'notifications_off' }}</span>
+                    <span class="toggle-main-title">შეტყობინებების მიღება</span>
+                  </div>
+                  <p class="toggle-description">
+                    {{ stateStore.profile().receiveMessages ? 'ავტომატური შეტყობინებები გააქტიურებულია' : 'შეტყობინებები დროებით გამორთულია' }}
+                  </p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+
+              <!-- Channel Box -->
+              @if (stateStore.profile().telegramChatId) {
+                <!-- Telegram Active -->
+                <div class="delivery-channel-card telegram-active">
+                  <div class="channel-header-row">
+                    <div class="channel-brand-group">
+                      <div class="channel-brand-icon telegram">
+                        <span class="material-symbols-outlined">send</span>
+                      </div>
+                      <div>
+                        <div class="channel-status-line">
+                          <span class="status-pulse-dot telegram"></span>
+                          <span class="channel-name">Telegram არხი</span>
+                          <span class="active-badge">აქტიური</span>
+                        </div>
+                        <span class="channel-sub-info">Chat ID: <strong>{{ stateStore.profile().telegramChatId }}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="channel-text-note">
+                    ახალი ვაკანსიები და AI შეტყობინებები მყისიერად იგზავნება თქვენს Telegram ბოტში.
+                  </p>
+
+                  <button type="button" class="btn-channel-switch email-switch" (click)="switchToEmail()">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span>ელ-ფოსტაზე გადართვა</span>
+                  </button>
+                </div>
+              } @else {
+                <!-- Email Active -->
+                <div class="delivery-channel-card email-active">
+                  <div class="channel-header-row">
+                    <div class="channel-brand-group">
+                      <div class="channel-brand-icon email">
+                        <span class="material-symbols-outlined">mail</span>
+                      </div>
+                      <div>
+                        <div class="channel-status-line">
+                          <span class="status-pulse-dot email" [class.unverified]="!stateStore.profile().isEmailVerified"></span>
+                          <span class="channel-name">ელ-ფოსტა</span>
+                          <span class="active-badge" [class.unverified]="!stateStore.profile().isEmailVerified">
+                            {{ stateStore.profile().isEmailVerified ? 'დადასტურებული' : 'დაუდასტურებელი' }}
+                          </span>
+                        </div>
+                        <span class="channel-sub-info">{{ stateStore.profile().email }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  @if (stateStore.profile().isEmailVerified) {
+                    <p class="channel-text-note">
+                      შეტყობინებები და ყოველდღიური ვაკანსიების დაიჯესტი იგზავნება თქვენს ელ-ფოსტაზე.
+                    </p>
+                  } @else {
+                    <div class="email-verify-alert">
+                      <span class="material-symbols-outlined alert-icon">warning</span>
+                      <div class="alert-content">
+                        <span class="alert-title">ელ-ფოსტა დაუდასტურებელია</span>
+                        <p class="alert-desc">შეტყობინებების მისაღებად გთხოვთ დაადასტუროთ ელ-ფოსტის მისამართი.</p>
+                      </div>
+                      <button type="button" class="btn-verify-now" (click)="openEmailVerification()">
+                        დადასტურება
+                      </button>
+                    </div>
+                  }
+
+                  <button type="button" class="btn-channel-switch telegram-switch" (click)="generateTelegramToken()">
+                    <span class="material-symbols-outlined">send</span>
+                    <span>Telegram ბოტის დაკავშირება</span>
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- ACCORDION 4: რეზიუმე & AI ანალიზი (CV & AI Insights)        -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div class="accordion-card" [class.open]="isAccordionOpen('cv')">
+      <div class="accordion-header" (click)="toggleAccordion('cv')" role="button" tabindex="0">
+        <div class="header-left-title">
+          <div class="accordion-icon-box purple">
+            <span class="material-symbols-outlined">psychology</span>
+          </div>
+          <div class="header-text-block">
+            <div class="title-with-badge">
+              <h3 class="accordion-title">რეზიუმე & AI ანალიზი</h3>
+              <span class="cv-status-badge" [class.uploaded]="!!stateStore.userCv()">
+                {{ stateStore.userCv() ? 'CV ატვირთულია' : 'არ არის ატვირთული' }}
+              </span>
+            </div>
+            <p class="accordion-subtitle">თქვენი CV-დან ამოცნობილი უნარები, პოზიცია და ანალიტიკა</p>
+          </div>
+        </div>
+        <div class="header-right-meta">
+          <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+        </div>
+      </div>
+
+      <div class="accordion-collapse-wrapper">
+        <div class="accordion-collapse-inner">
+          <div class="accordion-body-content">
+            @if (stateStore.cvLoading() || !stateStore.cvLoaded()) {
+              <div class="skeleton-pulse cv-skeleton">
+                <div class="skeleton-block" style="width: 100%; height: 68px; border-radius: 16px; margin-bottom: 1.25rem;"></div>
+                <div class="insights-duo-grid" style="margin-bottom: 1.15rem;">
+                  <div class="skeleton-block" style="width: 100%; height: 60px; border-radius: 14px;"></div>
+                  <div class="skeleton-block" style="width: 100%; height: 60px; border-radius: 14px;"></div>
+                </div>
+                <div class="salary-tiles-row" style="margin-bottom: 1.15rem;">
+                  <div class="skeleton-block" style="width: 100%; height: 50px; border-radius: 14px;"></div>
+                  <div class="skeleton-block" style="width: 100%; height: 50px; border-radius: 14px;"></div>
+                </div>
+                <div class="skeleton-block" style="width: 100%; height: 70px; border-radius: 16px;"></div>
+              </div>
+            } @else if (stateStore.userCv()) {
+              <div class="cv-display-container">
+                
+                <!-- File Strip -->
+                <div class="file-info-strip">
+                  <div class="file-type-art" [class.doc]="isWordFile()" [class.pdf]="!isWordFile()">
+                    <span class="material-symbols-outlined">{{ isWordFile() ? 'description' : 'picture_as_pdf' }}</span>
+                  </div>
+                  <div class="file-text-details">
+                    <span class="file-main-name" [title]="stateStore.userCv()?.originalName">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
+                    <span class="file-status-label">
+                      <span class="material-symbols-outlined status-check">check_circle</span>
+                      <span>დამუშავებულია AI-ით</span>
+                    </span>
+                  </div>
+                  <button type="button" class="btn-delete-file" (click)="deleteCv()" title="CV-ს წაშლა">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="ai-extracted-details">
+                  <div class="insights-duo-grid">
+                    <div class="insight-mini-card">
+                      <span class="insight-label">
+                        <span class="material-symbols-outlined icon">work</span>
+                        <span>პოზიცია</span>
+                      </span>
+                      <span class="insight-val highlight">{{ stateStore.userCv()?.summary?.detectedRole || 'მითითებული არ არის' }}</span>
+                    </div>
+
+                    <div class="insight-mini-card">
+                      <span class="insight-label">
+                        <span class="material-symbols-outlined icon">location_on</span>
+                        <span>ლოკაცია</span>
+                      </span>
+                      <span class="insight-val">{{ stateStore.userCv()?.summary?.locationPreference || 'დისტანციური / თბილისი' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Salary Forecast -->
+                  @if (stateStore.userCv()?.summary?.salaryEstimates; as salary) {
+                    <div class="salary-forecast-block">
+                      <span class="block-section-label">
+                        <span class="material-symbols-outlined icon">payments</span>
+                        <span>სავარაუდო ხელფასი</span>
+                      </span>
+                      <div class="salary-tiles-row">
+                        @if (salary?.georgia) {
+                          <div class="salary-tile">
+                            <span class="tile-country-flag">🇬🇪</span>
+                            <div class="tile-meta">
+                              <span class="tile-loc-name">საქართველო</span>
+                              <span class="tile-amount-val">{{ salary.georgia }}</span>
+                            </div>
+                          </div>
+                        }
+                        @if (salary?.remote) {
+                          <div class="salary-tile">
+                            <span class="tile-country-flag">🌍</span>
+                            <div class="tile-meta">
+                              <span class="tile-loc-name">Remote / Global</span>
+                              <span class="tile-amount-val">{{ salary.remote }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Skills Badges -->
+                  @if (stateStore.userCv()?.summary?.primarySkills; as skills) {
+                    @if (skills.length > 0) {
+                      <div class="skills-block-section">
+                        <span class="block-section-label">
+                          <span class="material-symbols-outlined icon">star</span>
+                          <span>ძირითადი უნარები</span>
+                        </span>
+                        <div class="skills-badge-wrap">
+                          @for (s of skills; track s) {
+                            <span class="ai-skill-chip">{{ s }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+
+                  <!-- Summary Quote -->
+                  @if (cvTextSummary()) {
+                    <div class="cv-summary-quote-card">
+                      <span class="quote-symbol">“</span>
+                      <p class="summary-paragraph">{{ cvTextSummary() }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <!-- Empty State Dropzone -->
+              <div class="cv-upload-dropzone">
+                <div class="dropzone-ambient-circle">
+                  <span class="material-symbols-outlined upload-icon-large">cloud_upload</span>
+                </div>
+                <h3 class="dropzone-title">ატვირთეთ თქვენი რეზიუმე</h3>
+                <p class="dropzone-sub">ატვირთეთ PDF ან Word დოკუმენტი AI ანალიზისა და ავტომატური რეკომენდაციებისთვის.</p>
+                
+                <input #cvFileInput type="file" (change)="uploadCv($event)" accept=".pdf,.doc,.docx" style="display: none;">
+                <button type="button" class="btn-dropzone-upload" (click)="cvFileInput.click()">
+                  <span class="material-symbols-outlined">upload_file</span>
+                  <span>CV-ს ატვირთვა</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <!-- ACCORDION 5: სააბონენტო პაკეტი (Membership Plan & Perks)   -->
+    <!-- ─────────────────────────────────────────────────────────── -->
+    <div class="accordion-card" [class.open]="isAccordionOpen('subscription')">
+      <div class="accordion-header" (click)="toggleAccordion('subscription')" role="button" tabindex="0">
+        <div class="header-left-title">
+          <div class="accordion-icon-box gold">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div class="header-text-block">
+            <div class="title-with-badge">
+              <h3 class="accordion-title">სააბონენტო პაკეტი</h3>
+              <span class="plan-mini-pill" [class]="(stateStore.plan() || 'free').toLowerCase()">
+                {{ stateStore.isPro() ? 'PRO' : stateStore.isBasic() ? 'BASIC' : 'FREE' }}
+              </span>
+            </div>
+            <p class="accordion-subtitle">თქვენი მიმდინარე გეგმის შესაძლებლობები და მართვა</p>
+          </div>
+        </div>
+        <div class="header-right-meta">
+          <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+        </div>
+      </div>
+
+      <div class="accordion-collapse-wrapper">
+        <div class="accordion-collapse-inner">
+          <div class="accordion-body-content">
+            @if (!stateStore.profileLoaded()) {
+              <div class="skeleton-pulse subscription-skeleton">
+                <div class="skeleton-block" style="width: 100%; height: 200px; border-radius: 18px;"></div>
+              </div>
+            } @else {
+              <div class="subscription-tier-banner" [class]="(stateStore.plan() || 'free').toLowerCase()">
+                <div class="sub-glowing-backdrop"></div>
+
+                <div class="sub-banner-content">
+                  <div class="sub-header-line">
+                    <div class="plan-title-wrap">
+                      <span class="sub-plan-badge">{{ stateStore.isPro() ? '👑 PRO PLAN' : stateStore.isBasic() ? '⭐ BASIC PLAN' : 'FREE' }}</span>
+                      <h4 class="sub-plan-headline">
+                        {{ stateStore.isPro() ? 'Pro გამოწერა' : stateStore.isBasic() ? 'Basic გამოწერა' : 'უფასო პაკეტი' }}
+                      </h4>
+                    </div>
+                    <span class="sub-status-indicator" [class.active]="stateStore.hasActiveSubscription()">
+                      {{ stateStore.hasActiveSubscription() ? 'აქტიური' : 'უფასო' }}
+                    </span>
+                  </div>
+
+                  <p class="sub-plan-desc">
+                    {{ stateStore.isPro() 
+                        ? 'სრული AI შესაძლებლობები, შეუზღუდავი ძიება და მყისიერი შეტყობინებები გააქტიურებულია.' 
+                        : stateStore.isBasic() 
+                        ? 'ყოველდღიური Telegram შეტყობინებები გააქტიურებულია. AI ძიებისთვის განაახლეთ Pro-ზე.'
+                        : 'გაააქტიურეთ გამოწერა მეტი შესაძლებლობისა და ავტომატური შეტყობინებებისთვის.' }}
+                  </p>
+
+                  <div class="sub-perks-list">
+                    <div class="sub-perk-row">
+                      <span class="material-symbols-outlined perk-check">check_circle</span>
+                      <span>{{ stateStore.isPro() ? 'შეუზღუდავი AI ძიება & ანალიზი' : stateStore.isBasic() ? '10 ვაკანსია დღეში' : 'საბაზისო პლატფორმა' }}</span>
+                    </div>
+                    <div class="sub-perk-row">
+                      <span class="material-symbols-outlined perk-check">check_circle</span>
+                      <span>{{ stateStore.isPro() ? 'მყისიერი Email & Telegram შეტყობინებები' : stateStore.isBasic() ? 'Telegram შეტყობინებები' : '3 ვაკანსია დღეში' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="sub-banner-footer">
+                    @if (!stateStore.isPro()) {
+                      <button type="button" class="btn-sub-upgrade" (click)="openUpgradeModal()">
+                        <span class="material-symbols-outlined">bolt</span>
+                        <span>{{ stateStore.isBasic() ? 'Pro-ზე განახლება' : 'გეგმის გააქტიურება' }}</span>
+                      </button>
+                    } @else {
+                      <button type="button" class="btn-sub-manage" (click)="openUpgradeModal()">
+                        <span class="material-symbols-outlined">tune</span>
+                        <span>გეგმის მართვა</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
 </div>

@@ -27,12 +27,45 @@ export class Profile {
   dialog = inject(MatDialog);
   keywordInputValue = signal<string>('');
 
-  isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
-  onboardingPercentage = computed(() => this.stateStore.onboardingPercentage());
+  hasNameStep = computed(() => {
+    const p = this.stateStore.profile();
+    return !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
+  });
   hasCvStep = computed(() => this.stateStore.hasCvStep());
-  hasInfoStep = computed(() => this.stateStore.hasInfoStep());
+  hasKeywordsStep = computed(() => (this.stateStore.searchQuery()?.length || 0) > 0);
   hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
   hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
+
+  completedStepsCount = computed(() => {
+    return [
+      this.hasNameStep(),
+      this.hasCvStep(),
+      this.hasKeywordsStep(),
+      this.hasNotificationStep(),
+      this.hasSubscriptionStep(),
+    ].filter(Boolean).length;
+  });
+
+  completedPercentage = computed(() => Math.round((this.completedStepsCount() / 5) * 100));
+
+  openAccordions = signal<Record<string, boolean>>({
+    info: false,
+    keywords: true,
+    notifications: false,
+    cv: false,
+    subscription: false,
+  });
+
+  toggleAccordion(section: string) {
+    this.openAccordions.update((state) => ({
+      ...state,
+      [section]: !state[section],
+    }));
+  }
+
+  isAccordionOpen(section: string): boolean {
+    return !!this.openAccordions()[section];
+  }
 
   initials = computed(() => {
     const u = this.stateStore.profile();
@@ -247,9 +280,9 @@ export class Profile {
       dialogRef.componentInstance.goToStep(step);
     }
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.stateStore.loadProfile(true);
-      this.stateStore.getCv(true);
+    dialogRef.afterClosed().subscribe(async () => {
+      await this.stateStore.loadProfile(true);
+      await this.stateStore.getCv(true);
     });
   }
 }

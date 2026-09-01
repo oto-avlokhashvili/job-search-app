@@ -74,9 +74,9 @@ export class ChatWidget implements OnInit, AfterViewChecked {
       dialogRef.componentInstance.goToStep(step);
     }
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.stateStore.loadProfile(true);
-      this.stateStore.getCv(true);
+    dialogRef.afterClosed().subscribe(async () => {
+      await this.stateStore.loadProfile(true);
+      await this.stateStore.getCv(true);
       this.loadQuota();
     });
   }
