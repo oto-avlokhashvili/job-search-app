@@ -318,19 +318,22 @@ export const StateStore = signalStore(
             patchState(store, { searchQuery });
         },
 
-        updateSearchQueries(searchQueries: string[]) {
-            // Optimistic update
-            patchState(store, { searchQuery: searchQueries });
-            cvService.updateSearchQueries(searchQueries).subscribe({
-                next: (res) => {
-                    if (res?.summary?.searchQueries) {
-                        patchState(store, { searchQuery: res.summary.searchQueries });
-                    }
-                },
-                error: (err) => {
-                    console.error('Error updating search queries:', err);
+        async updateSearchQueries(searchQueries: string[], optimistic: boolean = false) {
+            if (optimistic) {
+                patchState(store, { searchQuery: searchQueries });
+            }
+            try {
+                const res: any = await firstValueFrom(cvService.updateSearchQueries(searchQueries));
+                if (res?.summary?.searchQueries) {
+                    patchState(store, { searchQuery: res.summary.searchQueries });
+                } else if (!optimistic) {
+                    patchState(store, { searchQuery: searchQueries });
                 }
-            });
+                return res;
+            } catch (err) {
+                console.error('Error updating search queries:', err);
+                throw err;
+            }
         },
 
         updateChatSearchResults(jobs: any[], summary: string, role: string, location: string, skills: string[], show: boolean) {

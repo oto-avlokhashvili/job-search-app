@@ -274,7 +274,12 @@
           <div class="header-text-block">
             <div class="title-with-badge">
               <h3 class="accordion-title">საძიებო საკვანძო სიტყვები</h3>
-              <span class="count-pill">{{ stateStore.searchQuery().length || 0 }}</span>
+              <span class="count-pill" [class.loading-pill]="keywordsLoading()">
+                @if (keywordsLoading()) {
+                  <span class="btn-spinner micro primary-spinner"></span>
+                }
+                <span>{{ stateStore.searchQuery().length || 0 }}</span>
+              </span>
             </div>
             <p class="accordion-subtitle">ხელოვნური ინტელექტი ამ სიტყვების მიხედვით შეგირჩევთ ვაკანსიებს</p>
           </div>
@@ -299,22 +304,44 @@
                 </div>
               </div>
             } @else {
-              <div class="keywords-interactive-box">
+              <div class="keywords-interactive-box" [class.loading]="keywordsLoading()">
+                @if (keywordsLoading()) {
+                  <div class="box-loading-bar"></div>
+                }
+
                 <div class="chips-flex-wrap">
                   @for (query of stateStore.searchQuery(); track query; let i = $index) {
-                    <div class="keyword-pill-item">
+                    <div class="keyword-pill-item" [class.removing]="removingKeywordIndex() === i">
+                      @if (removingKeywordIndex() === i) {
+                        <span class="btn-spinner micro danger-spinner"></span>
+                      }
                       <span class="pill-text">{{ query }}</span>
-                      <button type="button" class="btn-remove-pill" (click)="removeKeyword(i)" title="წაშლა">
-                        <span class="material-symbols-outlined">close</span>
+                      <button type="button" class="btn-remove-pill" (click)="removeKeyword(i)" [disabled]="keywordsLoading()" title="წაშლა">
+                        @if (removingKeywordIndex() === i) {
+                          <span class="removing-indicator-dot"></span>
+                        } @else {
+                          <span class="material-symbols-outlined">close</span>
+                        }
                       </button>
+                    </div>
+                  }
+
+                  @if (addingKeyword(); as newWord) {
+                    <div class="keyword-pill-item pending-pill">
+                      <span class="btn-spinner micro primary-spinner"></span>
+                      <span class="pill-text">{{ newWord }}</span>
                     </div>
                   }
 
                   <div class="chip-input-inline">
                     <input type="text" class="new-keyword-input" placeholder="ახალი საკვანძო სიტყვა..." 
-                          [(ngModel)]="keywordInputValue" (keydown.enter)="addKeywordFromValue()">
-                    <button type="button" class="btn-add-inline" [disabled]="!keywordInputValue().trim()" (click)="addKeywordFromValue()" title="დამატება">
-                      <span class="material-symbols-outlined">add</span>
+                          [(ngModel)]="keywordInputValue" (keydown.enter)="addKeywordFromValue()" [disabled]="keywordsLoading()">
+                    <button type="button" class="btn-add-inline" [disabled]="!keywordInputValue().trim() || keywordsLoading()" (click)="addKeywordFromValue()" title="დამატება">
+                      @if (keywordsLoading() && addingKeyword() === keywordInputValue().trim()) {
+                        <span class="btn-spinner mini"></span>
+                      } @else {
+                        <span class="material-symbols-outlined">add</span>
+                      }
                     </button>
                   </div>
                 </div>
@@ -327,8 +354,12 @@
                 </span>
                 <div class="suggested-pill-grid">
                   @for (k of popularKeywords(); track k) {
-                    <button type="button" class="suggested-tag-btn" (click)="addSuggestedKeyword(k)" [disabled]="stateStore.searchQuery().includes(k)">
-                      <span class="material-symbols-outlined add-icon">add</span>
+                    <button type="button" class="suggested-tag-btn" [class.loading-tag]="addingKeyword() === k" (click)="addSuggestedKeyword(k)" [disabled]="stateStore.searchQuery().includes(k) || keywordsLoading()">
+                      @if (addingKeyword() === k) {
+                        <span class="btn-spinner mini primary-spinner"></span>
+                      } @else {
+                        <span class="material-symbols-outlined add-icon">add</span>
+                      }
                       <span>{{ k }}</span>
                     </button>
                   }

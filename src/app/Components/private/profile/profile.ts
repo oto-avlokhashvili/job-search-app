@@ -144,29 +144,65 @@ export class Profile {
     'DevOps',
   ]);
 
-  addSuggestedKeyword(keyword: string) {
+  keywordsLoading = signal<boolean>(false);
+  addingKeyword = signal<string | null>(null);
+  removingKeywordIndex = signal<number | null>(null);
+
+  async addSuggestedKeyword(keyword: string) {
+    if (this.keywordsLoading()) return;
     const currentKeywords = this.stateStore.searchQuery() || [];
     if (!currentKeywords.includes(keyword)) {
-      this.stateStore.updateSearchQueries([...currentKeywords, keyword]);
-      this.alertify.success(`დაემატა: ${keyword}`);
+      this.addingKeyword.set(keyword);
+      this.keywordsLoading.set(true);
+      try {
+        await this.stateStore.updateSearchQueries([...currentKeywords, keyword]);
+        this.alertify.success(`დაემატა: ${keyword}`);
+      } catch (err) {
+        this.alertify.error('საკვანძო სიტყვის დამატება ვერ მოხერხდა');
+      } finally {
+        this.addingKeyword.set(null);
+        this.keywordsLoading.set(false);
+      }
     }
   }
 
-  addKeywordFromValue() {
+  async addKeywordFromValue() {
+    if (this.keywordsLoading()) return;
     const value = this.keywordInputValue().trim();
     if (value) {
       const currentKeywords = this.stateStore.searchQuery() || [];
       if (!currentKeywords.includes(value)) {
-        this.stateStore.updateSearchQueries([...currentKeywords, value]);
+        this.addingKeyword.set(value);
+        this.keywordsLoading.set(true);
+        try {
+          await this.stateStore.updateSearchQueries([...currentKeywords, value]);
+          this.keywordInputValue.set('');
+        } catch (err) {
+          this.alertify.error('საკვანძო სიტყვის დამატება ვერ მოხერხდა');
+        } finally {
+          this.addingKeyword.set(null);
+          this.keywordsLoading.set(false);
+        }
+      } else {
+        this.keywordInputValue.set('');
       }
-      this.keywordInputValue.set('');
     }
   }
 
-  removeKeyword(index: number) {
+  async removeKeyword(index: number) {
+    if (this.keywordsLoading()) return;
     const currentKeywords = this.stateStore.searchQuery() || [];
     const updatedKeywords = currentKeywords.filter((_, i) => i !== index);
-    this.stateStore.updateSearchQueries(updatedKeywords);
+    this.removingKeywordIndex.set(index);
+    this.keywordsLoading.set(true);
+    try {
+      await this.stateStore.updateSearchQueries(updatedKeywords);
+    } catch (err) {
+      this.alertify.error('საკვანძო სიტყვის წაშლა ვერ მოხერხდა');
+    } finally {
+      this.removingKeywordIndex.set(null);
+      this.keywordsLoading.set(false);
+    }
   }
 
   save() {
