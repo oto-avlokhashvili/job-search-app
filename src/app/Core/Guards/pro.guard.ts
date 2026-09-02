@@ -17,5 +17,5 @@ export const proGuard: CanActivateFn = async () => {
   }
 
   // Non-PRO users are redirected to the jobs/notifications dashboard
-  return router.createUrlTree(['/private/jobs']);
+  return router.createUrlTree(['/private/notifications']);
 };

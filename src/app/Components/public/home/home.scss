@@ -1109,14 +1109,13 @@ $outline-variant-color: #97aed5;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  max-width: 1140px;
-  margin: 0 auto;
   width: 100%;
 
   @media (max-width: 991px) {
     grid-template-columns: 1fr;
     gap: 16px;
     max-width: 440px;
+    margin: 0 auto;
   }
 
   @media (max-width: 576px) {
@@ -2713,17 +2712,13 @@ $outline-variant-color: #97aed5;
   .job-card-bottom-pills {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 6px;
     flex-wrap: wrap;
-    padding-left: 44px;
+    width: 100%;
 
     @media (max-width: 576px) {
-      padding-left: 38px;
       gap: 5px;
-    }
-
-    @media (max-width: 380px) {
-      padding-left: 0;
     }
 
     .provider-badge-mini {

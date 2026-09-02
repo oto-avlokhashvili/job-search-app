@@ -65,9 +65,14 @@ export const routes: Routes = [
         canActivate: [onboardingGuard],
       },
       {
-        path: 'jobs',
+        path: 'notifications',
         component: SentJobs,
         canActivate: [onboardingGuard],
+      },
+      {
+        path: 'jobs',
+        redirectTo: 'notifications',
+        pathMatch: 'full'
       },
       {
         path: 'analytics',

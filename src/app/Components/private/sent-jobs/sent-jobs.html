@@ -1,112 +1,391 @@
-<div class="history-page">
+<div class="notifications-layout-container animate-fade">
 
-  <!-- Header -->
-  <div class="history-header">
-    @if (!stateStore.profileLoaded()) {
-      <div class="table-loading-bar"></div>
-    }
-    <div class="history-title-group">
-      <div class="history-icon">🔔</div>
-      <div>
-        <h2 class="history-title">შეტყობინებების ისტორია</h2>
-        <p class="history-subtitle">მიღებული ვაკანსიები</p>
-      </div>
-    </div>
-    
-    <!-- Quick Toggle -->
-    <div class="quick-toggle-messages">
-      <span class="toggle-label">შეტყობინებების მიღება</span>
-      <label class="switch">
-        <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
-        <span class="slider round"></span>
-      </label>
-    </div>
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- LEFT COLUMN: NOTIFICATIONS STATUS & CONFIGURATION CARD        -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <aside class="notifications-sidebar-column">
+    <div class="notifications-overview-card" [class.skeleton-pulse]="!stateStore.profileLoaded()">
+      @if (!stateStore.profileLoaded()) {
+        <div class="card-shimmer-bar"></div>
+      }
 
-    <div class="history-badge">
-      <span class="history-count">{{ stateStore.sentJobs().total }}</span>
-      <span class="history-count-label">სულ</span>
-    </div>
-  </div>
-
-  <!-- Timeline -->
-  <div class="timeline-wrapper" *ngIf="stateStore.sentJobs().sentJobs.length > 0">
-
-    @for (item of stateStore.sentJobs().sentJobs; track item.id; let i = $index) {
-    <div class="timeline-entry">
-
-      <!-- Timeline spine -->
-      <div class="timeline-spine">
-        <div class="timeline-dot"
-          [class.dot-strong]="item.match >= 75"
-          [class.dot-good]="item.match >= 50 && item.match < 75"
-          [class.dot-possible]="item.match < 50">
-          <div class="dot-pulse"></div>
+      @if (!stateStore.profileLoaded()) {
+        <!-- Skeleton State -->
+        <div class="overview-header-section">
+          <div class="skeleton-block avatar-circle-skeleton"></div>
+          <div class="user-identity-text">
+            <div class="skeleton-block" style="width: 140px; height: 22px; border-radius: 6px; margin-bottom: 6px;"></div>
+            <div class="skeleton-block" style="width: 180px; height: 14px; border-radius: 4px;"></div>
+          </div>
         </div>
-        <div class="timeline-line"></div>
-      </div>
+        <div class="skeleton-block" style="width: 100%; height: 72px; border-radius: 16px;"></div>
+        <div class="skeleton-block" style="width: 100%; height: 120px; border-radius: 16px;"></div>
+        <div class="skeleton-block" style="width: 100%; height: 80px; border-radius: 16px;"></div>
+      } @else {
 
-      <!-- Entry card -->
-      <div class="entry-card">
-        <div class="entry-top">
-          <div class="entry-info">
-            <span class="entry-index">#{{ stateStore.sentJobs().total - (stateStore.sentJobs().page - 1) * 12 - i }}</span>
-            <h3 class="entry-vacancy">{{ item.vacancy }}</h3>
-            <div class="entry-company">
-              <span class="company-icon">🏢</span>
-              {{ item.company }}
+        <!-- ── DESKTOP FULL VIEW ── -->
+        <div class="sidebar-desktop-view">
+          <!-- 1. Header Section: Icon & Channel Overview -->
+          <div class="overview-header-section">
+            <div class="channel-icon-ring">
+              <span class="material-symbols-outlined main-bell-icon" [class.active]="stateStore.profile().receiveMessages">
+                {{ stateStore.profile().receiveMessages ? 'notifications_active' : 'notifications_off' }}
+              </span>
+              <span class="status-indicator-dot" [class.active]="stateStore.profile().receiveMessages"></span>
+            </div>
+
+            <div class="overview-identity-text">
+              <h2 class="overview-heading">შეტყობინებები</h2>
+              <span class="overview-subtext">არხის სტატუსი & პარამეტრები</span>
             </div>
           </div>
-          <div class="match-pill"
-            [class.tier-strong]="item.match >= 75"
-            [class.tier-good]="item.match >= 50 && item.match < 75"
-            [class.tier-possible]="item.match < 50">
-            <span class="match-value">{{ item.match }}%</span>
-            <span class="match-label">Match</span>
+
+          <!-- 2. Master Toggle Banner -->
+          <div class="master-toggle-banner" [class.enabled]="stateStore.profile().receiveMessages">
+            <div class="toggle-text-block">
+              <div class="toggle-title-row">
+                <span class="toggle-main-title">შეტყობინებების მიღება</span>
+                <span class="status-pill" [class.active]="stateStore.profile().receiveMessages">
+                  {{ stateStore.profile().receiveMessages ? 'აქტიური' : 'გამორთული' }}
+                </span>
+              </div>
+              <p class="toggle-description">
+                {{ stateStore.profile().receiveMessages ? 'ავტომატური შეტყობინებები ჩართულია' : 'შეტყობინებები დროებით გამორთულია' }}
+              </p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- 3. Active Delivery Channel Box -->
+          <div class="channel-status-card">
+            <div class="section-micro-header">
+              <span class="micro-title">აქტიური არხი</span>
+            </div>
+
+            @if (stateStore.profile().telegramChatId) {
+              <!-- Telegram Active -->
+              <div class="delivery-box telegram-active">
+                <div class="box-brand-row">
+                  <div class="box-brand-icon telegram">
+                    <span class="material-symbols-outlined">send</span>
+                  </div>
+                  <div class="box-meta">
+                    <div class="box-title-line">
+                      <span class="box-title">Telegram ბოტი</span>
+                      <span class="channel-tag active">დაკავშირებულია</span>
+                    </div>
+                    <span class="box-sub">Chat ID: <strong>{{ stateStore.profile().telegramChatId }}</strong></span>
+                  </div>
+                </div>
+
+                <p class="box-description">
+                  ახალი ვაკანსიები ყოველ დღე, დღეში ერთხელ იგზავნება Telegram ბოტში.
+                </p>
+
+                @if (stateStore.isPro()) {
+                  <button type="button" class="btn-channel-action email-switch" (click)="switchToEmail()">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span>ელ-ფოსტაზე გადართვა</span>
+                  </button>
+                }
+              </div>
+            } @else {
+              <!-- Email Active -->
+              <div class="delivery-box email-active">
+                <div class="box-brand-row">
+                  <div class="box-brand-icon email">
+                    <span class="material-symbols-outlined">mail</span>
+                  </div>
+                  <div class="box-meta">
+                    <div class="box-title-line">
+                      <span class="box-title">ელ-ფოსტა</span>
+                      <span class="channel-tag" [class.active]="stateStore.profile().isEmailVerified" [class.warning]="!stateStore.profile().isEmailVerified">
+                        {{ stateStore.profile().isEmailVerified ? 'დადასტურებული' : 'დაუდასტურებელი' }}
+                      </span>
+                    </div>
+                    <span class="box-sub">{{ stateStore.profile().email }}</span>
+                  </div>
+                </div>
+
+                @if (stateStore.profile().isEmailVerified) {
+                  <p class="box-description">
+                    ვაკანსიების დაიჯესტი იგზავნება თქვენს ელ-ფოსტაზე.
+                  </p>
+                } @else {
+                  <div class="email-verify-box">
+                    <span class="material-symbols-outlined alert-icon">warning</span>
+                    <div class="alert-text">
+                      <span class="alert-head">ელ-ფოსტა დაუდასტურებელია</span>
+                      <span class="alert-sub">გთხოვთ დაადასტუროთ მისამართი</span>
+                    </div>
+                    <button type="button" class="btn-verify-quick" (click)="openEmailVerification()">
+                      დადასტურება
+                    </button>
+                  </div>
+                }
+
+                <button type="button" class="btn-channel-action telegram-switch" (click)="generateTelegramToken()">
+                  <span class="material-symbols-outlined">send</span>
+                  <span>Telegram ბოტის დაკავშირება</span>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- 4. Plan Perks Mini-Banner -->
+          <div class="overview-plan-badge-box" [class]="(stateStore.plan() || 'free').toLowerCase()">
+            <div class="plan-header-row">
+              <div class="plan-label-group">
+                <span class="material-symbols-outlined plan-badge-icon">
+                  {{ stateStore.isPro() ? 'workspace_premium' : 'star' }}
+                </span>
+                <span class="plan-name-text">{{ stateStore.isPro() ? 'PRO გამოწერა' : stateStore.isBasic() ? 'BASIC გამოწერა' : 'უფასო პაკეტი' }}</span>
+              </div>
+              <span class="plan-status-pill" [class.active]="stateStore.hasActiveSubscription()">
+                {{ stateStore.hasActiveSubscription() ? 'აქტიური' : 'უფასო' }}
+              </span>
+            </div>
+
+            <p class="plan-perk-text">
+              {{ stateStore.isPro() 
+                  ? 'მყისიერი AI შეტყობინებები და შეუზღუდავი ძიება.' 
+                  : stateStore.isBasic() 
+                  ? 'დღიური Telegram შეტყობინებები (10 ვაკანსია/დღე).' 
+                  : 'საბაზისო შეტყობინებები. განაახლეთ Pro-ზე მეტი ვაკანსიისთვის.' }}
+            </p>
+
+            <button type="button" class="btn-quick-plan" (click)="openUpgradeModal()">
+              <span>{{ stateStore.isPro() ? 'გეგმის მართვა' : 'განახლება Pro-ზე' }}</span>
+              <span class="material-symbols-outlined icon">arrow_forward</span>
+            </button>
+          </div>
+
+          <!-- 5. Quick Stats -->
+          <div class="overview-stats-grid">
+            <div class="stat-mini-card">
+              <span class="stat-number">{{ stateStore.sentJobs().total || 0 }}</span>
+              <span class="stat-label">ვაკანსია</span>
+            </div>
+            <div class="stat-mini-card clickable" (click)="navigateToProfile()" title="საკვანძო სიტყვების მართვა პროფილში">
+              <div class="stat-row">
+                <span class="stat-number">{{ stateStore.searchQuery().length || 0 }}</span>
+                <span class="material-symbols-outlined edit-icon">settings</span>
+              </div>
+              <span class="stat-label">საძიებო სიტყვა</span>
+            </div>
           </div>
         </div>
 
-        <div class="entry-meta">
-          <span class="meta-chip">
-            <span>📍</span> {{ item.location || 'თბილისი' }}
-          </span>
-          @if (item.salaryRange) {
-          <span class="meta-chip salary-chip">
-            <span>💰</span> {{ item.salaryRange }}
-          </span>
-          }
-          <span class="meta-chip status-chip">
-            <span>✉️</span> გაგზავნილია Telegram-ზე
-          </span>
+        <!-- ── MOBILE SHORTENED COMPACT VIEW ── -->
+        <div class="sidebar-mobile-compact-view">
+          <div class="mobile-top-bar">
+            <div class="mobile-title-group">
+              <div class="mobile-bell-icon" [class.active]="stateStore.profile().receiveMessages">
+                <span class="material-symbols-outlined">
+                  {{ stateStore.profile().receiveMessages ? 'notifications_active' : 'notifications_off' }}
+                </span>
+              </div>
+              <div class="mobile-title-text">
+                <span class="mobile-heading">შეტყობინებები</span>
+                <span class="mobile-sub">{{ stateStore.profile().receiveMessages ? 'აქტიური' : 'გამორთული' }}</span>
+              </div>
+            </div>
+
+            <label class="switch small">
+              <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- Mobile Compact Channel Bar -->
+          <div class="mobile-channel-strip">
+            @if (stateStore.profile().telegramChatId) {
+              <div class="channel-chip-compact telegram">
+                <span class="material-symbols-outlined chip-icon">send</span>
+                <span class="chip-label">Telegram ბოტი</span>
+                <span class="chip-status-dot active"></span>
+              </div>
+              @if (stateStore.isPro()) {
+                <button type="button" class="btn-chip-action" (click)="switchToEmail()">
+                  <span>Email-ზე გადართვა</span>
+                </button>
+              }
+            } @else {
+              <div class="channel-chip-compact email" [class.warning]="!stateStore.profile().isEmailVerified">
+                <span class="material-symbols-outlined chip-icon">mail</span>
+                <span class="chip-label">{{ stateStore.profile().isEmailVerified ? 'Email: აქტიური' : 'Email დასადასტურებელი' }}</span>
+              </div>
+              @if (!stateStore.profile().isEmailVerified) {
+                <button type="button" class="btn-chip-action highlight" (click)="openEmailVerification()">
+                  <span>დადასტურება</span>
+                </button>
+              } @else {
+                <button type="button" class="btn-chip-action highlight" (click)="generateTelegramToken()">
+                  <span class="material-symbols-outlined">send</span>
+                  <span>Telegram-ის მიბმა</span>
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Mobile Stats Grid (ვაკანსია & საძიებო სიტყვა) -->
+          <div class="mobile-stats-grid">
+            <div class="mobile-stat-card">
+              <div class="stat-badge-icon">
+                <span class="material-symbols-outlined">mark_email_read</span>
+              </div>
+              <div class="stat-text-meta">
+                <span class="stat-val">{{ stateStore.sentJobs().total || 0 }}</span>
+                <span class="stat-lbl">ვაკანსია</span>
+              </div>
+            </div>
+
+            <div class="mobile-stat-card clickable" (click)="navigateToProfile()" title="საკვანძო სიტყვების მართვა პროფილში">
+              <div class="stat-badge-icon accent">
+                <span class="material-symbols-outlined">tag</span>
+              </div>
+              <div class="stat-text-meta">
+                <div class="stat-num-row">
+                  <span class="stat-val">{{ stateStore.searchQuery().length || 0 }}</span>
+                  <span class="material-symbols-outlined mini-arrow">arrow_forward</span>
+                </div>
+                <span class="stat-lbl">საძიებო სიტყვა</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+      }
+    </div>
+  </aside>
+
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- RIGHT COLUMN: RECEIVED VACANCIES LIST & DETAILS MODAL CLICK   -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <main class="notifications-vacancies-column">
+
+    <!-- Vacancies List -->
+    @if (stateStore.sentJobs().sentJobs.length > 0) {
+      <div class="vacancies-cards-list">
+        @for (item of stateStore.sentJobs().sentJobs; track item.id; let i = $index) {
+          <div class="vacancy-item-card" 
+               (click)="openVacancyDetails(item.jobId || item.id)"
+               role="button"
+               tabindex="0"
+               title="დააჭირეთ დეტალების სანახავად">
+            
+            <!-- Card Header: Title, Index & Match Badge -->
+            <div class="vacancy-card-top">
+              <div class="vacancy-title-group">
+                <span class="vacancy-index-tag">#{{ (page() - 1) * limit() + i + 1 }}</span>
+                <h3 class="vacancy-title">{{ item.vacancy }}</h3>
+              </div>
+
+              <!-- Match Pill -->
+              @if (stateStore.isPro()) {
+                <div class="match-pill"
+                     [class.tier-strong]="item.match >= 75"
+                     [class.tier-good]="item.match >= 50 && item.match < 75"
+                     [class.tier-possible]="item.match < 50">
+                  <span class="match-value">{{ item.match }}%</span>
+                  <span class="match-label">Match</span>
+                </div>
+              }
+
+              <!-- Mobile Chevron Indicator -->
+              <div class="card-mobile-chevron">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </div>
+            </div>
+
+            <!-- Card Meta Chips -->
+            <div class="vacancy-card-meta">
+              <div class="meta-chip company-chip">
+                <span class="material-symbols-outlined chip-icon">corporate_fare</span>
+                <span class="chip-text">{{ item.company }}</span>
+              </div>
+
+              <div class="meta-chip location-chip">
+                <span class="material-symbols-outlined chip-icon">location_on</span>
+                <span class="chip-text">{{ item.location || 'თბილისი' }}</span>
+              </div>
+
+              @if (item.salaryRange) {
+                <div class="meta-chip salary-chip">
+                  <span class="material-symbols-outlined chip-icon">payments</span>
+                  <span class="chip-text">{{ item.salaryRange }}</span>
+                </div>
+              }
+
+              <div class="meta-chip channel-chip">
+                <span class="material-symbols-outlined chip-icon">
+                  {{ stateStore.profile().telegramChatId ? 'send' : 'mail' }}
+                </span>
+                <span class="chip-text">
+                  <span class="channel-text-full">{{ stateStore.profile().telegramChatId ? 'გაგზავნილია Telegram-ზე' : 'გაგზავნილია ელ-ფოსტაზე' }}</span>
+                  <span class="channel-text-short">{{ stateStore.profile().telegramChatId ? 'Telegram' : 'Email' }}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Card Action Footer -->
+            <div class="vacancy-card-footer">
+              <span class="view-details-hint">
+                <span class="material-symbols-outlined">visibility</span>
+                <span>დეტალების ნახვა</span>
+              </span>
+              <span class="material-symbols-outlined arrow-icon">arrow_forward</span>
+            </div>
+
+          </div>
+        }
       </div>
 
-    </div>
+      <!-- Pagination Controls -->
+      @if (stateStore.sentJobs().lastPage > 1) {
+        <div class="pagination-container">
+          <button class="pagination-btn"
+                  [disabled]="page() === 1"
+                  (click)="onPageChange(page() - 1)">
+            <span class="material-symbols-outlined">chevron_left</span>
+            <span>წინა</span>
+          </button>
+          
+          <div class="page-indicator">
+            <span class="current">{{ page() }}</span>
+            <span class="separator">/</span>
+            <span class="total">{{ stateStore.sentJobs().lastPage }}</span>
+          </div>
+
+          <button class="pagination-btn"
+                  [disabled]="page() === stateStore.sentJobs().lastPage"
+                  (click)="onPageChange(page() + 1)">
+            <span>შემდეგი</span>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      }
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-vacancies-card">
+        <div class="empty-icon-circle">
+          <span class="material-symbols-outlined">notifications_paused</span>
+        </div>
+        <h3 class="empty-title">შეტყობინებების ისტორია ცარიელია</h3>
+        <p class="empty-description">
+          როდესაც სისტემა მოიძიებს თქვენს საკვანძო სიტყვებსა და CV-სთან შესაბამის ახალ ვაკანსიებს, ისინი გამოჩნდება აქ.
+        </p>
+        <button type="button" class="btn-goto-profile" (click)="navigateToProfile()">
+          <span class="material-symbols-outlined">tune</span>
+          <span>საკვანძო სიტყვების დაყენება</span>
+        </button>
+      </div>
     }
 
-    <!-- Pagination -->
-    <div class="pagination-container" *ngIf="stateStore.sentJobs().lastPage > 1">
-      <button class="pagination-btn"
-        [disabled]="stateStore.sentJobs().page === 1"
-        (click)="onPageChange(stateStore.sentJobs().page - 1)">
-        ← წინა
-      </button>
-      <span class="page-info">
-        {{ stateStore.sentJobs().page }} / {{ stateStore.sentJobs().lastPage }}
-      </span>
-      <button class="pagination-btn"
-        [disabled]="stateStore.sentJobs().page === stateStore.sentJobs().lastPage"
-        (click)="onPageChange(stateStore.sentJobs().page + 1)">
-        შემდეგი →
-      </button>
-    </div>
-
-  </div>
-
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="stateStore.sentJobs().sentJobs.length === 0">
-    <div class="empty-icon">📭</div>
-    <h3>განაცხადები ვერ მოიძებნა</h3>
-    <p>გაგზავნილი ვაკანსიები არ გაქვს</p>
-  </div>
+  </main>
 
 </div>

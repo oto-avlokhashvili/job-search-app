@@ -32,7 +32,7 @@ export class Header {
         title: 'შეტყობინებები',
         subtitle: 'ახალი და შერჩეული ვაკანსიები',
         icon: '🔔',
-        route: '/private/jobs',
+        route: '/private/notifications',
       },
       {
         title: 'პროფილი',

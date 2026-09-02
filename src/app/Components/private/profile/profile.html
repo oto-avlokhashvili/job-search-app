@@ -415,10 +415,12 @@
                     ახალი ვაკანსიები და AI შეტყობინებები მყისიერად იგზავნება თქვენს Telegram ბოტში.
                   </p>
 
-                  <button type="button" class="btn-channel-switch email-switch" (click)="switchToEmail()">
-                    <span class="material-symbols-outlined">mail</span>
-                    <span>ელ-ფოსტაზე გადართვა</span>
-                  </button>
+                  @if (stateStore.isPro()) {
+                    <button type="button" class="btn-channel-switch email-switch" (click)="switchToEmail()">
+                      <span class="material-symbols-outlined">mail</span>
+                      <span>ელ-ფოსტაზე გადართვა</span>
+                    </button>
+                  }
                 </div>
               } @else {
                 <!-- Email Active -->
