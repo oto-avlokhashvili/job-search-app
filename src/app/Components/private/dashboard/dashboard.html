@@ -2,12 +2,11 @@
      (dragover)="onDragOver($event)" 
      (dragleave)="onDragLeave()" 
      (drop)="onDrop($event)"
-     [class.drag-active]="isDragOver()"
-     [class.has-results]="showJobs()">
+     [class.drag-active]="isDragOver()">
 
   <canvas #particleCanvas class="particle-canvas"></canvas>
 
-  <!-- Drop overlay -->
+  <!-- Drag and Drop Overlay -->
   @if (isDragOver()) {
     <div class="drop-overlay">
       <div class="drop-content">
@@ -16,409 +15,645 @@
       </div>
     </div>
   }
-  <!-- Body Content -->
-  <div class="dashboard-body" [class.has-results]="showJobs()">
-    
-    <!-- Central Search/Upload Widget -->
-    <div class="search-widget-container">
 
-      <!-- Luxury-Grade Circular Progress Onboarding Bar -->
-      @if (!isBannerDismissed()) {
-        @if (isOnboardingLoading()) {
-          <div class="premium-onboarding-bar skeleton-pulse onboarding-skeleton animate-fade">
-            <div class="bar-ambient-glow"></div>
-            
-            <!-- 1. Skeleton Circular Ring -->
-            <div class="ring-progress-wrapper">
-              <div class="skeleton-block ring-skeleton"></div>
-            </div>
+  <div class="dashboard-body">
 
-            <!-- 2. Skeleton Title & Hint -->
-            <div class="bar-title-block">
-              <div class="title-row">
-                <div class="skeleton-text" style="width: 55px; height: 14px;"></div>
-                <div class="skeleton-block" style="width: 30px; height: 16px; border-radius: 6px;"></div>
-              </div>
-              <div class="skeleton-text short" style="width: 140px; height: 10px; margin-top: 3px;"></div>
-            </div>
-
-            <!-- 3. Skeleton Nodes Chain -->
-            <div class="bar-nodes-chain">
-              <div class="skeleton-block node-chip-skeleton"></div>
-              <span class="node-connector"></span>
-              <div class="skeleton-block node-chip-skeleton"></div>
-              <span class="node-connector"></span>
-              <div class="skeleton-block node-chip-skeleton"></div>
-              <span class="node-connector"></span>
-              <div class="skeleton-block node-chip-skeleton"></div>
-            </div>
-
-            <!-- 4. Skeleton Actions -->
-            <div class="bar-actions-end">
-              <div class="skeleton-block" style="width: 85px; height: 28px; border-radius: 9999px;"></div>
-              <div class="skeleton-block" style="width: 24px; height: 24px; border-radius: 50%;"></div>
-            </div>
-          </div>
-        } @else {
-          <div class="premium-onboarding-bar animate-fade" [class.completed]="isOnboardingCompleted()">
-            <div class="bar-ambient-glow"></div>
-            
-            <!-- 1. Left: Precision SVG Circular Progress Ring -->
-            <div class="ring-progress-wrapper" [class.is-complete]="onboardingPercentage() === 100" (click)="handleOnboardingClick()" role="button" tabindex="0" title="პროფილის პარამეტრები">
-              <svg class="ring-svg" viewBox="0 0 36 36">
-                <path class="ring-track"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path class="ring-value"
-                  [attr.stroke-dasharray]="onboardingPercentage() + ', 100'"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              </svg>
-              <span class="ring-number" [class.is-hundred]="onboardingPercentage() === 100">
-                {{ onboardingPercentage() }}<span class="percent-sign">%</span>
-              </span>
-            </div>
-
-            <!-- 2. Left Context: Title & Hint -->
-            <div class="bar-title-block" (click)="handleOnboardingClick()" role="button" tabindex="0">
-              <div class="title-row">
-                <span class="main-title">პროფილი</span>
-                <span class="fraction-tag">{{ (hasCvStep() ? 1 : 0) + (hasInfoStep() ? 1 : 0) + (hasNotificationStep() ? 1 : 0) + (hasSubscriptionStep() ? 1 : 0) }}/4</span>
-              </div>
-              <span class="subtitle-hint">{{ nextPendingStepHint() }}</span>
-            </div>
-
-            <!-- 3. Center: Connected Step Nodes Chain -->
-            <div class="bar-nodes-chain">
-              <button type="button" class="node-chip" [class.done]="hasSubscriptionStep()" (click)="handleOnboardingClick(1)" title="1. სააბონენტო გეგმა">
-                <span class="node-bullet">{{ hasSubscriptionStep() ? '✓' : '1' }}</span>
-                <span class="node-text">გამოწერა</span>
-              </button>
-
-              <span class="node-connector" [class.done]="hasSubscriptionStep() && hasCvStep()"></span>
-
-              <button type="button" class="node-chip" [class.done]="hasCvStep()" (click)="handleOnboardingClick(2)" title="2. CV-ს ატვირთვა">
-                <span class="node-bullet">{{ hasCvStep() ? '✓' : '2' }}</span>
-                <span class="node-text">CV</span>
-              </button>
-
-              <span class="node-connector" [class.done]="hasCvStep() && hasInfoStep()"></span>
-
-              <button type="button" class="node-chip" [class.done]="hasInfoStep()" (click)="handleOnboardingClick(3)" title="3. პირადი მონაცემები">
-                <span class="node-bullet">{{ hasInfoStep() ? '✓' : '3' }}</span>
-                <span class="node-text">ინფო</span>
-              </button>
-
-              <span class="node-connector" [class.done]="hasInfoStep() && hasNotificationStep()"></span>
-
-              <button type="button" class="node-chip" [class.done]="hasNotificationStep()" (click)="handleOnboardingClick(4)" title="4. შეტყობინებები">
-                <span class="node-bullet">{{ hasNotificationStep() ? '✓' : '4' }}</span>
-                <span class="node-text">შეტყობინებები</span>
-              </button>
-            </div>
-
-            <!-- 4. Far Right: Actions at the End of Progress Bar -->
-            <div class="bar-actions-end">
-              <button type="button" class="btn-continue-action" (click)="handleOnboardingClick()">
-                <span>{{ isOnboardingCompleted() ? 'მართვა' : 'გაგრძელება' }}</span>
-                <span class="material-symbols-outlined arrow-ico">{{ isOnboardingCompleted() ? 'tune' : 'arrow_forward' }}</span>
-              </button>
-              <button type="button" class="btn-dismiss-action" (click)="dismissOnboardingBanner()" title="დამალვა">
-                <span class="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-          </div>
-        }
-      }
-
-      @if (!showJobs()) {
-        <!-- Hero Welcome Section -->
-        <div class="hero-section">
-          <h1 class="hero-title">აღმოაჩინე შენი კარიერული მომავალი <span class="gradient-text">AI-ით</span></h1>
-          <p class="hero-subtitle">ატვირთეთ თქვენი CV და ჩვენი ხელოვნური ინტელექტი მყისიერად შეგირჩევთ საუკეთესო ვაკანსიებს.</p>
-        </div>
-      }
-
-      <!-- Input Card (CV File Upload Area) -->
-      <div #searchContainer class="search-input-card file-search-card" [class.has-file]="stateStore.userCv()" (click)="!stateStore.userCv() ? fileInput.click() : null">
-        <!-- File Input (Hidden) -->
-        <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
-
-        <div class="file-info-container">
-          <span class="material-symbols-outlined file-icon">
-            {{ stateStore.userCv() ? 'description' : 'cloud_upload' }}
+    <!-- 1. AI Command Deck Header -->
+    <header class="command-deck-header">
+      <div class="header-left">
+        <div class="title-with-badge">
+          <h1 class="deck-title">AI კარიერული პანელი</h1>
+          <span class="status-indicator-pill" [class.active]="matchedJobs().length > 0">
+            <span class="status-pulse-dot"></span>
+            <span>{{ isTyping() ? 'AI ძიება მიმდინარეობს...' : (matchedJobs().length > 0 ? 'აქტიური შედეგები' : 'AI მზადაა') }}</span>
           </span>
-          
-          <div class="file-text-details">
-            @if (stateStore.userCv()) {
-              <span class="file-name">{{ stateStore.userCv()?.originalName || 'CV.pdf' }}</span>
-              <span class="file-size">{{ formatFileSize(stateStore.userCv()?.size || 0) }}</span>
-            } @else {
-              <span class="upload-prompt-text">ატვირთეთ CV სამუშაოს მოსაძებნად</span>
-              <span class="upload-hint-text">მხარდაჭერილია PDF, Word ფაილები</span>
-            }
-          </div>
-
-          @if (stateStore.userCv()) {
-            <button class="change-file-btn" (click)="$event.stopPropagation(); fileInput.click()" title="შეცვლა">
-              <span class="material-symbols-outlined">cached</span>
-            </button>
-            <button class="remove-file-btn" (click)="$event.stopPropagation(); removeAttachment('__cv__')" title="წაშლა">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          }
         </div>
-
-        <!-- Search Action Button -->
-        <button class="search-btn" 
-                (click)="$event.stopPropagation(); search()" 
-                [disabled]="!stateStore.userCv() || isTyping() || stateStore.cvLoading()"
-                title="ვაკანსიების მოძიება">
-          @if (isTyping() || stateStore.cvLoading()) {
-            <span class="loading-spinner"></span>
-          } @else {
-            <span class="material-symbols-outlined">search</span>
-          }
-        </button>
+        <p class="deck-subtitle">ჭკვიანი ალგორითმი აანალიზებს ბაზარს და გაწვდით საუკეთესო ვაკანსიებს.</p>
       </div>
 
-      <!-- Query Parameters & Meta (Below search bar) -->
-      @if (stateStore.isPro()) {
-        <div class="search-meta-row">
-          <!-- Telegram Status Badge -->
-          @if (stateStore.profile().telegramChatId) {
-            <div class="telegram-status-container">
-              <div class="telegram-badge connected">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Telegram დაკავშირებულია</span>
-              </div>
-            </div>
-          } @else if (!stateStore.profile().isEmailVerified && stateStore.profileLoaded()) {
-            <div class="telegram-status-container">
-              <button class="telegram-badge connect-btn" (click)="generateTelegramToken()">
-                <span class="material-symbols-outlined">send</span>
-                <span>Telegram-ის დაკავშირება</span>
-              </button>
-            </div>
-          }
+      <!-- Quick Channel Status Pills -->
+      <div class="header-status-group">
+        @if (stateStore.profile().isEmailVerified) {
+          <div class="channel-pill connected" title="ელ-ფოსტა დადასტურებულია">
+            <span class="material-symbols-outlined icon">mark_email_read</span>
+            <span>Email</span>
+          </div>
+        } @else {
+          <button class="channel-pill action" (click)="openEmailVerificationDialog()" title="ელ-ფოსტის დადასტურება">
+            <span class="material-symbols-outlined icon">mark_email_unread</span>
+            <span>Email</span>
+          </button>
+        }
 
-          <!-- Email Status Badge -->
-          @if (stateStore.profile().isEmailVerified) {
-            <div class="email-status-container">
-              <div class="email-badge connected">
-                <span class="material-symbols-outlined">verified</span>
-                <span>ელ-ფოსტა დადასტურებულია</span>
+        <div class="tier-pill" [class.pro]="stateStore.isPro()">
+          <span class="material-symbols-outlined icon">workspace_premium</span>
+          <span>{{ stateStore.isPro() ? 'PRO' : 'BASIC' }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. CV Manager & AI Search Bar (Always Unified & Central) -->
+    <div class="cv-control-deck" #searchContainer>
+      <!-- Hidden File Input -->
+      <input #fileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display:none" />
+
+      @if (stateStore.userCv()) {
+        <!-- Uploaded CV Capsule -->
+        <div class="cv-capsule-card animate-fade">
+          <div class="cv-file-meta">
+            <div class="file-icon-box">
+              <span class="material-symbols-outlined">description</span>
+            </div>
+            <div class="file-info">
+              <div class="file-name-row">
+                <span class="file-name" [title]="stateStore.userCv()?.originalName || 'CV.pdf'">
+                  {{ stateStore.userCv()?.originalName || 'CV.pdf' }}
+                </span>
+                <span class="file-badge">აქტიური CV</span>
+              </div>
+              <span class="file-size">{{ formatFileSize(stateStore.userCv()?.size || 0) }}</span>
+            </div>
+          </div>
+
+          <div class="cv-actions-group">
+            <button class="btn-cv-action change icon-only" (click)="triggerFileInput()" title="CV-ს შეცვლა" aria-label="CV-ს შეცვლა">
+              <span class="material-symbols-outlined">sync</span>
+            </button>
+            <button class="btn-cv-action delete icon-only" (click)="removeAttachment('__cv__')" title="CV-ს წაშლა" aria-label="CV-ს წაშლა">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+
+          <!-- Primary AI Search Button -->
+          <button class="btn-ai-search" 
+                  (click)="search()" 
+                  [disabled]="isTyping() || stateStore.cvLoading()"
+                  title="AI ძიება">
+            @if (isTyping() || stateStore.cvLoading()) {
+              <span class="loading-spinner"></span>
+              <span>AI ძიება...</span>
+            } @else {
+              <span class="material-symbols-outlined search-spark">auto_awesome</span>
+              <span>AI ძიება</span>
+            }
+          </button>
+        </div>
+      } @else {
+        <!-- Upload Dropzone Card -->
+        <div class="cv-upload-dropzone animate-fade" (click)="triggerFileInput()" role="button" tabindex="0">
+          <div class="upload-icon-circle">
+            <span class="material-symbols-outlined">cloud_upload</span>
+          </div>
+          <div class="upload-texts">
+            <h3 class="upload-title">ატვირთეთ თქვენი CV ვაკანსიების მოსაძებნად</h3>
+            <p class="upload-subtitle">დააკლიკეთ ან ჩააგდეთ PDF, Word დოკუმენტი (მაქს. 10MB)</p>
+          </div>
+          <button class="btn-upload-cta" (click)="$event.stopPropagation(); triggerFileInput()">
+            <span class="material-symbols-outlined">upload_file</span>
+            <span>CV-ს არჩევა</span>
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- 3. Unified 2-Column Command Workspace (Always visible before & after search) -->
+    <div class="command-workspace-grid">
+      
+      <!-- LEFT COLUMN: AI Career Intelligence Hub -->
+      <aside class="sidebar-intelligence-column">
+        
+        <!-- Card 1: Profile Completion Status (Accordion) -->
+        <div class="intel-card profile-intel-card accordion-card" [class.open]="isAccordionOpen('profile')">
+          <div class="intel-card-header accordion-header" (click)="toggleAccordion('profile')" role="button" tabindex="0">
+            <div class="header-left-title">
+              <div class="ring-progress-mini" [class.is-complete]="onboardingPercentage() === 100">
+                <svg class="ring-svg" viewBox="0 0 36 36">
+                  <path class="ring-track"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="ring-value"
+                    [attr.stroke-dasharray]="onboardingPercentage() + ', 100'"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                @if (onboardingPercentage() === 100) {
+                  <span class="material-symbols-outlined check-ico">check</span>
+                } @else {
+                  <span class="ring-mini-text">{{ onboardingPercentage() }}%</span>
+                }
+              </div>
+              <div class="header-text-block">
+                <h3 class="intel-title">პროფილის სტატუსი</h3>
+                <span class="intel-subtitle-mini">{{ onboardingPercentage() === 100 ? 'შევსებულია 100%' : nextPendingStepHint() }}</span>
               </div>
             </div>
-          } @else if (!stateStore.profile().telegramChatId && stateStore.profileLoaded()) {
-            <div class="email-status-container">
-              <button class="email-badge verify-btn" (click)="openEmailVerificationDialog()">
-                <span class="material-symbols-outlined">mark_email_unread</span>
-                <span>ელ-ფოსტის დადასტურება</span>
-              </button>
+            <div class="header-right-actions">
+              <span class="material-symbols-outlined chevron-arrow">expand_more</span>
             </div>
+          </div>
+
+          <div class="accordion-collapse-wrapper">
+            <div class="accordion-collapse-inner">
+              <div class="intel-card-body">
+                <div class="profile-status-checklist">
+                  <div class="status-check-item" [class.done]="hasSubscriptionStep()">
+                    <span class="check-bullet">{{ hasSubscriptionStep() ? '✓' : '1' }}</span>
+                    <span class="check-label">სააბონენტო გეგმა</span>
+                    <span class="check-status-tag">{{ hasSubscriptionStep() ? 'აქტიური' : 'არჩეული არ არის' }}</span>
+                  </div>
+                  <div class="status-check-item" [class.done]="hasCvStep()">
+                    <span class="check-bullet">{{ hasCvStep() ? '✓' : '2' }}</span>
+                    <span class="check-label">CV დოკუმენტი</span>
+                    <span class="check-status-tag">{{ hasCvStep() ? 'ატვირთულია' : 'ასატვირთია' }}</span>
+                  </div>
+                  <div class="status-check-item" [class.done]="hasInfoStep()">
+                    <span class="check-bullet">{{ hasInfoStep() ? '✓' : '3' }}</span>
+                    <span class="check-label">პირადი ინფორმაცია</span>
+                    <span class="check-status-tag">{{ hasInfoStep() ? 'შევსებულია' : 'შესავსებია' }}</span>
+                  </div>
+                  <div class="status-check-item" [class.done]="hasNotificationStep()">
+                    <span class="check-bullet">{{ hasNotificationStep() ? '✓' : '4' }}</span>
+                    <span class="check-label">შეტყობინებები</span>
+                    <span class="check-status-tag">{{ hasNotificationStep() ? 'ჩართულია' : 'გამორთულია' }}</span>
+                  </div>
+                </div>
+
+                <div class="profile-manage-row">
+                  <button type="button" class="btn-profile-manage" (click)="handleOnboardingClick(); $event.stopPropagation();">
+                    <span>პროფილის მართვა</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: CV Analysis & AI Intelligence (Accordion) -->
+        <div class="intel-card cv-intel-card accordion-card" [class.open]="isAccordionOpen('cvAnalysis')">
+          <div class="intel-card-header accordion-header" (click)="toggleAccordion('cvAnalysis')" role="button" tabindex="0">
+            <div class="header-left-title">
+              <div class="header-icon-box blue">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <div class="header-text-block">
+                <h3 class="intel-title">CV ანალიზი</h3>
+                <span class="intel-subtitle-mini">{{ aiDetectedRole() || 'AI პროფილი' }}</span>
+              </div>
+            </div>
+            <div class="header-right-actions">
+              <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+            </div>
+          </div>
+
+          <div class="accordion-collapse-wrapper">
+            <div class="accordion-collapse-inner">
+              <div class="intel-card-body">
+                <div class="intel-prop-group">
+                  <span class="prop-label">პოზიცია / როლი</span>
+                  <div class="prop-badge-value role-badge">
+                    <span class="material-symbols-outlined mini-ico">badge</span>
+                    <span>{{ aiDetectedRole() || 'განისაზღვრება CV-დან' }}</span>
+                  </div>
+                </div>
+
+                <div class="intel-prop-group">
+                  <span class="prop-label">ლოკაცია</span>
+                  <div class="prop-badge-value location-badge">
+                    <span class="material-symbols-outlined mini-ico">location_on</span>
+                    <span>{{ aiLocationPreference() || 'დისტანციური / ჰიბრიდული' }}</span>
+                  </div>
+                </div>
+
+                <!-- Skills Cloud -->
+                <div class="intel-prop-group">
+                  <span class="prop-label">ძირითადი უნარები</span>
+                  @if (aiPrimarySkills().length > 0) {
+                    <div class="skills-pill-wrap">
+                      @for (skill of aiPrimarySkills(); track skill) {
+                        <span class="skill-tag">{{ skill }}</span>
+                      }
+                    </div>
+                  } @else {
+                    <p class="empty-prop-hint">უნარები გამოჩნდება CV-ს ატვირთვისა და ანალიზის შემდეგ.</p>
+                  }
+                </div>
+
+                <!-- AI Market Commentary -->
+                @if (aiSummary()) {
+                  <div class="ai-commentary-box">
+                    <div class="commentary-header">
+                      <span class="material-symbols-outlined">smart_toy</span>
+                      <span>AI ანალიტიკა</span>
+                    </div>
+                    <p class="commentary-text">{{ aiSummary() }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Search Parameters & Keywords (Accordion) -->
+        <div class="intel-card params-intel-card accordion-card" [class.open]="isAccordionOpen('params')" [class.is-saving]="isKeywordsLoading()">
+          <div class="intel-card-header accordion-header" (click)="toggleAccordion('params')" role="button" tabindex="0">
+            <div class="header-left-title">
+              <div class="header-icon-box green">
+                <span class="material-symbols-outlined">tune</span>
+              </div>
+              <div class="header-text-block">
+                <h3 class="intel-title">საძიებო პარამეტრები</h3>
+                <span class="intel-subtitle-mini">{{ (stateStore.searchQuery().length || 0) + ' საკვანძო სიტყვა' }}</span>
+              </div>
+            </div>
+            <div class="header-right-actions">
+              @if (isKeywordsLoading()) {
+                <span class="saving-indicator-pill animate-fade">
+                  <span class="mini-spinner"></span>
+                  <span>ინახება...</span>
+                </span>
+              }
+              <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+            </div>
+          </div>
+
+          <div class="accordion-collapse-wrapper">
+            <div class="accordion-collapse-inner">
+              <div class="intel-card-body">
+                <p class="params-desc">საკვანძო სიტყვები, რომლებსაც AI იყენებს ვაკანსიების ფილტრაციისთვის:</p>
+
+                <!-- Active Chips List -->
+                <div class="keywords-chips-container">
+                  @for (keyword of stateStore.searchQuery(); track keyword) {
+                    <span class="keyword-pill animate-fade" [class.deleting]="deletingKeywordIndex() === $index">
+                      <span class="kw-text">{{ keyword }}</span>
+                      <button class="btn-remove-kw" 
+                              (click)="removeKeyword($index); $event.stopPropagation();" 
+                              [disabled]="isKeywordsLoading()"
+                              title="წაშლა">
+                        @if (deletingKeywordIndex() === $index) {
+                          <span class="mini-chip-spinner"></span>
+                        } @else {
+                          ✕
+                        }
+                      </button>
+                    </span>
+                  } @empty {
+                    <span class="empty-kw-note">საძიებო სიტყვები არ არის დამატებული</span>
+                  }
+                </div>
+
+                <!-- Add Keyword Input -->
+                <div class="add-keyword-row">
+                  <input type="text" 
+                         #kwInput 
+                         (keydown.enter)="$event.preventDefault(); addKeyword(kwInput)" 
+                         placeholder="დაამატეთ სიტყვა (მაგ. React)..." 
+                         class="kw-input-field" 
+                         [disabled]="isKeywordsLoading()" />
+                  <button class="btn-add-kw" 
+                          (click)="addKeyword(kwInput)" 
+                          [disabled]="isKeywordsLoading()"
+                          title="დამატება">
+                    @if (isAddingKeyword()) {
+                      <span class="btn-mini-spinner"></span>
+                    } @else {
+                      <span class="material-symbols-outlined">add</span>
+                    }
+                  </button>
+                </div>
+
+                <!-- Quick Suggestions -->
+                <div class="suggested-tags-wrapper">
+                  <span class="suggested-label">პოპულარული:</span>
+                  <div class="suggested-chips-list">
+                    @for (role of suggestedRoles.slice(0, 4); track role) {
+                      <button class="suggest-chip" 
+                              (click)="addSuggestedKeyword(role)"
+                              [disabled]="isKeywordsLoading()">
+                        + {{ role }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Automated Notifications & Channels (Accordion) -->
+        <div class="intel-card alerts-intel-card accordion-card" [class.open]="isAccordionOpen('alerts')">
+          <div class="intel-card-header accordion-header" (click)="toggleAccordion('alerts')" role="button" tabindex="0">
+            <div class="header-left-title">
+              <div class="header-icon-box orange">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </div>
+              <div class="header-text-block">
+                <h3 class="intel-title">ავტომატური შეტყობინებები</h3>
+                <span class="intel-subtitle-mini">{{ (stateStore.profile().telegramChatId ? 1 : 0) + (stateStore.profile().isEmailVerified ? 1 : 0) }}/2 დაკავშირებულია</span>
+              </div>
+            </div>
+            <div class="header-right-actions">
+              <span class="material-symbols-outlined chevron-arrow">expand_more</span>
+            </div>
+          </div>
+
+          <div class="accordion-collapse-wrapper">
+            <div class="accordion-collapse-inner">
+              <div class="intel-card-body">
+                <div class="notification-channels-list">
+                  <!-- Telegram Item -->
+                  <div class="channel-item">
+                    <div class="channel-info">
+                      <div class="channel-icon tg">
+                        <span class="material-symbols-outlined">send</span>
+                      </div>
+                      <div class="channel-text">
+                        <span class="channel-name">Telegram შეტყობინებები</span>
+                        <span class="channel-desc">მყისიერი ვაკანსიები მობილურზე</span>
+                      </div>
+                    </div>
+                    @if (stateStore.profile().telegramChatId) {
+                      <span class="channel-status-badge active">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>ჩართულია</span>
+                      </span>
+                    } @else {
+                      <button class="channel-connect-btn" (click)="generateTelegramToken(); $event.stopPropagation();">
+                        დაკავშირება
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Email Item -->
+                  <div class="channel-item">
+                    <div class="channel-info">
+                      <div class="channel-icon mail">
+                        <span class="material-symbols-outlined">mail</span>
+                      </div>
+                      <div class="channel-text">
+                        <span class="channel-name">Email დაიჯესტი</span>
+                        <span class="channel-desc">ყოველდღიური შერჩეული ვაკანსიები</span>
+                      </div>
+                    </div>
+                    @if (stateStore.profile().isEmailVerified) {
+                      <span class="channel-status-badge active">
+                        <span class="material-symbols-outlined">verified</span>
+                        <span>დადასტურებულია</span>
+                      </span>
+                    } @else {
+                      <button class="channel-connect-btn" (click)="openEmailVerificationDialog(); $event.stopPropagation();">
+                        დადასტურება
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- PRO Upgrade Banner if Basic -->
+                @if (!stateStore.isPro()) {
+                  <div class="pro-promo-box">
+                    <div class="pro-promo-content">
+                      <span class="material-symbols-outlined pro-spark">workspace_premium</span>
+                      <div class="pro-promo-text">
+                        <h4>გაააქტიურეთ PRO ტარიფი</h4>
+                        <p>ავტომატური შეტყობინებები და შეუზღუდავი AI შერჩევა.</p>
+                      </div>
+                    </div>
+                    <button class="btn-pro-upgrade" (click)="openUpgradeModal(); $event.stopPropagation();">
+                      <span>განახლება</span>
+                      <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN: Job Matches & Recommendations Stream -->
+      <main class="recommendations-main-column">
+        
+        <!-- Stream Section Header -->
+        <div class="stream-header-row">
+          <div class="stream-title-group">
+            <h2 class="stream-title">Top ვაკანსიები</h2>
+            <span class="stream-count-badge">{{ matchedJobs().length }}</span>
+          </div>
+
+          @if (matchedJobs().length > 0) {
+            <button class="btn-refresh-search" (click)="search()" [disabled]="isTyping()">
+              <span class="material-symbols-outlined" [class.spin-anim]="isTyping()">sync</span>
+              <span>განახლება</span>
+            </button>
           }
         </div>
-      } @else if (stateStore.profileLoaded()) {
-        <!-- Pro Benefits Section (Toggle-able) -->
-        <div class="pro-benefits-wrapper" [class.expanded]="showProBenefits()">
-          <!-- Shrinked Button for Basic Users -->
-          <button class="pro-benefits-btn" (click)="showProBenefits.set(true)">
-            <span class="material-symbols-outlined icon">notifications_active</span>
-            <span>ავტომატური შეტყობინებები</span>
-          </button>
 
-          <!-- Pro Benefits Card for Basic Users -->
-          <div class="pro-benefits-card">
-            <button class="close-card-btn" (click)="showProBenefits.set(false)" title="დახურვა">✕</button>
-            
-            <div class="pro-benefits-content-wrapper">
-              <!-- Left Column: Title, Subtitle, and Upgrade Button -->
-              <div class="pro-info-column">
-                <div class="pro-badge-header">
-                  <span class="material-symbols-outlined premium-spark">workspace_premium</span>
-                  <span class="pro-tag">PRO ტარიფის ბენეფიტები</span>
+        <!-- Dynamic Stream Content -->
+        <div class="stream-content-area">
+
+          <!-- 1. State: Loading Shimmer Skeletons -->
+          @if (isTyping() || stateStore.cvLoading()) {
+            <div class="loading-state-container animate-fade">
+              <div class="ai-scanning-banner">
+                <div class="scanning-pulse-circle"></div>
+                <div class="scanning-text-group">
+                  <h4>AI აანალიზებს ვაკანსიებს...</h4>
+                  <p>შესატყვისობების გამოთვლა თქვენი უნარების მიხედვით</p>
                 </div>
-                <h3 class="pro-card-title">ავტომატური შეტყობინებები</h3>
-                <p class="pro-card-description">
-                  დაუკავშირეთ Telegram და ელ-ფოსტა, რათა ყოველდღიურად მიიღოთ თქვენზე მორგებული ახალი ვაკანსიები.
-                </p>
-                <button class="pro-upgrade-btn" (click)="openUpgradeModal()">
-                  <span>ტარიფის განახლება</span>
-                  <span class="material-symbols-outlined">arrow_forward</span>
-                </button>
               </div>
-              
-              <!-- Right Column: Benefits Stack -->
-              <div class="pro-benefits-grid">
-                <div class="pro-benefit-item">
-                  <span class="material-symbols-outlined icon">mail</span>
-                  <div class="text-group">
-                    <h4>Email დაიჯესტი</h4>
-                    <p>ყოველდღიური ვაკანსიების დაიჯესტი თქვენს მეილზე</p>
+
+              <div class="skeleton-jobs-list skeleton-pulse">
+                @for (item of [1, 2, 3, 4]; track item) {
+                  <div class="job-card-skeleton">
+                    <div class="skeleton-block avatar-sk"></div>
+                    <div class="sk-body">
+                      <div class="skeleton-text" style="width: 60%; height: 18px; margin-bottom: 8px;"></div>
+                      <div class="skeleton-text short" style="width: 40%; height: 12px; margin-bottom: 12px;"></div>
+                      <div class="sk-pills">
+                        <div class="skeleton-block" style="width: 90px; height: 22px; border-radius: 6px;"></div>
+                        <div class="skeleton-block" style="width: 80px; height: 22px; border-radius: 6px;"></div>
+                      </div>
+                    </div>
+                    <div class="skeleton-block action-sk"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 2. State: Results Active with Job Cards -->
+          @else if (matchedJobs().length > 0) {
+            <div class="jobs-stream-list animate-fade">
+              @for (job of matchedJobs(); track job.id) {
+                <div class="luxury-job-card">
+                  
+                  <div class="job-primary-info">
+                    <!-- Dynamic Company Logo / Initials Avatar -->
+                    <div class="company-avatar-box" [style.background]="getCompanyGradient(job.company)">
+                      <span>{{ getCompanyInitials(job.company) }}</span>
+                    </div>
+
+                    <div class="job-meta-details">
+                      <div class="job-title-row">
+                        <h3 class="job-title">{{ job.vacancy }}</h3>
+                      </div>
+
+                      <p class="job-company-location">
+                        <span class="company-name">{{ job.company }}</span>
+                        <span class="sep-dot">•</span>
+                        <span class="location-name">
+                          <span class="material-symbols-outlined loc-ico">location_on</span>
+                          {{ job.location || 'თბილისი' }}
+                        </span>
+                      </p>
+
+                      <!-- Tags & Badges Row -->
+                      <div class="job-tags-row">
+                        <!-- Match Badge with Color Tiering -->
+                        <span class="match-score-badge" 
+                              [class.tier-strong]="job.match >= 75" 
+                              [class.tier-good]="job.match >= 50 && job.match < 75" 
+                              [class.tier-possible]="job.match < 50">
+                          <span class="material-symbols-outlined star-ico">auto_awesome</span>
+                          <span>{{ job.match }}% შესატყვისი</span>
+                        </span>
+
+                        @if (job.salaryRange) {
+                          <span class="salary-badge">
+                            <span class="material-symbols-outlined salary-ico">payments</span>
+                            <span>{{ job.salaryRange }}</span>
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Actions & Link -->
+                  <div class="job-action-column">
+                    <a [href]="job.link" target="_blank" class="btn-apply-job">
+                      <span>განაცხადი</span>
+                      <span class="material-symbols-outlined ext-ico">arrow_outward</span>
+                    </a>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+
+          <!-- 3. State: Pre-Search AI Launchpad (No Search Run Yet) -->
+          @else if (!showJobs()) {
+            <div class="pre-search-launchpad animate-fade">
+              <!-- Hero Action Card -->
+              <div class="launchpad-hero-card">
+                <div class="hero-card-content">
+                  <div class="hero-badge">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                    <span>AI შერჩევა</span>
+                  </div>
+                  <h3 class="hero-card-title">იპოვეთ საუკეთესო ვაკანსიები AI-ით</h3>
+                  <p class="hero-card-desc">
+                    AI აანალიზებს თქვენს მონაცემებს და გაწვდით საუკეთესო ვაკანსიებს.
+                  </p>
+
+                  <div class="hero-card-actions">
+                    <button class="btn-hero-launch" 
+                            (click)="search()" 
+                            [disabled]="!stateStore.userCv() || isTyping() || stateStore.cvLoading()"
+                            title="AI ძიება">
+                      <span class="material-symbols-outlined">auto_awesome</span>
+                      <span>{{ stateStore.userCv() ? 'AI ძიება' : 'ატვირთეთ CV' }}</span>
+                    </button>
+                    @if (!stateStore.userCv()) {
+                      <button class="btn-hero-upload" (click)="triggerFileInput()">
+                        <span class="material-symbols-outlined">upload_file</span>
+                        <span>CV-ს ატვირთვა</span>
+                      </button>
+                    }
                   </div>
                 </div>
-                <div class="pro-benefit-item">
-                  <span class="material-symbols-outlined icon">send</span>
-                  <div class="text-group">
-                    <h4>Telegram შეტყობინებები</h4>
-                    <p>მყისიერი შეტყობინებები თქვენს მობილურზე</p>
+              </div>
+
+              <!-- 3 Feature Highlight Mini-Cards (Desktop: directly below hero card) -->
+              <div class="launchpad-features-grid desktop-features-grid">
+                <div class="feature-mini-card">
+                  <div class="mini-icon-box blue">
+                    <span class="material-symbols-outlined">target</span>
                   </div>
+                  <h4>ზუსტი შესატყვისობა</h4>
+                  <p>თქვენს უნარებზე მორგებული ვაკანსიები.</p>
+                </div>
+
+                <div class="feature-mini-card">
+                  <div class="mini-icon-box green">
+                    <span class="material-symbols-outlined">bolt</span>
+                  </div>
+                  <h4>მყისიერი შეტყობინებები</h4>
+                  <p>ვაკანსიები Telegram-სა და Email-ზე.</p>
+                </div>
+
+                <div class="feature-mini-card">
+                  <div class="mini-icon-box orange">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                  </div>
+                  <h4>პირდაპირი განაცხადი</h4>
+                  <p>1-დაწკაპუნებით გადასვლა დამსაქმებელთან.</p>
                 </div>
               </div>
             </div>
+          }
+
+          <!-- 4. State: Empty Jobs (Search completed with 0 results) -->
+          @else {
+            <div class="empty-results-card animate-fade">
+              <div class="empty-icon-box">
+                <span class="material-symbols-outlined">search_off</span>
+              </div>
+              <h3 class="empty-title">ვაკანსიები ვერ მოიძებნა</h3>
+              <p class="empty-desc">
+                სცადეთ საძიებო პარამეტრების შეცვლა ან განაახლეთ CV.
+              </p>
+              <button class="btn-retry-search" (click)="search()">
+                <span class="material-symbols-outlined">refresh</span>
+                <span>ძიება</span>
+              </button>
+            </div>
+          }
+
+        </div>
+
+      </main>
+
+      <!-- 3 Feature Highlight Mini-Cards (Mobile: bottom of page below accordions) -->
+      @if (!showJobs() && matchedJobs().length === 0 && !isTyping() && !stateStore.cvLoading()) {
+        <div class="launchpad-features-grid mobile-features-grid animate-fade">
+          <div class="feature-mini-card">
+            <div class="mini-icon-box blue">
+              <span class="material-symbols-outlined">target</span>
+            </div>
+            <h4>ზუსტი შესატყვისობა</h4>
+            <p>თქვენს უნარებზე მორგებული ვაკანსიები.</p>
+          </div>
+
+          <div class="feature-mini-card">
+            <div class="mini-icon-box green">
+              <span class="material-symbols-outlined">bolt</span>
+            </div>
+            <h4>მყისიერი შეტყობინებები</h4>
+            <p>ვაკანსიები Telegram-სა და Email-ზე.</p>
+          </div>
+
+          <div class="feature-mini-card">
+            <div class="mini-icon-box orange">
+              <span class="material-symbols-outlined">rocket_launch</span>
+            </div>
+            <h4>პირდაპირი განაცხადი</h4>
+            <p>1-დაწკაპუნებით გადასვლა დამსაქმებელთან.</p>
           </div>
         </div>
       }
 
     </div>
-
-    <!-- Capabilities / Feature Highlight Cards -->
-    @if (!showJobs()) {
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon-wrapper blue">
-            <span class="material-symbols-outlined">psychology</span>
-          </div>
-          <h3>AI-ით შერჩევა</h3>
-          <p>აანალიზებს თქვენს უნარებსა და გამოცდილებას იდეალური შესატყვისების საპოვნელად.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrapper green">
-            <span class="material-symbols-outlined">bolt</span>
-          </div>
-          <h3>Telegram შეტყობინებები</h3>
-          <p>მყისიერად მიიღეთ ახალი შესაფერისი ვაკანსიები პირდაპირ თქვენს მობილურზე.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-wrapper orange">
-            <span class="material-symbols-outlined">upload_file</span>
-          </div>
-          <h3>მარტივი ატვირთვა</h3>
-          <p>ჩააგდეთ PDF ან Word ფაილი და სისტემა თავად ამოიკითხავს თქვენს მონაცემებს.</p>
-        </div>
-      </div>
-    }
-
-    <!-- Results Workspace (Layout splits when jobs exist) -->
-    @if (showJobs()) {
-      <div class="results-workspace fade-in">
-        
-        <!-- Left Side: Search Context / CV Summary -->
-        <div class="context-card-wrapper">
-          <div class="context-card">
-            <h3>ძიების თემატიკა</h3>
-            
-            <div class="context-details">
-              <div class="context-item">
-                <span class="label">პოზიცია</span>
-                <span class="value">{{ aiDetectedRole() || cvSummary()?.detectedRole || 'მითითებული არ არის' }}</span>
-              </div>
-              
-              <div class="context-item">
-                <span class="label">ადგილმდებარეობა</span>
-                <span class="value">{{ aiLocationPreference() || cvSummary()?.locationPreference || 'დისტანციური / ჰიბრიდული' }}</span>
-              </div>
-
-              @if ((aiPrimarySkills().length > 0 ? aiPrimarySkills() : cvSummary()?.primarySkills); as skills) {
-                @if (skills && skills.length > 0) {
-                  <div class="context-item">
-                    <span class="label">ძირითადი უნარები</span>
-                    <div class="skills-wrap">
-                      @for (skill of skills.slice(0, 4); track skill) {
-                        <span class="skill-pill">{{ skill }}</span>
-                      }
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-
-            <div class="context-summary">
-              <p>
-                @if (aiSummary()) {
-                  {{ aiSummary() }}
-                } @else if (aiDetectedRole() || cvSummary()?.detectedRole; as role) {
-                  გავაანალიზე მიმდინარე ბაზარი {{ role }}-ის პოზიციაზე. აქ არის საუკეთესო შესატყვისები, რომლებიც პრიორიტეტს ანიჭებს მაღალი სირთულის სისტემებსა და მომხმარებლის ნდობას.
-                } @else {
-                  გავაანალიზე მიმდინარე ბაზარი. აქ არის საუკეთესო შესატყვისები თქვენი საკვანძო სიტყვებისა და პროფილის პრეფერენციების მიხედვით.
-                }
-              </p>
-            </div>
-          </div>
-
-          <!-- Separate Queries Management Card -->
-          <div class="queries-card">
-            <h3>საძიებელი პარამეტრები</h3>
-            <div class="queries-management">
-              <div class="context-chips-list">
-                @for (keyword of stateStore.searchQuery(); track $index) {
-                  <span class="context-chip">
-                    {{ keyword }}
-                    <button class="remove-chip-btn" (click)="removeKeyword($index)">✕</button>
-                  </span>
-                }
-              </div>
-              <div class="add-query-box">
-                <input type="text" 
-                       #newQueryInput 
-                       (keydown.enter)="$event.preventDefault(); addKeyword(newQueryInput)" 
-                       placeholder="დაამატეთ საძიებო სიტყვა..." 
-                       class="add-query-input" />
-                <button class="add-query-btn" (click)="addKeyword(newQueryInput)">+</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Side: Job Listings -->
-        <div class="jobs-results-wrapper">
-          <h3 class="results-title">Top ვაკანსიები ({{ matchedJobs().length }})</h3>
-          
-          <div class="jobs-list">
-            @for (job of matchedJobs(); track job.id) {
-              <div class="job-card">
-                <div class="job-card-main">
-                  <!-- Match Icon & Badge -->
-                  <div class="job-icon-container">
-                    <span class="material-symbols-outlined">account_balance</span>
-                  </div>
-                  
-                  <div class="job-info-details">
-                    <h4 class="job-title">{{ job.vacancy }}</h4>
-                    <p class="job-subtitle">{{ job.company }} <span class="dot-sep">•</span> {{ job.location }}</p>
-                    
-                    <div class="job-tags">
-                      <span class="job-tag match-pct" 
-                            [class.tier-strong]="job.match >= 75" 
-                            [class.tier-good]="job.match >= 50 && job.match < 75" 
-                            [class.tier-possible]="job.match < 50">
-                        {{ job.match }}% შესატყვისი
-                      </span>
-                      @if (job.salaryRange) {
-                        <span class="job-tag salary-tag">{{ job.salaryRange }}</span>
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Job Actions -->
-                <div class="job-actions">
-                  <a [href]="job.link" target="_blank" class="apply-btn">სწრაფად განაცხადე</a>
-                </div>
-              </div>
-            } @empty {
-              <div class="empty-jobs">
-                <span class="material-symbols-outlined">search_off</span>
-                <p>შესაფერისი ვაკანსიები არ მოიძებნა</p>
-              </div>
-            }
-          </div>
-        </div>
-
-      </div>
-    }
 
   </div>
 </div>

@@ -27,7 +27,6 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { environment } from '../../../../environments/environment';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
-import { Onboarding } from '../onboarding/onboarding';
 
 export interface AttachedFile {
   id: string;
@@ -78,9 +77,6 @@ export interface ChatMessage {
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
-  host: {
-    '[class.has-results]': 'showJobs()',
-  },
 })
 export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
@@ -88,9 +84,147 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
 
   stateStore = inject(StateStore);
-  private animationFrameId: number | null = null;
+  dashboardStore = inject(DashboardStore);
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  aiService = inject(Ai);
+  authService = inject(AuthService);
+  jobService = inject(JobsService);
+  private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
+
+  private animationFrameId: number | null = null;
   searchState: 'idle' | 'searching' | 'burst' = 'idle';
+
+  inputText = signal<string>('');
+  attachedFiles = signal<AttachedFile[]>([]);
+  isTyping = signal<boolean>(false);
+  isDragOver = signal<boolean>(false);
+  telegramLink = signal<string>('');
+  showProBenefits = signal<boolean>(true);
+  isBannerDismissed = signal<boolean>(false);
+  isKeywordsLoading = signal<boolean>(false);
+  isAddingKeyword = signal<boolean>(false);
+  deletingKeywordIndex = signal<number | null>(null);
+
+  // Accordion state management: search queries (params) open by default on desktop & mobile, others shrinked
+  openedAccordions = signal<{ [key: string]: boolean }>({
+    profile: false,
+    cvAnalysis: false,
+    params: true,
+    alerts: false,
+  });
+
+  toggleAccordion(key: 'profile' | 'cvAnalysis' | 'params' | 'alerts') {
+    this.openedAccordions.update(curr => ({
+      ...curr,
+      [key]: !curr[key],
+    }));
+  }
+
+  isAccordionOpen(key: 'profile' | 'cvAnalysis' | 'params' | 'alerts'): boolean {
+    return !!this.openedAccordions()[key];
+  }
+
+  // Quick suggestions for search queries
+  suggestedRoles = [
+    'Software Engineer',
+    'Frontend Developer',
+    'Backend Developer',
+    'Full Stack',
+    'Product Manager',
+    'UI/UX Designer',
+    'Data Analyst',
+    'DevOps',
+  ];
+
+  // Computed Onboarding State
+  isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
+  onboardingPercentage = computed(() => this.stateStore.onboardingPercentage());
+  firstIncompleteStep = computed(() => this.stateStore.firstIncompleteStep());
+  hasCvStep = computed(() => this.stateStore.hasCvStep());
+  hasInfoStep = computed(() => this.stateStore.hasInfoStep());
+  hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
+  hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
+  isOnboardingLoading = computed(() => !this.stateStore.profileLoaded() || !this.stateStore.cvLoaded() || this.stateStore.cvLoading());
+
+  nextPendingStepHint = computed(() => {
+    if (!this.hasSubscriptionStep()) return 'შემდეგი ნაბიჯი: სააბონენტო პაკეტის შერჩევა';
+    if (!this.hasCvStep()) return 'შემდეგი ნაბიჯი: CV-ს ატვირთვა';
+    if (!this.hasInfoStep()) return 'შემდეგი ნაბიჯი: პირადი მონაცემები';
+    if (!this.hasNotificationStep()) return 'შემდეგი ნაბიჯი: შეტყობინებების გააქტიურება';
+    return 'პროფილი სრულად შევსებულია!';
+  });
+
+  // Jobs and AI Context
+  showJobs = computed(() => this.stateStore.chatShowJobs());
+  matchedJobs = computed(() => {
+    const jobs = this.stateStore.chatMatchedJobs();
+    return jobs.map(j => ({
+      ...j,
+      salaryRange: extractSalary(j),
+    }));
+  });
+
+  aiSummary = computed(() => this.stateStore.chatAiSummary());
+  aiDetectedRole = computed(() => this.stateStore.chatAiDetectedRole() || this.stateStore.userCv()?.summary?.detectedRole || '');
+  aiLocationPreference = computed(() => this.stateStore.chatAiLocationPreference() || this.stateStore.userCv()?.summary?.locationPreference || '');
+  aiPrimarySkills = computed(() => {
+    const chatSkills = this.stateStore.chatAiPrimarySkills();
+    if (chatSkills && chatSkills.length > 0) return chatSkills;
+    return this.stateStore.userCv()?.summary?.primarySkills || [];
+  });
+
+  cvSummary = computed(() => this.stateStore.userCv()?.summary);
+
+  maxFileSizeMB = 10;
+  allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+
+  constructor() {
+    effect(() => {
+      const cv = this.stateStore.userCv();
+      if (!cv) {
+        untracked(() => {
+          this.attachedFiles.update(files => files.filter(f => f.id !== '__cv__'));
+        });
+        return;
+      }
+
+      const hasRealFile = untracked(() => {
+        const current = this.attachedFiles().find(f => f.id === '__cv__');
+        return current && current.file.size > 0;
+      });
+
+      if (hasRealFile) return;
+
+      const fileName = cv.originalName ?? 'CV.pdf';
+      const mimeType = cv.mimeType ?? 'application/pdf';
+      const placeholder = new File([], fileName, { type: mimeType });
+      const cvAttachment: AttachedFile = {
+        id: '__cv__',
+        name: fileName,
+        size: cv.size ?? 0,
+        type: mimeType,
+        url: '',
+        file: placeholder,
+      };
+
+      untracked(() => {
+        this.attachedFiles.update(files => [
+          cvAttachment,
+          ...files.filter(f => f.id !== '__cv__'),
+        ]);
+      });
+    });
+  }
+
+  ngOnInit() {
+    this.stateStore.ensureDataLoaded();
+  }
 
   ngAfterViewInit() {
     this.ngZone.runOutsideAngular(() => this.initParticles());
@@ -103,8 +237,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initParticles() {
+    if (!this.particleCanvasRef) return;
     const canvas = this.particleCanvasRef.nativeElement;
-    const ctx = canvas.getContext('2d')!;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -113,7 +250,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     resize();
     window.addEventListener('resize', resize);
 
-    const COUNT = 80;
+    const COUNT = 100;
     interface Particle {
       x: number; y: number;
       r: number; speed: number;
@@ -123,24 +260,34 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       vy?: number;
     }
 
-    const colors = ['rgba(11,96,150,', 'rgba(151,174,213,', 'rgba(22,47,80,'];
+    const colors = [
+      'rgba(11,96,150,',
+      'rgba(91,155,213,',
+      'rgba(56,189,248,',
+      'rgba(99,102,241,',
+      'rgba(22,47,80,',
+    ];
 
-    const make = (): Particle => ({
-      x: Math.random() * canvas.width,
-      y: canvas.height + Math.random() * 60,
-      r: Math.random() * 2.5 + 1.0,
-      speed: Math.random() * 1.1 + 0.4,
-      opacity: Math.random() * 0.5 + 0.15,
-      drift: (Math.random() - 0.5) * 1.0,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      vx: 0,
-      vy: 0
-    });
+    const make = (initial: boolean = false): Particle => {
+      const w = canvas.width || window.innerWidth;
+      const h = canvas.height || window.innerHeight;
+      return {
+        x: Math.random() * w,
+        y: initial ? Math.random() * h : h + Math.random() * 30,
+        r: Math.random() * 2.6 + 1.2,
+        speed: Math.random() * 0.9 + 0.4,
+        opacity: Math.random() * 0.5 + 0.25,
+        drift: (Math.random() - 0.5) * 0.8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: 0,
+        vy: 0,
+      };
+    };
 
-    const particles: Particle[] = Array.from({ length: COUNT }, make);
+    const particles: Particle[] = Array.from({ length: COUNT }, () => make(true));
 
-    const container = this.searchContainerRef?.nativeElement;
-    const updateContainerBounds = () => {
+    const getContainerBounds = () => {
+      const container = this.searchContainerRef?.nativeElement;
       if (!container) return null;
       const canvasRect = canvas.getBoundingClientRect();
       const rect = container.getBoundingClientRect();
@@ -156,10 +303,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       };
     };
 
-    let bounds = updateContainerBounds();
+    let bounds = getContainerBounds();
     window.addEventListener('resize', () => {
       resize();
-      bounds = updateContainerBounds();
+      bounds = getContainerBounds();
     });
 
     let lastState: 'idle' | 'searching' | 'burst' = 'idle';
@@ -167,17 +314,17 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     const draw = () => {
       if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
         resize();
-        bounds = updateContainerBounds();
+        bounds = getContainerBounds();
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const state = this.searchState;
 
       if (state === 'searching') {
-        bounds = updateContainerBounds();
+        bounds = getContainerBounds();
       }
 
       if (state === 'burst' && lastState !== 'burst') {
-        bounds = updateContainerBounds();
+        bounds = getContainerBounds();
         if (bounds) {
           for (const p of particles) {
             const angle = Math.atan2(p.y - bounds.centerY, p.x - bounds.centerX);
@@ -231,105 +378,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     draw();
   }
 
-  dashboardStore = inject(DashboardStore);
-  route = inject(ActivatedRoute);
-  router = inject(Router);
-  aiService = inject(Ai);
-  authService = inject(AuthService);
-  jobService = inject(JobsService);
-  private dialog = inject(MatDialog);
-
-  isOnboardingCompleted = computed(() => this.stateStore.isOnboardingCompleted());
-  onboardingPercentage = computed(() => this.stateStore.onboardingPercentage());
-  firstIncompleteStep = computed(() => this.stateStore.firstIncompleteStep());
-  hasCvStep = computed(() => this.stateStore.hasCvStep());
-  hasInfoStep = computed(() => this.stateStore.hasInfoStep());
-  hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
-  hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
-  isOnboardingLoading = computed(() => !this.stateStore.profileLoaded() || !this.stateStore.cvLoaded() || this.stateStore.cvLoading());
-  isBannerDismissed = signal<boolean>(false);
-
-  nextPendingStepHint = computed(() => {
-    if (!this.hasSubscriptionStep()) return 'შემდეგი ნაბიჯი: სააბონენტო პაკეტის შერჩევა';
-    if (!this.hasCvStep()) return 'შემდეგი ნაბიჯი: CV-ს ატვირთვა';
-    if (!this.hasInfoStep()) return 'შემდეგი ნაბიჯი: პირადი მონაცემები';
-    if (!this.hasNotificationStep()) return 'შემდეგი ნაბიჯი: შეტყობინებების გააქტიურება';
-    return 'პროფილი მზად არის!';
-  });
-
-  inputText = signal<string>('');
-  attachedFiles = signal<AttachedFile[]>([]);
-  isTyping = signal<boolean>(false);
-  isDragOver = signal<boolean>(false);
-  showJobs = computed(() => this.stateStore.chatShowJobs());
-  telegramLink = signal<string>('');
-  showProBenefits = signal<boolean>(true);
-
-  matchedJobs = computed(() => {
-    const jobs = this.stateStore.chatMatchedJobs();
-    return jobs.map(j => ({
-      ...j,
-      salaryRange: extractSalary(j)
-    }));
-  });
-  aiSummary = computed(() => this.stateStore.chatAiSummary());
-  aiDetectedRole = computed(() => this.stateStore.chatAiDetectedRole());
-  aiLocationPreference = computed(() => this.stateStore.chatAiLocationPreference());
-  aiPrimarySkills = computed(() => this.stateStore.chatAiPrimarySkills());
-
-  cvSummary = computed(() => this.stateStore.userCv()?.summary);
-
-  maxFileSizeMB = 10;
-  allowedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  ];
-
-  constructor() {
-    effect(() => {
-      const cv = this.stateStore.userCv();
-      if (!cv) {
-        untracked(() => {
-          this.attachedFiles.update(files => files.filter(f => f.id !== '__cv__'));
-        });
-        return;
-      }
-
-      const hasRealFile = untracked(() => {
-        const current = this.attachedFiles().find(f => f.id === '__cv__');
-        return current && current.file.size > 0;
-      });
-
-      if (hasRealFile) return;
-
-      const fileName = cv.originalName ?? 'CV.pdf';
-      const mimeType = cv.mimeType ?? 'application/pdf';
-      const placeholder = new File([], fileName, { type: mimeType });
-      const cvAttachment: AttachedFile = {
-        id: '__cv__',
-        name: fileName,
-        size: cv.size ?? 0,
-        type: mimeType,
-        url: '',
-        file: placeholder,
-      };
-
-      untracked(() => {
-        this.attachedFiles.update(files => [
-          cvAttachment,
-          ...files.filter(f => f.id !== '__cv__'),
-        ]);
-      });
-    });
-  }
-
-  ngOnInit() {
-    this.stateStore.ensureDataLoaded();
-  }
-
   triggerFileInput() {
-    this.fileInput.nativeElement.click();
+    this.fileInput?.nativeElement?.click();
   }
 
   onFileSelected(event: Event) {
@@ -369,11 +419,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       size: file.size,
       type: file.type,
       url: URL.createObjectURL(file),
-      file: file
+      file: file,
     };
     this.attachedFiles.update(current => [
       newFile,
-      ...current.filter(f => f.id !== id)
+      ...current.filter(f => f.id !== id),
     ]);
 
     this.stateStore.uploadCv(file);
@@ -384,20 +434,37 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.stateStore.deleteCv();
   }
 
-  getFileIcon(type: string): string {
-    if (type === 'application/pdf') return '📄';
-    if (type.includes('word')) return '📝';
-    return '📎';
-  }
-
   formatFileSize(bytes: number): string {
+    if (!bytes) return '0 KB';
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
-  setPrompt(prompt: string) {
-    this.inputText.set(prompt);
+  getCompanyInitials(name: string): string {
+    if (!name) return 'CO';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  }
+
+  getCompanyGradient(name: string): string {
+    const gradients = [
+      'linear-gradient(135deg, #0b6096 0%, #1e40af 100%)',
+      'linear-gradient(135deg, #059669 0%, #047857 100%)',
+      'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+      'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+      'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
+      'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+    ];
+    let hash = 0;
+    for (let i = 0; i < (name || '').length; i++) {
+      hash = (name.charCodeAt(i) + ((hash << 5) - hash)) | 0;
+    }
+    const index = Math.abs(hash) % gradients.length;
+    return gradients[index];
   }
 
   async search() {
@@ -411,6 +478,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       if (!existing.includes(query)) {
         this.stateStore.updateSearchQueries([...existing, query]);
       }
+      this.inputText.set('');
     }
 
     this.searchState = 'searching';
@@ -441,7 +509,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const elapsedTime = Date.now() - startTime;
-      const minDuration = 1000;
+      const minDuration = 800;
       const delay = Math.max(0, minDuration - elapsedTime);
       if (delay > 0) {
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -514,7 +582,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       width: '440px',
       disableClose: true,
       autoFocus: false,
-      data: { email }
+      data: { email },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -535,19 +603,68 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  addKeyword(input: HTMLInputElement) {
+  async addKeyword(input: HTMLInputElement) {
     const value = input.value?.trim();
     if (!value) return;
-    const existing = this.stateStore.searchQuery() ?? [];
-    if (!existing.includes(value)) {
-      this.stateStore.updateSearchQueries([...existing, value]);
-    }
     input.value = '';
+    const existing = this.stateStore.searchQuery() ?? [];
+    if (existing.includes(value)) return;
+
+    const nextQueries = [...existing, value];
+    // 1. Immediately update UI
+    this.stateStore.setSearchQueries(nextQueries);
+    // 2. Trigger loading
+    this.isKeywordsLoading.set(true);
+    this.isAddingKeyword.set(true);
+
+    try {
+      await this.stateStore.updateSearchQueries(nextQueries, false);
+    } catch (err) {
+      console.error('Failed to save search queries:', err);
+    } finally {
+      this.isKeywordsLoading.set(false);
+      this.isAddingKeyword.set(false);
+    }
   }
 
-  removeKeyword(index: number) {
+  async addSuggestedKeyword(keyword: string) {
     const existing = this.stateStore.searchQuery() ?? [];
-    this.stateStore.updateSearchQueries(existing.filter((_: any, i: number) => i !== index));
+    if (existing.includes(keyword)) return;
+
+    const nextQueries = [...existing, keyword];
+    // 1. Immediately update UI
+    this.stateStore.setSearchQueries(nextQueries);
+    // 2. Trigger loading
+    this.isKeywordsLoading.set(true);
+    this.isAddingKeyword.set(true);
+
+    try {
+      await this.stateStore.updateSearchQueries(nextQueries, false);
+    } catch (err) {
+      console.error('Failed to save suggested query:', err);
+    } finally {
+      this.isKeywordsLoading.set(false);
+      this.isAddingKeyword.set(false);
+    }
+  }
+
+  async removeKeyword(index: number) {
+    const existing = this.stateStore.searchQuery() ?? [];
+    const nextQueries = existing.filter((_: any, i: number) => i !== index);
+    // 1. Immediately update UI
+    this.stateStore.setSearchQueries(nextQueries);
+    // 2. Trigger loading
+    this.isKeywordsLoading.set(true);
+    this.deletingKeywordIndex.set(index);
+
+    try {
+      await this.stateStore.updateSearchQueries(nextQueries, false);
+    } catch (err) {
+      console.error('Failed to delete query:', err);
+    } finally {
+      this.isKeywordsLoading.set(false);
+      this.deletingKeywordIndex.set(null);
+    }
   }
 
   handleOnboardingClick(targetStep?: number) {

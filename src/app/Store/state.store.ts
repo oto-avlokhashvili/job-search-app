@@ -17,7 +17,11 @@ type State = {
     matchedJobsCount: number | 0;
     sentJobsCount: number | 0;
     matchedJobsDashboard: AiMatchedJobsResponse;
+    matchedJobsLoading: boolean;
+    matchedJobsLoaded: boolean;
     sentJobs: SentJobsResponse;
+    sentJobsLoading: boolean;
+    sentJobsLoaded: boolean;
     searchQuery: string[];
 
     userCv: any;
@@ -48,7 +52,11 @@ const initialState: State = {
     searchQuery: [],
 
     sentJobs: { sentJobs: [], total: 0, page: 1, lastPage: 1 },
+    sentJobsLoading: false,
+    sentJobsLoaded: false,
     matchedJobsDashboard: { data: [], total: 0, page: 1, lastPage: 1 },
+    matchedJobsLoading: false,
+    matchedJobsLoaded: false,
 
     userCv: null,
     cvLoading: false,
@@ -379,13 +387,16 @@ export const StateStore = signalStore(
         },
 
         loadAIMatchedJobs(page: number = 1, limit: number = 5, force: boolean = false) {
-            if (!force && store.matchedJobsDashboard()?.data?.length > 0) {
+            if (!force && (store.matchedJobsLoading() || (store.matchedJobsLoaded() && store.matchedJobsDashboard()?.data?.length > 0))) {
                 return;
             }
+            patchState(store, { matchedJobsLoading: true });
             aiService.getAiMatchedJobs(page, limit).subscribe({
                 next: (res: AiMatchedJobsResponse) => {
                     patchState(store, {
                         matchedJobsDashboard: res,
+                        matchedJobsLoaded: true,
+                        matchedJobsLoading: false
                     });
 
                     animateValue(0, res.total, 400, v =>
@@ -393,25 +404,30 @@ export const StateStore = signalStore(
                     );
                 },
                 error: (err: any) => {
+                    patchState(store, { matchedJobsLoading: false });
                     console.error('Error loading AI matched jobs:', err);
                 }
             });
         },
 
         loadSentJobs(page: number = 1, take: number = 10, force: boolean = false) {
-            if (!force && store.sentJobs()?.sentJobs?.length > 0) {
+            if (!force && (store.sentJobsLoading() || (store.sentJobsLoaded() && store.sentJobs()?.page === page))) {
                 return;
             }
+            patchState(store, { sentJobsLoading: true });
             jobsService.getUserSentJobs(page, take).subscribe({
                 next: (res: any) => {
                     patchState(store, {
-                        sentJobs: res
+                        sentJobs: res,
+                        sentJobsLoaded: true,
+                        sentJobsLoading: false
                     });
                     animateValue(0, res.total, 400, v =>
                         patchState(store, { sentJobsCount: v })
                     );
                 },
                 error: (err: any) => {
+                    patchState(store, { sentJobsLoading: false });
                     console.error('Error loading sent jobs:', err);
                 }
             });

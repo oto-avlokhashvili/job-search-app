@@ -39,7 +39,7 @@ export class SentJobs implements OnInit {
     this.stateStore.ensureDataLoaded();
     const currentPage = this.stateStore.sentJobs()?.page || 1;
     this.page.set(currentPage);
-    this.stateStore.loadSentJobs(this.page(), this.limit(), true);
+    this.stateStore.loadSentJobs(this.page(), this.limit(), false);
   }
 
   toggleReceiveMessages(event: any) {
@@ -53,7 +53,7 @@ export class SentJobs implements OnInit {
       return;
     }
     this.page.set(page);
-    this.stateStore.loadSentJobs(page, this.limit(), true);
+    this.stateStore.loadSentJobs(page, this.limit(), false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
