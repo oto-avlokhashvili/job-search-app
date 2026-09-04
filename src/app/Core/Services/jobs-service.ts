@@ -72,6 +72,6 @@ export class JobsService {
     if (search && search.trim().length > 0) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<{ location: string; count: number }[]>(`${this.url}/job/cities`, { params });
+    return this.http.get<{ location: string; count: number }[]>(`${this.url}/job/cities`, { params, context: new HttpContext().set(skipLoading, true) }, );
   }
 }
