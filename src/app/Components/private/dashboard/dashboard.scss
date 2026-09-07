@@ -767,6 +767,161 @@ $shadow: var(--shadow);
     }
   }
 
+  /* Personal Data Notice Banner */
+  .personal-data-notice-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(11, 96, 150, 0.06);
+    border: 1px solid rgba(11, 96, 150, 0.18);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 0.75rem;
+    box-sizing: border-box;
+
+    [data-theme='dark'] & {
+      background: rgba(11, 96, 150, 0.12);
+      border-color: rgba(76, 215, 246, 0.2);
+    }
+
+    .notice-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(11, 96, 150, 0.12);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      .material-symbols-outlined {
+        font-size: 18px;
+      }
+    }
+
+    .notice-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .notice-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--on-surface);
+      }
+
+      .notice-desc {
+        font-size: 0.78rem;
+        line-height: 1.45;
+        color: var(--on-surface-variant);
+        margin: 0;
+      }
+    }
+  }
+
+  /* CV Consent Checkbox Container */
+  .cv-consent-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 0.85rem;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--surface-container-low);
+    border: 1.5px solid var(--border-color);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+
+    &.has-consent {
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    &.error-shake {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.06);
+      animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    .cv-consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      margin: 0;
+      text-align: left;
+
+      .cv-consent-checkbox {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .custom-checkbox-ui {
+          background: var(--primary);
+          border-color: var(--primary);
+
+          .check-mark {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      }
+
+      .custom-checkbox-ui {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        border: 2px solid var(--border-color);
+        background: var(--surface-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+        transition: all 0.2s ease;
+
+        .check-mark {
+          font-size: 14px;
+          color: #ffffff;
+          opacity: 0;
+          transform: scale(0.6);
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+      }
+
+      .consent-text {
+        font-size: 0.78rem;
+        line-height: 1.4;
+        color: var(--on-surface-variant);
+        font-weight: 500;
+
+        .required-star {
+          color: #ef4444;
+          font-weight: 700;
+          margin-left: 2px;
+        }
+      }
+    }
+
+    .consent-error-msg {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #ef4444;
+      padding-left: 28px;
+
+      .material-symbols-outlined {
+        font-size: 14px;
+      }
+    }
+  }
+
   .cv-upload-dropzone {
     display: flex;
     align-items: center;
@@ -780,10 +935,26 @@ $shadow: var(--shadow);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
     transition: all 0.25s ease;
 
-    &:hover {
+    &:hover:not(.is-locked) {
       border-color: var(--primary);
       background: var(--surface-container-low);
       transform: translateY(-1px);
+    }
+
+    &.is-locked {
+      opacity: 0.85;
+      border-color: rgba(148, 163, 184, 0.35);
+      background: var(--surface-container-lowest);
+      cursor: not-allowed;
+
+      &:hover {
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+
+      .upload-icon-circle.locked {
+        background: rgba(100, 116, 139, 0.12);
+        color: #64748b;
+      }
     }
 
     .upload-icon-circle {
@@ -841,9 +1012,16 @@ $shadow: var(--shadow);
         font-size: 1.1rem;
       }
 
-      &:hover {
+      &:hover:not(.disabled-btn) {
         background: var(--primary);
         color: #ffffff;
+      }
+
+      &.disabled-btn {
+        opacity: 0.7;
+        background: var(--surface-container-high);
+        color: var(--on-surface-variant);
+        cursor: not-allowed;
       }
     }
 

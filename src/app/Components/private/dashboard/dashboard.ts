@@ -27,6 +27,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { environment } from '../../../../environments/environment';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 export interface AttachedFile {
   id: string;
@@ -90,6 +91,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   aiService = inject(Ai);
   authService = inject(AuthService);
   jobService = inject(JobsService);
+  private alertify = inject(AlertifyService);
   private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
 
@@ -98,8 +100,18 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   inputText = signal<string>('');
   attachedFiles = signal<AttachedFile[]>([]);
+  cvConsent = signal<boolean>(false);
+  cvConsentError = signal<boolean>(false);
   isTyping = signal<boolean>(false);
   isDragOver = signal<boolean>(false);
+
+  toggleCvConsent(event: any) {
+    const checked = !!event.target?.checked;
+    this.cvConsent.set(checked);
+    if (checked) {
+      this.cvConsentError.set(false);
+    }
+  }
   telegramLink = signal<string>('');
   showProBenefits = signal<boolean>(true);
   isBannerDismissed = signal<boolean>(false);
@@ -379,6 +391,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   }
 
   triggerFileInput() {
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
     this.fileInput?.nativeElement?.click();
   }
 
@@ -402,6 +419,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.isDragOver.set(false);
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
     const files = event.dataTransfer?.files;
     if (files) this.processFiles(Array.from(files));
   }
@@ -409,8 +431,21 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   processFiles(files: File[]) {
     if (!files.length) return;
     const file = files[0];
-    if (!this.allowedTypes.includes(file.type)) return;
-    if (file.size > this.maxFileSizeMB * 1024 * 1024) return;
+    if (!this.allowedTypes.includes(file.type)) {
+      this.alertify.error('გთხოვთ ატვირთოთ PDF ან Word (DOC/DOCX) ფორმატი');
+      return;
+    }
+    if (file.size > this.maxFileSizeMB * 1024 * 1024) {
+      this.alertify.error('ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს');
+      return;
+    }
+
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
+    this.cvConsentError.set(false);
 
     const id = '__cv__';
     const newFile: AttachedFile = {
@@ -426,7 +461,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       ...current.filter(f => f.id !== id),
     ]);
 
-    this.stateStore.uploadCv(file);
+    this.stateStore.uploadCv(file, this.cvConsent());
   }
 
   removeAttachment(id: string) {

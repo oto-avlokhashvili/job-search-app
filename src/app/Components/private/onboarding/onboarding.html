@@ -410,6 +410,46 @@
               </p>
             </div>
 
+            <!-- Personal Data Processing Notice Banner -->
+            <div class="personal-data-notice-banner">
+              <div class="notice-icon-box">
+                <span class="material-symbols-outlined">shield_person</span>
+              </div>
+              <div class="notice-content">
+                <span class="notice-title">პერსონალური მონაცემების დამუშავება</span>
+                <p class="notice-desc">
+                  CV-ს ატვირთვა მოითხოვს თქვენს თანხმობას პერსონალური მონაცემების შენახვასა და დამუშავებაზე, რათა სისტემამ შეძლოს შესაბამისი ვაკანსიების შერჩევა.
+                </p>
+              </div>
+            </div>
+
+            @if (!userCv()) {
+              <!-- CV Consent Checkbox -->
+              <div class="cv-consent-container" [class.error-shake]="cvConsentError()" [class.has-consent]="cvConsent()">
+                <label class="cv-consent-label" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    class="cv-consent-checkbox"
+                    [checked]="cvConsent()"
+                    (change)="toggleCvConsent($event)"
+                  />
+                  <span class="custom-checkbox-ui">
+                    <span class="material-symbols-outlined check-mark">check</span>
+                  </span>
+                  <span class="consent-text">
+                    ვადასტურებ თანხმობას ჩემი რეზიუმეს (CV) და მასში არსებული პერსონალური მონაცემების შენახვასა და დამუშავებაზე.
+                    <span class="required-star">*</span>
+                  </span>
+                </label>
+                @if (cvConsentError()) {
+                  <span class="consent-error-msg animate-fade">
+                    <span class="material-symbols-outlined">warning</span>
+                    CV-ს ასატვირთად აუცილებელია თანხმობის მონიშვნა
+                  </span>
+                }
+              </div>
+            }
+
             @if (cvLoading()) {
               <!-- Loading State -->
               <div class="cv-loading-card animate-fade">
@@ -496,27 +536,33 @@
               <div
                 class="cv-dropzone-container"
                 [class.drag-over]="isDragOver()"
+                [class.is-locked]="!cvConsent()"
                 (dragover)="onDragOver($event)"
                 (dragleave)="onDragLeave()"
                 (drop)="onDrop($event)"
-                (click)="cvFileInput.click()"
+                (click)="onDropzoneClick(cvFileInput)"
               >
                 <div class="dropzone-glow"></div>
-                <input #cvFileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" style="display: none;">
+                <input #cvFileInput type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" [disabled]="!cvConsent()" style="display: none;">
                 
-                <div class="dropzone-icon-hero">
-                  <span class="material-symbols-outlined hero-cloud-icon">cloud_upload</span>
+                <div class="dropzone-icon-hero" [class.locked]="!cvConsent()">
+                  <span class="material-symbols-outlined hero-cloud-icon">{{ cvConsent() ? 'cloud_upload' : 'lock' }}</span>
                 </div>
 
                 <div class="dropzone-text-group">
-                  <h3 class="dropzone-main-title">ჩააგდეთ რეზიუმე (CV) აქ</h3>
-                  <p class="dropzone-sub-title">ან დააჭირეთ ასატვირთად თქვენი მოწყობილობიდან</p>
+                  <h3 class="dropzone-main-title">{{ cvConsent() ? 'ჩააგდეთ რეზიუმე (CV) აქ' : 'CV-ს ასატვირთად მონიშნეთ თანხმობა' }}</h3>
+                  <p class="dropzone-sub-title">{{ cvConsent() ? 'ან დააჭირეთ ასატვირთად თქვენი მოწყობილობიდან' : 'გთხოვთ ჯერ დაადასტუროთ ზემოთ მოცემული თანხმობა' }}</p>
                 </div>
 
                 <div class="dropzone-button-wrap">
-                  <button type="button" class="btn-choose-file" (click)="$event.stopPropagation(); cvFileInput.click()">
-                    <span class="material-symbols-outlined">upload_file</span>
-                    <span>ფაილის არჩევა</span>
+                  <button
+                    type="button"
+                    class="btn-choose-file"
+                    [class.disabled-btn]="!cvConsent()"
+                    (click)="$event.stopPropagation(); onDropzoneClick(cvFileInput)"
+                  >
+                    <span class="material-symbols-outlined">{{ cvConsent() ? 'upload_file' : 'lock' }}</span>
+                    <span>{{ cvConsent() ? 'ფაილის არჩევა' : 'თანხმობა სავალდებულოა' }}</span>
                   </button>
                 </div>
 

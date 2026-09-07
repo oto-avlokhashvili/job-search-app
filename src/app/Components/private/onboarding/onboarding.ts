@@ -274,6 +274,17 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
 
   userCv = computed(() => this.stateStore.userCv());
 
+  cvConsent = signal<boolean>(false);
+  cvConsentError = signal<boolean>(false);
+
+  toggleCvConsent(event: any) {
+    const checked = !!event.target?.checked;
+    this.cvConsent.set(checked);
+    if (checked) {
+      this.cvConsentError.set(false);
+    }
+  }
+
   isUploadingCv = signal<boolean>(false);
   cvLoading = computed(() => this.stateStore.cvLoading() || this.isUploadingCv());
   profile = computed(() => this.stateStore.profile());
@@ -301,7 +312,7 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       return !!this.selectedPlan();
     }
     if (step === 2) {
-      return !this.cvLoading() && !!this.userCv();
+      return !this.cvLoading();
     }
     if (step === 3) {
       return !this.keywordLoading();
@@ -580,7 +591,12 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
         return false;
       }
       if (!this.userCv()) {
-        this.alertify.error('გთხოვთ ატვირთოთ CV გასაგრძელებლად');
+        if (!this.cvConsent()) {
+          this.cvConsentError.set(true);
+          this.alertify.warning('გთხოვთ მონიშნოთ თანხმობა და ატვირთოთ CV გასაგრძელებლად');
+        } else {
+          this.alertify.warning('გთხოვთ ატვირთოთ CV გასაგრძელებლად');
+        }
         return false;
       }
       return true;
@@ -816,10 +832,24 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.isDragOver.set(false);
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       this.uploadFile(files[0]);
     }
+  }
+
+  onDropzoneClick(fileInput: HTMLInputElement) {
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
+    fileInput.click();
   }
 
   onFileSelected(event: Event) {
@@ -840,11 +870,18 @@ export class Onboarding implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.error('გთხოვთ დაადასტუროთ თანხმობა რეზიუმეს (CV) დამუშავებაზე');
+      return;
+    }
+    this.cvConsentError.set(false);
+
     // Instant zero-delay loading state
     this.isUploadingCv.set(true);
 
     try {
-      await firstValueFrom(this.cvService.upload(file));
+      await firstValueFrom(this.cvService.upload(file, this.cvConsent()));
       await this.stateStore.getCv(true);
 
       if (this.currentStep() === 2) {

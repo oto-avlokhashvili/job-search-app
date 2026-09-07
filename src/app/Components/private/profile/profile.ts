@@ -291,11 +291,81 @@ export class Profile {
     this.stateStore.deleteCv();
   }
 
-  uploadCv(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.stateStore.uploadCv(file);
+  isDragOver = signal<boolean>(false);
+  maxFileSizeMB = 10;
+  allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+
+  cvConsent = signal<boolean>(false);
+  cvConsentError = signal<boolean>(false);
+
+  toggleCvConsent(event: any) {
+    const checked = !!event.target?.checked;
+    this.cvConsent.set(checked);
+    if (checked) {
+      this.cvConsentError.set(false);
     }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver.set(true);
+  }
+
+  onDragLeave() {
+    this.isDragOver.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver.set(false);
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processFile(files[0]);
+    }
+  }
+
+  onUploadBtnClick(fileInput: HTMLInputElement) {
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
+    fileInput.click();
+  }
+
+  processFile(file: File) {
+    if (!this.allowedTypes.includes(file.type)) {
+      this.alertify.error('გთხოვთ ატვირთოთ PDF ან Word (DOC/DOCX) ფორმატი');
+      return;
+    }
+    if (file.size > this.maxFileSizeMB * 1024 * 1024) {
+      this.alertify.error('ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს');
+      return;
+    }
+    if (!this.cvConsent()) {
+      this.cvConsentError.set(true);
+      this.alertify.warning('CV-ს ასატვირთად გთხოვთ ჯერ მონიშნოთ თანხმობა პერსონალური მონაცემების დამუშავებაზე');
+      return;
+    }
+    this.cvConsentError.set(false);
+    this.stateStore.uploadCv(file, this.cvConsent());
+  }
+
+  uploadCv(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    this.processFile(file);
+    event.target.value = '';
   }
 
   switchToEmail() {

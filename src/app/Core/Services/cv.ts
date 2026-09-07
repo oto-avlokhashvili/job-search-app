@@ -11,10 +11,11 @@ export class Cv {
   http = inject(HttpClient);
   url = environment.apiUrl;
 
-  upload(file: File): Observable<any> {
+  upload(file: File, consent: boolean = true): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${this.url}/cv/upload`, formData, { withCredentials: true, context: new HttpContext().set(skipLoading, true) },);
+    formData.append('consent', String(consent));
+    return this.http.post(`${this.url}/cv/upload`, formData, { withCredentials: true, context: new HttpContext().set(skipLoading, true) });
   }
 
   getCV(): Observable<any> {

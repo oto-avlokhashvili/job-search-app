@@ -368,9 +368,9 @@ export const StateStore = signalStore(
             });
         },
 
-        uploadCv(file: File) {
+        uploadCv(file: File, consent: boolean = true) {
             patchState(store, { cvLoading: true });
-            cvService.upload(file).subscribe({
+            cvService.upload(file, consent).subscribe({
                 next: (res) => {
                     patchState(store, { userCv: res, cvLoading: false });
                     cvService.getCV().subscribe({
