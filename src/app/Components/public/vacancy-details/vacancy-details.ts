@@ -199,13 +199,17 @@ export class VacancyDetails implements OnInit {
   }
 
   copyLink() {
-    const job = this.stateStore.selectedJob();
-    const url = window.location.origin + '/home?jobId=' + (job?.id || this.data?.jobId || '');
-    navigator.clipboard.writeText(url).then(() => {
-      this.alertify.success('ვაკანსიის ბმული დაკოპირდა');
-    }).catch(() => {
-      this.alertify.error('ბმულის დაკოპირება ვერ მოხერხდა');
-    });
+    const job = this.stateStore.selectedJob() || this.data?.job;
+    const targetLink = job?.link;
+    if (targetLink && targetLink !== '/jobs') {
+      navigator.clipboard.writeText(targetLink).then(() => {
+        this.alertify.success('წყაროს ბმული დაკოპირდა');
+      }).catch(() => {
+        this.alertify.error('ბმულის დაკოპირება ვერ მოხერხდა');
+      });
+    } else {
+      this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
+    }
   }
 
   openOriginalSource(link?: string) {
