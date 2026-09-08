@@ -1,5 +1,6 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { firstValueFrom, Observable, shareReplay, tap } from 'rxjs';
 import { User, UserRegistration } from '../Interfaces/user';
 import { environment } from '../../../environments/environment';
@@ -11,6 +12,8 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class AuthService {
   http = inject(HttpClient);
   url = environment.apiUrl;
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
   #tokenSignal = signal<string | null>(null);
   token = this.#tokenSignal.asReadonly();
   isLoggedIn = computed(() => !!this.token());
@@ -30,14 +33,19 @@ export class AuthService {
   }
 
   constructor() {
-    this.loadUserFromStorage();
+    if (this.isBrowser) {
+      this.loadUserFromStorage();
+    }
     effect(() => {
       const token = this.token();
-      if (token) {
+      if (this.isBrowser && token) {
         localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
       }
     });
     effect(() => {
+      if (!this.isBrowser) {
+        return;
+      }
       if (this.isAuthModalOpen()) {
         document.body.classList.add('modal-open');
       } else {
@@ -48,7 +56,9 @@ export class AuthService {
 
   setToken(token: string) {
     this.#tokenSignal.set(token);
-    localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+    if (this.isBrowser) {
+      localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+    }
   }
   loadUserFromStorage() {
     const json = localStorage.getItem("ACCESS_TOKEN");
@@ -61,7 +71,9 @@ export class AuthService {
     return this.http.post<{ token: string }>(this.url + "/auth/login", { email, password }, { withCredentials: true }).pipe(
       tap((res: { token: string }) => {
         this.#tokenSignal.set(res.token);
-        localStorage.setItem("ACCESS_TOKEN", res.token);
+        if (this.isBrowser) {
+          localStorage.setItem("ACCESS_TOKEN", res.token);
+        }
       })
     )
   }
@@ -74,7 +86,9 @@ export class AuthService {
     })
     const user: any = await firstValueFrom(refresh$);
     this.#tokenSignal.set(user.token);
-    localStorage.setItem("ACCESS_TOKEN", user.token);
+    if (this.isBrowser) {
+      localStorage.setItem("ACCESS_TOKEN", user.token);
+    }
     return user;
   }
 
@@ -102,7 +116,9 @@ export class AuthService {
       console.warn("Backend logout failed, clearing local session anyway:", err);
     } finally {
       this.#tokenSignal.set(null);
-      localStorage.removeItem("ACCESS_TOKEN");
+      if (this.isBrowser) {
+        localStorage.removeItem("ACCESS_TOKEN");
+      }
     }
   }
 

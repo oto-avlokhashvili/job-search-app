@@ -1,6 +1,7 @@
 import { HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../Services/auth-service';
-import { inject, signal } from '@angular/core';
+import { inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { catchError, Observable, throwError, from, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -16,6 +17,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const authToken = authService.token();
   const router = inject(Router);
+  const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   // Skip auth for login, refresh, and logout endpoints
   if (isAuthEndpoint(req.url)) {
     return next(req);
@@ -27,6 +29,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAuthEndpoint(req.url)) {
+        // The refresh/retry queue below is shared module-level state, unsafe to touch
+        // across concurrent SSR requests from different users. SSR only ever renders
+        // public/anonymous content, so there's no legitimate refresh flow to run here.
+        if (!isBrowser) {
+          return throwError(() => error);
+        }
         return handle401Error(req, next, authService,router);
       }
       return throwError(() => error);

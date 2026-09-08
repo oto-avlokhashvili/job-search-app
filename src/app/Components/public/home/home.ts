@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, OnInit, signal, computed, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener } from '@angular/core';
+import { Component, ElementRef, inject, Injector, OnInit, signal, computed, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -53,6 +53,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   private jobsService = inject(JobsService);
   private ngZone = inject(NgZone);
+  private injector = inject(Injector);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
@@ -166,7 +167,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.ngZone.runOutsideAngular(() => this.initParticles());
+    // afterNextRender never runs during SSR, so the canvas particle animation stays browser-only.
+    afterNextRender(() => {
+      this.ngZone.runOutsideAngular(() => this.initParticles());
+    }, { injector: this.injector });
   }
 
   ngOnDestroy() {
@@ -466,6 +470,12 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error fetching jobs:', err);
+        if (err.status === 401 && !this.authService.isLoggedIn()) {
+          this.alertify.warning('გთხოვთ გაიაროთ ავტორიზაცია დამატებითი ვაკანსიების სანახავად');
+          this.authService.openAuthModal('register');
+        } else if (err.status === 429) {
+          this.alertify.warning('ძალიან ბევრი მოთხოვნაა. გთხოვთ სცადოთ ცოტა ხანში.');
+        }
         this.isLoading.set(false);
         this.isAppending.set(false);
         this.searchState = 'idle';
@@ -474,6 +484,11 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadMore() {
+    if (this.currentPage >= 5 && !this.authService.isLoggedIn()) {
+      this.alertify.warning('გთხოვთ გაიაროთ ავტორიზაცია დამატებითი ვაკანსიების სანახავად');
+      this.authService.openAuthModal('register');
+      return;
+    }
     this.currentPage++;
     this.loadJobs(this.searchFilter.value, true);
   }

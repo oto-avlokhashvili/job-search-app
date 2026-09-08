@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { LoadingIndicatorComponent } from "./Core/loading/loading.component";
 import { AuthService } from './Core/Services/auth-service';
@@ -19,6 +20,7 @@ import { ChatWidget } from './Components/private/chat-widget/chat-widget';
 })
 export class App {
   protected readonly title = signal('job-search-app');
+  protected isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   isAuthorized = signal(false);
   authService = inject(AuthService);
   stateStore = inject(StateStore);

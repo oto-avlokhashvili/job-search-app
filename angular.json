@@ -24,10 +24,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "outputPath": {
-              "base": "browser",
-              "browser": ""
-            },
+            "outputPath": "browser",
             "assets": [
               {
                 "glob": "**/*",
@@ -46,7 +43,12 @@
             "allowedCommonJsDependencies": [
               "alertifyjs",
               "qrcode"
-            ]
+            ],
+            "server": "src/main.server.ts",
+            "outputMode": "server",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {
@@ -86,6 +88,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "job-search-app:build:production"

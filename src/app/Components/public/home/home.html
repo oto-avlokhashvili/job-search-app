@@ -745,6 +745,9 @@
                 @if (isAppending()) {
                   <span class="btn-spinner" style="border-top-color: var(--primary); margin-right: 8px;"></span>
                   იტვირთება...
+                } @else if (currentPage >= 5 && !authService.isLoggedIn()) {
+                  <span class="material-symbols-outlined">lock</span>
+                  მეტის ჩატვირთვა (საჭიროებს ავტორიზაციას)
                 } @else {
                   <span class="material-symbols-outlined">expand_more</span>
                   მეტის ჩატვირთვა

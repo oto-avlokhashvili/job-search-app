@@ -18,4 +18,6 @@
   <app-auth />
 }
 
-<app-chat-widget />
+@if (isBrowser) {
+  <app-chat-widget />
+}
