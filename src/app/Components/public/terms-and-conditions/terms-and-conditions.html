@@ -1,0 +1,158 @@
+<main class="legal-page-wrapper">
+  <div class="legal-container">
+    <!-- Breadcrumb & Back Action -->
+    <div class="legal-header-nav">
+      <a routerLink="/home" class="btn-back-home">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>მთავარ გვერდზე დაბრუნება</span>
+      </a>
+      <span class="update-pill">ბოლო განახლება: {{ lastUpdated }}</span>
+    </div>
+
+    @if (isLoading()) {
+      <!-- Skeleton Loading State -->
+      <div class="legal-hero-card glass-card skeleton-pulse loading-legal-card">
+        <div class="table-loading-bar"></div>
+        <div class="skeleton-block" style="width: 52px; height: 52px; border-radius: 16px; margin-bottom: 20px;"></div>
+        <div class="skeleton-text" style="width: 320px; height: 28px; margin-bottom: 14px;"></div>
+        <div class="skeleton-text" style="width: 85%; height: 16px; margin-bottom: 8px;"></div>
+        <div class="skeleton-text" style="width: 65%; height: 16px;"></div>
+      </div>
+
+      <div class="legal-content-card glass-card skeleton-pulse">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="legal-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+              <div class="skeleton-block" style="width: 28px; height: 28px; border-radius: 8px;"></div>
+              <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '220px' : '280px')" style="height: 20px;"></div>
+            </div>
+            <div class="skeleton-text" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton-text" style="width: 90%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton-text" style="width: 70%; height: 14px;"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Hero Card -->
+      <header class="legal-hero-card glass-card animate-fade">
+        <div class="hero-icon-badge">
+          <span class="material-symbols-outlined">gavel</span>
+        </div>
+        <h1 class="legal-title">წესები და პირობები</h1>
+        <p class="legal-subtitle">
+          გთხოვთ, ყურადღებით გაეცნოთ პლატფორმა Job Up-ით სარგებლობის წესებსა და პირობებს.
+          პლატფორმაზე რეგისტრაციით ან სარგებლობით თქვენ ადასტურებთ აღნიშნულ პირობებთან სრულ თანხმობას.
+        </p>
+      </header>
+
+      <!-- Main Content Document -->
+      <div class="legal-content-card glass-card animate-fade">
+      
+      <!-- Section 1 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">1</div>
+          <h2>ზოგადი დებულებები</h2>
+        </div>
+        <p>
+          წინამდებარე წესები და პირობები (შემდგომში „პირობები“) არეგულირებს ურთიერთობას <strong>Job Up</strong>-სა და პლატფორმის მომხმარებელს შორის.
+        </p>
+        <p>
+          Job Up წარმოადგენს ინოვაციურ ვაკანსიების აგრეგატორსა და AI კარიერულ ასისტენტს, რომელიც მომხმარებლებს სთავაზობს სამუშაოს ძიების, CV-ის ანალიზისა და ვაკანსიების შესახებ შეტყობინებების მიღების ავტომატიზებულ სერვისებს.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">2</div>
+          <h2>რეგისტრაცია და ანგარიშის უსაფრთხოება</h2>
+        </div>
+        <ul class="legal-list">
+          <li>პლატფორმის სრული ფუნქციონალით სარგებლობისთვის აუცილებელია ანგარიშის შექმნა (ელ-ფოსტით ან Google ავტორიზაციით).</li>
+          <li>მომხმარებელი ვალდებულია მიუთითოს უტყუარი და ზუსტი ინფორმაცია რეგისტრაციისას.</li>
+          <li>მომხმარებელი პასუხისმგებელია თავისი ანგარიშის უსაფრთხოებასა და ავტორიზაციის მონაცემების კონფიდენციალურობაზე.</li>
+        </ul>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">3</div>
+          <h2>სერვისის აღწერა და AI ფუნქციონალი</h2>
+        </div>
+        <p>
+          Job Up ახდენს საჯარო პორტალებიდან (მაგ. Jobs.ge, HR.ge, Awork.ge, Myjobs.ge) ვაკანსიების აგრეგაციას და მომხმარებლის მიერ ატვირთული რეზიუმესა (CV) და საძიებო სიტყვების საფუძველზე უზრუნველყოფს:
+        </p>
+        <ul class="legal-list">
+          <li>ვაკანსიების გაფილტვრასა და შესაბამისობის დადგენას;</li>
+          <li>ავტომატურ შეტყობინებებს Telegram-ის ან ელ-ფოსტის საშუალებით;</li>
+          <li>AI ანალიტიკასა და შესაბამისობის ქულების (Match Score) გამოთვლას.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">4</div>
+          <h2>სააბონენტო გეგმები და მომსახურება</h2>
+        </div>
+        <ul class="legal-list">
+          <li><strong>Basic პაკეტი:</strong> სრულიად უფასოა და მოიცავს CV-ს ატვირთვას, ძიებასა და Telegram შეტყობინებებს.</li>
+          <li><strong>Pro და Enterprise პაკეტები:</strong> მოიცავს გაფართოებულ AI ანალიზსა და დამატებით შესაძლებლობებს. მომხმარებელს შეუძლია დაემატოს Waitlist-ში პრიორიტეტული წვდომისათვის.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">5</div>
+          <h2>აკრძალული ქმედებები</h2>
+        </div>
+        <p>მომხმარებელს ეკრძალება:</p>
+        <ul class="legal-list">
+          <li>პლატფორმის არასანქცირებული ავტომატური სკანირება (Scraping), სისტემის გადატვირთვა ან DDOS შეტევების მცდელობა;</li>
+          <li>ყალბი, მატყუარა ან სხვისი პერსონალური მონაცემების შემცველი რეზიუმეს ატვირთვა;</li>
+          <li>პლატფორმის უსაფრთხოების მექანიზმების გვერდის ავლა ან დაზიანება.</li>
+        </ul>
+      </section>
+
+      <!-- Section 6 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">6</div>
+          <h2>პასუხისმგებლობის შეზღუდვა</h2>
+        </div>
+        <p>
+          Job Up წარმოადგენს საინფორმაციო და დამხმარე ტექნოლოგიურ პლატფორმას. ვაკანსიის შინაარსზე, დამსაქმებლის პირობებსა და გასაუბრების პროცესზე სრული პასუხისმგებლობა ეკისრება შესაბამის დამსაქმებელ კომპანიას.
+        </p>
+        <p>
+          ჩვენ მაქსიმალურად ვზრუნავთ პლატფორმის უწყვეტ და გამართულ მუშაობაზე, თუმცა არ ვაგებთ პასუხს გარე პორტალების ტექნიკურ შეფერხებებზე.
+        </p>
+      </section>
+
+      <!-- Section 7 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">7</div>
+          <h2>ცვლილებები და კონტაქტი</h2>
+        </div>
+        <p>
+          Job Up იტოვებს უფლებას, პერიოდულად განაახლოს წინამდებარე პირობები. განახლებული ვერსია ძალაში შედის ვებგვერდზე გამოქვეყნებისთანავე.
+        </p>
+        <div class="contact-box">
+          <div class="contact-item">
+            <span class="material-symbols-outlined">mail</span>
+            <span>ელ-ფოსტა: <a href="mailto:jobup.ge@gmail.com">jobup.ge@gmail.com</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="material-symbols-outlined">language</span>
+            <span>ვებგვერდი: <a href="https://jobup.ge">jobup.ge</a></span>
+          </div>
+        </div>
+      </section>
+
+      </div>
+    }
+  </div>
+</main>

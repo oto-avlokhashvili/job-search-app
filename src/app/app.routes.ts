@@ -10,6 +10,8 @@ import { onboardingGuard, onboardingPageGuard } from './Core/Guards/onboarding.g
 import { proGuard } from './Core/Guards/pro.guard';
 
 import { Onboarding } from './Components/private/onboarding/onboarding';
+import { PrivacyPolicy } from './Components/public/privacy-policy/privacy-policy';
+import { TermsAndConditions } from './Components/public/terms-and-conditions/terms-and-conditions';
 
 export const routes: Routes = [
   {
@@ -21,6 +23,24 @@ export const routes: Routes = [
     path: 'home',
     component: Home,
     data: { showHeroSection: true }
+  },
+  {
+    path: 'privacy',
+    component: PrivacyPolicy,
+  },
+  {
+    path: 'privacy-policy',
+    redirectTo: 'privacy',
+    pathMatch: 'full'
+  },
+  {
+    path: 'terms',
+    component: TermsAndConditions,
+  },
+  {
+    path: 'terms-and-conditions',
+    redirectTo: 'terms',
+    pathMatch: 'full'
   },
   {
     path: 'auth',

@@ -1,0 +1,170 @@
+<main class="legal-page-wrapper">
+  <div class="legal-container">
+    <!-- Breadcrumb & Back Action -->
+    <div class="legal-header-nav">
+      <a routerLink="/home" class="btn-back-home">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>მთავარ გვერდზე დაბრუნება</span>
+      </a>
+      <span class="update-pill">ბოლო განახლება: {{ lastUpdated }}</span>
+    </div>
+
+    @if (isLoading()) {
+      <!-- Skeleton Loading State -->
+      <div class="legal-hero-card glass-card skeleton-pulse loading-legal-card">
+        <div class="table-loading-bar"></div>
+        <div class="skeleton-block" style="width: 52px; height: 52px; border-radius: 16px; margin-bottom: 20px;"></div>
+        <div class="skeleton-text" style="width: 320px; height: 28px; margin-bottom: 14px;"></div>
+        <div class="skeleton-text" style="width: 85%; height: 16px; margin-bottom: 8px;"></div>
+        <div class="skeleton-text" style="width: 65%; height: 16px;"></div>
+      </div>
+
+      <div class="legal-content-card glass-card skeleton-pulse">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="legal-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+              <div class="skeleton-block" style="width: 28px; height: 28px; border-radius: 8px;"></div>
+              <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '220px' : '280px')" style="height: 20px;"></div>
+            </div>
+            <div class="skeleton-text" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton-text" style="width: 90%; height: 14px; margin-bottom: 8px;"></div>
+            <div class="skeleton-text" style="width: 70%; height: 14px;"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Hero Card -->
+      <header class="legal-hero-card glass-card animate-fade">
+        <div class="hero-icon-badge">
+          <span class="material-symbols-outlined">shield_person</span>
+        </div>
+        <h1 class="legal-title">კონფიდენციალურობის პოლიტიკა</h1>
+        <p class="legal-subtitle">
+          Job Up-ისთვის მომხმარებელთა პერსონალური მონაცემების დაცვა და უსაფრთხოება უმაღლესი პრიორიტეტია.
+          წინამდებარე დოკუმენტი განმარტავს, თუ როგორ ვაგროვებთ, ვამუშავებთ და ვიცავთ თქვენს ინფორმაციას.
+        </p>
+      </header>
+
+      <!-- Main Content Document -->
+      <div class="legal-content-card glass-card animate-fade">
+      
+      <!-- Section 1 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">1</div>
+          <h2>ზოგადი დებულებები</h2>
+        </div>
+        <p>
+          წინამდებარე კონფიდენციალურობის პოლიტიკა განსაზღვრავს პლატფორმა <strong>Job Up</strong>-ის (შემდგომში „პლატფორმა“, „ჩვენ“) მიერ მომხმარებლების („მომხმარებელი“, „თქვენ“) პერსონალური მონაცემების შეგროვების, დამუშავების, შენახვისა და დაცვის წესებს.
+        </p>
+        <p>
+          მონაცემთა დამუშავება ხორციელდება „პერსონალურ მონაცემთა დაცვის შესახებ“ საქართველოს მოქმედი კანონმდებლობისა და საერთაშორისო უსაფრთხოების სტანდარტების სრული დაცვით.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">2</div>
+          <h2>რა ინფორმაციას ვაგროვებთ</h2>
+        </div>
+        <p>სერვისის გამართული ფუნქციონირებისათვის ჩვენ შეიძლება დავამუშაოთ შემდეგი სახის ინფორმაცია:</p>
+        <ul class="legal-list">
+          <li>
+            <strong>საიდენტიფიკაციო და საკონტაქტო მონაცემები:</strong> სახელი, გვარი, ელექტრონული ფოსტის მისამართი.
+          </li>
+          <li>
+            <strong>რეზიუმე (CV) და პროფესიული მონაცემები:</strong> ატვირთული CV ფაილი (PDF, DOC, DOCX), სამუშაო გამოცდილება, განათლება, უნარ-ჩვევები და საკვანძო საძიებო მიმართულებები.
+          </li>
+          <li>
+            <strong>შეტყობინებების არხების ინფორმაცია:</strong> Telegram Chat ID და საკონტაქტო ელ-ფოსტა ვაკანსიების შეტყობინებების გამოსაგზავნად.
+          </li>
+          <li>
+            <strong>ტექნიკური და ქცევითი მონაცემები:</strong> IP მისამართი, ბრაუზერის ტიპი, ოპერაციული სისტემა, ავტორიზაციის დრო და პლატფორმაზე განხორციელებული ძიების პარამეტრები.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">3</div>
+          <h2>მონაცემთა დამუშავების მიზნები</h2>
+        </div>
+        <p>თქვენი პერსონალური მონაცემები გამოიყენება მხოლოდ შემდეგი ლეგიტიმური მიზნებისათვის:</p>
+        <ul class="legal-list">
+          <li>მომხმარებლის რეგისტრაცია და ავტორიზაციის უზრუნველყოფა (მათ შორის Google OAuth-ის მეშვეობით);</li>
+          <li>CV-ის AI ანალიზი და თქვენს პროფილზე მორგებული აქტუალური ვაკანსიების მოძიება;</li>
+          <li>ახალი, შესაბამისი ვაკანსიების შესახებ შეტყობინებების მიწოდება Telegram-ის ან ელ-ფოსტის საშუალებით;</li>
+          <li>პლატფორმის უსაფრთხოების, სტაბილურობისა და ალგორითმების გაუმჯობესება.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">4</div>
+          <h2>ხელოვნური ინტელექტი (AI) და მონაცემთა დამუშავება</h2>
+        </div>
+        <p>
+          Job Up იყენებს ხელოვნური ინტელექტის ალგორითმებს თქვენი რეზიუმეს სტრუქტურირებისა და ვაკანსიებთან შესაბამისობის (Match Score) გამოსათვლელად.
+        </p>
+        <p>
+          თქვენი მონაცემები <strong>არ გამოიყენება</strong> მესამე მხარის მოდელების ზოგადი ტრენინგისთვის და მუშავდება მხოლოდ თქვენთვის პერსონალიზებული შედეგების მოსაწოდებლად.
+        </p>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">5</div>
+          <h2>მონაცემთა შენახვა და უსაფრთხოება</h2>
+        </div>
+        <p>
+          ჩვენ ვიყენებთ თანამედროვე ტექნიკურ და ორგანიზაციულ უსაფრთხოების ზომებს (დაშიფვრა HTTPS/SSL, დაცული ბაზები, წვდომის კონტროლი), რათა დავიცვათ თქვენი მონაცემები არასანქცირებული წვდომისგან, დაკარგვისგან ან უკანონო დამუშავებისგან.
+        </p>
+        <p>
+          თქვენი რეზიუმე და პირადი მონაცემები ინახება მანამ, სანამ თქვენ სარგებლობთ პლატფორმით ან სანამ თავად არ მოითხოვთ მათ წაშლას.
+        </p>
+      </section>
+
+      <!-- Section 6 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">6</div>
+          <h2>თქვენი უფლებები</h2>
+        </div>
+        <p>საქართველოს კანონმდებლობის შესაბამისად, თქვენ უფლება გაქვთ:</p>
+        <ul class="legal-list">
+          <li>მოითხოვოთ ინფორმაცია თქვენ შესახებ დამუშავებული მონაცემების თაობაზე;</li>
+          <li>ნებისმიერ დროს განაახლოთ, შეცვალოთ ან წაშალოთ თქვენი CV და პირადი მონაცემები პროფილის გვერდიდან;</li>
+          <li>ნებისმიერ დროს გამორთოთ Telegram ან Email შეტყობინებების მიღება;</li>
+          <li>მოითხოვოთ ანგარიშისა და მასთან დაკავშირებული ყველა მონაცემის სრული წაშლა.</li>
+        </ul>
+      </section>
+
+      <!-- Section 7 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">7</div>
+          <h2>კონტაქტი</h2>
+        </div>
+        <p>
+          კონფიდენციალურობის პოლიტიკასთან ან პერსონალურ მონაცემებთან დაკავშირებული ნებისმიერი კითხვის შემთხვევაში, გთხოვთ დაგვიკავშირდეთ:
+        </p>
+        <div class="contact-box">
+          <div class="contact-item">
+            <span class="material-symbols-outlined">mail</span>
+            <span>ელ-ფოსტა: <a href="mailto:jobup.ge@gmail.com">jobup.ge@gmail.com</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="material-symbols-outlined">language</span>
+            <span>ვებგვერდი: <a href="https://jobup.ge">jobup.ge</a></span>
+          </div>
+        </div>
+      </section>
+
+      </div>
+    }
+  </div>
+</main>

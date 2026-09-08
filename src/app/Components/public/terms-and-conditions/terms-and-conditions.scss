@@ -1,0 +1,322 @@
+.legal-page-wrapper {
+  min-height: 100vh;
+  padding: 105px 0 80px;
+  background: var(--app-bg);
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 85px 0 60px;
+  }
+}
+
+.legal-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (max-width: 991px) {
+    padding: 0 20px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0 14px;
+  }
+}
+
+.legal-header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .btn-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: none;
+    padding: 8px 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+
+    span.material-symbols-outlined {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      background: var(--surface-container);
+      color: var(--primary);
+      transform: translateX(-3px);
+
+      span.material-symbols-outlined {
+        transform: translateX(-2px);
+      }
+    }
+  }
+
+  .update-pill {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    padding: 6px 14px;
+    background: var(--surface-container-low);
+    border-radius: 100px;
+    border: 1px solid var(--border-color);
+  }
+}
+
+.legal-hero-card {
+  padding: 36px 32px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(11, 96, 150, 0.06);
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .hero-icon-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(var(--primary-rgb), 0.12);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    span.material-symbols-outlined {
+      font-size: 28px;
+    }
+  }
+
+  .legal-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--on-surface);
+    margin: 0 0 12px;
+    line-height: 1.25;
+
+    @media (max-width: 768px) {
+      font-size: 24px;
+    }
+  }
+
+  .legal-subtitle {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--on-surface-variant);
+    margin: 0;
+    max-width: 950px;
+  }
+}
+
+.legal-content-card {
+  padding: 40px 36px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    border-radius: 20px;
+    gap: 24px;
+  }
+}
+
+.legal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border-color);
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+
+    .section-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--on-surface);
+      margin: 0;
+
+      @media (max-width: 768px) {
+        font-size: 18px;
+      }
+    }
+  }
+
+  p {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--on-surface-variant);
+    margin: 0;
+
+    strong {
+      color: var(--on-surface);
+    }
+  }
+
+  .legal-list {
+    margin: 4px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    li {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--on-surface-variant);
+
+      strong {
+        color: var(--on-surface);
+      }
+    }
+  }
+
+  .contact-box {
+    margin-top: 8px;
+    padding: 16px 20px;
+    background: var(--surface-container-low);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--on-surface);
+
+      span.material-symbols-outlined {
+        font-size: 20px;
+        color: var(--primary);
+      }
+
+      a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+/* Animations & Loading Skeletons */
+.animate-fade {
+  animation: legalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes legalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-legal-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.table-loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  background-size: 200% 100%;
+  animation: legalLoadingBar 1.2s infinite ease-in-out;
+}
+
+@keyframes legalLoadingBar {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-pulse {
+  .skeleton-block,
+  .skeleton-text {
+    background: linear-gradient(
+      90deg,
+      rgba(var(--primary-rgb), 0.08) 25%,
+      rgba(var(--primary-rgb), 0.18) 37%,
+      rgba(var(--primary-rgb), 0.08) 63%
+    );
+    background-size: 400% 100%;
+    animation: legalShimmer 1.4s ease infinite;
+    border-radius: 8px;
+  }
+}
+
+@keyframes legalShimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

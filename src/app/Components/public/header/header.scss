@@ -88,7 +88,11 @@ $outline-variant-color: #97aed5;
 .nav-links-desktop {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 22px;
+
+  @media (max-width: 1240px) {
+    gap: 16px;
+  }
 
   @media (max-width: 991px) {
     display: none;
@@ -96,13 +100,18 @@ $outline-variant-color: #97aed5;
 }
 
 .nav-link {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--on-surface-variant);
   text-decoration: none;
   cursor: pointer;
   transition: color 0.25s ease;
   position: relative;
+  white-space: nowrap;
+
+  @media (max-width: 1240px) {
+    font-size: 13.5px;
+  }
 
   &::after {
     content: '';
