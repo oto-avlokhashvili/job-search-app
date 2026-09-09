@@ -273,7 +273,7 @@
       <div class="vacancies-cards-list">
         @for (item of stateStore.sentJobs().sentJobs; track item.id; let i = $index) {
           <div class="vacancy-item-card" 
-               (click)="openVacancyDetails(item.jobId || item.id)"
+               (click)="openVacancyDetails(item.jobId || item.id, item)"
                role="button"
                tabindex="0"
                title="დააჭირეთ დეტალების სანახავად">

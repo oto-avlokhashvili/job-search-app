@@ -1,18 +1,18 @@
-import { Component, Inject, inject, OnInit, Optional, computed, SecurityContext } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, inject, OnInit, computed, effect } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Job } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
-
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
+import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
 
 @Component({
   selector: 'app-vacancy-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './vacancy-details.html',
   styleUrl: './vacancy-details.scss'
 })
@@ -21,9 +21,14 @@ export class VacancyDetails implements OnInit {
   public authService = inject(AuthService);
   public stateStore = inject(StateStore);
   private sanitizer = inject(DomSanitizer);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private location = inject(Location);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
   extractedEmail = computed(() => {
-    const job = this.stateStore.selectedJob() || this.data?.job;
+    const job = this.stateStore.selectedJob();
     if (!job) return null;
     
     if ((job as any).email && typeof (job as any).email === 'string') {
@@ -36,12 +41,12 @@ export class VacancyDetails implements OnInit {
   });
 
   extractedSalary = computed(() => {
-    const job = this.stateStore.selectedJob() || this.data?.job;
+    const job = this.stateStore.selectedJob();
     return extractSalary(job);
   });
 
   formattedDescription = computed<SafeHtml | null>(() => {
-    const job = this.stateStore.selectedJob() || this.data?.job;
+    const job = this.stateStore.selectedJob();
     if (!job) return null;
 
     const raw = (job.description && job.description.trim().length > 0)
@@ -79,6 +84,7 @@ export class VacancyDetails implements OnInit {
         .replace(/<font[^>]*>/gi, '')
         .replace(/<\/font>/gi, '');
 
+      cleanHtml = this.linkifyAndCleanText(cleanHtml, true);
       return cleanHtml;
     }
 
@@ -125,7 +131,7 @@ export class VacancyDetails implements OnInit {
           result.push(`<${listType} class="formatted-bullet-list">`);
         }
 
-        result.push(`<li>${this.escapeAndLinkify(itemContent)}</li>`);
+        result.push(`<li>${this.linkifyAndCleanText(itemContent, false)}</li>`);
         continue;
       }
 
@@ -137,9 +143,9 @@ export class VacancyDetails implements OnInit {
 
       // Check for section headers
       if (headerRegex.test(line) || (line.endsWith(':') && line.length < 80)) {
-        result.push(`<h3 class="formatted-section-heading">${this.escapeAndLinkify(line)}</h3>`);
+        result.push(`<h3 class="formatted-section-heading">${this.linkifyAndCleanText(line, false)}</h3>`);
       } else {
-        result.push(`<p class="formatted-paragraph">${this.escapeAndLinkify(line)}</p>`);
+        result.push(`<p class="formatted-paragraph">${this.linkifyAndCleanText(line, false)}</p>`);
       }
     }
 
@@ -150,72 +156,174 @@ export class VacancyDetails implements OnInit {
     return result.join('');
   }
 
-  private escapeAndLinkify(str: string): string {
+  private linkifyAndCleanText(str: string, isHtml: boolean = false): string {
     if (!str) return '';
-    // Basic entity escaping
-    let escaped = str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
 
-    // Auto-link email addresses
-    escaped = escaped.replace(
-      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+    let content = str;
+
+    // If not already HTML, escape raw <, >, & first (but preserve markdown syntax)
+    if (!isHtml) {
+      content = content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // 1. Process Markdown links: [Label](URL) or [URL](URL)
+    content = content.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g,
+      (match, label, rawUrl) => {
+        const { url } = this.stripTrailingPunctuation(rawUrl);
+        const cleanLabel = label.trim();
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="formatted-web-link">${cleanLabel}</a>`;
+      }
+    );
+
+    // 2. Process Markdown bold **text**
+    if (!isHtml) {
+      content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+
+    // 3. Auto-link email addresses (avoid if already inside href)
+    content = content.replace(
+      /(?<!href=["']mailto:)(?<!href=["'])\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/gi,
       '<a href="mailto:$1" class="formatted-email-link">$1</a>'
     );
 
-    // Auto-link URLs
-    escaped = escaped.replace(
-      /(https?:\/\/[^\s<]+)/g,
-      '<a href="$1" target="_blank" rel="noopener noreferrer" class="formatted-web-link">$1</a>'
+    // 4. Auto-link bare URLs (not already inside <a href="...">)
+    content = content.replace(
+      /(?<!href=["'])(https?:\/\/[^\s<>"']+)/gi,
+      (match, rawUrl) => {
+        const { url, trailing } = this.stripTrailingPunctuation(rawUrl);
+        if (!url) return rawUrl;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="formatted-web-link">${url}</a>${trailing}`;
+      }
     );
 
-    return escaped;
+    // 5. Clean up redundant duplicate adjacent links like:
+    // <a href="url">url</a> (<a href="url">url</a>) -> <a href="url">url</a>
+    // or <a href="url">label</a> (url) -> <a href="url">label</a>
+    content = content.replace(
+      /(<a\s+href="([^"]+)"[^>]*>[^<]+<\/a>)\s*\(\s*<a\s+href="\2"[^>]*>[^<]+<\/a>\s*\)/gi,
+      '$1'
+    );
+    content = content.replace(
+      /(<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>)\s*\(\s*\2\s*\)/gi,
+      '$1'
+    );
+    content = content.replace(
+      /(<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>)\s*\(\s*<a\s+href="[^"]*"[^>]*>\2<\/a>\s*\)/gi,
+      '$1'
+    );
+
+    return content;
   }
 
-  constructor(
-    @Optional() public dialogRef?: MatDialogRef<VacancyDetails>,
-    @Optional() @Inject(MAT_DIALOG_DATA) public data?: { jobId: number | string; job?: Job }
-  ) {}
+  private stripTrailingPunctuation(rawUrl: string): { url: string; trailing: string } {
+    let url = rawUrl.trim();
+    let trailing = '';
 
-  ngOnInit() {
-    if (this.data?.jobId) {
-      this.stateStore.loadJobById(this.data.jobId);
+    while (url.length > 0) {
+      const lastChar = url.slice(-1);
+
+      if (lastChar === ')') {
+        const openParenCount = (url.match(/\(/g) || []).length;
+        const closeParenCount = (url.match(/\)/g) || []).length;
+        if (closeParenCount > openParenCount) {
+          trailing = lastChar + trailing;
+          url = url.slice(0, -1);
+          continue;
+        }
+      }
+
+      if (lastChar === ']') {
+        const openBracketCount = (url.match(/\[/g) || []).length;
+        const closeBracketCount = (url.match(/\]/g) || []).length;
+        if (closeBracketCount > openBracketCount) {
+          trailing = lastChar + trailing;
+          url = url.slice(0, -1);
+          continue;
+        }
+      }
+
+      if (/[.,;:!?'"\\>]/.test(lastChar)) {
+        trailing = lastChar + trailing;
+        url = url.slice(0, -1);
+        continue;
+      }
+
+      break;
     }
+
+    return { url, trailing };
   }
 
-  copyEmail(email: string) {
-    navigator.clipboard.writeText(email).then(() => {
-      this.alertify.success('ელ-ფოსტა დაკოპირდა: ' + email);
-    }).catch(() => {
-      this.alertify.error('ელ-ფოსტის დაკოპირება ვერ მოხერხდა');
+  constructor() {
+    effect(() => {
+      const job = this.stateStore.selectedJob();
+      if (job && typeof document !== 'undefined') {
+        this.titleService.setTitle(`${job.vacancy} - ${job.company} | Job Up`);
+        this.metaService.updateTag({ 
+          name: 'description', 
+          content: `${job.company} აცხადებს ვაკანსიას პოზიციაზე: ${job.vacancy}. ლოკაცია: ${job.location || 'საქართველო'}` 
+        });
+      }
     });
   }
 
-  close() {
-    if (this.dialogRef) {
-      this.dialogRef.close();
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const slug = params.get('slug');
+      if (slug) {
+        const jobId = extractJobIdFromSlug(slug);
+        if (jobId) {
+          this.stateStore.loadJobById(jobId);
+        } else {
+          this.router.navigate(['/vacancies']);
+        }
+      }
+    });
+  }
+
+  copyEmail(email: string) {
+    if (typeof navigator !== 'undefined') {
+      navigator.clipboard.writeText(email).then(() => {
+        this.alertify.success('ელ-ფოსტა დაკოპირდა: ' + email);
+      }).catch(() => {
+        this.alertify.error('ელ-ფოსტის დაკოპირება ვერ მოხერხდა');
+      });
+    }
+  }
+
+  goBack() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/vacancies']);
     }
   }
 
   copyLink() {
-    const job = this.stateStore.selectedJob() || this.data?.job;
-    const targetLink = job?.link;
-    if (targetLink && targetLink !== '/jobs') {
-      navigator.clipboard.writeText(targetLink).then(() => {
-        this.alertify.success('წყაროს ბმული დაკოპირდა');
+    const job = this.stateStore.selectedJob();
+    if (job && typeof window !== 'undefined') {
+      const slug = generateJobSlug(job.vacancy, job.company, job.id);
+      const fullUrl = `${window.location.origin}/vacancies/${slug}`;
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        this.alertify.success('ვაკანსიის ბმული დაკოპირდა');
       }).catch(() => {
         this.alertify.error('ბმულის დაკოპირება ვერ მოხერხდა');
       });
     } else {
-      this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
+      this.alertify.warning('ბმული ხელმისაწვდომი არ არის');
     }
   }
 
   openOriginalSource(link?: string) {
     const targetLink = link || this.stateStore.selectedJob()?.link;
     if (targetLink && targetLink !== '/jobs') {
-      window.open(targetLink, '_blank');
+      if (typeof window !== 'undefined') {
+        window.open(targetLink, '_blank');
+      }
     } else {
       this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
     }

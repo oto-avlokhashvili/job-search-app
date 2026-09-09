@@ -12,6 +12,8 @@ import { proGuard } from './Core/Guards/pro.guard';
 import { Onboarding } from './Components/private/onboarding/onboarding';
 import { PrivacyPolicy } from './Components/public/privacy-policy/privacy-policy';
 import { TermsAndConditions } from './Components/public/terms-and-conditions/terms-and-conditions';
+import { VacancyDetails } from './Components/public/vacancy-details/vacancy-details';
+import { Vacancies } from './Components/public/vacancies/vacancies';
 
 export const routes: Routes = [
   {
@@ -23,6 +25,24 @@ export const routes: Routes = [
     path: 'home',
     component: Home,
     data: { showHeroSection: true }
+  },
+  {
+    path: 'vacancies',
+    component: Vacancies,
+  },
+  {
+    path: 'vacancies/:slug',
+    component: VacancyDetails,
+  },
+  {
+    path: 'home/vacancies/:slug',
+    redirectTo: 'vacancies/:slug',
+    pathMatch: 'full'
+  },
+  {
+    path: 'home/vacancies',
+    redirectTo: 'vacancies',
+    pathMatch: 'full'
   },
   {
     path: 'privacy',

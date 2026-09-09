@@ -1,178 +1,207 @@
-<div class="vacancy-details-modal">
-  
-  <!-- Modal Top Bar -->
-  <div class="modal-top-bar">
-    <div class="modal-title-group">
-      <span class="material-symbols-outlined title-icon">work_outline</span>
-      <span class="modal-heading-text">ვაკანსიის დეტალები</span>
-    </div>
+<main class="vacancy-details-page">
+  <div class="details-page-container">
+    
+    <!-- Top Navigation & Breadcrumb Bar -->
+    <nav class="details-top-nav">
+      <div class="nav-left">
+        <button type="button" class="btn-back-nav" (click)="goBack()" title="ვაკანსიების სიაზე დაბრუნება">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>ყველა ვაკანსია</span>
+        </button>
 
-    <div class="top-actions">
-      <button type="button" class="btn-icon-action" (click)="copyLink()" title="ბმულის დაკოპირება">
-        <span class="material-symbols-outlined">share</span>
-      </button>
-
-      <button type="button" class="btn-close-modal" (click)="close()" title="დახურვა">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="modal-body-content">
+        @if (stateStore.selectedJob(); as j) {
+          <div class="breadcrumbs-trail">
+            <a routerLink="/vacancies" class="breadcrumb-link">ვაკანსიები</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item company-item">{{ j.company }}</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item current-item">{{ j.vacancy }}</span>
+          </div>
+        }
+      </div>
+    </nav>
 
     <!-- Loading State -->
     @if (stateStore.selectedJobLoading()) {
-      <div class="details-card glass-card skeleton-container">
-        <div class="skeleton-header">
-          <div class="company-logo-avatar skeleton-pulse" style="width: 64px; height: 64px;"></div>
-          <div class="skeleton-text-group">
-            <div class="skeleton-line title-line skeleton-pulse"></div>
-            <div class="skeleton-line subtitle-line skeleton-pulse"></div>
+      <div class="details-skeleton-wrapper glass-card">
+        <div class="skeleton-hero">
+          <div class="skeleton-avatar skeleton-pulse"></div>
+          <div class="skeleton-hero-lines">
+            <div class="skeleton-line title skeleton-pulse"></div>
+            <div class="skeleton-line sub skeleton-pulse"></div>
           </div>
         </div>
 
         <div class="skeleton-grid">
-          <div class="skeleton-block skeleton-pulse"></div>
-          <div class="skeleton-block skeleton-pulse"></div>
-          <div class="skeleton-block skeleton-pulse"></div>
+          <div class="skeleton-card skeleton-pulse"></div>
+          <div class="skeleton-card skeleton-pulse"></div>
+          <div class="skeleton-card skeleton-pulse"></div>
+          <div class="skeleton-card skeleton-pulse"></div>
         </div>
 
-        <div class="skeleton-body">
-          <div class="skeleton-line skeleton-pulse" style="width: 90%;"></div>
-          <div class="skeleton-line skeleton-pulse" style="width: 80%;"></div>
+        <div class="skeleton-body-lines">
+          <div class="skeleton-line skeleton-pulse" style="width: 95%;"></div>
           <div class="skeleton-line skeleton-pulse" style="width: 85%;"></div>
+          <div class="skeleton-line skeleton-pulse" style="width: 90%;"></div>
+          <div class="skeleton-line skeleton-pulse" style="width: 75%;"></div>
         </div>
       </div>
     }
 
     <!-- Error State -->
     @else if (stateStore.selectedJobError()) {
-      <div class="error-card glass-card">
-        <div class="error-icon-wrapper">
-          <span class="material-symbols-outlined error-icon">error_outline</span>
+      <div class="details-error-wrapper glass-card">
+        <div class="error-icon-circle">
+          <span class="material-symbols-outlined">error_outline</span>
         </div>
-        <h2 class="error-title">შეცდომა</h2>
-        <p class="error-message">{{ stateStore.selectedJobError() }}</p>
-        <div class="error-actions">
-          <button type="button" class="btn-primary" (click)="close()">
-            <span class="material-symbols-outlined">close</span>
-            <span>დახურვა</span>
-          </button>
+        <h2>ვაკანსია ვერ მოიძებნა</h2>
+        <p>{{ stateStore.selectedJobError() }}</p>
+        <div class="error-action">
+          <a routerLink="/vacancies" class="btn-primary-action">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span>ვაკანსიების სიაზე დაბრუნება</span>
+          </a>
         </div>
       </div>
     }
 
-    <!-- Vacancy Details Loaded -->
+    <!-- Loaded Vacancy Details View -->
     @else if (stateStore.selectedJob(); as j) {
-      <div class="vacancy-main-layout">
+      <article class="vacancy-article-content">
         
-        <!-- Header Hero Card (Only Header in Card) -->
-        <div class="details-hero-card">
-          
-          <div class="hero-top-row">
-            <div class="company-avatar">
+        <!-- Hero Information Card -->
+        <header class="vacancy-hero-card glass-card">
+          <div class="hero-top-section">
+            <div class="company-logo-avatar">
               {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
             </div>
 
-            <div class="hero-identity">
-              <div class="identity-badges">
+            <div class="hero-main-info">
+              <!-- Meta Badges Row -->
+              <div class="meta-badges-row">
                 <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link) === 'myjobs.ge'">
                   <span class="material-symbols-outlined badge-icon">language</span>
-                  {{ detectSource(j.source, j.link) }}
+                  <span>{{ detectSource(j.source, j.link) }}</span>
                 </span>
+
                 <span class="date-chip">
                   <span class="material-symbols-outlined badge-icon">calendar_today</span>
-                  {{ formatDate(j.publishDate) }}
+                  <span>გამოქვეყნდა: {{ formatDate(j.publishDate) }}</span>
                 </span>
+
                 @if (j.deadline) {
-                  <span class="date-chip deadline">
+                  <span class="date-chip deadline-chip">
                     <span class="material-symbols-outlined badge-icon">schedule</span>
-                    {{ formatDate(j.deadline) }}
+                    <span>ბოლო ვადა: {{ formatDate(j.deadline) }}</span>
                   </span>
                 }
               </div>
 
-              <h1 class="vacancy-title">{{ j.vacancy }}</h1>
+              <!-- Main Title & Company -->
+              <h1 class="vacancy-page-title">{{ j.vacancy }}</h1>
 
-              <div class="company-subheading">
-                <span class="material-symbols-outlined company-icon">domain</span>
-                <span class="company-name">{{ j.company }}</span>
+              <div class="company-details-row">
+                <div class="company-name-block">
+                  <span class="material-symbols-outlined">domain</span>
+                  <span class="company-name">{{ j.company }}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Key Details Strip -->
-          <div class="key-details-strip">
-            <div class="detail-item">
-              <span class="material-symbols-outlined detail-icon location">location_on</span>
-              <div class="detail-text">
-                <span class="detail-label">ლოკაცია</span>
-                <span class="detail-value">{{ j.location || 'დისტანციური' }}</span>
+          <!-- Key Metrics / Attributes Bar -->
+          <div class="key-metrics-grid">
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon location">location_on</span>
+              <div class="metric-content">
+                <span class="metric-label">ლოკაცია</span>
+                <span class="metric-value">{{ j.location || 'დისტანციური' }}</span>
               </div>
             </div>
 
-            <div class="detail-item">
-              <span class="material-symbols-outlined detail-icon salary">payments</span>
-              <div class="detail-text">
-                <span class="detail-label">ხელფასი</span>
-                <span class="detail-value highlight">{{ extractedSalary() }}</span>
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon salary">payments</span>
+              <div class="metric-content">
+                <span class="metric-label">ანაზღაურება</span>
+                <span class="metric-value salary-highlight">{{ extractedSalary() }}</span>
               </div>
             </div>
 
             @if (extractedEmail(); as email) {
-              <div class="detail-item email-item" (click)="copyEmail(email)" title="ელ-ფოსტის დაკოპირება">
-                <span class="material-symbols-outlined detail-icon email">mail</span>
-                <div class="detail-text">
-                  <span class="detail-label">ელ-ფოსტა</span>
-                  <span class="detail-value email-value">{{ email }}</span>
+              <div class="metric-card email-card" (click)="copyEmail(email)" title="ელ-ფოსტის დაკოპირება">
+                <span class="material-symbols-outlined metric-icon email">mail</span>
+                <div class="metric-content">
+                  <span class="metric-label">ელ-ფოსტა</span>
+                  <span class="metric-value email-text">{{ email }}</span>
                 </div>
-                <span class="material-symbols-outlined copy-hint-icon">content_copy</span>
+                <span class="material-symbols-outlined copy-icon">content_copy</span>
               </div>
             }
+
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon source">hub</span>
+              <div class="metric-content">
+                <span class="metric-label">წყარო</span>
+                <span class="metric-value">{{ detectSource(j.source, j.link) }}</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Hero Actions -->
-          <div class="hero-actions-row">
-            <button type="button" class="btn-copy-main" (click)="copyLink()" title="ბმულის კოპირება">
-              <span class="material-symbols-outlined">content_copy</span>
-              <span class="btn-copy-label">კოპირება</span>
+          <!-- Quick Action Buttons -->
+          <div class="hero-actions-bar">
+            <button type="button" class="btn-action-copy" (click)="copyLink()" title="გაზიარება">
+              <span class="material-symbols-outlined">share</span>
+              <span>გაზიარება</span>
             </button>
 
-            <button type="button" class="btn-apply-main" (click)="openOriginalSource(j.link)" title="წყაროზე გადასვლა">
+            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="წყაროზე გადასვლა">
               <span class="material-symbols-outlined">open_in_new</span>
-              <span class="btn-apply-label">წყაროზე გადასვლა</span>
+              <span>წყაროზე გადასვლა</span>
             </button>
           </div>
+        </header>
 
-        </div>
-
-        <!-- Description Section (NOT A CARD) -->
-        <div class="details-description-plain">
-          <div class="section-header-bar">
-            <span class="material-symbols-outlined section-icon">description</span>
-            <h2 class="section-title-text">ვაკანსიის აღწერა და დეტალები</h2>
+        <!-- Description & Detailed Requirements Body -->
+        <section class="vacancy-body-section glass-card">
+          <div class="section-title-bar">
+            <div class="title-left">
+              <span class="material-symbols-outlined section-icon">description</span>
+              <h2>ვაკანსიის აღწერა და მოთხოვნები</h2>
+            </div>
           </div>
 
-          <div class="description-body">
+          <div class="vacancy-description-content">
             @if (formattedDescription(); as formatted) {
-              <div class="description-text" [innerHTML]="formatted"></div>
+              <div class="rich-text-content" [innerHTML]="formatted"></div>
             } @else {
-              <div class="description-text empty-fallback">
-                <p>ვაკანსიის სრული დეტალების და მოთხოვნების სანახავად გადადით განაცხადის ორიგინალ წყაროზე.</p>
+              <div class="empty-description-notice">
+                <span class="material-symbols-outlined notice-icon">info</span>
+                <p>ვაკანსიის სრული დეტალების, მოთხოვნებისა და პირობების გასაცნობად გთხოვთ გადახვიდეთ განაცხადის პირდაპირ წყაროზე.</p>
+                <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
+                  <span>გადასვლა წყაროზე</span>
+                  <span class="material-symbols-outlined">open_in_new</span>
+                </button>
               </div>
             }
           </div>
 
-          <div class="content-footer-actions">
-            <button type="button" class="btn-apply-main" (click)="openOriginalSource(j.link)">
-              <span class="material-symbols-outlined">send</span>
-              <span>განაცხადის გაგზავნა</span>
-            </button>
-          </div>
-        </div>
+          <!-- Bottom Footer CTA -->
+          <footer class="vacancy-body-footer">
+            <div class="footer-left">
+              <span class="material-symbols-outlined">sync</span>
+              <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
+            </div>
+            <div class="footer-right">
+              <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
+                <span class="material-symbols-outlined">open_in_new</span>
+                <span>წყაროზე გადასვლა</span>
+              </button>
+            </div>
+          </footer>
+        </section>
 
-      </div>
+      </article>
     }
 
   </div>
-</div>
+</main>

@@ -44,3 +44,17 @@ export interface SentJobsResponse {
   page: number;
   lastPage: number;
 }
+
+export interface VacancyItem {
+  id: number;
+  vacancy: string;
+  company: string;
+  location: string;
+  source: string;
+  salaryRange?: string;
+  publishDate: string;
+  deadline?: string;
+  matchScore: number;
+  link: string;
+}
+

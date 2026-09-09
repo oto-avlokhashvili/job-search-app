@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
 import { QrModal } from '../qr-modal/qr-modal';
 import { EmailVerifyModal } from '../dashboard/email-verify-modal/email-verify-modal';
-import { VacancyDetails } from '../../public/vacancy-details/vacancy-details';
+import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -57,16 +57,10 @@ export class SentJobs implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  openVacancyDetails(jobId: number | string) {
+  openVacancyDetails(jobId: number | string, item?: any) {
     if (!jobId) return;
-    this.dialog.open(VacancyDetails, {
-      width: '750px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      panelClass: 'vacancy-dialog',
-      autoFocus: false,
-      data: { jobId }
-    });
+    const slug = generateJobSlug(item?.vacancy || item?.title, item?.company, jobId);
+    this.router.navigate(['/vacancies', slug]);
   }
 
   openUpgradeModal() {

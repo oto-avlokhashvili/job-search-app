@@ -23,34 +23,10 @@
             <span class="material-symbols-outlined">rocket_launch</span>
             დაიწყე AI აგენტის შექმნა
           </button>
-          <span class="cta-separator">ან</span>
-          <a (click)="scroll('vacancies')" class="btn-fluid secondary">
+          <a routerLink="/vacancies" class="btn-fluid secondary">
             <span class="material-symbols-outlined">search</span>
             მოძებნე მარტივად
           </a>
-        </div>
-
-        <!-- Integrated Live Portals Strip -->
-        <div class="hero-portals-strip">
-          <span class="strip-label">მხარდაჭერილი პორტალები:</span>
-          <div class="portals-badges-row">
-            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('jobs.ge')">
-              <img src="/icons/jobs.png" alt="Jobs.ge" class="portal-badge-logo">
-              <span>Jobs.ge</span>
-            </button>
-            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('hr.ge')">
-              <img src="/icons/hr.png" alt="HR.ge" class="portal-badge-logo">
-              <span>HR.ge</span>
-            </button>
-            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('awork.ge')">
-              <img src="/icons/awork.png" alt="Awork.ge" class="portal-badge-logo">
-              <span>Awork.ge</span>
-            </button>
-            <button type="button" class="portal-badge-item" (click)="scroll('vacancies'); setSource('myjobs.ge')">
-              <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="portal-badge-logo circular">
-              <span>Myjobs.ge</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -131,206 +107,27 @@
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- Vacancies Section -->
-  <section class="vacancies-section" id="vacancies" #vacanciesSection>
-    <div class="vacancies-search-header-wrapper">
-      <canvas #particleCanvas class="particle-canvas"></canvas>
-      
-      <div class="search-header-inner">
-        <div class="section-header text-center">
-          <h2 class="display-sm">
-            აქტიური ვაკანსიები
-            @if (totalRecords() > 0) {
-              <span class="total-vacancies-badge">{{ dbTotalRecords() | number }}</span>
-            }
-          </h2>
-          <p class="body-lg text-on-surface-variant">გაეცანით ბოლო პერიოდის საუკეთესო პოზიციებს წამყვან ქართულ კომპანიებში</p>
+    <!-- Integrated Portals Cards directly under Hero Grid -->
+    <div class="hero-portals-container" id="portals">
+      <div class="portals-header-line">
+        <div class="portals-title-group">
+          <span class="material-symbols-outlined portals-header-icon">hub</span>
+          <h2 class="portals-section-title">ინტეგრირებული პორტალები</h2>
         </div>
-
-        <!-- Mobile Inline Filters Trigger (Visible only on responsive instead of the inline filters-bar) -->
-        <button type="button" class="mobile-inline-filters-trigger" (click)="openFilterModal()">
-          <span class="material-symbols-outlined">tune</span>
-          <span>ფილტრები და ძებნა</span>
-          @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
-            <span class="active-filters-dot"></span>
-          }
-        </button>
-
-        <!-- Filters Bar Backdrop & Modal Container -->
-        <div class="filters-modal-backdrop" [class.open]="isFilterModalOpen()" (click)="closeFilterModal()">
-          <div #searchContainer class="filters-bar glass-card" (click)="$event.stopPropagation()">
-            
-            <!-- Mobile Modal Header -->
-            <div class="mobile-modal-header">
-              <h3>ფილტრები</h3>
-              <button type="button" class="btn-close-filters" (click)="closeFilterModal()">
-                <span class="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <div class="filter-group-main">
-              <div class="search-input-wrapper">
-                <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value); closeFilterModal()">
-              </div>
-              
-              <!-- Source Selector Dropdown -->
-              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-                <button type="button" class="custom-select-trigger" [class.open]="isSourceOpen()" (click)="toggleSourceDropdown($event)">
-                  @if (getSelectedSourceLogo(); as logo) {
-                    <img [src]="logo" class="select-icon-img" [class.circular]="sourceFilter.value === 'myjobs.ge'" alt="Source">
-                  } @else {
-                    <span class="material-symbols-outlined select-icon">language</span>
-                  }
-                  <span class="selected-value">{{ getSelectedSourceLabel() }}</span>
-                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isSourceOpen()">expand_more</span>
-                </button>
-                
-                @if (isSourceOpen()) {
-                  <div class="custom-select-dropdown glass-card animated-fade-in">
-                    <div class="options-list">
-                      @for (option of sourceOptions(); track option.value) {
-                        <div 
-                          class="custom-select-option source-option" 
-                          [class.selected]="option.value === sourceFilter.value"
-                          (click)="selectSource(option.value)"
-                        >
-                          <div class="option-left-content">
-                            @if (option.logo) {
-                              <img [src]="option.logo" [alt]="option.label" class="option-logo" [class.circular]="option.isCircular">
-                            } @else {
-                              <span class="material-symbols-outlined option-icon">apps</span>
-                            }
-                            <span class="option-label">{{ option.label }}</span>
-                          </div>
-                          
-                          <div class="option-right-content">
-                            @if (option.count > 0) {
-                              <span class="option-count-badge">{{ option.count | number }}</span>
-                            }
-                            @if (option.value === sourceFilter.value) {
-                              <span class="material-symbols-outlined check-icon">check</span>
-                            }
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Location Selector Dropdown -->
-              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-                <button type="button" class="custom-select-trigger" [class.open]="isLocationOpen()" (click)="toggleLocationDropdown($event)">
-                  <span class="material-symbols-outlined select-icon">location_on</span>
-                  <span class="selected-value">{{ getSelectedLocationLabel() }}</span>
-                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isLocationOpen()">expand_more</span>
-                </button>
-                
-                @if (isLocationOpen()) {
-                  <div class="custom-select-dropdown glass-card animated-fade-in">
-                    <div class="dropdown-search-wrapper" (click)="$event.stopPropagation()">
-                      <span class="material-symbols-outlined search-icon-small">search</span>
-                      <input type="text" [formControl]="locationSearchInput" placeholder="ძებნა..." class="dropdown-search-input">
-                      @if (locationSearchInput.value) {
-                        <button type="button" class="btn-clear-search-small" (click)="locationSearchInput.setValue('')">
-                          <span class="material-symbols-outlined">close</span>
-                        </button>
-                      }
-                    </div>
-                    <div class="options-list">
-                      @for (option of filteredLocationOptions(); track option.value) {
-                        <div 
-                          class="custom-select-option" 
-                          [class.selected]="option.value === locationFilter.value"
-                          (click)="selectLocation(option.value)"
-                        >
-                          <span class="option-label">{{ option.label }}</span>
-                          @if (option.value === locationFilter.value) {
-                            <span class="material-symbols-outlined check-icon">check</span>
-                          }
-                        </div>
-                      } @empty {
-                        <div class="no-options-found">ქალაქი ვერ მოიძებნა</div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Publish Date Selector Dropdown -->
-              <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-                <button type="button" class="custom-select-trigger" [class.open]="isDateRangeOpen()" (click)="toggleDateRangeDropdown($event)">
-                  <span class="material-symbols-outlined select-icon">calendar_today</span>
-                  <span class="selected-value">{{ getSelectedDateRangeLabel() }}</span>
-                  <span class="material-symbols-outlined select-arrow" [class.rotated]="isDateRangeOpen()">expand_more</span>
-                </button>
-                
-                @if (isDateRangeOpen()) {
-                  <div class="custom-select-dropdown glass-card animated-fade-in">
-                    <div class="options-list">
-                      @for (option of dateRangeOptions; track option.value) {
-                        <div 
-                          class="custom-select-option" 
-                          [class.selected]="option.value === dateRangeFilter.value"
-                          (click)="selectDateRange(option.value)"
-                        >
-                          <span class="option-label">{{ option.label }}</span>
-                          @if (option.value === dateRangeFilter.value) {
-                            <span class="material-symbols-outlined check-icon">check</span>
-                          }
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <button class="btn-search" (click)="loadJobs(searchFilter.value); closeFilterModal()">ძიება</button>
-            </div>
-
-            <!-- Popular Searches -->
-            <div class="popular-searches">
-              <span class="popular-searches-label">პოპულარული:</span>
-              <div class="popular-tags">
-                <button 
-                  type="button" 
-                  class="popular-tag" 
-                  [class.active]="searchFilter.value === 'თიბისი ბანკი'" 
-                  (click)="setPopularSearch('თიბისი ბანკი'); closeFilterModal()"
-                >
-                  <img src="/icons/tbc.jpg" alt="TBC" class="tag-icon">
-                  TBC ბანკი
-                </button>
-                <button 
-                  type="button" 
-                  class="popular-tag" 
-                  [class.active]="searchFilter.value === 'საქართველოს ბანკი'" 
-                  (click)="setPopularSearch('საქართველოს ბანკი'); closeFilterModal()"
-                >
-                  <img src="/icons/bog.png" alt="BOG" class="tag-icon">
-                  საქართველოს ბანკი
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="portals-live-badge">
+          <span class="pulse-dot-green"></span>
+          <span>რეალურ დროში სინქრონიზებული</span>
         </div>
       </div>
-    </div>
 
-    <div class="vacancies-container">
-      <!-- Provider Status Interactive Cards -->
       <div class="provider-cards-grid">
         <!-- Jobs.ge Card -->
-        <div 
+        <a 
           class="provider-status-card glass-card" 
-          [class.active]="sourceFilter.value === 'jobs.ge'" 
-          (click)="toggleSourceCard('jobs.ge')"
-          role="button" 
-          tabindex="0"
-          title="Jobs.ge ვაკანსიების ფილტრი"
+          [routerLink]="['/vacancies']" 
+          [queryParams]="{ source: 'jobs.ge' }"
+          title="Jobs.ge ვაკანსიების ნახვა"
         >
           <div class="card-header-line">
             <div class="provider-logo-container jobs-ge">
@@ -344,33 +141,30 @@
           <div class="card-info">
             <span class="provider-title">Jobs.ge</span>
             <div class="provider-stats">
-              <span class="provider-count">{{ jobsGeCount() | number }}</span>
+              <span class="provider-count">
+                @if (jobsGeCount() > 0) {
+                  {{ jobsGeCount() | number }}
+                } @else {
+                  <span class="count-loader"></span>
+                }
+              </span>
               <span class="provider-unit">ვაკანსია</span>
             </div>
           </div>
           <div class="card-footer-action">
-            @if (sourceFilter.value === 'jobs.ge') {
-              <span class="card-selected-tag">
-                <span class="material-symbols-outlined">check_circle</span>
-                არჩეულია
-              </span>
-            } @else {
-              <span class="card-browse-tag">
-                ფილტრი
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </span>
-            }
+            <span class="card-browse-tag">
+              ვაკანსიების ნახვა
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </span>
           </div>
-        </div>
+        </a>
 
         <!-- HR.ge Card -->
-        <div 
+        <a 
           class="provider-status-card glass-card" 
-          [class.active]="sourceFilter.value === 'hr.ge'" 
-          (click)="toggleSourceCard('hr.ge')"
-          role="button" 
-          tabindex="0"
-          title="HR.ge ვაკანსიების ფილტრი"
+          [routerLink]="['/vacancies']" 
+          [queryParams]="{ source: 'hr.ge' }"
+          title="HR.ge ვაკანსიების ნახვა"
         >
           <div class="card-header-line">
             <div class="provider-logo-container hr-ge">
@@ -384,33 +178,30 @@
           <div class="card-info">
             <span class="provider-title">HR.ge</span>
             <div class="provider-stats">
-              <span class="provider-count">{{ hrGeCount() | number }}</span>
+              <span class="provider-count">
+                @if (hrGeCount() > 0) {
+                  {{ hrGeCount() | number }}
+                } @else {
+                  <span class="count-loader"></span>
+                }
+              </span>
               <span class="provider-unit">ვაკანსია</span>
             </div>
           </div>
           <div class="card-footer-action">
-            @if (sourceFilter.value === 'hr.ge') {
-              <span class="card-selected-tag">
-                <span class="material-symbols-outlined">check_circle</span>
-                არჩეულია
-              </span>
-            } @else {
-              <span class="card-browse-tag">
-                ფილტრი
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </span>
-            }
+            <span class="card-browse-tag">
+              ვაკანსიების ნახვა
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </span>
           </div>
-        </div>
+        </a>
 
         <!-- Awork.ge Card -->
-        <div 
+        <a 
           class="provider-status-card glass-card" 
-          [class.active]="sourceFilter.value === 'awork.ge'" 
-          (click)="toggleSourceCard('awork.ge')"
-          role="button" 
-          tabindex="0"
-          title="Awork.ge ვაკანსიების ფილტრი"
+          [routerLink]="['/vacancies']" 
+          [queryParams]="{ source: 'awork.ge' }"
+          title="Awork.ge ვაკანსიების ნახვა"
         >
           <div class="card-header-line">
             <div class="provider-logo-container awork-ge">
@@ -424,33 +215,30 @@
           <div class="card-info">
             <span class="provider-title">Awork.ge</span>
             <div class="provider-stats">
-              <span class="provider-count">{{ aworkGeCount() | number }}</span>
+              <span class="provider-count">
+                @if (aworkGeCount() > 0) {
+                  {{ aworkGeCount() | number }}
+                } @else {
+                  <span class="count-loader"></span>
+                }
+              </span>
               <span class="provider-unit">ვაკანსია</span>
             </div>
           </div>
           <div class="card-footer-action">
-            @if (sourceFilter.value === 'awork.ge') {
-              <span class="card-selected-tag">
-                <span class="material-symbols-outlined">check_circle</span>
-                არჩეულია
-              </span>
-            } @else {
-              <span class="card-browse-tag">
-                ფილტრი
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </span>
-            }
+            <span class="card-browse-tag">
+              ვაკანსიების ნახვა
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </span>
           </div>
-        </div>
+        </a>
 
         <!-- Myjobs.ge Card -->
-        <div 
+        <a 
           class="provider-status-card glass-card" 
-          [class.active]="sourceFilter.value === 'myjobs.ge'" 
-          (click)="toggleSourceCard('myjobs.ge')"
-          role="button" 
-          tabindex="0"
-          title="Myjobs.ge ვაკანსიების ფილტრი"
+          [routerLink]="['/vacancies']" 
+          [queryParams]="{ source: 'myjobs.ge' }"
+          title="Myjobs.ge ვაკანსიების ნახვა"
         >
           <div class="card-header-line">
             <div class="provider-logo-container myjobs-ge">
@@ -464,310 +252,23 @@
           <div class="card-info">
             <span class="provider-title">Myjobs.ge</span>
             <div class="provider-stats">
-              <span class="provider-count">{{ myjobsGeCount() | number }}</span>
+              <span class="provider-count">
+                @if (myjobsGeCount() > 0) {
+                  {{ myjobsGeCount() | number }}
+                } @else {
+                  <span class="count-loader"></span>
+                }
+              </span>
               <span class="provider-unit">ვაკანსია</span>
             </div>
           </div>
           <div class="card-footer-action">
-            @if (sourceFilter.value === 'myjobs.ge') {
-              <span class="card-selected-tag">
-                <span class="material-symbols-outlined">check_circle</span>
-                არჩეულია
-              </span>
-            } @else {
-              <span class="card-browse-tag">
-                ფილტრი
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </span>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Vacancies Results -->
-      <div class="vacancies-results-wrapper" id="results-container">
-        @if (!isLoading() && filteredJobs().length > 0) {
-          <div class="results-meta">
-            <span class="results-count">
-              @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
-                ნაპოვნია <strong>{{ totalRecords() | number }}</strong> ფილტრის შესაბამისი ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
-                @if (sourceFilter.value !== 'all') {
-                  <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
-                    <span>ყველა პორტალზე დაბრუნება</span>
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                }
-              } @else {
-                სულ ბაზაშია: <strong>{{ totalRecords() | number }}</strong> აქტიური ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
-              }
+            <span class="card-browse-tag">
+              ვაკანსიების ნახვა
+              <span class="material-symbols-outlined">arrow_forward</span>
             </span>
           </div>
-        }
-
-        @if (isLoading()) {
-          <!-- Desktop Table Skeleton View -->
-          <div class="vacancies-table-container loading-table">
-            <div class="table-loading-bar"></div>
-            <table class="vacancies-table">
-              <thead>
-                <tr>
-                  <th class="col-vacancy">ვაკანსია</th>
-                  <th class="col-provider">პროვაიდერი</th>
-                  <th class="col-location">ლოკაცია</th>
-                  <th class="col-salary">ხელფასი</th>
-                  <th class="col-published">გამოქვეყნდა</th>
-                  <th class="col-deadline">ბოლო ვადა</th>
-                  <th class="col-action"></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (i of [1,2,3,4,5,6,7,8]; track i) {
-                  <tr class="skeleton-row skeleton-pulse">
-                    <td class="col-vacancy">
-                      <div class="job-info-cell">
-                        <div class="company-logo-avatar skeleton-block"></div>
-                        <div class="job-titles">
-                          <span class="job-vacancy skeleton-text" [style.width]="(i % 2 === 0 ? '140px' : '170px')" style="height: 15px;"></span>
-                          <span class="job-company skeleton-text short" [style.width]="(i % 2 === 0 ? '80px' : '100px')" style="height: 11px; margin-top: 5px;"></span>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
-                    <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
-                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
-                    <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
-                    <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
-                    <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Mobile Cards Skeleton View -->
-          <div class="vacancies-cards-container loading-cards">
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <div class="vacancy-card skeleton-card skeleton-pulse compact-job-card">
-                <div class="job-card-top">
-                  <div class="company-logo-avatar skeleton-block"></div>
-                  <div class="job-header-info" style="flex: 1;">
-                    <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '75%' : '88%')" style="height: 14px; margin-bottom: 4px;"></div>
-                    <div class="skeleton-text" style="width: 45%; height: 10px;"></div>
-                  </div>
-                </div>
-                <div class="job-card-bottom-pills" style="margin-top: 6px;">
-                  <div class="skeleton-text" style="width: 65px; height: 18px; border-radius: 12px;"></div>
-                  <div class="skeleton-text" style="width: 75px; height: 18px; border-radius: 12px;"></div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else if (filteredJobs().length > 0) {
-          <!-- Desktop Table View -->
-          <div class="vacancies-table-container">
-            <table class="vacancies-table">
-              <thead>
-                <tr>
-                  <th class="col-vacancy">ვაკანსია</th>
-                  <th class="col-provider">პროვაიდერი</th>
-                  <th class="col-location">ლოკაცია</th>
-                  <th class="col-salary">ხელფასი</th>
-                  <th class="col-published">გამოქვეყნდა</th>
-                  <th class="col-deadline">ბოლო ვადა</th>
-                  <th class="col-action"></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (job of filteredJobs(); track job.id) {
-                  <tr>
-                    <td class="col-vacancy">
-                      <div class="job-info-cell">
-                        <div class="company-logo-avatar">
-                          {{ job.company.charAt(0) }}
-                        </div>
-                        <div class="job-titles">
-                          <button 
-                            type="button" 
-                            class="job-vacancy-link" 
-                            (click)="viewVacancy(job.id)"
-                            [matTooltip]="job.vacancy"
-                            matTooltipPosition="above"
-                            [matTooltipShowDelay]="150"
-                            matTooltipClass="custom-vacancy-tooltip"
-                            [title]="job.vacancy"
-                          >
-                            <span class="job-vacancy">{{ job.vacancy }}</span>
-                          </button>
-                          <span class="job-company" [title]="job.company">{{ job.company }}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="col-provider">
-                      <div class="provider-cell">
-                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
-                          @if (job.source === 'jobs.ge') {
-                            <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-logo">
-                          } @else if (job.source === 'hr.ge') {
-                            <img src="/icons/hr.png" alt="HR.ge" class="provider-logo">
-                          } @else if (job.source === 'awork.ge') {
-                            <img src="/icons/awork.png" alt="Awork.ge" class="provider-logo">
-                          } @else if (job.source === 'myjobs.ge') {
-                            <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-logo circular">
-                          } @else {
-                            <span class="material-symbols-outlined provider-icon">language</span>
-                          }
-                          <span>{{ job.source }}</span>
-                        </span>
-                      </div>
-                    </td>
-                    <td class="col-location">
-                      <div class="location-cell">
-                        <span class="material-symbols-outlined">location_on</span>
-                        <span>{{ job.location }}</span>
-                      </div>
-                    </td>
-                    <td class="col-salary">
-                      <span class="salary-text">{{ job.salaryRange }}</span>
-                    </td>
-                    <td class="col-published">
-                      <span class="date-text">{{ job.publishDate }}</span>
-                    </td>
-                    <td class="col-deadline">
-                      @let dStatus = getDeadlineStatus(job.deadline, job.publishDate);
-                      <span class="deadline-tag" [ngClass]="dStatus.class">
-                        {{ dStatus.text }}
-                      </span>
-                    </td>
-                    <td class="col-action">
-                      <button type="button" class="btn-fluid btn-sm primary apply-btn" (click)="viewVacancy(job.id)">
-                        ნახვა
-                      </button>
-                    </td>
-                  </tr>
-                }
-                @if (isAppending()) {
-                  <tr class="skeleton-row skeleton-pulse">
-                    <td class="col-vacancy">
-                      <div class="job-info-cell">
-                        <div class="company-logo-avatar skeleton-block"></div>
-                        <div class="job-titles">
-                          <span class="job-vacancy skeleton-text" style="width: 140px; height: 15px;"></span>
-                          <span class="job-company skeleton-text short" style="width: 80px; height: 11px; margin-top: 5px;"></span>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
-                    <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
-                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
-                    <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
-                    <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
-                    <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Mobile Compact Cards View -->
-          <div class="vacancies-cards-container">
-            @for (job of filteredJobs(); track job.id) {
-              <div class="vacancy-card glass-card compact-job-card" (click)="viewVacancy(job.id)" role="button" tabindex="0">
-                <div class="job-card-top">
-                  <div class="company-logo-avatar">
-                    {{ job.company.charAt(0) }}
-                  </div>
-                  <div class="job-header-info">
-                    <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
-                    <div class="job-sub-info">
-                      <span class="card-company-name">{{ job.company }}</span>
-                      <span class="meta-dot">•</span>
-                      <span class="card-location">
-                        <span class="material-symbols-outlined mini-icon">location_on</span>
-                        {{ job.location }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="card-chevron-wrap">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                  </div>
-                </div>
-
-                <div class="job-card-bottom-pills">
-                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
-                    @if (job.source === 'jobs.ge') {
-                      <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'hr.ge') {
-                      <img src="/icons/hr.png" alt="HR.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'awork.ge') {
-                      <img src="/icons/awork.png" alt="Awork.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'myjobs.ge') {
-                      <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-mini-icon circular">
-                    }
-                    <span>{{ job.source }}</span>
-                  </span>
-
-                  @if (job.salaryRange && job.salaryRange !== 'შეთანხმებით' && job.salaryRange !== 'N/A') {
-                    <span class="salary-pill-mini">
-                      <span class="material-symbols-outlined mini-icon">payments</span>
-                      {{ job.salaryRange }}
-                    </span>
-                  }
-
-                  @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
-                  <span class="deadline-tag mini" [ngClass]="mStatus.class">
-                    {{ mStatus.text }}
-                  </span>
-                </div>
-              </div>
-            }
-            @if (isAppending()) {
-              @for (i of [1,2,3]; track i) {
-                <div class="vacancy-card skeleton-card skeleton-pulse compact-job-card">
-                  <div class="job-card-top">
-                    <div class="company-logo-avatar skeleton-block"></div>
-                    <div class="job-header-info" style="flex: 1;">
-                      <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '70%' : '85%')" style="height: 14px; margin-bottom: 4px;"></div>
-                      <div class="skeleton-text" style="width: 45%; height: 10px;"></div>
-                    </div>
-                  </div>
-                  <div class="job-card-bottom-pills" style="margin-top: 6px;">
-                    <div class="skeleton-text" style="width: 65px; height: 18px; border-radius: 12px;"></div>
-                    <div class="skeleton-text" style="width: 75px; height: 18px; border-radius: 12px;"></div>
-                  </div>
-                </div>
-              }
-            }
-          </div>
-
-          @if (hasMoreJobs() && !isLoading()) {
-            <div class="load-more-wrapper text-center">
-              <button class="btn-fluid secondary load-more-btn" (click)="loadMore()" [disabled]="isAppending()">
-                @if (isAppending()) {
-                  <span class="btn-spinner" style="border-top-color: var(--primary); margin-right: 8px;"></span>
-                  იტვირთება...
-                } @else if (currentPage >= 5 && !authService.isLoggedIn()) {
-                  <span class="material-symbols-outlined">lock</span>
-                  მეტის ჩატვირთვა (საჭიროებს ავტორიზაციას)
-                } @else {
-                  <span class="material-symbols-outlined">expand_more</span>
-                  მეტის ჩატვირთვა
-                }
-              </button>
-            </div>
-          }
-        } @else {
-          <!-- Empty State -->
-          <div class="empty-state glass-card">
-            <div class="empty-icon-wrap">
-              <span class="material-symbols-outlined">search_off</span>
-            </div>
-            <h3>ვაკანსიები ვერ მოიძებნა</h3>
-            <p>შეცვალეთ ფილტრის პარამეტრები ან გაასუფთავეთ საძიებო სიტყვა</p>
-            <button class="btn-fluid secondary btn-sm" (click)="clearFilters()">
-              ფილტრების გასუფთავება
-            </button>
-          </div>
-        }
+        </a>
       </div>
     </div>
   </section>
@@ -915,25 +416,4 @@
       </div>
     </div>
   </section>
-
-  <!-- Floating Scroll to Filters Button (Mobile only) -->
-  @if (showScrollToFilters() && !isFilterModalOpen()) {
-    <button
-      type="button"
-      class="scroll-to-filters-btn animated-fade-in"
-      [class.has-bottom-nav]="authService.isLoggedIn()"
-      (click)="openFilterModal()"
-      title="ფილტრები"
-    >
-      <svg class="circular-text-svg" viewBox="0 0 100 100">
-        <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-        <text>
-          <textPath href="#circlePath" startOffset="50%" text-anchor="middle">
-            ფილტრები • ფილტრები • ფილტრები •
-          </textPath>
-        </text>
-      </svg>
-      <span class="material-symbols-outlined central-icon">tune</span>
-    </button>
-  }
 </main>

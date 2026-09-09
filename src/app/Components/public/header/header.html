@@ -7,7 +7,7 @@
       </div>
       <div class="nav-links-desktop">
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
-        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'vacancies'" (click)="scroll('vacancies')">ვაკანსიები</a>
+        <a class="nav-link" [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')">ვაკანსიები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
@@ -128,7 +128,7 @@
 
   <div class="mobile-menu" [class.active]="menuOpen">
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
-    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'vacancies'" (click)="scroll('vacancies'); menuOpen = false">ვაკანსიები</a>
+    <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     @if (authService.isLoggedIn()) {
@@ -148,8 +148,8 @@
   <div class="mobile-bottom-nav">
     <!-- 1. ვაკანსიები -->
     <a class="bottom-nav-item"
-       [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'vacancies'"
-       (click)="scroll('vacancies')">
+       [routerLink]="'/vacancies'"
+       [class.active]="router.url.startsWith('/vacancies')">
       <div class="nav-icon-wrap">
         <span class="material-symbols-outlined nav-icon">work</span>
       </div>

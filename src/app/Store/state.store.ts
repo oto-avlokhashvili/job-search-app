@@ -1,14 +1,44 @@
-import { signalStore, withState, withMethods, patchState, withComputed } from '@ngrx/signals';
+import { signalStore, withState, withMethods, patchState, withComputed, withHooks } from '@ngrx/signals';
 import { computed, inject } from "@angular/core";
 import { JobsService } from '../Core/Services/jobs-service';
 import { AuthService } from '../Core/Services/auth-service';
 import { User, SubscriptionPlan, SubscriptionDetails } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
-import { AiMatchedJobsResponse, Job, SentJobsResponse } from '../Core/Interfaces/jobs';
+import { AiMatchedJobsResponse, Job, SentJobsResponse, VacancyItem } from '../Core/Interfaces/jobs';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
 import { SubscriptionService } from '../Core/Services/subscription.service';
+import { extractSalary } from '../Core/Utils/salary-extractor';
+
+export function detectJobSource(sourceOrLink?: string, linkFallback?: string): string {
+    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
+    if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) return 'myjobs.ge';
+    if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
+    if (l.includes('hr.ge') || l.includes('hrge')) return 'hr.ge';
+    if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
+    return 'other';
+}
+
+export function formatJobDate(dateStr: any): string {
+    if (!dateStr) return 'დღეს';
+    try {
+        let date: Date;
+        if (typeof dateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr.trim())) {
+            return dateStr.trim();
+        } else {
+            date = new Date(dateStr);
+        }
+
+        if (isNaN(date.getTime())) return dateStr;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${day}/${month}/${year}`;
+    } catch {
+        return dateStr;
+    }
+}
 
 type State = {
     profile: User;
@@ -42,6 +72,23 @@ type State = {
     selectedJob: Job | null;
     selectedJobLoading: boolean;
     selectedJobError: string | null;
+
+    publicJobs: VacancyItem[];
+    publicJobsTotal: number;
+    publicDbTotal: number;
+    publicJobsGeCount: number;
+    publicHrGeCount: number;
+    publicAworkGeCount: number;
+    publicMyjobsGeCount: number;
+    publicJobsLoaded: boolean;
+    publicJobsLoading: boolean;
+    publicJobsAppending: boolean;
+    publicJobsPage: number;
+    publicHasMore: boolean;
+    publicJobsQuery: string;
+    publicJobsSource: string;
+    publicJobsLocation: string;
+    publicJobsDateRange: string;
 }
 
 const initialState: State = {
@@ -76,6 +123,23 @@ const initialState: State = {
     selectedJob: null,
     selectedJobLoading: false,
     selectedJobError: null,
+
+    publicJobs: [],
+    publicJobsTotal: 0,
+    publicDbTotal: 0,
+    publicJobsGeCount: 0,
+    publicHrGeCount: 0,
+    publicAworkGeCount: 0,
+    publicMyjobsGeCount: 0,
+    publicJobsLoaded: false,
+    publicJobsLoading: false,
+    publicJobsAppending: false,
+    publicJobsPage: 1,
+    publicHasMore: true,
+    publicJobsQuery: '',
+    publicJobsSource: 'all',
+    publicJobsLocation: 'all',
+    publicJobsDateRange: 'all',
 }
 
 let inFlightProfilePromise: Promise<void> | null = null;
@@ -473,8 +537,159 @@ export const StateStore = signalStore(
 
         clearSelectedJob() {
             patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: null });
+        },
+
+        async loadPublicJobs(params?: {
+            query?: string;
+            source?: string;
+            location?: string;
+            dateRange?: string;
+            append?: boolean;
+            force?: boolean;
+        }): Promise<void> {
+            const query = params?.query ?? '';
+            const source = params?.source ?? 'all';
+            const location = params?.location ?? 'all';
+            const dateRange = params?.dateRange ?? 'all';
+            const append = params?.append ?? false;
+            const force = params?.force ?? false;
+
+            // Cache check: Return immediately if matching data is already cached
+            if (
+                !force &&
+                !append &&
+                store.publicJobsLoaded() &&
+                store.publicJobs().length > 0 &&
+                store.publicJobsQuery() === query &&
+                store.publicJobsSource() === source &&
+                store.publicJobsLocation() === location &&
+                store.publicJobsDateRange() === dateRange
+            ) {
+                return;
+            }
+
+            const page = append ? store.publicJobsPage() + 1 : 1;
+            const limit = append ? 50 : 30;
+
+            if (append) {
+                patchState(store, { publicJobsAppending: true });
+            } else {
+                patchState(store, { publicJobsLoading: true });
+            }
+
+            let publishDateParam = 'all';
+            if (dateRange !== 'all') {
+                const targetDate = new Date();
+                if (dateRange === 'yesterday') {
+                    targetDate.setDate(targetDate.getDate() - 1);
+                } else if (dateRange === '3days') {
+                    targetDate.setDate(targetDate.getDate() - 3);
+                } else if (dateRange === '7days') {
+                    targetDate.setDate(targetDate.getDate() - 7);
+                } else if (dateRange === '30days') {
+                    targetDate.setDate(targetDate.getDate() - 30);
+                }
+                const year = targetDate.getFullYear();
+                const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const day = String(targetDate.getDate()).padStart(2, '0');
+                publishDateParam = `${year}-${month}-${day}`;
+            }
+
+            try {
+                const res: any = await firstValueFrom(
+                    jobsService.getJobs(query, page, source, location, '', publishDateParam, limit)
+                );
+
+                const mapped: VacancyItem[] = (res.jobs || []).map((job: any) => ({
+                    id: job.id,
+                    vacancy: job.vacancy,
+                    company: job.company,
+                    location: job.location || 'Remote',
+                    source: detectJobSource(job.source || '', job.link || ''),
+                    salaryRange: extractSalary(job),
+                    publishDate: formatJobDate(job.publishDate),
+                    deadline: job.deadline ? formatJobDate(job.deadline) : '',
+                    matchScore: job.match || Math.floor(Math.random() * 10) + 90,
+                    link: job.link || '/jobs'
+                }));
+
+                const total = res.counts?.filteredRecords || 0;
+                const dbTotal = res.counts?.totalRecords || 0;
+                const jobsGe = res.counts?.jobsGe ?? res.counts?.jobs_ge ?? res.counts?.['jobs.ge'] ?? 0;
+                const hrGe = res.counts?.hrGe ?? res.counts?.hr_ge ?? res.counts?.['hr.ge'] ?? 0;
+
+                let aworkGe = res.counts?.aworkGe ?? res.counts?.awork ?? res.counts?.['awork.ge'] ?? res.counts?.awork_ge ?? res.counts?.aWork ?? res.counts?.aWorkGe;
+                if (aworkGe === undefined || (aworkGe === 0 && mapped.some(j => j.source === 'awork.ge'))) {
+                    aworkGe = mapped.filter(j => j.source === 'awork.ge').length;
+                }
+
+                let myjobsGe = res.counts?.myjobsGe ?? res.counts?.myjobs_ge ?? res.counts?.['myjobs.ge'] ?? res.counts?.myjobs ?? res.counts?.myJobsGe ?? res.counts?.myJobs;
+                if (myjobsGe === undefined || (myjobsGe === 0 && mapped.some(j => j.source === 'myjobs.ge'))) {
+                    myjobsGe = mapped.filter(j => j.source === 'myjobs.ge').length;
+                }
+
+                const updatedJobs = append ? [...store.publicJobs(), ...mapped] : mapped;
+
+                patchState(store, {
+                    publicJobs: updatedJobs,
+                    publicJobsTotal: total,
+                    publicDbTotal: dbTotal,
+                    publicJobsGeCount: jobsGe,
+                    publicHrGeCount: hrGe,
+                    publicAworkGeCount: aworkGe,
+                    publicMyjobsGeCount: myjobsGe,
+                    publicJobsPage: page,
+                    publicHasMore: updatedJobs.length < total && mapped.length > 0,
+                    publicJobsLoaded: true,
+                    publicJobsLoading: false,
+                    publicJobsAppending: false,
+                    publicJobsQuery: query,
+                    publicJobsSource: source,
+                    publicJobsLocation: location,
+                    publicJobsDateRange: dateRange,
+                });
+            } catch (err) {
+                patchState(store, {
+                    publicJobsLoading: false,
+                    publicJobsAppending: false
+                });
+                console.error('Error loading public jobs:', err);
+                throw err;
+            }
+        },
+
+        async loadPublicCounts(force: boolean = false): Promise<void> {
+            if (!force && store.publicDbTotal() > 0) {
+                return;
+            }
+            try {
+                const res: any = await firstValueFrom(
+                    jobsService.getJobs('', 1, 'all', 'all', '', 'all', 1)
+                );
+                const dbTotal = res.counts?.totalRecords || 0;
+                const jobsGe = res.counts?.jobsGe ?? res.counts?.jobs_ge ?? res.counts?.['jobs.ge'] ?? 0;
+                const hrGe = res.counts?.hrGe ?? res.counts?.hr_ge ?? res.counts?.['hr.ge'] ?? 0;
+                const aworkGe = res.counts?.aworkGe ?? res.counts?.awork ?? res.counts?.['awork.ge'] ?? res.counts?.awork_ge ?? 0;
+                const myjobsGe = res.counts?.myjobsGe ?? res.counts?.myjobs_ge ?? res.counts?.['myjobs.ge'] ?? res.counts?.myjobs ?? 0;
+
+                patchState(store, {
+                    publicDbTotal: dbTotal,
+                    publicJobsGeCount: jobsGe,
+                    publicHrGeCount: hrGe,
+                    publicAworkGeCount: aworkGe,
+                    publicMyjobsGeCount: myjobsGe,
+                });
+            } catch (err) {
+                console.error('Error loading public job counts:', err);
+            }
         }
     })),
+    withHooks({
+        onInit(store) {
+            store.loadPublicJobs();
+            store.loadCities();
+        }
+    })
 );
 
 export function animateValue(start: number, end: number, duration: number, onUpdate: (val: number) => void) {
