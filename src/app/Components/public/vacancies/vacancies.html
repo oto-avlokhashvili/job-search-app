@@ -350,6 +350,27 @@
         </div>
       </div>
 
+      <!-- Public CV Upload Banner -->
+      <div class="public-cv-banner glass-card">
+        <div class="banner-glow-effect"></div>
+        <div class="banner-content">
+          <div class="banner-badge">
+            <span class="pulse-dot"></span>
+            <span>Talent Pool · კანდიდატთა ბაზა</span>
+          </div>
+          <h2 class="banner-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
+          <p class="banner-subtitle">
+            დატოვე შენი რეზიუმე და საკონტაქტო მონაცემები — წამყვანი ქართული კომპანიები და HR სპეციალისტები პირდაპირ შემოგთავაზებენ შესაბამის ვაკანსიებს.
+          </p>
+        </div>
+        <div class="banner-action">
+          <button type="button" class="btn-banner-upload" (click)="openPublicCvModal()">
+            <span class="material-symbols-outlined">cloud_upload</span>
+            <span>CV-ის ატვირთვა</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Vacancies Results -->
       <div class="vacancies-results-wrapper" id="results-container">
         @if (!isLoading() && filteredJobs().length > 0) {

@@ -1,0 +1,277 @@
+<div class="public-cv-modal-container">
+  <!-- Close Button -->
+  <button class="close-btn" (click)="close()" aria-label="Close">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+
+  @if (!isSuccess()) {
+    @if (isAlreadySubmitted()) {
+      <!-- Already Submitted State -->
+      <div class="modal-header animate-pop">
+        <div class="badge-pill success-badge">
+          <span class="pulse-dot"></span>
+          <span>CV უკვე გაგზავნილია</span>
+        </div>
+
+        <div class="icon-circle success-tone">
+          <span class="material-symbols-outlined">mark_email_read</span>
+        </div>
+
+        <h2>თქვენი CV უკვე ბაზაშია</h2>
+        <p class="subtitle">
+          თქვენი რეზიუმე და საკონტაქტო მონაცემები წარმატებით არის შენახული. რეკრუტერები პირდაპირ დაგიკავშირდებიან.
+        </p>
+      </div>
+
+      <div class="already-submitted-body animate-pop">
+        @if (submittedInfo(); as info) {
+          <div class="submitted-info-card">
+            @if (info.fileName) {
+              <div class="info-row">
+                <div class="info-icon-wrap file-icon">
+                  <span class="material-symbols-outlined">description</span>
+                </div>
+                <div class="info-row-content">
+                  <span class="info-row-label">ატვირთული ფაილი</span>
+                  <span class="info-row-value file-highlight" [title]="info.fileName">{{ info.fileName }}</span>
+                </div>
+              </div>
+            }
+
+            <div class="info-row">
+              <div class="info-icon-wrap">
+                <span class="material-symbols-outlined">mail</span>
+              </div>
+              <div class="info-row-content">
+                <span class="info-row-label">ელ-ფოსტა</span>
+                <span class="info-row-value">{{ info.email }}</span>
+              </div>
+            </div>
+
+            @if (info.phoneNumber) {
+              <div class="info-row">
+                <div class="info-icon-wrap">
+                  <span class="material-symbols-outlined">call</span>
+                </div>
+                <div class="info-row-content">
+                  <span class="info-row-label">ტელეფონი</span>
+                  <span class="info-row-value">{{ info.phoneNumber }}</span>
+                </div>
+              </div>
+            }
+
+            @if (info.submittedAt) {
+              <div class="info-row">
+                <div class="info-icon-wrap">
+                  <span class="material-symbols-outlined">calendar_today</span>
+                </div>
+                <div class="info-row-content">
+                  <span class="info-row-label">გაგზავნის დრო</span>
+                  <span class="info-row-value date-val">{{ formatDate(info.submittedAt) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="status-callout">
+          <span class="material-symbols-outlined">verified</span>
+          <span>CV აქტიურია და ხელმისაწვდომია დამსაქმებლებისთვის</span>
+        </div>
+
+        <div class="already-actions-group">
+          <button type="button" class="btn-retry" (click)="retryUpload()">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>ახალი CV-ის ატვირთვა / განახლება</span>
+          </button>
+
+          <button type="button" class="btn-close-sub" (click)="close()">
+            <span>გასაგებია / დახურვა</span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="badge-pill">
+          <span class="pulse-dot"></span>
+          <span>Talent Pool · კანდიდატთა ბაზა</span>
+        </div>
+
+        <div class="icon-circle">
+          <span class="material-symbols-outlined">person_search</span>
+        </div>
+
+        <h2>ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
+        <p class="subtitle">
+          დატოვე შენი რეზიუმე და საკონტაქტო მონაცემები — წამყვანი ქართული კომპანიები და HR სპეციალისტები პირდაპირ შემოგთავაზებენ ვაკანსიებს.
+        </p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="cv-upload-form" novalidate>
+        <!-- File Dropzone -->
+        <div class="form-group">
+          <label>
+            <span>CV / რეზიუმე ფაილი</span>
+            <span class="required-star">*</span>
+          </label>
+          
+          <input
+            #fileInput
+            type="file"
+            accept=".pdf,.docx,.doc,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            (change)="onFileSelected($event)"
+            style="display: none;"
+          />
+
+          @if (!selectedFile()) {
+            <div
+              class="file-dropzone"
+              [class.dragging]="isDragging()"
+              [class.error]="hasAttemptedSubmit() && !selectedFile()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()"
+              role="button"
+              tabindex="0"
+            >
+              <div class="dropzone-icon">
+                <span class="material-symbols-outlined">cloud_upload</span>
+              </div>
+              <div class="dropzone-text">
+                <span class="main-drop-text">ჩააგდეთ ფაილი აქ ან <strong>აირჩიეთ კომპიუტერიდან</strong></span>
+                <span class="sub-drop-text">ფორმატები: PDF, DOCX, DOC (მაქს. 5MB)</span>
+              </div>
+            </div>
+            @if (hasAttemptedSubmit() && !selectedFile()) {
+              <span class="error-msg">გთხოვთ ატვირთოთ თქვენი CV ფაილი</span>
+            }
+          } @else {
+            <div class="selected-file-card">
+              <div class="file-card-left">
+                <div class="file-type-icon">
+                  <span class="material-symbols-outlined">description</span>
+                </div>
+                <div class="file-details">
+                  <span class="file-name" [title]="selectedFile()!.name">{{ selectedFile()!.name }}</span>
+                  <span class="file-size">{{ formatFileSize(selectedFile()!.size) }}</span>
+                </div>
+              </div>
+              <button type="button" class="btn-remove-file" (click)="removeFile($event)" title="ფაილის წაშლა">
+                <span class="material-symbols-outlined">delete_outline</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="cv-email">
+            <span>ელ-ფოსტა (შეთავაზებების მისაღებად)</span>
+            <span class="required-star">*</span>
+          </label>
+          <div class="input-wrap" [class.error]="form.get('email')?.invalid && (form.get('email')?.touched || hasAttemptedSubmit())">
+            <span class="material-symbols-outlined input-icon">mail</span>
+            <input
+              id="cv-email"
+              type="email"
+              formControlName="email"
+              placeholder="თქვენი ელ-ფოსტის მისამართი"
+              autocomplete="email"
+            />
+          </div>
+          @if (form.get('email')?.invalid && (form.get('email')?.touched || hasAttemptedSubmit())) {
+            <span class="error-msg">გთხოვთ მიუთითოთ ვალიდური ელ-ფოსტის მისამართი</span>
+          }
+        </div>
+
+        <!-- Name & Phone Fields Grid (Strictly Same Line) -->
+        <div class="form-row-grid">
+          <div class="form-group">
+            <label for="cv-fullname">
+              <span>სახელი და გვარი</span>
+              <span class="optional-tag">(არასავალდებულო)</span>
+            </label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined input-icon">person</span>
+              <input
+                id="cv-fullname"
+                type="text"
+                formControlName="fullName"
+                placeholder="მაგ. გიორგი ბერიძე"
+                autocomplete="name"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cv-phone">
+              <span>ტელეფონის ნომერი</span>
+              <span class="optional-tag">(არასავალდებულო)</span>
+            </label>
+            <div class="input-wrap" [class.error]="form.get('phoneNumber')?.invalid && (form.get('phoneNumber')?.touched || hasAttemptedSubmit())">
+              <span class="material-symbols-outlined input-icon">call</span>
+              <input
+                id="cv-phone"
+                type="tel"
+                formControlName="phoneNumber"
+                placeholder="მაგ. 599123456"
+                maxlength="9"
+                autocomplete="tel"
+              />
+            </div>
+            @if (form.get('phoneNumber')?.invalid && (form.get('phoneNumber')?.touched || hasAttemptedSubmit())) {
+              <span class="error-msg">ტელეფონის ნომერი უნდა შედგებოდეს 9 ციფრისგან</span>
+            }
+          </div>
+        </div>
+
+        <!-- Consent Checkbox -->
+        <div class="consent-group" [class.error]="form.get('consent')?.invalid && (form.get('consent')?.touched || hasAttemptedSubmit())">
+          <label class="consent-checkbox-label">
+            <input type="checkbox" formControlName="consent" class="custom-checkbox" />
+            <span class="consent-text">
+              ვეთანხმები ჩემი CV-ის და საკონტაქტო მონაცემების დამუშავებასა და რეკრუტერებისთვის გაზიარებას.
+            </span>
+          </label>
+          @if (form.get('consent')?.invalid && (form.get('consent')?.touched || hasAttemptedSubmit())) {
+            <span class="error-msg">თანხმობის დადასტურება სავალდებულოა</span>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn" [disabled]="loading()">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+            <span>CV იტვირთება...</span>
+          } @else {
+            <span class="material-symbols-outlined">send</span>
+            <span>CV-ის გაგზავნა</span>
+          }
+        </button>
+
+        <p class="privacy-notice">🔒 თქვენი მონაცემები სრულიად დაცულია და ხელმისაწვდომია მხოლოდ ვერიფიცირებული დამსაქმებლებისთვის.</p>
+      </form>
+    }
+  } @else {
+    <!-- Success State -->
+    <div class="success-container animate-pop">
+      <div class="success-icon-circle">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+      <h2>გილოცავთ! 🎉</h2>
+      <p class="success-desc">{{ successMessage() }}</p>
+      
+      <div class="success-card">
+        <span class="material-symbols-outlined info-icon">verified_user</span>
+        <span>თქვენი CV წარმატებით შეინახა. როგორც კი თქვენი პროფილის შესაბამისი ვაკანსია გამოჩნდება, რეკრუტერი პირდაპირ დაგიკავშირდებათ.</span>
+      </div>
+
+      <button class="submit-btn done-btn" (click)="close()">
+        <span>გასაგებია</span>
+      </button>
+    </div>
+  }
+</div>

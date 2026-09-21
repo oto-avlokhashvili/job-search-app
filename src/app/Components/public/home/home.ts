@@ -11,6 +11,7 @@ import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
 import { WaitlistModal } from '../waitlist-modal/waitlist-modal';
+import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { Title, Meta } from '@angular/platform-browser';
 
@@ -33,11 +34,20 @@ export class Home implements OnInit {
   private titleService = inject(Title);
   private metaService = inject(Meta);
 
+  stats = this.stateStore.stats;
+  statsLoading = this.stateStore.statsLoading;
   dbTotalRecords = this.stateStore.publicDbTotal;
   jobsGeCount = this.stateStore.publicJobsGeCount;
   hrGeCount = this.stateStore.publicHrGeCount;
   aworkGeCount = this.stateStore.publicAworkGeCount;
   myjobsGeCount = this.stateStore.publicMyjobsGeCount;
+
+  defaultAggregators = [
+    { id: 'jobs-ge', name: 'Jobs.ge', active: true },
+    { id: 'hr-ge', name: 'HR.ge', active: true },
+    { id: 'awork-ge', name: 'Awork.ge', active: true },
+    { id: 'myjobs-ge', name: 'MyJobs.ge', active: true },
+  ];
 
   contactEmail = new FormControl<string>('', {
     validators: [Validators.required, Validators.email],
@@ -51,8 +61,16 @@ export class Home implements OnInit {
   ngOnInit() {
     this.titleService.setTitle('Job Up — AI აგენტი და სამუშაოს ძიება');
     this.metaService.updateTag({ name: 'description', content: 'შექმენი საკუთარი AI აგენტი და მოაძებნინე სამსახური მარტივად. Jobs.ge, HR.ge, Awork.ge და Myjobs.ge ერთ სივრცეში.' });
+  }
 
-    this.stateStore.loadPublicCounts();
+  getAggregatorLogo(id: string): string {
+    switch (id) {
+      case 'jobs-ge': return '/icons/jobs.png';
+      case 'hr-ge': return '/icons/hr.png';
+      case 'awork-ge': return '/icons/awork.png';
+      case 'myjobs-ge': return '/icons/myjobsge.png';
+      default: return '/icons/jobs.png';
+    }
   }
 
   handleHeroClick() {
@@ -115,6 +133,15 @@ export class Home implements OnInit {
       maxWidth: '95vw',
       panelClass: 'subscription-dialog',
       disableClose: false,
+      autoFocus: false,
+    });
+  }
+
+  openPublicCvModal() {
+    this.dialog.open(PublicCvModal, {
+      width: '520px',
+      maxWidth: '95vw',
+      panelClass: 'public-cv-dialog',
       autoFocus: false,
     });
   }

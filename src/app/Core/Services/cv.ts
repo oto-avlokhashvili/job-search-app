@@ -4,6 +4,14 @@ import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { skipLoading } from '../loading/skip-loading.component';
 
+export interface PublicCvSubmissionData {
+  email: string;
+  file: File;
+  fullName?: string;
+  phoneNumber?: string;
+  consent?: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -16,6 +24,22 @@ export class Cv {
     formData.append('file', file);
     formData.append('consent', String(consent));
     return this.http.post(`${this.url}/cv/upload`, formData, { withCredentials: true, context: new HttpContext().set(skipLoading, true) });
+  }
+
+  submitPublicCv(data: PublicCvSubmissionData): Observable<any> {
+    const formData = new FormData();
+    formData.append('email', data.email);
+    formData.append('file', data.file);
+    formData.append('consent', String(data.consent !== false));
+    if (data.fullName) {
+      formData.append('fullName', data.fullName);
+    }
+    if (data.phoneNumber) {
+      formData.append('phoneNumber', data.phoneNumber);
+    }
+    return this.http.post(`${this.url}/cv/public-submit`, formData, {
+      context: new HttpContext().set(skipLoading, true),
+    });
   }
 
   getCV(): Observable<any> {

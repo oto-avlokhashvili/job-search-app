@@ -5,6 +5,7 @@ import { AuthService } from '../Core/Services/auth-service';
 import { User, SubscriptionPlan, SubscriptionDetails } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
 import { AiMatchedJobsResponse, Job, SentJobsResponse, VacancyItem } from '../Core/Interfaces/jobs';
+import { SystemStats } from '../Core/Interfaces/stats';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
@@ -89,6 +90,10 @@ type State = {
     publicJobsSource: string;
     publicJobsLocation: string;
     publicJobsDateRange: string;
+
+    stats: SystemStats | null;
+    statsLoaded: boolean;
+    statsLoading: boolean;
 }
 
 const initialState: State = {
@@ -140,10 +145,15 @@ const initialState: State = {
     publicJobsSource: 'all',
     publicJobsLocation: 'all',
     publicJobsDateRange: 'all',
+
+    stats: null,
+    statsLoaded: false,
+    statsLoading: false,
 }
 
 let inFlightProfilePromise: Promise<void> | null = null;
 let inFlightCvPromise: Promise<void> | null = null;
+let inFlightStatsPromise: Promise<void> | null = null;
 
 export const StateStore = signalStore(
     { providedIn: 'root' },
@@ -658,34 +668,43 @@ export const StateStore = signalStore(
             }
         },
 
-        async loadPublicCounts(force: boolean = false): Promise<void> {
-            if (!force && store.publicDbTotal() > 0) {
+        async loadStats(force: boolean = false): Promise<void> {
+            if (!force && store.statsLoaded() && store.stats() !== null) {
                 return;
             }
-            try {
-                const res: any = await firstValueFrom(
-                    jobsService.getJobs('', 1, 'all', 'all', '', 'all', 1)
-                );
-                const dbTotal = res.counts?.totalRecords || 0;
-                const jobsGe = res.counts?.jobsGe ?? res.counts?.jobs_ge ?? res.counts?.['jobs.ge'] ?? 0;
-                const hrGe = res.counts?.hrGe ?? res.counts?.hr_ge ?? res.counts?.['hr.ge'] ?? 0;
-                const aworkGe = res.counts?.aworkGe ?? res.counts?.awork ?? res.counts?.['awork.ge'] ?? res.counts?.awork_ge ?? 0;
-                const myjobsGe = res.counts?.myjobsGe ?? res.counts?.myjobs_ge ?? res.counts?.['myjobs.ge'] ?? res.counts?.myjobs ?? 0;
-
-                patchState(store, {
-                    publicDbTotal: dbTotal,
-                    publicJobsGeCount: jobsGe,
-                    publicHrGeCount: hrGe,
-                    publicAworkGeCount: aworkGe,
-                    publicMyjobsGeCount: myjobsGe,
-                });
-            } catch (err) {
-                console.error('Error loading public job counts:', err);
+            if (!force && inFlightStatsPromise) {
+                return inFlightStatsPromise;
             }
+
+            patchState(store, { statsLoading: true });
+
+            inFlightStatsPromise = (async () => {
+                try {
+                    const res = await firstValueFrom(jobsService.getStats());
+                    patchState(store, {
+                        stats: res,
+                        statsLoaded: true,
+                        statsLoading: false,
+                        publicDbTotal: res?.activeVacancies || store.publicDbTotal(),
+                    });
+                } catch (err) {
+                    patchState(store, { statsLoading: false });
+                    console.error('Error loading system stats:', err);
+                } finally {
+                    inFlightStatsPromise = null;
+                }
+            })();
+
+            return inFlightStatsPromise;
+        },
+
+        async loadPublicCounts(force: boolean = false): Promise<void> {
+            return this.loadStats(force);
         }
     })),
     withHooks({
         onInit(store) {
+            store.loadStats();
             store.loadPublicJobs();
             store.loadCities();
         }

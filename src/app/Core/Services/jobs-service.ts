@@ -2,6 +2,7 @@ import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/commo
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Job, JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
+import { SystemStats } from '../Interfaces/stats';
 import { environment } from '../../../environments/environment';
 import { skipLoading } from '../loading/skip-loading.component';
 
@@ -11,6 +12,11 @@ import { skipLoading } from '../loading/skip-loading.component';
 export class JobsService {
   http = inject(HttpClient);
   url = environment.apiUrl;
+
+  getStats(): Observable<SystemStats> {
+    return this.http.get<SystemStats>(`${this.url}/stats`, { context: new HttpContext().set(skipLoading, true) });
+  }
+
   getJobs(
     query: string = '',
     page: number = 1,

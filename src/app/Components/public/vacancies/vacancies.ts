@@ -11,6 +11,8 @@ import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { Title, Meta } from '@angular/platform-browser';
+import { MatDialog } from '@angular/material/dialog';
+import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 
 export interface VacancyItem {
   id: number;
@@ -43,6 +45,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private alertify = inject(AlertifyService);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private dialog = inject(MatDialog);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
@@ -673,6 +676,15 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     }
     const slug = generateJobSlug(job?.vacancy, job?.company, jobId);
     this.router.navigate(['/vacancies', slug]);
+  }
+
+  openPublicCvModal() {
+    this.dialog.open(PublicCvModal, {
+      width: '520px',
+      maxWidth: '95vw',
+      panelClass: 'public-cv-dialog',
+      autoFocus: false,
+    });
   }
 
   scroll(target: string) {

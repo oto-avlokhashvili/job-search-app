@@ -19,14 +19,22 @@
         </p>
 
         <div class="cta-group">
-          <button class="btn-fluid primary" (click)="handleHeroClick()">
-            <span class="material-symbols-outlined">rocket_launch</span>
-            დაიწყე AI აგენტის შექმნა
+          <div class="cta-primary-row">
+            <button class="btn-fluid primary" (click)="handleHeroClick()">
+              <span class="material-symbols-outlined">rocket_launch</span>
+              დაიწყე AI აგენტის შექმნა
+            </button>
+            <a routerLink="/vacancies" class="btn-fluid secondary">
+              <span class="material-symbols-outlined">search</span>
+              მოძებნე მარტივად
+            </a>
+          </div>
+
+          <button type="button" class="btn-fluid candidate-pool-btn" (click)="openPublicCvModal()">
+            <span class="pulse-dot"></span>
+            <span class="material-symbols-outlined">person_search</span>
+            <span>ატვირთე CV და რეკრუტერი თავად გიპოვის</span>
           </button>
-          <a routerLink="/vacancies" class="btn-fluid secondary">
-            <span class="material-symbols-outlined">search</span>
-            მოძებნე მარტივად
-          </a>
         </div>
       </div>
 
@@ -43,37 +51,42 @@
           <div class="stats-grid">
             <div class="stat-box">
               <div class="stat-label">აქტიური აგენტები</div>
-              <div class="stat-value text-primary">14,204</div>
+              <div class="stat-value text-primary">
+                @if (stats(); as s) {
+                  {{ s.activeAgents | number }}
+                } @else {
+                  <span class="btn-spinner" style="border-top-color: var(--primary); width: 14px; height: 14px;"></span>
+                }
+              </div>
             </div>
             <div class="stat-box">
               <div class="stat-label">აქტიური მომხმარებლები</div>
-              <div class="stat-value text-accent">8,942</div>
+              <div class="stat-value text-accent">
+                @if (stats(); as s) {
+                  {{ s.activeUsers | number }}
+                } @else {
+                  <span class="btn-spinner" style="border-top-color: var(--primary-container); width: 14px; height: 14px;"></span>
+                }
+              </div>
             </div>
             <div class="stat-box aggregators-box">
               <div class="stat-label">აქტიური აგრეგატორები</div>
               <div class="stat-value-with-logos">
-                <span class="stat-value">4</span>
+                <span class="stat-value">{{ stats()?.activeAggregators ?? 4 }}</span>
                 <div class="aggregator-mini-avatars">
-                  <div class="mini-avatar jobs-ge" title="Jobs.ge">
-                    <img src="/icons/jobs.png" alt="Jobs.ge">
-                  </div>
-                  <div class="mini-avatar hr-ge" title="HR.ge">
-                    <img src="/icons/hr.png" alt="HR.ge">
-                  </div>
-                  <div class="mini-avatar awork-ge" title="Awork.ge">
-                    <img src="/icons/awork.png" alt="Awork.ge">
-                  </div>
-                  <div class="mini-avatar myjobs-ge" title="Myjobs.ge">
-                    <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="circular">
-                  </div>
+                  @for (agg of (stats()?.aggregators || defaultAggregators); track agg.id) {
+                    <div class="mini-avatar" [class.jobs-ge]="agg.id === 'jobs-ge'" [class.hr-ge]="agg.id === 'hr-ge'" [class.awork-ge]="agg.id === 'awork-ge'" [class.myjobs-ge]="agg.id === 'myjobs-ge'" [title]="agg.name">
+                      <img [src]="getAggregatorLogo(agg.id)" [alt]="agg.name" [class.circular]="agg.id === 'myjobs-ge'">
+                    </div>
+                  }
                 </div>
               </div>
             </div>
             <div class="stat-box">
               <div class="stat-label">აქტიური ვაკანსიები</div>
               <div class="stat-value text-accent">
-                @if (dbTotalRecords() > 0) {
-                  {{ dbTotalRecords() | number }}
+                @if (stats()?.activeVacancies || dbTotalRecords() > 0) {
+                  {{ (stats()?.activeVacancies || dbTotalRecords()) | number }}
                 } @else {
                   <span class="btn-spinner" style="border-top-color: var(--primary-container); width: 14px; height: 14px;"></span>
                 }
@@ -81,14 +94,20 @@
             </div>
             <div class="stat-box full-width">
               <div class="stat-box-left">
-                <div class="stat-label">შესაბამისობის სიზუსტე</div>
-                <div class="stat-value text-gradient">94.2%</div>
+                <div class="stat-label">ატვირთული CV-ები</div>
+                <div class="stat-value text-gradient">
+                  @if (stats(); as s) {
+                    {{ s.uploadedCvs | number }}
+                  } @else {
+                    <span class="btn-spinner" style="border-top-color: var(--primary); width: 14px; height: 14px;"></span>
+                  }
+                </div>
               </div>
               <div class="stat-box-right">
                 <div class="system-status-label">სისტემის სტატუსი</div>
                 <div class="system-status-value">
                   <span class="pulse-dot-green"></span>
-                  <span>ოპტიმალური</span>
+                  <span>{{ stats()?.systemStatus || 'ოპტიმალური' }}</span>
                 </div>
               </div>
             </div>
@@ -98,10 +117,10 @@
           <div class="card-footer">
             <div class="portal-sync-status">
               <span class="pulse-dot-green"></span>
-              <span class="sync-text">4 პორტალი სინქრონიზებულია</span>
+              <span class="sync-text">{{ stats()?.syncedPortals ?? 4 }} პორტალი სინქრონიზებულია</span>
             </div>
             <div class="match-time">
-              გათვლის საშუალო დრო: <span class="highlight">1.2 წამი</span>
+              გათვლის საშუალო დრო: <span class="highlight">{{ stats()?.avgCalculationTimeSeconds ?? 1.09 }} წამი</span>
             </div>
           </div>
         </div>
