@@ -2,74 +2,142 @@
   <!-- Header -->
   <div class="modal-header">
     <div class="modal-title-group">
-      <span class="modal-icon">⚡</span>
-      <div>
+      <div class="modal-icon-badge">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      </div>
+      <div class="title-text">
         <h2>განაახლე გამოწერა</h2>
-        <p>აირჩიე შენთვის საუკეთესო</p>
+        <p>აირჩიე შენზე მორგებული გეგმა და მიიღე მეტი შესაძლებლობა</p>
       </div>
     </div>
-    <button class="close-btn" (click)="close()">✕</button>
+    <button class="close-btn" (click)="close()" aria-label="Close modal">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
   </div>
 
-  <!-- Current plan badge -->
-  <div class="current-plan-badge">
-    <span>მიმდინარე გეგმა:</span>
-    <span class="badge">{{ stateStore.isPro() ? 'Pro' : stateStore.isBasic() ? 'Basic' : 'უფასო (არ არის გამოწერილი)' }}</span>
+  <!-- Current Plan Indicator -->
+  <div class="current-plan-banner">
+    <span class="status-indicator"></span>
+    <span class="banner-label">მიმდინარე გეგმა:</span>
+    <span class="banner-badge">{{ stateStore.isPro() ? 'Pro პაკეტი' : stateStore.isBasic() ? 'Basic პაკეტი' : 'უფასო (Basic)' }}</span>
   </div>
 
-  <!-- Plans -->
+  <!-- Plans Grid -->
   <div class="plans-grid">
     @for (plan of plans; track plan.key) {
-      <div class="plan-card" [class.featured]="plan.badge" (click)="activate(plan)">
+      <div 
+        class="plan-card" 
+        [class.featured]="plan.featured" 
+        [class.is-current]="stateStore.plan() === plan.key"
+        (click)="activate(plan)">
+        
+        <!-- Badge -->
         @if (plan.badge) {
-          <div class="featured-badge">{{ plan.badge }}</div>
+          <div class="badge-wrapper">
+            <span class="card-badge" [ngClass]="plan.badgeClass">
+              @if (plan.featured) {
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                  <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+                </svg>
+              }
+              {{ plan.badge }}
+            </span>
+          </div>
         }
 
-        <div class="plan-header">
+        <!-- Card Header & Price -->
+        <div class="plan-card-header">
           <h3 class="plan-name">{{ plan.name }}</h3>
-          <div class="price">
+          <p class="plan-desc">{{ plan.description }}</p>
+          
+          <div class="price-box">
             @if (plan.period) {
-              <span class="currency">₾</span>
-              <span class="amount">{{ plan.price }}</span>
+              <div class="price-val">
+                <span class="currency">₾</span>
+                <span class="amount">{{ plan.price }}</span>
+              </div>
               <span class="period">{{ plan.period }}</span>
             } @else {
-              <span class="amount custom">{{ plan.price }}</span>
+              <div class="price-val custom-price">
+                <span class="amount custom">{{ plan.price }}</span>
+              </div>
+              <span class="period custom">ინდივიდუალური</span>
             }
           </div>
         </div>
 
-        <ul class="features">
+        <div class="card-divider"></div>
+
+        <!-- Features List -->
+        <div class="features-title">პაკეტში შედის:</div>
+        <ul class="features-list">
           @for (f of plan.features; track f) {
-            <li>
-              <span class="check-icon">✓</span>
-              {{ f }}
+            <li class="feature-item">
+              <span class="check-icon-circle" [class.featured-check]="plan.featured">
+                <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3.5 8.5 6.5 11.5 12.5 4.5"></polyline>
+                </svg>
+              </span>
+              <span class="feature-text">{{ f }}</span>
             </li>
           }
         </ul>
 
-        <button
-          class="activate-btn"
-          [disabled]="loading() === plan.key || (plan.key === 'PRO' && waitlistService.isEnrolled('PRO')) || (plan.key === 'PREMIUM' && waitlistService.isEnrolled('ENTERPRISE')) || stateStore.plan() === plan.key"
-          (click)="$event.stopPropagation(); activate(plan)">
+        <!-- Action CTA -->
+        <div class="card-action">
+          <button
+            type="button"
+            class="action-btn"
+            [class.btn-current]="stateStore.plan() === plan.key"
+            [class.btn-featured]="plan.featured && stateStore.plan() !== plan.key"
+            [class.btn-enrolled]="isWaitlistEnrolled(plan.key)"
+            [disabled]="loading() === plan.key || stateStore.plan() === plan.key || isWaitlistEnrolled(plan.key)"
+            (click)="$event.stopPropagation(); activate(plan)">
 
-          @if (loading() === plan.key) {
-            <span class="btn-spinner"></span>
-          } @else if (stateStore.plan() === plan.key) {
-            აქტიურია ({{ plan.name }})
-          } @else if (plan.key === 'PRO') {
-            {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
-          } @else if (plan.key === 'PREMIUM') {
-            {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე' }}
-          } @else {
-            {{ 'აირჩიე ' + plan.name }}
-          }
-        </button>
-
-
+            @if (loading() === plan.key) {
+              <span class="btn-spinner"></span>
+              <span>მუშავდება...</span>
+            } @else if (stateStore.plan() === plan.key) {
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3.5 8.5 6.5 11.5 12.5 4.5"></polyline>
+              </svg>
+              <span>აქტიურია</span>
+            } @else if (plan.key === 'PRO' || plan.key === 'PREMIUM') {
+              @if (isWaitlistEnrolled(plan.key)) {
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3.5 8.5 6.5 11.5 12.5 4.5"></polyline>
+                </svg>
+                <span>Waitlist-ში ხართ</span>
+              } @else {
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span>შემატყობინე</span>
+              }
+            } @else {
+              <span>აირჩიე {{ plan.name }}</span>
+            }
+          </button>
+        </div>
 
       </div>
     }
   </div>
 
-  <p class="disclaimer">გამოწერა შეიძლება გაუქმდეს ნებისმიერ დროს. ყველა ფასი მოიცავს დღგ-ს.</p>
+  <!-- Footer -->
+  <div class="modal-footer">
+    <p class="disclaimer">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span>გამოწერა შეიძლება გაუქმდეს ნებისმიერ დროს • ყველა ფასი მოიცავს დღგ-ს</span>
+    </p>
+  </div>
 </div>

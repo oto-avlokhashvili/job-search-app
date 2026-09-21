@@ -6,12 +6,15 @@ import { AlertifyService } from '../../../../Core/Services/alertify.service';
 import { WaitlistService } from '../../../../Core/Services/waitlist.service';
 import { SubscriptionPlan } from '../../../../Core/Interfaces/user';
 
-interface Plan {
+export interface Plan {
   key: SubscriptionPlan | 'PREMIUM';
   name: string;
+  description: string;
   price: string;
   period: string;
   badge?: string;
+  badgeClass?: string;
+  featured?: boolean;
   features: string[];
 }
 
@@ -33,12 +36,14 @@ export class SubscriptionModal {
     {
       key: 'BASIC',
       name: 'Basic პაკეტი',
+      description: 'სამუშაოს სწრაფი და მარტივი ძიებისთვის',
       price: '0',
       period: '/სამუდამოდ',
       badge: 'უფასო',
+      badgeClass: 'badge-basic',
       features: [
-        'CV-ს ატვირთვა',
-        'ვაკანსიების ძიება საძიებო სიტყვებით',
+        'CV-ს ატვირთვა და შენახვა',
+        'ვაკანსიების ძიება საკვანძო სიტყვებით',
         'შეტყობინებების მიღება Telegram-ზე',
         'ბარათის დამატება არ არის საჭირო',
       ],
@@ -46,50 +51,66 @@ export class SubscriptionModal {
     {
       key: 'PRO',
       name: 'Pro პაკეტი',
+      description: 'AI ასისტენტი შენი კარიერული ზრდისთვის',
       price: '8',
       period: '/თვე',
       badge: 'მალე დაემატება',
+      badgeClass: 'badge-pro',
+      featured: true,
       features: [
-        'CV-ს ატვირთვა',
-        'ვაკანსიების შეტყობინებების მიღება Email-ზე',
+        'CV-ს ატვირთვა & შეუზღუდავი ძიება',
+        'ვაკანსიების შეტყობინებები Email-ზე',
         'ვაკანსიებისა და CV-ს AI ანალიზი',
-        'CV-ზე მორგებული და შეფასებული ვაკანსიების მიღება',
-        'საძიებო სიტყვების AI ავტომატური გენერაცია',
+        'CV-ზე მორგებული & შეფასებული ვაკანსიები',
+        'საძიებო სიტყვების AI გენერაცია',
       ],
     },
     {
       key: 'PREMIUM',
-      name: 'Enterprise (კომპანიებისთვის)',
+      name: 'Enterprise',
+      description: 'HR & კომპანიების სრული AI პლატფორმა',
       price: 'შეთანხმებით',
       period: '',
       badge: 'HR & კომპანიები',
-
+      badgeClass: 'badge-enterprise',
       features: [
-        'HR & რეკრუტერების პანელი',
-        'კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე',
-        'კანდიდატების CV-ების AI ანალიზი & Match Score',
+        'HR & რეკრუტერების სამართავი პანელი',
+        'კანდიდატების AI მოძიება ვაკანსიებზე',
+        'კანდიდატების CV-ების AI Match Score',
         'ვაკანსიების მართვა & პირდაპირი კონტაქტი',
         'API ინტეგრაცია & პერსონალური მენეჯერი',
       ],
     },
   ];
 
+  isWaitlistEnrolled(planKey: string): boolean {
+    const key = planKey === 'PREMIUM' ? 'ENTERPRISE' : 'PRO';
+    return this.waitlistService.isEnrolled(key);
+  }
 
   async activate(plan: Plan) {
     if (plan.key === 'PRO' || plan.key === 'PREMIUM') {
-      if (this.waitlistService.isEnrolled(plan.key)) {
+      const waitlistKey = plan.key === 'PREMIUM' ? 'ENTERPRISE' : 'PRO';
+      if (this.waitlistService.isEnrolled(waitlistKey)) {
         this.alertify.success(`თქვენ უკვე დარეგისტრირებული ხართ ${plan.name} Waitlist-ში! 🎉`);
         return;
       }
       this.loading.set(plan.key);
       try {
-        const res = await this.waitlistService.join({ plan: plan.key === 'PREMIUM' ? 'ENTERPRISE' : 'PRO', source: 'subscription_modal' });
+        const res = await this.waitlistService.join({
+          plan: waitlistKey,
+          source: 'subscription_modal',
+        });
         this.alertify.success(res.message || 'გმადლობთ! თქვენ წარმატებით დაემატეთ Waitlist-ში 🎉');
       } catch (err) {
         this.alertify.error('დაფიქსირდა შეცდომა');
       } finally {
         this.loading.set(null);
       }
+      return;
+    }
+
+    if (this.stateStore.plan() === plan.key) {
       return;
     }
 
@@ -109,4 +130,3 @@ export class SubscriptionModal {
     this.dialogRef.close(false);
   }
 }
-

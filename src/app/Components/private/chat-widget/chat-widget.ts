@@ -83,8 +83,8 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   openUpgradeModal() {
     this.dialog.open(SubscriptionModal, {
-      width: '560px',
-      maxWidth: '95vw',
+      width: '960px',
+      maxWidth: '96vw',
       panelClass: 'subscription-dialog',
       disableClose: false,
       autoFocus: false,
