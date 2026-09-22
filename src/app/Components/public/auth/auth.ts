@@ -38,6 +38,9 @@ export class Auth {
   })
 
   isLoggingIn = signal(false);
+  isRegistering = signal(false);
+  registrationSuccess = signal(false);
+  registeredEmail = signal('');
 
   logIn() {
     this.validators.set(true);
@@ -81,31 +84,68 @@ export class Auth {
 
   register() {
     this.validators.set(true);
-    if (this.registerForm.valid && this.registerForm.get('password')?.value === this.registerForm.get('confirmPassword')?.value) {
-      console.log(this.registerForm.value);
-      this.authService.userRegistration(this.registerForm.value as UserRegistration).subscribe({
-        next: () => {
-          this.alertify.success("რეგისტრაცია წარმატებით დასრულდა");
-          this.validators.set(false);
-          this.registerForm.reset();
-          this.loginForm.reset();
-        },
-        error: (err) => {
-          this.authService.authModalMode.set('register');
-          this.alertify.error(err);
-        },
-        complete: () => { this.authService.authModalMode.set('login') }
-      });
 
+    const password = this.registerForm.get('password')?.value;
+    const confirmPassword = this.registerForm.get('confirmPassword')?.value;
+
+    if (password !== confirmPassword) {
+      this.alertify.error('პაროლები არ ემთხვევა ერთმანეთს');
+      return;
+    }
+
+    if (this.registerForm.invalid) {
+      this.alertify.error('გთხოვთ შეავსოთ ყველა სავალდებულო ველი');
+      return;
+    }
+
+    const email = this.registerForm.get('email')?.value || '';
+    this.isRegistering.set(true);
+
+    this.authService.userRegistration(this.registerForm.value as UserRegistration).subscribe({
+      next: () => {
+        this.isRegistering.set(false);
+        this.validators.set(false);
+        this.registeredEmail.set(email);
+        this.registrationSuccess.set(true);
+        this.registerForm.reset();
+        this.loginForm.reset();
+      },
+      error: (err) => {
+        this.isRegistering.set(false);
+        this.authService.authModalMode.set('register');
+        this.alertify.error(err);
+      }
+    });
+  }
+
+  goToLoginAfterRegister() {
+    const email = this.registeredEmail();
+    this.registrationSuccess.set(false);
+    this.authService.authModalMode.set('login');
+    if (email) {
+      this.loginForm.patchValue({ email });
     }
   }
+
+  isPasswordMismatch(): boolean {
+    const password = this.registerForm.get('password')?.value;
+    const confirmPassword = this.registerForm.get('confirmPassword')?.value;
+    return !!(confirmPassword && password && password !== confirmPassword);
+  }
+
   isInvalid(name: string) {
+    if (name === 'confirmPassword' && !this.loginMode()) {
+      const control = this.registerForm.get('confirmPassword');
+      const touchedOrSubmitted = !!(control?.touched || this.validators());
+      return !!(control && (control.invalid || this.isPasswordMismatch()) && touchedOrSubmitted);
+    }
     const control = this.loginMode() ? this.loginForm.get(name) : this.registerForm.get(name);
     return !!(control && control.invalid && (control.touched || this.validators()));
   }
 
 
   modeChanger() {
+    this.registrationSuccess.set(false);
     const current = this.authService.authModalMode();
     this.authService.authModalMode.set(current === 'login' ? 'register' : 'login');
   }
@@ -116,6 +156,7 @@ export class Auth {
 
   @HostListener('document:keydown.escape')
   handleEscapeKey() {
+    this.registrationSuccess.set(false);
     this.authService.closeAuthModal();
   }
 }

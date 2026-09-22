@@ -11,17 +11,47 @@
                 </button>
             </div>
 
-            <div class="login-header">
-                <div class="logo-container">
-                    <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo" class="auth-logo">
-                    <span class="logo-text">Job Up</span>
+            @if (!registrationSuccess()) {
+                <div class="login-header">
+                    <div class="logo-container">
+                        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo" class="auth-logo">
+                        <span class="logo-text">Job Up</span>
+                    </div>
+                    <h2>{{ loginMode() ? 'გამარჯობა' : 'რეგისტრაცია' }}</h2>
+                    <p>{{ loginMode() ? 'შედით თქვენს ანგარიშზე გასაგრძელებლად' : 'შექმენით ანგარიში და დაიწყეთ სამუშაოს ძიება' }}</p>
                 </div>
-                <h2>გამარჯობა</h2>
-                <p>შედით თქვენს ანგარიშზე გასაგრძელებლად</p>
-            </div>
-            @if(loginMode()){
+            }
 
-            <form class="login-form" [formGroup]="loginForm">
+            @if (registrationSuccess()) {
+                <div class="registration-success-container">
+                    <div class="logo-container top-logo">
+                        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo" class="auth-logo">
+                        <span class="logo-text">Job Up</span>
+                    </div>
+
+                    <div class="success-icon-badge">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <h3>გილოცავთ! 🎉</h3>
+                    <p class="success-subtitle">რეგისტრაცია წარმატებით დასრულდა</p>
+
+                    @if (registeredEmail()) {
+                        <div class="success-info-card">
+                            <span class="material-symbols-outlined">mail</span>
+                            <span>{{ registeredEmail() }}</span>
+                        </div>
+                    }
+
+                    <p class="success-hint">თქვენი ანგარიში შექმნილია. შეგიძლიათ გაიაროთ ავტორიზაცია.</p>
+
+                    <button type="button" (click)="goToLoginAfterRegister()" class="btn btn-primary btn-login mt-4">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
+                        <span>ავტორიზაციაზე გადასვლა</span>
+                    </button>
+                </div>
+            } @else if (loginMode()) {
+
+            <form class="login-form" [formGroup]="loginForm" (ngSubmit)="logIn()">
                 <div class="mb-3">
                     <label for="email" class="form-label">ელ-ფოსტა</label>
                     <input formControlName="email" type="email" class="form-control" id="email"
@@ -34,7 +64,7 @@
                         placeholder="შეიყვანეთ პაროლი" required [class.is-invalid]="isInvalid('password')">
                 </div>
 
-                <button type="button" (click)="logIn()" [disabled]="isLoggingIn()" class="btn btn-primary btn-login mt-3">
+                <button type="submit" [disabled]="isLoggingIn()" class="btn btn-primary btn-login mt-3">
                     @if (isLoggingIn()) {
                         <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px; margin-right: 8px; vertical-align: middle;"></span>
                         <span>შესვლა...</span>
@@ -65,7 +95,7 @@
                 </div>
             </form>
             }@else{
-            <form class="login-form" [formGroup]="registerForm">
+            <form class="login-form" [formGroup]="registerForm" (ngSubmit)="register()">
                 <div class="mb-3">
                     <label for="firstName" class="form-label">სახელი</label>
                     <input formControlName="firstName" type="text" class="form-control" id="firstName"
@@ -93,9 +123,19 @@
                     <input formControlName="confirmPassword" type="password" class="form-control" id="confirmPassword"
                         placeholder="შეიყვანეთ გაიმეორე პაროლი" required
                         [class.is-invalid]="isInvalid('confirmPassword')">
+                    @if (isPasswordMismatch() && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty || validators())) {
+                        <span class="error-feedback">პაროლები არ ემთხვევა ერთმანეთს</span>
+                    }
                 </div>
 
-                <button type="button" (click)="register()" class="btn btn-primary btn-login mt-3">რეგისტრაცია</button>
+                <button type="submit" [disabled]="isRegistering()" class="btn btn-primary btn-login mt-3">
+                    @if (isRegistering()) {
+                        <span class="btn-spinner" style="width: 16px; height: 16px; border-width: 2px; margin-right: 8px; vertical-align: middle;"></span>
+                        <span>რეგისტრაცია...</span>
+                    } @else {
+                        <span>რეგისტრაცია</span>
+                    }
+                </button>
 
 
                 <div class="divider">

@@ -84,7 +84,7 @@
           <span>რეგისტრაცია...</span>
         } @else {
           <span class="material-symbols-outlined">notifications_active</span>
-          <span>შემატყობინე გაშვებისას</span>
+          <span>{{ isEnterprise() ? 'Demo-ს დაჯავშნა' : 'შემატყობინე გაშვებისას' }}</span>
         }
       </button>
 
