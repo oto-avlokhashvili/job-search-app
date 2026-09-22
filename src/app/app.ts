@@ -12,6 +12,8 @@ import { Auth } from './Components/public/auth/auth';
 import { StateStore } from './Store/state.store';
 import { ChatWidget } from './Components/private/chat-widget/chat-widget';
 
+declare let gtag: Function;
+
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, LoadingIndicatorComponent, Footer, Header, RouterModule, Auth, ChatWidget],
@@ -45,6 +47,12 @@ export class App {
       this.hideLayout.set(r?.snapshot.data['hideLayout'] ?? false);
       this.hideFooter.set(isPrivate || (r?.snapshot.data['hideFooter'] ?? false));
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
+
+      if (this.isBrowser && typeof gtag !== 'undefined') {
+        gtag('config', 'G-GT3YDQ98L2', {
+          page_path: e.urlAfterRedirects
+        });
+      }
     });
   }
   scroll(target: string) {
