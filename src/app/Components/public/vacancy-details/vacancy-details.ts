@@ -1,11 +1,12 @@
-import { Component, inject, OnInit, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, computed, effect, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Job } from '../../../Core/Interfaces/jobs';
+import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
-import { StateStore } from '../../../Store/state.store';
+import { JobsService } from '../../../Core/Services/jobs-service';
+import { StateStore, detectJobSource, formatJobDate } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
 
@@ -20,12 +21,40 @@ export class VacancyDetails implements OnInit {
   public alertify = inject(AlertifyService);
   public authService = inject(AuthService);
   public stateStore = inject(StateStore);
+  private jobsService = inject(JobsService);
   private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+
+  // Accordion & Discovery Hook State
+  isAccordionOpen = signal<boolean>(false);
+  similarJobs = signal<VacancyItem[]>([]);
+  similarJobsLoading = signal<boolean>(false);
+  similarJobsLoaded = signal<boolean>(false);
+  suggestedTags = signal<{ label: string; query: string; type: 'role' | 'company' | 'location' }[]>([]);
+
+  totalVacanciesCount = computed(() => {
+    const statsCount = this.stateStore.stats()?.activeVacancies;
+    if (statsCount && statsCount > 0) return statsCount;
+    const dbCount = this.stateStore.publicDbTotal();
+    if (dbCount && dbCount > 0) return dbCount;
+    const totalCount = this.stateStore.publicJobsTotal();
+    if (totalCount && totalCount > 0) return totalCount;
+    return 4850;
+  });
+
+  formattedTotalCount = computed(() => {
+    const total = this.totalVacanciesCount();
+    return total ? total.toLocaleString('en-US') : '4,850+';
+  });
+
+  jobsGeCount = computed(() => this.stateStore.publicJobsGeCount() || 1450);
+  hrGeCount = computed(() => this.stateStore.publicHrGeCount() || 980);
+  aworkGeCount = computed(() => this.stateStore.publicAworkGeCount() || 620);
+  myjobsGeCount = computed(() => this.stateStore.publicMyjobsGeCount() || 410);
 
   extractedEmail = computed(() => {
     const job = this.stateStore.selectedJob();
@@ -261,17 +290,25 @@ export class VacancyDetails implements OnInit {
   constructor() {
     effect(() => {
       const job = this.stateStore.selectedJob();
-      if (job && typeof document !== 'undefined') {
-        this.titleService.setTitle(`${job.vacancy} - ${job.company} | Job Up`);
-        this.metaService.updateTag({ 
-          name: 'description', 
-          content: `${job.company} აცხადებს ვაკანსიას პოზიციაზე: ${job.vacancy}. ლოკაცია: ${job.location || 'საქართველო'}` 
-        });
+      if (job) {
+        this.extractKeywordsAndTags(job);
+        if (typeof document !== 'undefined') {
+          this.titleService.setTitle(`${job.vacancy} - ${job.company} | Job Up`);
+          this.metaService.updateTag({ 
+            name: 'description', 
+            content: `${job.company} აცხადებს ვაკანსიას პოზიციაზე: ${job.vacancy}. ლოკაცია: ${job.location || 'საქართველო'}` 
+          });
+        }
       }
     });
   }
 
   ngOnInit() {
+    this.stateStore.loadStats();
+    if (!this.stateStore.publicJobsLoaded()) {
+      this.stateStore.loadPublicJobs();
+    }
+
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');
       if (slug) {
@@ -283,6 +320,99 @@ export class VacancyDetails implements OnInit {
         }
       }
     });
+  }
+
+  toggleAccordion() {
+    this.isAccordionOpen.update(v => !v);
+  }
+
+  private extractKeywordsAndTags(job: Job) {
+    if (!job) return;
+
+    const rawTitle = job.vacancy || '';
+    let cleanTitle = rawTitle
+      .replace(/\(.*?\)/g, '')
+      .replace(/\[.*?\]/g, '')
+      .replace(/[-–—/\\|:]/g, ' ')
+      .replace(/\b(senior|junior|lead|middle|head of|intern|სენიორ|ჯუნიორ|მენეჯერი|სპეციალისტი)\b/gi, '')
+      .trim();
+
+    const words = cleanTitle.split(/\s+/).filter(w => w.length > 2);
+    const primaryQuery = words.slice(0, 2).join(' ') || rawTitle.split(/\s+/)[0] || '';
+
+    const tags: { label: string; query: string; type: 'role' | 'company' | 'location' }[] = [];
+    
+    if (primaryQuery) {
+      tags.push({ label: `🔍 ${primaryQuery}`, query: primaryQuery, type: 'role' });
+    }
+    if (job.company) {
+      tags.push({ label: `🏢 ${job.company}`, query: job.company, type: 'company' });
+    }
+    if (job.location && job.location.toLowerCase() !== 'all' && job.location.toLowerCase() !== 'remote') {
+      tags.push({ label: `📍 ${job.location}`, query: job.location, type: 'location' });
+    }
+    tags.push({ label: `💻 დისტანციური`, query: 'Remote', type: 'location' });
+
+    this.suggestedTags.set(tags);
+
+    const searchQuery = primaryQuery || job.company;
+    if (searchQuery) {
+      this.fetchSimilarJobs(searchQuery, job.id);
+    }
+  }
+
+  private fetchSimilarJobs(query: string, currentJobId: number | string) {
+    this.similarJobsLoading.set(true);
+    this.jobsService.getJobs(query, 1, 'all', 'all', '', 'all', 6).subscribe({
+      next: (res) => {
+        const jobs = (res.jobs || [])
+          .filter((j: Job) => String(j.id) !== String(currentJobId))
+          .slice(0, 4)
+          .map((j: Job) => ({
+            id: j.id,
+            vacancy: j.vacancy,
+            company: j.company,
+            location: j.location || 'Remote',
+            source: detectJobSource(j.source || '', j.link || ''),
+            salaryRange: extractSalary(j),
+            publishDate: formatJobDate(j.publishDate),
+            deadline: j.deadline ? formatJobDate(j.deadline) : '',
+            matchScore: j.match || 95,
+            link: j.link || '/jobs'
+          }));
+        this.similarJobs.set(jobs);
+        this.similarJobsLoading.set(false);
+        this.similarJobsLoaded.set(true);
+      },
+      error: () => {
+        this.similarJobsLoading.set(false);
+        this.similarJobsLoaded.set(true);
+      }
+    });
+  }
+
+  navigateToTag(tag: { label: string; query: string; type: 'role' | 'company' | 'location' }) {
+    if (tag.type === 'location') {
+      this.router.navigate(['/vacancies'], { queryParams: { location: tag.query } });
+    } else {
+      this.router.navigate(['/vacancies'], { queryParams: { search: tag.query } });
+    }
+  }
+
+  navigateToSource(source: string) {
+    this.router.navigate(['/vacancies'], { queryParams: { source } });
+  }
+
+  navigateToAllVacancies(query?: string) {
+    if (query) {
+      this.router.navigate(['/vacancies'], { queryParams: { search: query } });
+    } else {
+      this.router.navigate(['/vacancies']);
+    }
+  }
+
+  getJobSlug(item: VacancyItem): string {
+    return generateJobSlug(item.vacancy, item.company, item.id);
   }
 
   copyEmail(email: string) {
@@ -330,31 +460,10 @@ export class VacancyDetails implements OnInit {
   }
 
   detectSource(sourceOrLink?: string, linkFallback?: string): string {
-    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
-    if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) return 'myjobs.ge';
-    if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
-    if (l.includes('hr.ge') || l.includes('hrge')) return 'hr.ge';
-    if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
-    return 'სხვა წყარო';
+    return detectJobSource(sourceOrLink, linkFallback);
   }
 
   formatDate(dateStr: any): string {
-    if (!dateStr) return 'მითითებული არ არის';
-    try {
-      let date: Date;
-      if (typeof dateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr.trim())) {
-        return dateStr.trim();
-      } else {
-        date = new Date(dateStr);
-      }
-
-      if (isNaN(date.getTime())) return dateStr;
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${day}/${month}/${year}`;
-    } catch {
-      return dateStr;
-    }
+    return formatJobDate(dateStr);
   }
 }

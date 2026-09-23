@@ -69,6 +69,169 @@
     @else if (stateStore.selectedJob(); as j) {
       <article class="vacancy-article-content">
         
+        <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (TOP HOOK) -->
+        <section class="discovery-accordion-section glass-card" [class.is-expanded]="isAccordionOpen()">
+          <!-- Accordion Header Hook -->
+          <button 
+            type="button" 
+            class="accordion-hook-header" 
+            (click)="toggleAccordion()"
+            [attr.aria-expanded]="isAccordionOpen()"
+            aria-controls="discovery-accordion-panel"
+            title="დააჭირეთ სხვა ვაკანსიების სანახავად"
+          >
+            <div class="hook-header-left">
+              <div class="hook-pulse-icon">
+                <span class="material-symbols-outlined">rocket_launch</span>
+              </div>
+              <div class="hook-text-group">
+                <div class="hook-main-title">
+                  <span>ეძებთ სხვა შესაძლებლობებს?</span>
+                  <span class="hook-highlight-badge">სულ {{ formattedTotalCount() }} ვაკანსია</span>
+                </div>
+                <p class="hook-subtitle">
+                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან
+                </p>
+              </div>
+            </div>
+
+            <div class="hook-header-right">
+              <span class="hook-expand-label">{{ isAccordionOpen() ? 'დახურვა' : 'შეთავაზებების ნახვა' }}</span>
+              <div class="hook-chevron-circle" [class.rotated]="isAccordionOpen()">
+                <span class="material-symbols-outlined">expand_more</span>
+              </div>
+            </div>
+          </button>
+
+          <!-- Accordion Collapsible Panel (Only rendered and visible when open) -->
+          @if (isAccordionOpen()) {
+            <div 
+              id="discovery-accordion-panel" 
+              class="accordion-collapsible-panel open"
+            >
+              <div class="panel-inner-content">
+                
+                <!-- Source Distribution Bar -->
+                <div class="portal-distribution-row">
+                  <div class="distribution-label">
+                    <span class="material-symbols-outlined">hub</span>
+                    <span>პორტალების მიხედვით:</span>
+                  </div>
+                  <div class="portal-chips-list">
+                    <button type="button" class="portal-pill jobs-ge" (click)="navigateToSource('jobs.ge')" title="Jobs.ge ვაკანსიები">
+                      <span class="portal-dot"></span>
+                      <span class="portal-name">Jobs.ge</span>
+                      <span class="portal-count">{{ jobsGeCount() }}</span>
+                    </button>
+                    <button type="button" class="portal-pill hr-ge" (click)="navigateToSource('hr.ge')" title="HR.ge ვაკანსიები">
+                      <span class="portal-dot"></span>
+                      <span class="portal-name">HR.ge</span>
+                      <span class="portal-count">{{ hrGeCount() }}</span>
+                    </button>
+                    <button type="button" class="portal-pill awork-ge" (click)="navigateToSource('awork.ge')" title="Awork.ge ვაკანსიები">
+                      <span class="portal-dot"></span>
+                      <span class="portal-name">Awork.ge</span>
+                      <span class="portal-count">{{ aworkGeCount() }}</span>
+                    </button>
+                    <button type="button" class="portal-pill myjobs-ge" (click)="navigateToSource('myjobs.ge')" title="Myjobs.ge ვაკანსიები">
+                      <span class="portal-dot"></span>
+                      <span class="portal-name">Myjobs.ge</span>
+                      <span class="portal-count">{{ myjobsGeCount() }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Contextual Keywords / Smart Filters -->
+                @if (suggestedTags().length > 0) {
+                  <div class="suggested-tags-row">
+                    <div class="tags-label">
+                      <span class="material-symbols-outlined">filter_alt</span>
+                      <span>სწრაფი ძიება:</span>
+                    </div>
+                    <div class="tag-buttons-list">
+                      @for (tag of suggestedTags(); track tag.label) {
+                        <button type="button" class="filter-tag-chip" (click)="navigateToTag(tag)">
+                          <span>{{ tag.label }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Similar Jobs Preview Grid -->
+                <div class="similar-jobs-container">
+                  <div class="similar-jobs-header">
+                    <div class="header-title">
+                      <span class="material-symbols-outlined">work_outline</span>
+                      <h3>მსგავსი აქტიური ვაკანსიები</h3>
+                    </div>
+                    <button type="button" class="btn-link-all" (click)="navigateToAllVacancies()">
+                      <span>ყველა ვაკანსიის ნახვა ({{ formattedTotalCount() }})</span>
+                      <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                  </div>
+
+                  @if (similarJobsLoading()) {
+                    <div class="similar-jobs-grid skeleton">
+                      <div class="similar-skeleton-card skeleton-pulse"></div>
+                      <div class="similar-skeleton-card skeleton-pulse"></div>
+                      <div class="similar-skeleton-card skeleton-pulse"></div>
+                    </div>
+                  } @else if (similarJobs().length > 0) {
+                    <div class="similar-jobs-grid">
+                      @for (item of similarJobs(); track item.id) {
+                        <a [routerLink]="['/vacancies', getJobSlug(item)]" class="similar-job-card">
+                          <div class="card-top">
+                            <span class="card-source-badge" [class.jobs-ge]="item.source === 'jobs.ge'" [class.hr-ge]="item.source === 'hr.ge'" [class.awork-ge]="item.source === 'awork.ge'" [class.myjobs-ge]="item.source === 'myjobs.ge'">
+                              {{ item.source }}
+                            </span>
+                            <span class="card-date">{{ item.publishDate }}</span>
+                          </div>
+                          <h4 class="card-vacancy-title" [title]="item.vacancy">{{ item.vacancy }}</h4>
+                          <div class="card-company-row">
+                            <span class="material-symbols-outlined">domain</span>
+                            <span class="card-company-name">{{ item.company }}</span>
+                          </div>
+                          <div class="card-bottom">
+                            <span class="card-location">
+                              <span class="material-symbols-outlined">location_on</span>
+                              {{ item.location }}
+                            </span>
+                            @if (item.salaryRange && item.salaryRange !== 'მითითებული არ არის') {
+                              <span class="card-salary">{{ item.salaryRange }}</span>
+                            }
+                          </div>
+                        </a>
+                      }
+                    </div>
+                  } @else {
+                    <div class="empty-similar-jobs">
+                      <p>კონკრეტული მსგავსი ვაკანსია ამ მომენტში ვერ მოიძებნა, თუმცა ბაზაში ხელმისაწვდომია <strong>{{ formattedTotalCount() }}</strong> სხვა პოზიცია.</p>
+                      <button type="button" class="btn-primary-explore" (click)="navigateToAllVacancies()">
+                        <span class="material-symbols-outlined">search</span>
+                        <span>ვაკანსიების სრულ კატალოგში გადასვლა</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Accordion Footer Actions -->
+                <div class="accordion-footer-actions">
+                  <button type="button" class="btn-primary-explore" (click)="navigateToAllVacancies()">
+                    <span class="material-symbols-outlined">apps</span>
+                    <span>ყველა ვაკანსიის კატალოგი ({{ formattedTotalCount() }})</span>
+                  </button>
+                  <button type="button" class="btn-secondary-collapse" (click)="toggleAccordion()">
+                    <span class="material-symbols-outlined">expand_less</span>
+                    <span>აკორდეონის დახურვა</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          }
+        </section>
+
         <!-- Hero Information Card -->
         <header class="vacancy-hero-card glass-card">
           <div class="hero-top-section">
