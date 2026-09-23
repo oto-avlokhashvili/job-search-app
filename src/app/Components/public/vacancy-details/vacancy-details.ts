@@ -2,6 +2,7 @@ import { Component, inject, OnInit, computed, effect, signal } from '@angular/co
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -9,6 +10,7 @@ import { JobsService } from '../../../Core/Services/jobs-service';
 import { StateStore, detectJobSource, formatJobDate } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
+import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 
 @Component({
   selector: 'app-vacancy-details',
@@ -28,6 +30,7 @@ export class VacancyDetails implements OnInit {
   private location = inject(Location);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private dialog = inject(MatDialog);
 
   // Accordion & Discovery Hook State
   isAccordionOpen = signal<boolean>(false);
@@ -457,6 +460,15 @@ export class VacancyDetails implements OnInit {
     } else {
       this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
     }
+  }
+
+  openPublicCvModal() {
+    this.dialog.open(PublicCvModal, {
+      width: '520px',
+      maxWidth: '95vw',
+      panelClass: 'public-cv-dialog',
+      autoFocus: false,
+    });
   }
 
   detectSource(sourceOrLink?: string, linkFallback?: string): string {

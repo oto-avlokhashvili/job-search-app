@@ -312,14 +312,40 @@
 
           <!-- Quick Action Buttons -->
           <div class="hero-actions-bar">
-            <button type="button" class="btn-action-copy" (click)="copyLink()" title="გაზიარება">
+            <button type="button" class="btn-action-copy" (click)="copyLink()" title="ბმულის გაზიარება">
               <span class="material-symbols-outlined">share</span>
               <span>გაზიარება</span>
             </button>
 
-            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="წყაროზე გადასვლა">
+            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა">
               <span class="material-symbols-outlined">open_in_new</span>
               <span>წყაროზე გადასვლა</span>
+            </button>
+          </div>
+
+          <!-- კანდიდატთა ბაზა Hook Card (Job Header) -->
+          <div class="talent-pool-hook-card">
+            <div class="pool-card-content">
+              <div class="pool-icon-wrap">
+                <span class="material-symbols-outlined">folder_shared</span>
+              </div>
+              <div class="pool-text-wrap">
+                <div class="pool-title-badge-row">
+                  <h4>არ ერგებით ამ ვაკანსიას?</h4>
+                  <span class="pool-badge">კანდიდატთა ბაზა</span>
+                </div>
+                <p class="pool-desc">
+                  დატოვეთ თქვენი CV <strong>Job Up-ის საერთო ბაზაში</strong> — ჩვენი AI შეგირჩევთ სხვა შესაფერის შემოთავაზებებს.
+                </p>
+                <div class="pool-disclaimer-note">
+                  <span class="material-symbols-outlined">info</span>
+                  <span>შენიშვნა: CV ინახება Job Up-ის საერთო ბაზაში და არა ამ კონკრეტულ კომპანიაში.</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-pool-upload" (click)="openPublicCvModal()">
+              <span class="material-symbols-outlined">upload_file</span>
+              <span>CV-ის დატოვება ბაზაში</span>
             </button>
           </div>
         </header>
@@ -355,6 +381,10 @@
               <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
             </div>
             <div class="footer-right">
+              <button type="button" class="btn-action-cv-subtle" (click)="openPublicCvModal()" title="CV-ის დატოვება Job Up-ის საერთო ბაზაში">
+                <span class="material-symbols-outlined">upload_file</span>
+                <span>დატოვე CV ბაზაში</span>
+              </button>
               <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
                 <span class="material-symbols-outlined">open_in_new</span>
                 <span>წყაროზე გადასვლა</span>
