@@ -1105,6 +1105,14 @@ button.btn-search {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+
+      &.jobup-logo {
+        background: #ffffff;
+        border: 1px solid var(--outline-variant, rgba(11, 96, 150, 0.2));
+        padding: 6px;
+
+        img { width: 100%; height: 100%; object-fit: contain; }
+      }
     }
 
     .job-titles {
@@ -1181,6 +1189,11 @@ button.btn-search {
     &.myjobs-ge {
       background: rgba(14, 165, 233, 0.12);
       color: #0284c7;
+    }
+
+    &.jobup-ge {
+      background: rgba(11, 96, 150, 0.12);
+      color: var(--primary);
     }
   }
 
@@ -1295,6 +1308,14 @@ button.btn-search {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+
+      &.jobup-logo {
+        background: #ffffff;
+        border: 1px solid var(--outline-variant, rgba(11, 96, 150, 0.2));
+        padding: 6px;
+
+        img { width: 100%; height: 100%; object-fit: contain; }
+      }
     }
 
     .job-header-info {
@@ -1376,6 +1397,7 @@ button.btn-search {
       &.hr-ge { background: rgba(168, 85, 247, 0.12); color: #9333ea; }
       &.awork-ge { background: rgba(255, 122, 0, 0.12); color: #e65100; }
       &.myjobs-ge { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
+      &.jobup-ge { background: rgba(11, 96, 150, 0.12); color: var(--primary); }
     }
 
     .salary-pill-mini {

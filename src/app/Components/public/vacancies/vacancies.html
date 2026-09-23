@@ -469,8 +469,12 @@
                   <tr>
                     <td class="col-vacancy">
                       <div class="job-info-cell">
-                        <div class="company-logo-avatar">
-                          {{ job.company.charAt(0) }}
+                        <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
+                          @if (job.source === jobUpSource) {
+                            <img [src]="jobUpLogo" alt="Job Up">
+                          } @else {
+                            {{ job.company.charAt(0) }}
+                          }
                         </div>
                         <div class="job-titles">
                           <button 
@@ -491,8 +495,10 @@
                     </td>
                     <td class="col-provider">
                       <div class="provider-cell">
-                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
-                          @if (job.source === 'jobs.ge') {
+                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.jobup-ge]="job.source === jobUpSource">
+                          @if (job.source === jobUpSource) {
+                            <img [src]="jobUpLogo" alt="Job Up" class="provider-logo">
+                          } @else if (job.source === 'jobs.ge') {
                             <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-logo">
                           } @else if (job.source === 'hr.ge') {
                             <img src="/icons/hr.png" alt="HR.ge" class="provider-logo">
@@ -560,8 +566,12 @@
             @for (job of filteredJobs(); track job.id) {
               <div class="vacancy-card glass-card compact-job-card" (click)="viewVacancy(job.id, job)" role="button" tabindex="0">
                 <div class="job-card-top">
-                  <div class="company-logo-avatar">
-                    {{ job.company.charAt(0) }}
+                  <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
+                    @if (job.source === jobUpSource) {
+                      <img [src]="jobUpLogo" alt="Job Up">
+                    } @else {
+                      {{ job.company.charAt(0) }}
+                    }
                   </div>
                   <div class="job-header-info">
                     <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
@@ -580,8 +590,10 @@
                 </div>
 
                 <div class="job-card-bottom-pills">
-                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
-                    @if (job.source === 'jobs.ge') {
+                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.jobup-ge]="job.source === jobUpSource">
+                    @if (job.source === jobUpSource) {
+                      <img [src]="jobUpLogo" alt="Job Up" class="provider-mini-icon">
+                    } @else if (job.source === 'jobs.ge') {
                       <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-mini-icon">
                     } @else if (job.source === 'hr.ge') {
                       <img src="/icons/hr.png" alt="HR.ge" class="provider-mini-icon">

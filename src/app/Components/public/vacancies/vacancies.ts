@@ -4,7 +4,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { StateStore } from '../../../Store/state.store';
+import { StateStore, detectJobSource, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { JobsService } from '../../../Core/Services/jobs-service';
@@ -448,13 +448,11 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.loadJobs(this.searchFilter.value, true);
   }
 
-  detectSource(sourceOrLink?: string, linkFallback?: string): string {
-    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
-    if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) return 'myjobs.ge';
-    if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
-    if (l.includes('hr.ge') || l.includes('hrge')) return 'hr.ge';
-    if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
-    return 'other';
+  readonly jobUpLogo = JOBUP_LOGO;
+  readonly jobUpSource = JOBUP_SOURCE;
+
+  detectSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
+    return detectJobSource(sourceOrLink, linkFallback, company);
   }
 
   formatDate(dateStr: any): string {

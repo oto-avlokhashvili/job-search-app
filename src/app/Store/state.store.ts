@@ -12,7 +12,18 @@ import { Cv } from '../Core/Services/cv';
 import { SubscriptionService } from '../Core/Services/subscription.service';
 import { extractSalary } from '../Core/Utils/salary-extractor';
 
-export function detectJobSource(sourceOrLink?: string, linkFallback?: string): string {
+export const JOBUP_SOURCE = 'jobup.ge';
+export const JOBUP_LOGO = '/favicon/favicon-96x96.png';
+
+// Vacancies posted on Job Up itself (not scraped from an external portal)
+export function isJobUpJob(sourceOrLink?: string, linkFallback?: string, company?: string): boolean {
+    const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
+    const c = (company || '').toLowerCase().replace(/[\s_-]/g, '');
+    return l.includes('jobup') || c === 'jobup' || c === 'jobup.ge';
+}
+
+export function detectJobSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
+    if (isJobUpJob(sourceOrLink, linkFallback, company)) return JOBUP_SOURCE;
     const l = `${sourceOrLink || ''} ${linkFallback || ''}`.toLowerCase();
     if (l.includes('myjobs.ge') || l.includes('myjobs') || l.includes('myjob')) return 'myjobs.ge';
     if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
@@ -615,7 +626,7 @@ export const StateStore = signalStore(
                     vacancy: job.vacancy,
                     company: job.company,
                     location: job.location || 'Remote',
-                    source: detectJobSource(job.source || '', job.link || ''),
+                    source: detectJobSource(job.source || '', job.link || '', job.company),
                     salaryRange: extractSalary(job),
                     publishDate: formatJobDate(job.publishDate),
                     deadline: job.deadline ? formatJobDate(job.deadline) : '',

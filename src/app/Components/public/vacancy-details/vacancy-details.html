@@ -72,16 +72,24 @@
         <!-- Hero Information Card -->
         <header class="vacancy-hero-card glass-card">
           <div class="hero-top-section">
-            <div class="company-logo-avatar">
-              {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
+            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j)">
+              @if (isJobUp(j)) {
+                <img [src]="jobUpLogo" alt="Job Up">
+              } @else {
+                {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
+              }
             </div>
 
             <div class="hero-main-info">
               <!-- Meta Badges Row -->
               <div class="meta-badges-row">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link) === 'myjobs.ge'">
-                  <span class="material-symbols-outlined badge-icon">language</span>
-                  <span>{{ detectSource(j.source, j.link) }}</span>
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link, j.company) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link, j.company) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link, j.company) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link, j.company) === 'myjobs.ge'" [class.jobup-ge]="isJobUp(j)">
+                  @if (isJobUp(j)) {
+                    <img [src]="jobUpLogo" alt="Job Up" class="badge-logo">
+                  } @else {
+                    <span class="material-symbols-outlined badge-icon">language</span>
+                  }
+                  <span>{{ detectSource(j.source, j.link, j.company) }}</span>
                 </span>
 
                 <span class="date-chip">
@@ -142,7 +150,7 @@
               <span class="material-symbols-outlined metric-icon source">hub</span>
               <div class="metric-content">
                 <span class="metric-label">წყარო</span>
-                <span class="metric-value">{{ detectSource(j.source, j.link) }}</span>
+                <span class="metric-value">{{ detectSource(j.source, j.link, j.company) }}</span>
               </div>
             </div>
           </div>
@@ -154,10 +162,12 @@
               <span>გაზიარება</span>
             </button>
 
-            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა">
-              <span class="material-symbols-outlined">open_in_new</span>
-              <span>წყაროზე გადასვლა</span>
-            </button>
+            @if (!isJobUp(j)) {
+              <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა">
+                <span class="material-symbols-outlined">open_in_new</span>
+                <span>წყაროზე გადასვლა</span>
+              </button>
+            }
           </div>
 
           <!-- კანდიდატთა ბაზა Hook Card (Job Header) -->
@@ -365,11 +375,15 @@
             } @else {
               <div class="empty-description-notice">
                 <span class="material-symbols-outlined notice-icon">info</span>
-                <p>ვაკანსიის სრული დეტალების, მოთხოვნებისა და პირობების გასაცნობად გთხოვთ გადახვიდეთ განაცხადის პირდაპირ წყაროზე.</p>
-                <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
-                  <span>გადასვლა წყაროზე</span>
-                  <span class="material-symbols-outlined">open_in_new</span>
-                </button>
+                @if (isJobUp(j)) {
+                  <p>ვაკანსიის დეტალური აღწერა ჯერ არ არის დამატებული.</p>
+                } @else {
+                  <p>ვაკანსიის სრული დეტალების, მოთხოვნებისა და პირობების გასაცნობად გთხოვთ გადახვიდეთ განაცხადის პირდაპირ წყაროზე.</p>
+                  <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
+                    <span>გადასვლა წყაროზე</span>
+                    <span class="material-symbols-outlined">open_in_new</span>
+                  </button>
+                }
               </div>
             }
           </div>
@@ -377,18 +391,25 @@
           <!-- Bottom Footer CTA -->
           <footer class="vacancy-body-footer">
             <div class="footer-left">
-              <span class="material-symbols-outlined">sync</span>
-              <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
+              @if (isJobUp(j)) {
+                <span class="material-symbols-outlined">verified</span>
+                <span>ვაკანსია გამოქვეყნებულია Job Up-ზე</span>
+              } @else {
+                <span class="material-symbols-outlined">sync</span>
+                <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
+              }
             </div>
             <div class="footer-right">
               <button type="button" class="btn-action-cv-subtle" (click)="openPublicCvModal()" title="CV-ის დატოვება Job Up-ის საერთო ბაზაში">
                 <span class="material-symbols-outlined">upload_file</span>
                 <span>დატოვე CV ბაზაში</span>
               </button>
-              <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
-                <span class="material-symbols-outlined">open_in_new</span>
-                <span>წყაროზე გადასვლა</span>
-              </button>
+              @if (!isJobUp(j)) {
+                <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
+                  <span class="material-symbols-outlined">open_in_new</span>
+                  <span>წყაროზე გადასვლა</span>
+                </button>
+              }
             </div>
           </footer>
         </section>

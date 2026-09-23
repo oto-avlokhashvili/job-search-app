@@ -7,7 +7,7 @@ import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { JobsService } from '../../../Core/Services/jobs-service';
-import { StateStore, detectJobSource, formatJobDate } from '../../../Store/state.store';
+import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
@@ -376,7 +376,7 @@ export class VacancyDetails implements OnInit {
             vacancy: j.vacancy,
             company: j.company,
             location: j.location || 'Remote',
-            source: detectJobSource(j.source || '', j.link || ''),
+            source: detectJobSource(j.source || '', j.link || '', j.company),
             salaryRange: extractSalary(j),
             publishDate: formatJobDate(j.publishDate),
             deadline: j.deadline ? formatJobDate(j.deadline) : '',
@@ -471,8 +471,14 @@ export class VacancyDetails implements OnInit {
     });
   }
 
-  detectSource(sourceOrLink?: string, linkFallback?: string): string {
-    return detectJobSource(sourceOrLink, linkFallback);
+  readonly jobUpLogo = JOBUP_LOGO;
+
+  detectSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
+    return detectJobSource(sourceOrLink, linkFallback, company);
+  }
+
+  isJobUp(job: { source?: string; link?: string; company?: string }): boolean {
+    return isJobUpJob(job.source, job.link, job.company);
   }
 
   formatDate(dateStr: any): string {
