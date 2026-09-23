@@ -69,7 +69,125 @@
     @else if (stateStore.selectedJob(); as j) {
       <article class="vacancy-article-content">
         
-        <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (TOP HOOK) -->
+        <!-- Hero Information Card -->
+        <header class="vacancy-hero-card glass-card">
+          <div class="hero-top-section">
+            <div class="company-logo-avatar">
+              {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
+            </div>
+
+            <div class="hero-main-info">
+              <!-- Meta Badges Row -->
+              <div class="meta-badges-row">
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link) === 'myjobs.ge'">
+                  <span class="material-symbols-outlined badge-icon">language</span>
+                  <span>{{ detectSource(j.source, j.link) }}</span>
+                </span>
+
+                <span class="date-chip">
+                  <span class="material-symbols-outlined badge-icon">calendar_today</span>
+                  <span>გამოქვეყნდა: {{ formatDate(j.publishDate) }}</span>
+                </span>
+
+                @if (j.deadline) {
+                  <span class="date-chip deadline-chip">
+                    <span class="material-symbols-outlined badge-icon">schedule</span>
+                    <span>ბოლო ვადა: {{ formatDate(j.deadline) }}</span>
+                  </span>
+                }
+              </div>
+
+              <!-- Main Title & Company -->
+              <h1 class="vacancy-page-title">{{ j.vacancy }}</h1>
+
+              <div class="company-details-row">
+                <div class="company-name-block">
+                  <span class="material-symbols-outlined">domain</span>
+                  <span class="company-name">{{ j.company }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Metrics / Attributes Bar -->
+          <div class="key-metrics-grid">
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon location">location_on</span>
+              <div class="metric-content">
+                <span class="metric-label">ლოკაცია</span>
+                <span class="metric-value">{{ j.location || 'დისტანციური' }}</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon salary">payments</span>
+              <div class="metric-content">
+                <span class="metric-label">ანაზღაურება</span>
+                <span class="metric-value salary-highlight">{{ extractedSalary() }}</span>
+              </div>
+            </div>
+
+            @if (extractedEmail(); as email) {
+              <div class="metric-card email-card" (click)="copyEmail(email)" title="ელ-ფოსტის დაკოპირება">
+                <span class="material-symbols-outlined metric-icon email">mail</span>
+                <div class="metric-content">
+                  <span class="metric-label">ელ-ფოსტა</span>
+                  <span class="metric-value email-text">{{ email }}</span>
+                </div>
+                <span class="material-symbols-outlined copy-icon">content_copy</span>
+              </div>
+            }
+
+            <div class="metric-card">
+              <span class="material-symbols-outlined metric-icon source">hub</span>
+              <div class="metric-content">
+                <span class="metric-label">წყარო</span>
+                <span class="metric-value">{{ detectSource(j.source, j.link) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="hero-actions-bar">
+            <button type="button" class="btn-action-copy" (click)="copyLink()" title="ბმულის გაზიარება">
+              <span class="material-symbols-outlined">share</span>
+              <span>გაზიარება</span>
+            </button>
+
+            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა">
+              <span class="material-symbols-outlined">open_in_new</span>
+              <span>წყაროზე გადასვლა</span>
+            </button>
+          </div>
+
+          <!-- კანდიდატთა ბაზა Hook Card (Job Header) -->
+          <div class="talent-pool-hook-card">
+            <div class="pool-card-content">
+              <div class="pool-icon-wrap">
+                <span class="material-symbols-outlined">folder_shared</span>
+              </div>
+              <div class="pool-text-wrap">
+                <div class="pool-title-badge-row">
+                  <h4>არ ერგებით ამ ვაკანსიას?</h4>
+                  <span class="pool-badge">კანდიდატთა ბაზა</span>
+                </div>
+                <p class="pool-desc">
+                  დატოვეთ თქვენი CV <strong>Job Up-ის საერთო ბაზაში</strong> — ჩვენი AI შეგირჩევთ სხვა შესაფერის შემოთავაზებებს.
+                </p>
+                <div class="pool-disclaimer-note">
+                  <span class="material-symbols-outlined">info</span>
+                  <span>შენიშვნა: CV ინახება Job Up-ის საერთო ბაზაში და არა ამ კონკრეტულ კომპანიაში.</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-pool-upload" (click)="openPublicCvModal()">
+              <span class="material-symbols-outlined">upload_file</span>
+              <span>CV-ის დატოვება ბაზაში</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (Between Hero & Description) -->
         <section class="discovery-accordion-section glass-card" [class.is-expanded]="isAccordionOpen()">
           <!-- Accordion Header Hook -->
           <button 
@@ -231,124 +349,6 @@
             </div>
           }
         </section>
-
-        <!-- Hero Information Card -->
-        <header class="vacancy-hero-card glass-card">
-          <div class="hero-top-section">
-            <div class="company-logo-avatar">
-              {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
-            </div>
-
-            <div class="hero-main-info">
-              <!-- Meta Badges Row -->
-              <div class="meta-badges-row">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link) === 'myjobs.ge'">
-                  <span class="material-symbols-outlined badge-icon">language</span>
-                  <span>{{ detectSource(j.source, j.link) }}</span>
-                </span>
-
-                <span class="date-chip">
-                  <span class="material-symbols-outlined badge-icon">calendar_today</span>
-                  <span>გამოქვეყნდა: {{ formatDate(j.publishDate) }}</span>
-                </span>
-
-                @if (j.deadline) {
-                  <span class="date-chip deadline-chip">
-                    <span class="material-symbols-outlined badge-icon">schedule</span>
-                    <span>ბოლო ვადა: {{ formatDate(j.deadline) }}</span>
-                  </span>
-                }
-              </div>
-
-              <!-- Main Title & Company -->
-              <h1 class="vacancy-page-title">{{ j.vacancy }}</h1>
-
-              <div class="company-details-row">
-                <div class="company-name-block">
-                  <span class="material-symbols-outlined">domain</span>
-                  <span class="company-name">{{ j.company }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Key Metrics / Attributes Bar -->
-          <div class="key-metrics-grid">
-            <div class="metric-card">
-              <span class="material-symbols-outlined metric-icon location">location_on</span>
-              <div class="metric-content">
-                <span class="metric-label">ლოკაცია</span>
-                <span class="metric-value">{{ j.location || 'დისტანციური' }}</span>
-              </div>
-            </div>
-
-            <div class="metric-card">
-              <span class="material-symbols-outlined metric-icon salary">payments</span>
-              <div class="metric-content">
-                <span class="metric-label">ანაზღაურება</span>
-                <span class="metric-value salary-highlight">{{ extractedSalary() }}</span>
-              </div>
-            </div>
-
-            @if (extractedEmail(); as email) {
-              <div class="metric-card email-card" (click)="copyEmail(email)" title="ელ-ფოსტის დაკოპირება">
-                <span class="material-symbols-outlined metric-icon email">mail</span>
-                <div class="metric-content">
-                  <span class="metric-label">ელ-ფოსტა</span>
-                  <span class="metric-value email-text">{{ email }}</span>
-                </div>
-                <span class="material-symbols-outlined copy-icon">content_copy</span>
-              </div>
-            }
-
-            <div class="metric-card">
-              <span class="material-symbols-outlined metric-icon source">hub</span>
-              <div class="metric-content">
-                <span class="metric-label">წყარო</span>
-                <span class="metric-value">{{ detectSource(j.source, j.link) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Action Buttons -->
-          <div class="hero-actions-bar">
-            <button type="button" class="btn-action-copy" (click)="copyLink()" title="ბმულის გაზიარება">
-              <span class="material-symbols-outlined">share</span>
-              <span>გაზიარება</span>
-            </button>
-
-            <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა">
-              <span class="material-symbols-outlined">open_in_new</span>
-              <span>წყაროზე გადასვლა</span>
-            </button>
-          </div>
-
-          <!-- კანდიდატთა ბაზა Hook Card (Job Header) -->
-          <div class="talent-pool-hook-card">
-            <div class="pool-card-content">
-              <div class="pool-icon-wrap">
-                <span class="material-symbols-outlined">folder_shared</span>
-              </div>
-              <div class="pool-text-wrap">
-                <div class="pool-title-badge-row">
-                  <h4>არ ერგებით ამ ვაკანსიას?</h4>
-                  <span class="pool-badge">კანდიდატთა ბაზა</span>
-                </div>
-                <p class="pool-desc">
-                  დატოვეთ თქვენი CV <strong>Job Up-ის საერთო ბაზაში</strong> — ჩვენი AI შეგირჩევთ სხვა შესაფერის შემოთავაზებებს.
-                </p>
-                <div class="pool-disclaimer-note">
-                  <span class="material-symbols-outlined">info</span>
-                  <span>შენიშვნა: CV ინახება Job Up-ის საერთო ბაზაში და არა ამ კონკრეტულ კომპანიაში.</span>
-                </div>
-              </div>
-            </div>
-            <button type="button" class="btn-pool-upload" (click)="openPublicCvModal()">
-              <span class="material-symbols-outlined">upload_file</span>
-              <span>CV-ის დატოვება ბაზაში</span>
-            </button>
-          </div>
-        </header>
 
         <!-- Description & Detailed Requirements Body -->
         <section class="vacancy-body-section glass-card">
