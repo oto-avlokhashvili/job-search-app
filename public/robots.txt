@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+Sitemap: https://jobup.ge/sitemap.xml

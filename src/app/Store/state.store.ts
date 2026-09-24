@@ -84,6 +84,8 @@ type State = {
     selectedJob: Job | null;
     selectedJobLoading: boolean;
     selectedJobError: string | null;
+    /** HTTP status of the failed job request (404 = job doesn't exist, 0 = network/timeout). */
+    selectedJobErrorStatus: number | null;
 
     publicJobs: VacancyItem[];
     publicJobsTotal: number;
@@ -139,6 +141,7 @@ const initialState: State = {
     selectedJob: null,
     selectedJobLoading: false,
     selectedJobError: null,
+    selectedJobErrorStatus: null,
 
     publicJobs: [],
     publicJobsTotal: 0,
@@ -539,25 +542,25 @@ export const StateStore = signalStore(
         },
 
         loadJobById(id: number | string) {
-            patchState(store, { selectedJobLoading: true, selectedJobError: null });
+            patchState(store, { selectedJobLoading: true, selectedJobError: null, selectedJobErrorStatus: null });
             jobsService.getJobById(id).subscribe({
                 next: (res: any) => {
                     const loadedJob = res?.job || res;
                     if (loadedJob && (loadedJob.id || loadedJob.vacancy)) {
                         patchState(store, { selectedJob: loadedJob, selectedJobLoading: false, selectedJobError: null });
                     } else {
-                        patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის მონაცემები ვერ მოიძებნა' });
+                        patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის მონაცემები ვერ მოიძებნა', selectedJobErrorStatus: 404 });
                     }
                 },
                 error: (err: any) => {
                     console.error('Error loading job by ID:', err);
-                    patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის ჩატვირთვისას დაფიქსირდა შეცდომა ან ვაკანსია ვერ მოიძებნა' });
+                    patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის ჩატვირთვისას დაფიქსირდა შეცდომა ან ვაკანსია ვერ მოიძებნა', selectedJobErrorStatus: err?.status ?? 0 });
                 }
             });
         },
 
         clearSelectedJob() {
-            patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: null });
+            patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: null, selectedJobErrorStatus: null });
         },
 
         async loadPublicJobs(params?: {
@@ -715,8 +718,9 @@ export const StateStore = signalStore(
     })),
     withHooks({
         onInit(store) {
+            // The public job list is loaded by the /vacancies page itself. Loading it here
+            // made every server render (landing, vacancy, home pages) wait on it.
             store.loadStats();
-            store.loadPublicJobs();
             store.loadCities();
         }
     })

@@ -1511,6 +1511,10 @@
     display: block;
     overflow: hidden;
 
+    &[hidden] {
+      display: none;
+    }
+
     .panel-inner-content {
       padding: 16px 20px 20px;
       display: flex;

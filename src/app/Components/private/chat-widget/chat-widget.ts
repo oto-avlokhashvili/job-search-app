@@ -16,7 +16,6 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
-import { Onboarding } from '../onboarding/onboarding';
 
 export interface WidgetChatMessage {
   id: string;
@@ -60,7 +59,9 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     this.authService.openAuthModal('login');
   }
 
-  openOnboarding(step: number = 1) {
+  async openOnboarding(step: number = 1) {
+    // Loaded on demand: onboarding is large and the widget is on every public page.
+    const { Onboarding } = await import('../onboarding/onboarding');
     const dialogRef = this.dialog.open(Onboarding, {
       width: '1100px',
       maxWidth: '96vw',

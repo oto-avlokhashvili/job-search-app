@@ -1,0 +1,149 @@
+<main class="vacancy-landing-page">
+  @if (landing(); as l) {
+    <div class="landing-container">
+
+      <nav class="landing-breadcrumbs" aria-label="breadcrumb">
+        <a routerLink="/vacancies">ვაკანსიები</a>
+        <span class="separator">/</span>
+        <span class="current">{{ l.h1 }}</span>
+      </nav>
+
+      <header class="landing-hero">
+        <h1>
+          {{ l.h1 }}
+          @if (showCount()) {
+            <span class="count-badge">{{ total() | number }}</span>
+          }
+        </h1>
+        <p class="landing-intro">{{ l.intro }}</p>
+        <p class="landing-intro muted">
+          Job Up ყოველდღიურად აგროვებს ახალ ვაკანსიებს Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან, ამიტომ აქ ყოველთვის
+          იხილავთ უახლეს განცხადებებს ერთ სივრცეში. ატვირთეთ CV და AI აგენტი თავად შეგირჩევთ შესაფერის პოზიციებს.
+        </p>
+        <div class="hero-actions">
+          <button type="button" class="btn-landing primary" (click)="openPublicCvModal()">
+            <span class="material-symbols-outlined">upload_file</span>
+            <span>ატვირთე CV</span>
+          </button>
+          <a class="btn-landing secondary" routerLink="/vacancies" [queryParams]="allFiltersLink()">
+            <span class="material-symbols-outlined">tune</span>
+            <span>ძიება ფილტრებით</span>
+          </a>
+        </div>
+      </header>
+
+      <section class="landing-jobs" aria-labelledby="landing-jobs-title">
+        <h2 id="landing-jobs-title">უახლესი განცხადებები</h2>
+
+        @if (loading()) {
+          <div class="jobs-grid skeleton-pulse" aria-busy="true" aria-label="ვაკანსიები იტვირთება">
+            @for (i of skeletonCards; track i) {
+              <div class="job-card skeleton-card">
+                <div class="card-top">
+                  <span class="skeleton-block" style="width: 64px; height: 18px;"></span>
+                  <span class="skeleton-text short" style="width: 62px;"></span>
+                </div>
+                <span class="skeleton-text" [style.width]="i % 2 === 0 ? '88%' : '72%'"></span>
+                <span class="skeleton-text" [style.width]="i % 3 === 0 ? '55%' : '40%'"></span>
+                <span class="skeleton-text short" style="width: 45%;"></span>
+                <div class="card-bottom">
+                  <span class="skeleton-text short" style="width: 70px;"></span>
+                  @if (i % 2 === 1) {
+                    <span class="skeleton-text short" style="width: 80px;"></span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (error()) {
+          <div class="landing-empty">
+            <p>ვაკანსიების ჩატვირთვისას დაფიქსირდა შეცდომა. სცადეთ მოგვიანებით.</p>
+            <a class="btn-landing secondary" routerLink="/vacancies">ყველა ვაკანსია</a>
+          </div>
+        } @else if (jobs().length === 0) {
+          <div class="landing-empty">
+            <p>ამ მომენტში აქტიური ვაკანსია ვერ მოიძებნა. დაათვალიერეთ ყველა ვაკანსია ან ატვირთეთ CV და შეგატყობინებთ, როგორც კი შესაფერისი პოზიცია გამოჩნდება.</p>
+            <a class="btn-landing secondary" routerLink="/vacancies">ყველა ვაკანსია</a>
+          </div>
+        } @else {
+          <div class="jobs-grid">
+            @for (job of jobs(); track job.id) {
+              <a class="job-card" [routerLink]="['/vacancies', getJobSlug(job)]">
+                <div class="card-top">
+                  <span class="card-source-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
+                    {{ job.source }}
+                  </span>
+                  <span class="card-date">{{ job.publishDate }}</span>
+                </div>
+                <h3 class="card-title" [title]="job.vacancy">{{ job.vacancy }}</h3>
+                <div class="card-company">
+                  <span class="material-symbols-outlined">domain</span>
+                  <span class="card-company-name">{{ job.company }}</span>
+                </div>
+                <div class="card-bottom">
+                  <span class="card-location">
+                    <span class="material-symbols-outlined">location_on</span>
+                    {{ job.location }}
+                  </span>
+                  @if (job.salaryRange && job.salaryRange !== 'შეთანხმებით' && job.salaryRange !== 'N/A') {
+                    <span class="card-salary">{{ job.salaryRange }}</span>
+                  }
+                </div>
+              </a>
+            }
+          </div>
+
+          @if (hasMore()) {
+            <div class="load-more-wrap">
+              <button type="button" class="btn-landing secondary" (click)="loadMore()" [disabled]="appending()">
+                {{ appending() ? 'იტვირთება...' : 'მეტის ჩატვირთვა' }}
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+      <section class="landing-related" aria-labelledby="landing-related-title">
+        <h2 id="landing-related-title">სხვა პოპულარული ძიებები</h2>
+
+        <div class="related-group">
+          <h3>ქალაქების მიხედვით</h3>
+          <div class="chip-list">
+            @for (p of cities(); track p.slug) {
+              <a class="chip" [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a>
+            }
+          </div>
+        </div>
+
+        <div class="related-group">
+          <h3>პროფესიების მიხედვით</h3>
+          <div class="chip-list">
+            @for (p of categories(); track p.slug) {
+              <a class="chip" [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a>
+            }
+          </div>
+        </div>
+
+        <div class="related-group">
+          <h3>სამუშაოს ტიპი</h3>
+          <div class="chip-list">
+            @for (p of types(); track p.slug) {
+              <a class="chip" [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="landing-faq" aria-labelledby="landing-faq-title">
+        <h2 id="landing-faq-title">ხშირად დასმული კითხვები</h2>
+        @for (f of faqs(); track f.q) {
+          <details>
+            <summary>{{ f.q }}</summary>
+            <p>{{ f.a }}</p>
+          </details>
+        }
+      </section>
+
+    </div>
+  }
+</main>

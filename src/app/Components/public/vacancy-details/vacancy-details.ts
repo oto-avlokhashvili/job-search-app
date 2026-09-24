@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, computed, effect, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
+import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT, PLATFORM_ID } from '@angular/core';
+import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
@@ -11,6 +11,9 @@ import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } fr
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
+import { SeoService, SITE_URL } from '../../../Core/Services/seo.service';
+import { buildJobBreadcrumbSchema, buildJobPostingSchema } from '../../../Core/Utils/job-schema';
+import { findCityLanding } from '../../../Core/Utils/landing-pages';
 
 @Component({
   selector: 'app-vacancy-details',
@@ -28,9 +31,11 @@ export class VacancyDetails implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seo = inject(SeoService);
+  // Only provided during SSR; lets us answer missing jobs with a real 404.
+  private responseInit = inject(RESPONSE_INIT, { optional: true });
   private dialog = inject(MatDialog);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   // Accordion & Discovery Hook State
   isAccordionOpen = signal<boolean>(false);
@@ -38,6 +43,8 @@ export class VacancyDetails implements OnInit {
   similarJobsLoading = signal<boolean>(false);
   similarJobsLoaded = signal<boolean>(false);
   suggestedTags = signal<{ label: string; query: string; type: 'role' | 'company' | 'location' }[]>([]);
+
+  cityLanding = computed(() => findCityLanding(this.stateStore.selectedJob()?.location));
 
   totalVacanciesCount = computed(() => {
     const statsCount = this.stateStore.stats()?.activeVacancies;
@@ -295,20 +302,52 @@ export class VacancyDetails implements OnInit {
       const job = this.stateStore.selectedJob();
       if (job) {
         this.extractKeywordsAndTags(job);
-        if (typeof document !== 'undefined') {
-          this.titleService.setTitle(`${job.vacancy} - ${job.company} | Job Up`);
-          this.metaService.updateTag({ 
-            name: 'description', 
-            content: `${job.company} აცხადებს ვაკანსიას პოზიციაზე: ${job.vacancy}. ლოკაცია: ${job.location || 'საქართველო'}` 
-          });
+        this.applySeo(job);
+      }
+    });
+
+    effect(() => {
+      if (this.stateStore.selectedJobError()) {
+        // 404 only when the backend says the job doesn't exist; a timeout or backend
+        // error gets 503 so Google retries instead of dropping the page.
+        const notFound = this.stateStore.selectedJobErrorStatus() === 404;
+        this.seo.update({
+          title: 'ვაკანსია ვერ მოიძებნა | Job Up',
+          description: 'ვაკანსია ვერ მოიძებნა ან აღარ არის აქტიური. იხილეთ სხვა აქტიური ვაკანსიები Job Up-ზე.',
+          path: '/vacancies',
+          noindex: true,
+        });
+        if (this.responseInit) {
+          this.responseInit.status = notFound ? 404 : 503;
         }
       }
     });
   }
 
+  private applySeo(job: Job) {
+    const path = `/vacancies/${generateJobSlug(job.vacancy, job.company, job.id)}`;
+    const pageUrl = SITE_URL + path;
+    const location = job.location || 'საქართველო';
+
+    this.seo.update({
+      title: `${job.vacancy} — ${job.company} | ვაკანსია | Job Up`,
+      description: `${job.company} აცხადებს ვაკანსიას: ${job.vacancy}. ლოკაცია: ${location}. გაეცანით მოთხოვნებს და გააგზავნეთ CV Job Up-ზე.`,
+      path,
+      type: 'article',
+    });
+
+    const posting = buildJobPostingSchema(job, pageUrl, this.isJobUp(job));
+    if (posting) {
+      this.seo.addJsonLd(posting);
+    }
+    this.seo.addJsonLd(buildJobBreadcrumbSchema(job, pageUrl, findCityLanding(job.location)));
+  }
+
   ngOnInit() {
     this.stateStore.loadStats();
-    if (!this.stateStore.publicJobsLoaded()) {
+    // Only feeds the portal counts in the collapsed accordion, so don't make the
+    // server render wait for it.
+    if (this.isBrowser && !this.stateStore.publicJobsLoaded()) {
       this.stateStore.loadPublicJobs();
     }
 

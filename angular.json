@@ -37,15 +37,16 @@
               "node_modules/alertifyjs/build/css/themes/default.min.css",
               "src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            ],
+            "scripts": [],
             "allowedCommonJsDependencies": [
               "alertifyjs",
               "qrcode"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
+            "security": {
+              "allowedHosts": ["jobup.ge", "www.jobup.ge", "*.up.railway.app", "localhost"]
+            },
             "ssr": {
               "entry": "src/server.ts"
             }

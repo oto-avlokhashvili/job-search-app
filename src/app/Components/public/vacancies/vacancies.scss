@@ -1122,6 +1122,8 @@ button.btn-search {
       min-width: 0;
 
       .job-vacancy-link {
+        display: block;
+        text-decoration: none;
         background: none;
         border: none;
         padding: 0;
@@ -1250,6 +1252,8 @@ button.btn-search {
   }
 
   .apply-btn {
+    display: inline-block;
+    text-decoration: none;
     padding: 7px 16px;
     font-size: 12.5px;
     font-weight: 700;
@@ -1280,6 +1284,8 @@ button.btn-search {
 }
 
 .compact-job-card {
+  color: inherit;
+  text-decoration: none;
   padding: 14px 16px;
   border-radius: 14px;
   background: var(--surface-container-lowest);

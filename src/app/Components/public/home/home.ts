@@ -13,7 +13,7 @@ import { SubscriptionModal } from '../../private/private-layout/subscription-mod
 import { WaitlistModal } from '../waitlist-modal/waitlist-modal';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { JobsService } from '../../../Core/Services/jobs-service';
-import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from '../../../Core/Services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -31,8 +31,7 @@ export class Home implements OnInit {
   private http = inject(HttpClient);
   private alertify = inject(AlertifyService);
   private jobsService = inject(JobsService);
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seo = inject(SeoService);
 
   stats = this.stateStore.stats;
   statsLoading = this.stateStore.statsLoading;
@@ -59,8 +58,11 @@ export class Home implements OnInit {
   });
 
   ngOnInit() {
-    this.titleService.setTitle('Job Up — AI აგენტი და სამუშაოს ძიება');
-    this.metaService.updateTag({ name: 'description', content: 'შექმენი საკუთარი AI აგენტი და მოაძებნინე სამსახური მარტივად. Jobs.ge, HR.ge, Awork.ge და Myjobs.ge ერთ სივრცეში.' });
+    this.seo.update({
+      title: 'Job Up — AI აგენტი სამსახურის საძებნად',
+      description: 'შექმენი საკუთარი AI აგენტი და მოაძებნინე სამსახური მარტივად. ვაკანსიები Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან ერთ სივრცეში.',
+      path: '/home',
+    });
   }
 
   getAggregatorLogo(id: string): string {

@@ -477,10 +477,9 @@
                           }
                         </div>
                         <div class="job-titles">
-                          <button 
-                            type="button" 
-                            class="job-vacancy-link" 
-                            (click)="viewVacancy(job.id, job)"
+                          <a
+                            class="job-vacancy-link"
+                            [routerLink]="['/vacancies', getJobSlug(job)]"
                             [matTooltip]="job.vacancy"
                             matTooltipPosition="above"
                             [matTooltipShowDelay]="150"
@@ -488,7 +487,7 @@
                             [title]="job.vacancy"
                           >
                             <span class="job-vacancy">{{ job.vacancy }}</span>
-                          </button>
+                          </a>
                           <span class="job-company" [title]="job.company">{{ job.company }}</span>
                         </div>
                       </div>
@@ -532,9 +531,9 @@
                       </span>
                     </td>
                     <td class="col-action">
-                      <button type="button" class="btn-fluid btn-sm primary apply-btn" (click)="viewVacancy(job.id, job)">
+                      <a class="btn-fluid btn-sm primary apply-btn" [routerLink]="['/vacancies', getJobSlug(job)]" tabindex="-1" aria-hidden="true">
                         ნახვა
-                      </button>
+                      </a>
                     </td>
                   </tr>
                 }
@@ -564,7 +563,7 @@
           <!-- Mobile Compact Cards View -->
           <div class="vacancies-cards-container">
             @for (job of filteredJobs(); track job.id) {
-              <div class="vacancy-card glass-card compact-job-card" (click)="viewVacancy(job.id, job)" role="button" tabindex="0">
+              <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]">
                 <div class="job-card-top">
                   <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
                     @if (job.source === jobUpSource) {
@@ -617,7 +616,7 @@
                     {{ mStatus.text }}
                   </span>
                 </div>
-              </div>
+              </a>
             }
             @if (isAppending()) {
               @for (i of [1,2,3]; track i) {

@@ -10,7 +10,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
-import { Title, Meta } from '@angular/platform-browser';
+import { SeoService } from '../../../Core/Services/seo.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 
@@ -43,8 +43,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private ngZone = inject(NgZone);
   private injector = inject(Injector);
   private alertify = inject(AlertifyService);
-  private titleService = inject(Title);
-  private metaService = inject(Meta);
+  private seo = inject(SeoService);
   private dialog = inject(MatDialog);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
@@ -138,8 +137,12 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private queryParamsSub?: any;
 
   ngOnInit() {
-    this.titleService.setTitle('აქტიური ვაკანსიები | Job Up');
-    this.metaService.updateTag({ name: 'description', content: 'მოიძიეთ უახლესი აქტიური ვაკანსიები საქართველოში Jobs.ge, HR.ge, Awork.ge და Myjobs.ge პორტალებიდან ერთ სივრცეში.' });
+    this.seo.update({
+      title: 'ვაკანსიები და სამსახური საქართველოში | Job Up',
+      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
+      // Filtered views (?search, ?location, ?source) all consolidate onto the main list.
+      path: '/vacancies',
+    });
 
     this.stateStore.loadCities();
 
@@ -151,23 +154,18 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.queryParamsSub = this.route.queryParams.subscribe(params => {
-      let hasFilterParam = false;
       if (params['source']) {
         this.sourceFilter.setValue(params['source']);
-        hasFilterParam = true;
       }
       if (params['location']) {
         this.locationFilter.setValue(params['location']);
-        hasFilterParam = true;
       }
       if (params['search']) {
         this.searchFilter.setValue(params['search']);
-        hasFilterParam = true;
       }
 
-      if (hasFilterParam) {
-        this.loadJobs(this.searchFilter.value);
-      }
+      // loadJobs is a no-op when the same filters are already loaded.
+      this.loadJobs(this.searchFilter.value);
     });
   }
 
@@ -668,12 +666,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  viewVacancy(jobId: number | string, job?: { vacancy?: string; company?: string }) {
-    if (!job) {
-      job = this.allJobs().find(j => j.id === jobId) || this.filteredJobs().find(j => j.id === jobId);
-    }
-    const slug = generateJobSlug(job?.vacancy, job?.company, jobId);
-    this.router.navigate(['/vacancies', slug]);
+  getJobSlug(job: { id: number | string; vacancy?: string; company?: string }): string {
+    return generateJobSlug(job.vacancy, job.company, job.id);
   }
 
   openPublicCvModal() {

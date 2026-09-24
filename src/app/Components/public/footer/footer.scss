@@ -90,3 +90,55 @@
     }
   }
 }
+
+.footer-seo-links {
+  max-width: 1440px;
+  margin: 0 auto 24px;
+  padding: 0 48px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  border-bottom: 1px solid var(--border-color);
+
+  @media (max-width: 991px) {
+    padding: 0 20px 20px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 0 14px 18px;
+  }
+
+  h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+
+  a {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--primary);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}

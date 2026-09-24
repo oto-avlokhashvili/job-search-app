@@ -1,4 +1,32 @@
 <footer class="tonal-footer" [class.has-bottom-nav]="authService.isLoggedIn()">
+  <nav class="footer-seo-links" aria-label="პოპულარული ძიებები">
+    <div class="seo-group">
+      <h3>ვაკანსიები ქალაქების მიხედვით</h3>
+      <ul>
+        @for (p of cityLinks; track p.slug) {
+          <li><a [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a></li>
+        }
+      </ul>
+    </div>
+    <div class="seo-group">
+      <h3>პოპულარული პროფესიები</h3>
+      <ul>
+        @for (p of categoryLinks; track p.slug) {
+          <li><a [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a></li>
+        }
+      </ul>
+    </div>
+    <div class="seo-group">
+      <h3>სამუშაოს ტიპი</h3>
+      <ul>
+        @for (p of typeLinks; track p.slug) {
+          <li><a [routerLink]="['/vacancies', p.slug]">{{ p.h1 }}</a></li>
+        }
+        <li><a routerLink="/vacancies">ყველა ვაკანსია</a></li>
+      </ul>
+    </div>
+  </nav>
+
   <div class="footer-container">
     <div class="footer-brand">
       <div class="logo-container">

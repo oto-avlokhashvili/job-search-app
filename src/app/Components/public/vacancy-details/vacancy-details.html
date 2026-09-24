@@ -13,6 +13,10 @@
           <div class="breadcrumbs-trail">
             <a routerLink="/vacancies" class="breadcrumb-link">ვაკანსიები</a>
             <span class="breadcrumb-separator">/</span>
+            @if (cityLanding(); as city) {
+              <a [routerLink]="['/vacancies', city.slug]" class="breadcrumb-link">{{ city.label }}</a>
+              <span class="breadcrumb-separator">/</span>
+            }
             <span class="breadcrumb-item company-item">{{ j.company }}</span>
             <span class="breadcrumb-separator">/</span>
             <span class="breadcrumb-item current-item">{{ j.vacancy }}</span>
@@ -231,12 +235,14 @@
             </div>
           </button>
 
-          <!-- Accordion Collapsible Panel (Only rendered and visible when open) -->
-          @if (isAccordionOpen()) {
-            <div 
-              id="discovery-accordion-panel" 
-              class="accordion-collapsible-panel open"
-            >
+          <!-- Accordion Collapsible Panel: always rendered (hidden when closed) so the
+               similar-job links are in the server HTML for crawlers -->
+          <div
+            id="discovery-accordion-panel"
+            class="accordion-collapsible-panel"
+            [class.open]="isAccordionOpen()"
+            [hidden]="!isAccordionOpen()"
+          >
               <div class="panel-inner-content">
                 
                 <!-- Source Distribution Bar -->
@@ -356,8 +362,7 @@
                 </div>
 
               </div>
-            </div>
-          }
+          </div>
         </section>
 
         <!-- Description & Detailed Requirements Body -->

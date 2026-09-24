@@ -19,5 +19,7 @@
 }
 
 @if (isBrowser) {
-  <app-chat-widget />
+  @defer (on idle) {
+    <app-chat-widget />
+  }
 }
