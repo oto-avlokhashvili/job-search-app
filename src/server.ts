@@ -21,7 +21,13 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 app.set('trust proxy', 1);
 
-const angularApp = new AngularNodeAppEngine();
+// Railway's proxy adds X-Forwarded-* headers (notably X-Forwarded-For) to every request.
+// Angular falls back to client-side rendering, with an empty page for crawlers,
+// whenever it sees an X-Forwarded-* header that isn't trusted, and by default it only
+// trusts -Host and -Proto. Hostnames are still checked against allowedHosts.
+const angularApp = new AngularNodeAppEngine({
+  trustProxyHeaders: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port'],
+});
 
 /**
  * 1. Global API Rate Limiter
