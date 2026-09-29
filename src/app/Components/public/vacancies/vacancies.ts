@@ -49,6 +49,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
   @ViewChild('vacanciesSection') vacanciesSectionRef!: ElementRef;
+  @ViewChild('filtersArea') filtersAreaRef!: ElementRef<HTMLElement>;
 
   private animationFrameId: number | null = null;
   private isInitialLoad = true;
@@ -196,7 +197,17 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Stretch the canvas from the top of the section to the bottom of the filters
+    const fitHeight = () => {
+      const area = this.filtersAreaRef?.nativeElement;
+      const parent = canvas.parentElement;
+      if (!area || !parent) return;
+      const h = Math.round(area.getBoundingClientRect().bottom - parent.getBoundingClientRect().top);
+      if (h > 0) canvas.style.height = h + 'px';
+    };
+
     const resize = () => {
+      fitHeight();
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     };
@@ -299,7 +310,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
     let lastState: 'idle' | 'searching' | 'burst' = 'idle';
 
+    let frame = 0;
     const draw = () => {
+      // Content above the filters (cards, banner) can change height after load
+      if (++frame % 30 === 0) fitHeight();
       if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
         resize();
         bounds = getSafeBounds();
