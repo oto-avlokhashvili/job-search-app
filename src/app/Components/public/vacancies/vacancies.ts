@@ -13,6 +13,7 @@ import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SeoService } from '../../../Core/Services/seo.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
+import { AiAgentBanner } from '../ai-agent-banner/ai-agent-banner';
 
 export interface VacancyItem {
   id: number;
@@ -30,7 +31,7 @@ export interface VacancyItem {
 @Component({
   selector: 'app-vacancies',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule, AiAgentBanner],
   templateUrl: './vacancies.html',
   styleUrl: './vacancies.scss',
 })
@@ -80,6 +81,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   isLocationOpen = signal<boolean>(false);
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
+  cvPromoExpanded = signal<boolean>(false);
   isFilterModalOpen = signal<boolean>(false);
 
   sourceOptions = computed(() => [

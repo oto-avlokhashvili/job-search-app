@@ -1,0 +1,388 @@
+// Shared styles for the CV and AI agent promo banners.
+// Used by the vacancies page and the AI agent banner component.
+
+.promo-banner,
+.public-cv-banner {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+  padding: 16px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  height: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 576px) {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+
+  // ── CV Banner Theme ──
+  &.cv-promo-banner,
+  &:not(.ai-promo-banner) {
+    background: linear-gradient(135deg, rgba(11, 96, 150, 0.13) 0%, rgba(59, 130, 246, 0.07) 100%);
+    border: 1.5px solid rgba(11, 96, 150, 0.25);
+    box-shadow: 0 6px 24px rgba(11, 96, 150, 0.06);
+
+    .banner-glow-effect {
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(11, 96, 150, 0.18) 0%, rgba(11, 96, 150, 0) 70%);
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    .chip-item {
+      background: rgba(11, 96, 150, 0.08);
+      border: 1px solid rgba(11, 96, 150, 0.16);
+
+      .chip-icon {
+        color: var(--primary);
+      }
+    }
+
+    [data-theme='dark'] & {
+      background: linear-gradient(135deg, rgba(11, 96, 150, 0.15) 0%, rgba(20, 28, 45, 0.6) 100%);
+      border-color: rgba(127, 190, 250, 0.2);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+
+      .chip-item {
+        background: rgba(11, 96, 150, 0.18);
+        border-color: rgba(127, 190, 250, 0.22);
+        color: #cbd5e1;
+
+        .chip-icon {
+          color: #60a5fa;
+        }
+      }
+    }
+  }
+
+  // ── AI Banner Theme ──
+  &.ai-promo-banner {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.13) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(37, 99, 235, 0.05) 100%);
+    border: 1.5px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.07);
+
+    .banner-glow-effect {
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 190px;
+      height: 190px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(99, 102, 241, 0) 70%);
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    .chip-item {
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.18);
+
+      .chip-icon {
+        color: #8b5cf6;
+      }
+    }
+
+    [data-theme='dark'] & {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.16) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(25, 20, 42, 0.65) 100%);
+      border-color: rgba(167, 139, 250, 0.25);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+
+      .chip-item {
+        background: rgba(139, 92, 246, 0.18);
+        border-color: rgba(167, 139, 250, 0.25);
+        color: #cbd5e1;
+
+        .chip-icon {
+          color: #a78bfa;
+        }
+      }
+    }
+  }
+
+  .banner-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+
+    .banner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      width: fit-content;
+      margin-bottom: 1px;
+
+      .badge-icon {
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      &.cv-badge {
+        background: rgba(11, 96, 150, 0.12);
+        border: 1px solid rgba(11, 96, 150, 0.22);
+        color: var(--primary);
+
+        .pulse-dot {
+          width: 6px;
+          height: 6px;
+          background: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 6px #22c55e;
+          animation: blink-dot 1.5s infinite ease-in-out;
+        }
+
+        [data-theme='dark'] & {
+          color: #60a5fa;
+          background: rgba(11, 96, 150, 0.2);
+          border-color: rgba(127, 190, 250, 0.3);
+        }
+      }
+
+      &.ai-badge {
+        background: rgba(139, 92, 246, 0.12);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        color: #7c3aed;
+
+        .ai-pulse {
+          width: 6px;
+          height: 6px;
+          background: #8b5cf6;
+          border-radius: 50%;
+          box-shadow: 0 0 6px #8b5cf6;
+          animation: blink-dot 1.5s infinite ease-in-out;
+        }
+
+        [data-theme='dark'] & {
+          color: #c4b5fd;
+          background: rgba(139, 92, 246, 0.2);
+          border-color: rgba(167, 139, 250, 0.35);
+
+          .ai-pulse {
+            background: #a78bfa;
+            box-shadow: 0 0 6px #a78bfa;
+          }
+        }
+      }
+    }
+
+    .banner-title {
+      font-size: clamp(0.96rem, 1.1vw, 1.12rem);
+      font-weight: 800;
+      color: var(--on-surface);
+      margin: 0;
+      letter-spacing: -0.01em;
+      line-height: 1.32;
+
+      @media (max-width: 576px) {
+        font-size: 0.95rem;
+      }
+    }
+
+    .banner-subtitle {
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      margin: 0;
+      line-height: 1.4;
+
+      @media (max-width: 576px) {
+        font-size: 0.77rem;
+      }
+    }
+  }
+
+  .banner-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+
+    .promo-toggle-icon {
+      display: none;
+    }
+  }
+
+  // ── Mobile: collapse banners into an accordion ──
+  @media (max-width: 576px) {
+    gap: 0;
+
+    .banner-header {
+      cursor: pointer;
+      padding-right: 32px;
+      -webkit-tap-highlight-color: transparent;
+
+      .promo-toggle-icon {
+        display: block;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        font-size: 22px;
+        color: var(--on-surface-variant);
+        transition: transform 0.25s ease;
+      }
+    }
+
+    &:not(.is-expanded) {
+      .banner-subtitle,
+      .banner-footer {
+        display: none;
+      }
+    }
+
+    &.is-expanded {
+      gap: 10px;
+
+      .promo-toggle-icon {
+        transform: translateY(-50%) rotate(180deg);
+      }
+
+      .banner-subtitle,
+      .banner-footer {
+        animation: promo-accordion-in 0.25s ease;
+      }
+    }
+  }
+
+  .banner-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 6px;
+
+    @media (max-width: 1200px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    @media (max-width: 991px) {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    @media (max-width: 680px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .banner-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+
+      .chip-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--on-surface-variant);
+        padding: 3px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        line-height: 1.3;
+
+        .chip-icon {
+          font-size: 14px;
+          line-height: 1;
+        }
+      }
+    }
+
+    .btn-banner-action,
+    .btn-banner-upload,
+    .btn-banner-ai {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      @media (max-width: 1200px) {
+        width: 100%;
+      }
+
+      @media (max-width: 991px) {
+        width: auto;
+      }
+
+      @media (max-width: 680px) {
+        width: 100%;
+      }
+
+      .material-symbols-outlined {
+        font-size: 17px;
+      }
+
+      &:hover {
+        transform: translateY(-1.5px);
+        filter: brightness(1.08);
+      }
+    }
+
+    .btn-banner-upload {
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+      box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.22);
+
+      &:hover {
+        box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.32);
+      }
+    }
+
+    .btn-banner-ai {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #2563eb 100%);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+
+      &:hover {
+        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+      }
+    }
+  }
+}
+
+@keyframes promo-accordion-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}

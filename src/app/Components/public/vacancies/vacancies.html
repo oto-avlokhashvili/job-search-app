@@ -29,25 +29,49 @@
     </div>
 
     <div class="vacancies-container">
-      <!-- Public CV Upload Banner -->
-      <div class="public-cv-banner glass-card">
-        <div class="banner-glow-effect"></div>
-        <div class="banner-content">
-          <div class="banner-badge">
-            <span class="pulse-dot"></span>
-            <span>კანდიდატთა ბაზა</span>
+      <!-- Promotional Banners Grid: Public CV & AI Job Alerts -->
+      <div class="vacancies-promo-grid">
+        <!-- Public CV Upload Banner -->
+        <div class="promo-banner cv-promo-banner glass-card" [class.is-expanded]="cvPromoExpanded()">
+          <div class="banner-glow-effect cv-glow"></div>
+          <div class="banner-content">
+            <div class="banner-header" (click)="cvPromoExpanded.set(!cvPromoExpanded())" [attr.aria-expanded]="cvPromoExpanded()">
+              <div class="banner-badge cv-badge">
+                <span class="pulse-dot"></span>
+                <span class="material-symbols-outlined badge-icon">badge</span>
+                <span>კანდიდატთა ბაზა</span>
+              </div>
+              <h2 class="banner-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
+              <span class="material-symbols-outlined promo-toggle-icon">expand_more</span>
+            </div>
+            <p class="banner-subtitle">
+              დატოვე შენი რეზიუმე — წამყვანი ქართული კომპანიები და HR-ები პირდაპირ შემოგთავაზებენ ვაკანსიებს.
+            </p>
           </div>
-          <h2 class="banner-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
-          <p class="banner-subtitle">
-            დატოვე შენი რეზიუმე და საკონტაქტო მონაცემები — წამყვანი ქართული კომპანიები და HR სპეციალისტები პირდაპირ შემოგთავაზებენ შესაბამის ვაკანსიებს.
-          </p>
+          <div class="banner-footer">
+            <div class="banner-chips">
+              <span class="chip-item">
+                <span class="material-symbols-outlined chip-icon">person_search</span>
+                <span>პირდაპირი შეთავაზებები</span>
+              </span>
+              <span class="chip-item">
+                <span class="material-symbols-outlined chip-icon">verified_user</span>
+                <span>კონფიდენციალური</span>
+              </span>
+              <span class="chip-item">
+                <span class="material-symbols-outlined chip-icon">upload_file</span>
+                <span>სწრაფი ატვირთვა</span>
+              </span>
+            </div>
+            <button type="button" class="btn-banner-action btn-banner-upload" (click)="openPublicCvModal()">
+              <span class="material-symbols-outlined">cloud_upload</span>
+              <span>CV-ის ატვირთვა</span>
+            </button>
+          </div>
         </div>
-        <div class="banner-action">
-          <button type="button" class="btn-banner-upload" (click)="openPublicCvModal()">
-            <span class="material-symbols-outlined">cloud_upload</span>
-            <span>CV-ის ატვირთვა</span>
-          </button>
-        </div>
+
+        <!-- AI Daily Job Search Banner -->
+        <app-ai-agent-banner></app-ai-agent-banner>
       </div>
 
       <!-- Provider Status Interactive Cards -->

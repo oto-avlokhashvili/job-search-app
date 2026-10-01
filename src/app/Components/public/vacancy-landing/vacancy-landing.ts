@@ -11,6 +11,7 @@ import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { getLandingPage, LANDING_PAGES, LandingPage } from '../../../Core/Utils/landing-pages';
 import { detectJobSource, formatJobDate } from '../../../Store/state.store';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
+import { AiAgentBanner } from '../ai-agent-banner/ai-agent-banner';
 
 interface Faq {
   q: string;
@@ -24,7 +25,7 @@ const MAX_PUBLIC_PAGE = 5;
 @Component({
   selector: 'app-vacancy-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AiAgentBanner],
   templateUrl: './vacancy-landing.html',
   styleUrl: './vacancy-landing.scss',
 })

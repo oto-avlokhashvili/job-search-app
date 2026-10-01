@@ -1,0 +1,37 @@
+<div class="promo-banner ai-promo-banner" [class.is-expanded]="expanded()">
+  <div class="banner-glow-effect ai-glow"></div>
+  <div class="banner-content">
+    <div class="banner-header" (click)="toggle()" [attr.aria-expanded]="expanded()">
+      <div class="banner-badge ai-badge">
+        <span class="pulse-dot ai-pulse"></span>
+        <span class="material-symbols-outlined badge-icon">smart_toy</span>
+        <span>AI აგენტი</span>
+      </div>
+      <h2 class="banner-title">დაიღალე ყოველ დღე სამსახურის ძიებით? მოაძებნინე ჩვენს AI-ს და მიიღე შეტყობინებები ყოველ დღე</h2>
+      <span class="material-symbols-outlined promo-toggle-icon">expand_more</span>
+    </div>
+    <p class="banner-subtitle">
+      ჩართე პერსონალური AI ასისტენტი, რომელიც 4+ პორტალზე უწყვეტად ეძებს ვაკანსიებს და საუკეთესო ვარიანტებს ყოველდღე გამოგიგზავნის.
+    </p>
+  </div>
+  <div class="banner-footer">
+    <div class="banner-chips">
+      <span class="chip-item">
+        <span class="material-symbols-outlined chip-icon">travel_explore</span>
+        <span>24/7 მონიტორინგი</span>
+      </span>
+      <span class="chip-item">
+        <span class="material-symbols-outlined chip-icon">target</span>
+        <span>AI Match</span>
+      </span>
+      <span class="chip-item">
+        <span class="material-symbols-outlined chip-icon">notifications_active</span>
+        <span>ყოველდღიური შეტყობინებები</span>
+      </span>
+    </div>
+    <button type="button" class="btn-banner-action btn-banner-ai" (click)="handleAiAgentClick()">
+      <span class="material-symbols-outlined">rocket_launch</span>
+      <span>AI აგენტის ჩართვა</span>
+    </button>
+  </div>
+</div>
