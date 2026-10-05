@@ -29,6 +29,7 @@ export function detectJobSource(sourceOrLink?: string, linkFallback?: string, co
     if (l.includes('jobs.ge') || l.includes('jobsge')) return 'jobs.ge';
     if (l.includes('hr.ge') || l.includes('hrge')) return 'hr.ge';
     if (l.includes('awork.ge') || l.includes('awork')) return 'awork.ge';
+    if (l.includes('linkedin') || l.includes('linkedinge')) return 'linkedin';
     return 'other';
 }
 
@@ -94,6 +95,7 @@ type State = {
     publicHrGeCount: number;
     publicAworkGeCount: number;
     publicMyjobsGeCount: number;
+    publicLinkedinCount: number;
     publicJobsLoaded: boolean;
     publicJobsLoading: boolean;
     publicJobsAppending: boolean;
@@ -150,6 +152,7 @@ const initialState: State = {
     publicHrGeCount: 0,
     publicAworkGeCount: 0,
     publicMyjobsGeCount: 0,
+    publicLinkedinCount: 0,
     publicJobsLoaded: false,
     publicJobsLoading: false,
     publicJobsAppending: false,
@@ -652,6 +655,11 @@ export const StateStore = signalStore(
                     myjobsGe = mapped.filter(j => j.source === 'myjobs.ge').length;
                 }
 
+                let linkedin = res.counts?.linkedin ?? res.counts?.linkedIn ?? res.counts?.linkedinCom ?? res.counts?.['linkedin.com'];
+                if (linkedin === undefined || (linkedin === 0 && mapped.some(j => j.source === 'linkedin'))) {
+                    linkedin = mapped.filter(j => j.source === 'linkedin').length;
+                }
+
                 const updatedJobs = append ? [...store.publicJobs(), ...mapped] : mapped;
 
                 patchState(store, {
@@ -662,6 +670,7 @@ export const StateStore = signalStore(
                     publicHrGeCount: hrGe,
                     publicAworkGeCount: aworkGe,
                     publicMyjobsGeCount: myjobsGe,
+                    publicLinkedinCount: linkedin ?? 0,
                     publicJobsPage: page,
                     publicHasMore: updatedJobs.length < total && mapped.length > 0,
                     publicJobsLoaded: true,

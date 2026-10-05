@@ -17,7 +17,7 @@
         </h1>
         <p class="landing-intro">{{ l.intro }}</p>
         <p class="landing-intro muted">
-          Job Up ყოველდღიურად აგროვებს ახალ ვაკანსიებს Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან, ამიტომ აქ ყოველთვის
+          Job Up ყოველდღიურად აგროვებს ახალ ვაკანსიებს Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან, ამიტომ აქ ყოველთვის
           იხილავთ უახლეს განცხადებებს ერთ სივრცეში. ატვირთეთ CV და AI აგენტი თავად შეგირჩევთ შესაფერის პოზიციებს.
         </p>
         <div class="hero-actions">
@@ -72,7 +72,7 @@
             @for (job of jobs(); track job.id) {
               <a class="job-card" [routerLink]="['/vacancies', getJobSlug(job)]">
                 <div class="card-top">
-                  <span class="card-source-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'">
+                  <span class="card-source-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'">
                     {{ job.source }}
                   </span>
                   <span class="card-date">{{ job.publishDate }}</span>

@@ -65,6 +65,7 @@ export class VacancyDetails implements OnInit {
   hrGeCount = computed(() => this.stateStore.publicHrGeCount() || 980);
   aworkGeCount = computed(() => this.stateStore.publicAworkGeCount() || 620);
   myjobsGeCount = computed(() => this.stateStore.publicMyjobsGeCount() || 410);
+  linkedinCount = computed(() => this.stateStore.publicLinkedinCount() || 400);
 
   extractedEmail = computed(() => {
     const job = this.stateStore.selectedJob();

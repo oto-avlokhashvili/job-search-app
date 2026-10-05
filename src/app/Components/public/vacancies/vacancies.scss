@@ -752,11 +752,16 @@ button.btn-search {
 
 .provider-cards-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 28px;
 
-  @media (max-width: 991px) {
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
@@ -1165,6 +1170,11 @@ button.btn-search {
       color: #0284c7;
     }
 
+    &.linkedin {
+      background: rgba(10, 102, 194, 0.12);
+      color: #0a66c2;
+    }
+
     &.jobup-ge {
       background: rgba(11, 96, 150, 0.12);
       color: var(--primary);
@@ -1375,6 +1385,7 @@ button.btn-search {
       &.hr-ge { background: rgba(168, 85, 247, 0.12); color: #9333ea; }
       &.awork-ge { background: rgba(255, 122, 0, 0.12); color: #e65100; }
       &.myjobs-ge { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
+      &.linkedin { background: rgba(10, 102, 194, 0.12); color: #0a66c2; }
       &.jobup-ge { background: rgba(11, 96, 150, 0.12); color: var(--primary); }
     }
 

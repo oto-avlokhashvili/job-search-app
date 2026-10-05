@@ -235,6 +235,46 @@
             }
           </div>
         </div>
+
+        <!-- LinkedIn Card -->
+        <div 
+          class="provider-status-card glass-card" 
+          [class.active]="sourceFilter.value === 'linkedin'" 
+          (click)="toggleSourceCard('linkedin')"
+          role="button" 
+          tabindex="0"
+          title="LinkedIn ვაკანსიების ფილტრი"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container linkedin">
+              <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-card-logo">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">LinkedIn</span>
+            <div class="provider-stats">
+              <span class="provider-count">{{ linkedinCount() | number }}</span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            @if (sourceFilter.value === 'linkedin') {
+              <span class="card-selected-tag">
+                <span class="material-symbols-outlined">check_circle</span>
+                არჩეულია
+              </span>
+            } @else {
+              <span class="card-browse-tag">
+                ფილტრი
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            }
+          </div>
+        </div>
       </div>
 
       <!-- Vacancies Results -->
@@ -523,7 +563,7 @@
                     </td>
                     <td class="col-provider">
                       <div class="provider-cell">
-                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.jobup-ge]="job.source === jobUpSource">
+                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'" [class.jobup-ge]="job.source === jobUpSource">
                           @if (job.source === jobUpSource) {
                             <img [src]="jobUpLogo" alt="Job Up" class="provider-logo">
                           } @else if (job.source === 'jobs.ge') {
@@ -534,6 +574,8 @@
                             <img src="/icons/awork.png" alt="Awork.ge" class="provider-logo">
                           } @else if (job.source === 'myjobs.ge') {
                             <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-logo circular">
+                          } @else if (job.source === 'linkedin') {
+                            <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-logo">
                           } @else {
                             <span class="material-symbols-outlined provider-icon">language</span>
                           }
@@ -618,7 +660,7 @@
                 </div>
 
                 <div class="job-card-bottom-pills">
-                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.jobup-ge]="job.source === jobUpSource">
+                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'" [class.jobup-ge]="job.source === jobUpSource">
                     @if (job.source === jobUpSource) {
                       <img [src]="jobUpLogo" alt="Job Up" class="provider-mini-icon">
                     } @else if (job.source === 'jobs.ge') {
@@ -629,6 +671,8 @@
                       <img src="/icons/awork.png" alt="Awork.ge" class="provider-mini-icon">
                     } @else if (job.source === 'myjobs.ge') {
                       <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-mini-icon circular">
+                    } @else if (job.source === 'linkedin') {
+                      <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-mini-icon">
                     }
                     <span>{{ job.source }}</span>
                   </span>

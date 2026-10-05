@@ -67,6 +67,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   hrGeCount = this.stateStore.publicHrGeCount;
   aworkGeCount = this.stateStore.publicAworkGeCount;
   myjobsGeCount = this.stateStore.publicMyjobsGeCount;
+  linkedinCount = this.stateStore.publicLinkedinCount;
   hasMoreJobs = this.stateStore.publicHasMore;
 
   // Filter Form Controls
@@ -89,7 +90,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     { value: 'jobs.ge', label: 'Jobs.ge', icon: '', count: this.jobsGeCount(), isCircular: false, logo: '/icons/jobs.png' },
     { value: 'hr.ge', label: 'HR.ge', icon: '', count: this.hrGeCount(), isCircular: false, logo: '/icons/hr.png' },
     { value: 'awork.ge', label: 'Awork.ge', icon: '', count: this.aworkGeCount(), isCircular: false, logo: '/icons/awork.png' },
-    { value: 'myjobs.ge', label: 'Myjobs.ge', icon: '', count: this.myjobsGeCount(), isCircular: true, logo: '/icons/myjobsge.png' }
+    { value: 'myjobs.ge', label: 'Myjobs.ge', icon: '', count: this.myjobsGeCount(), isCircular: true, logo: '/icons/myjobsge.png' },
+    { value: 'linkedin', label: 'LinkedIn', icon: '', count: this.linkedinCount(), isCircular: false, logo: '/icons/linkedin.png' }
   ]);
 
   defaultLocationOptions = [
@@ -142,7 +144,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.seo.update({
       title: 'ვაკანსიები და სამსახური საქართველოში | Job Up',
-      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
+      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
       // Filtered views (?search, ?location, ?source) all consolidate onto the main list.
       path: '/vacancies',
     });

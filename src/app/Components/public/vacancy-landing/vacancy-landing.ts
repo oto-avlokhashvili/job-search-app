@@ -78,7 +78,7 @@ export class VacancyLanding implements OnInit, OnDestroy {
       },
       {
         q: 'რამდენად ხშირად ახლდება ვაკანსიები?',
-        a: 'ვაკანსიები ყოველდღიურად ახლდება — Job Up ავტომატურად აგროვებს ახალ განცხადებებს Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან.',
+        a: 'ვაკანსიები ყოველდღიურად ახლდება — Job Up ავტომატურად აგროვებს ახალ განცხადებებს Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან.',
       },
       {
         q: 'შემიძლია ახალი ვაკანსიების შესახებ შეტყობინების მიღება?',

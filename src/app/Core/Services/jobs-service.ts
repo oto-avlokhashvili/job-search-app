@@ -80,4 +80,29 @@ export class JobsService {
     }
     return this.http.get<{ location: string; count: number }[]>(`${this.url}/job/cities`, { params, context: new HttpContext().set(skipLoading, true) }, );
   }
+
+  syncLinkedin(params?: {
+    query?: string;
+    keywords?: string;
+    location?: string;
+    startPage?: number;
+    maxPages?: number;
+    maxPagesPerRegion?: number;
+    delayBetweenRequests?: number;
+    fetchDescriptions?: boolean;
+    descriptionLimit?: number;
+  }): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params?.query) httpParams = httpParams.set('query', params.query.trim());
+    if (params?.keywords) httpParams = httpParams.set('keywords', params.keywords.trim());
+    if (params?.location) httpParams = httpParams.set('location', params.location.trim());
+    if (params?.startPage != null) httpParams = httpParams.set('startPage', params.startPage.toString());
+    if (params?.maxPages != null) httpParams = httpParams.set('maxPages', params.maxPages.toString());
+    if (params?.maxPagesPerRegion != null) httpParams = httpParams.set('maxPagesPerRegion', params.maxPagesPerRegion.toString());
+    if (params?.delayBetweenRequests != null) httpParams = httpParams.set('delayBetweenRequests', params.delayBetweenRequests.toString());
+    if (params?.fetchDescriptions != null) httpParams = httpParams.set('fetchDescriptions', params.fetchDescriptions.toString());
+    if (params?.descriptionLimit != null) httpParams = httpParams.set('descriptionLimit', params.descriptionLimit.toString());
+
+    return this.http.get<any>(`${this.url}/scraper/sync-linkedin`, { params: httpParams });
+  }
 }

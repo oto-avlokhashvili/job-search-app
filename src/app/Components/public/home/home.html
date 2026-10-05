@@ -72,10 +72,10 @@
             <div class="stat-box aggregators-box">
               <div class="stat-label">აქტიური აგრეგატორები</div>
               <div class="stat-value-with-logos">
-                <span class="stat-value">{{ stats()?.activeAggregators ?? 4 }}</span>
+                <span class="stat-value">{{ stats()?.activeAggregators ?? 5 }}</span>
                 <div class="aggregator-mini-avatars">
                   @for (agg of (stats()?.aggregators || defaultAggregators); track agg.id) {
-                    <div class="mini-avatar" [class.jobs-ge]="agg.id === 'jobs-ge'" [class.hr-ge]="agg.id === 'hr-ge'" [class.awork-ge]="agg.id === 'awork-ge'" [class.myjobs-ge]="agg.id === 'myjobs-ge'" [title]="agg.name">
+                    <div class="mini-avatar" [class.jobs-ge]="agg.id === 'jobs-ge'" [class.hr-ge]="agg.id === 'hr-ge'" [class.awork-ge]="agg.id === 'awork-ge'" [class.myjobs-ge]="agg.id === 'myjobs-ge'" [class.linkedin]="agg.id === 'linkedin'" [title]="agg.name">
                       <img [src]="getAggregatorLogo(agg.id)" [alt]="agg.name" [class.circular]="agg.id === 'myjobs-ge'">
                     </div>
                   }
@@ -117,7 +117,7 @@
           <div class="card-footer">
             <div class="portal-sync-status">
               <span class="pulse-dot-green"></span>
-              <span class="sync-text">{{ stats()?.syncedPortals ?? 4 }} პორტალი სინქრონიზებულია</span>
+              <span class="sync-text">{{ stats()?.syncedPortals ?? 5 }} პორტალი სინქრონიზებულია</span>
             </div>
             <div class="match-time">
               გათვლის საშუალო დრო: <span class="highlight">{{ stats()?.avgCalculationTimeSeconds ?? 1.09 }} წამი</span>
@@ -274,6 +274,43 @@
               <span class="provider-count">
                 @if (myjobsGeCount() > 0) {
                   {{ myjobsGeCount() | number }}
+                } @else {
+                  <span class="count-loader"></span>
+                }
+              </span>
+              <span class="provider-unit">ვაკანსია</span>
+            </div>
+          </div>
+          <div class="card-footer-action">
+            <span class="card-browse-tag">
+              ვაკანსიების ნახვა
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </span>
+          </div>
+        </a>
+
+        <!-- LinkedIn Card -->
+        <a 
+          class="provider-status-card glass-card" 
+          [routerLink]="['/vacancies']" 
+          [queryParams]="{ source: 'linkedin' }"
+          title="LinkedIn ვაკანსიების ნახვა"
+        >
+          <div class="card-header-line">
+            <div class="provider-logo-container linkedin">
+              <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-card-logo">
+            </div>
+            <div class="live-status-pill">
+              <span class="live-dot"></span>
+              <span class="live-label">Live</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="provider-title">LinkedIn</span>
+            <div class="provider-stats">
+              <span class="provider-count">
+                @if (linkedinCount() > 0) {
+                  {{ linkedinCount() | number }}
                 } @else {
                   <span class="count-loader"></span>
                 }

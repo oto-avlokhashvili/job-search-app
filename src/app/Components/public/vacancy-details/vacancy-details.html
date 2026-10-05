@@ -87,7 +87,7 @@
             <div class="hero-main-info">
               <!-- Meta Badges Row -->
               <div class="meta-badges-row">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link, j.company) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link, j.company) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link, j.company) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link, j.company) === 'myjobs.ge'" [class.jobup-ge]="isJobUp(j)">
+                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link, j.company) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link, j.company) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link, j.company) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link, j.company) === 'myjobs.ge'" [class.linkedin]="detectSource(j.source, j.link, j.company) === 'linkedin'" [class.jobup-ge]="isJobUp(j)">
                   @if (isJobUp(j)) {
                     <img [src]="jobUpLogo" alt="Job Up" class="badge-logo">
                   } @else {
@@ -222,7 +222,7 @@
                   <span class="hook-highlight-badge">სულ {{ formattedTotalCount() }} ვაკანსია</span>
                 </div>
                 <p class="hook-subtitle">
-                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან
+                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან
                 </p>
               </div>
             </div>
@@ -272,6 +272,11 @@
                       <span class="portal-name">Myjobs.ge</span>
                       <span class="portal-count">{{ myjobsGeCount() }}</span>
                     </button>
+                    <button type="button" class="portal-pill linkedin" (click)="navigateToSource('linkedin')" title="LinkedIn ვაკანსიები">
+                      <span class="portal-dot"></span>
+                      <span class="portal-name">LinkedIn</span>
+                      <span class="portal-count">{{ linkedinCount() }}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -316,7 +321,7 @@
                       @for (item of similarJobs(); track item.id) {
                         <a [routerLink]="['/vacancies', getJobSlug(item)]" class="similar-job-card">
                           <div class="card-top">
-                            <span class="card-source-badge" [class.jobs-ge]="item.source === 'jobs.ge'" [class.hr-ge]="item.source === 'hr.ge'" [class.awork-ge]="item.source === 'awork.ge'" [class.myjobs-ge]="item.source === 'myjobs.ge'">
+                            <span class="card-source-badge" [class.jobs-ge]="item.source === 'jobs.ge'" [class.hr-ge]="item.source === 'hr.ge'" [class.awork-ge]="item.source === 'awork.ge'" [class.myjobs-ge]="item.source === 'myjobs.ge'" [class.linkedin]="item.source === 'linkedin'">
                               {{ item.source }}
                             </span>
                             <span class="card-date">{{ item.publishDate }}</span>

@@ -1,6 +1,19 @@
+export interface JobCounts {
+  totalRecords: number;
+  filteredRecords: number;
+  jobsGe: number;
+  hrGe: number;
+  aworkGe: number;
+  myjobsGe: number;
+  linkedin?: number;
+  linkedIn?: number;
+  linkedinCom?: number;
+  [key: string]: any;
+}
+
 export interface JobsResponse {
   jobs: Job[];
-  counts: any;
+  counts: JobCounts;
 }
 export interface Job {
   id: number;

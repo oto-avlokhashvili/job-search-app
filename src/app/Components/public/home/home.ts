@@ -40,12 +40,14 @@ export class Home implements OnInit {
   hrGeCount = this.stateStore.publicHrGeCount;
   aworkGeCount = this.stateStore.publicAworkGeCount;
   myjobsGeCount = this.stateStore.publicMyjobsGeCount;
+  linkedinCount = this.stateStore.publicLinkedinCount;
 
   defaultAggregators = [
     { id: 'jobs-ge', name: 'Jobs.ge', active: true },
     { id: 'hr-ge', name: 'HR.ge', active: true },
     { id: 'awork-ge', name: 'Awork.ge', active: true },
     { id: 'myjobs-ge', name: 'MyJobs.ge', active: true },
+    { id: 'linkedin', name: 'LinkedIn', active: true },
   ];
 
   contactEmail = new FormControl<string>('', {
@@ -60,7 +62,7 @@ export class Home implements OnInit {
   ngOnInit() {
     this.seo.update({
       title: 'Job Up — AI აგენტი სამსახურის საძებნად',
-      description: 'შექმენი საკუთარი AI აგენტი და მოაძებნინე სამსახური მარტივად. ვაკანსიები Jobs.ge, HR.ge, Awork.ge და Myjobs.ge-დან ერთ სივრცეში.',
+      description: 'შექმენი საკუთარი AI აგენტი და მოაძებნინე სამსახური მარტივად. ვაკანსიები Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში.',
       path: '/home',
     });
   }
@@ -71,6 +73,7 @@ export class Home implements OnInit {
       case 'hr-ge': return '/icons/hr.png';
       case 'awork-ge': return '/icons/awork.png';
       case 'myjobs-ge': return '/icons/myjobsge.png';
+      case 'linkedin': return '/icons/linkedin.png';
       default: return '/icons/jobs.png';
     }
   }
