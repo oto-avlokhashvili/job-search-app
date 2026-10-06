@@ -36,6 +36,10 @@ export class App {
     if (this.authService.isLoggedIn()) {
       this.stateStore.ensureDataLoaded();
     }
+
+    // Public jobs (and the portal counts that come with them) are loaded once here
+    // for the whole app; pages read them from the store.
+    this.stateStore.loadPublicJobs().catch(() => {});
     
 
     this.router.events

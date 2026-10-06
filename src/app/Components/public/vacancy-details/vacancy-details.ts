@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT, PLATFORM_ID } from '@angular/core';
-import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
+import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -35,7 +35,6 @@ export class VacancyDetails implements OnInit {
   // Only provided during SSR; lets us answer missing jobs with a real 404.
   private responseInit = inject(RESPONSE_INIT, { optional: true });
   private dialog = inject(MatDialog);
-  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   // Accordion & Discovery Hook State
   isAccordionOpen = signal<boolean>(false);
@@ -346,11 +345,7 @@ export class VacancyDetails implements OnInit {
 
   ngOnInit() {
     this.stateStore.loadStats();
-    // Only feeds the portal counts in the collapsed accordion, so don't make the
-    // server render wait for it.
-    if (this.isBrowser && !this.stateStore.publicJobsLoaded()) {
-      this.stateStore.loadPublicJobs();
-    }
+    // Portal counts for the accordion are loaded globally (App).
 
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');

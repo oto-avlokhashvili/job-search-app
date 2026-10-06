@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, Injector, OnInit, signal, computed, effect, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender } from '@angular/core';
+import { Component, ElementRef, inject, Injector, OnInit, signal, computed, effect, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender, untracked } from '@angular/core';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
@@ -386,12 +386,16 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor() {
+    // When login status changes while user is on page, refresh public jobs.
+    // Effects also run once on creation; skip that run, or it force-reloads jobs
+    // that are already in the store.
+    let previousLoggedIn: boolean | undefined;
     effect(() => {
       const loggedIn = this.authService.isLoggedIn();
-      // When login status changes while user is on page, refresh public jobs
-      if (!this.isInitialLoad) {
-        this.loadJobs(this.searchFilter.value, false, true);
+      if (previousLoggedIn !== undefined && previousLoggedIn !== loggedIn) {
+        untracked(() => this.loadJobs(this.searchFilter.value, false, true));
       }
+      previousLoggedIn = loggedIn;
     });
   }
 
