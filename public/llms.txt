@@ -1,0 +1,28 @@
+# Job Up (jobup.ge)
+
+> Job Up is a Georgian-language job search platform for Georgia. It aggregates active vacancies from Jobs.ge, HR.ge, Awork.ge, Myjobs.ge and LinkedIn in one place, updated daily, and offers an AI agent that matches a user's CV to new vacancies and notifies them via Telegram or email.
+
+Language: Georgian (ka). Coverage: Georgia (Tbilisi, Batumi, Kutaisi, Rustavi and other cities, plus remote and abroad roles).
+
+## Main pages
+- [All vacancies](https://jobup.ge/vacancies): searchable list of all active vacancies with filters for city, category and work type.
+- [About Job Up and the AI job agent](https://jobup.ge/home): how CV matching and notifications work.
+
+## Browse by city
+- [Jobs in Tbilisi](https://jobup.ge/vacancies/tbilisi)
+- [Jobs in Batumi](https://jobup.ge/vacancies/batumi)
+- [Jobs in Kutaisi](https://jobup.ge/vacancies/kutaisi)
+- [Jobs in Rustavi](https://jobup.ge/vacancies/rustavi)
+- [Jobs abroad](https://jobup.ge/vacancies/abroad)
+
+## Browse by work type
+- [Remote work](https://jobup.ge/vacancies/remote)
+- [Part-time work](https://jobup.ge/vacancies/part-time)
+- [Internships](https://jobup.ge/vacancies/internship)
+
+## Vacancy pages
+Each vacancy has its own page at https://jobup.ge/vacancies/<title-company-id> with the role, company, location, deadline, salary when published, and a link to apply. Vacancies carry schema.org JobPosting markup. The full list of current vacancy URLs is in https://jobup.ge/sitemap.xml.
+
+## Optional
+- [Privacy policy](https://jobup.ge/privacy)
+- [Terms and conditions](https://jobup.ge/terms)

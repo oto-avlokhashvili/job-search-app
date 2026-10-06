@@ -126,13 +126,14 @@ async function buildSitemap(): Promise<string> {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
+  const todayIso = today.toISOString().slice(0, 10);
   const urls: string[] = [
-    `<url><loc>${SITE_URL}/vacancies</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
+    `<url><loc>${SITE_URL}/vacancies</loc><lastmod>${todayIso}</lastmod><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
     `<url><loc>${SITE_URL}/home</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
     `<url><loc>${SITE_URL}/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
     `<url><loc>${SITE_URL}/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
     ...LANDING_PAGES.map(
-      (p) => `<url><loc>${SITE_URL}/vacancies/${p.slug}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>`,
+      (p) => `<url><loc>${SITE_URL}/vacancies/${p.slug}</loc><lastmod>${todayIso}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`,
     ),
   ];
   const seen = new Set<string>();

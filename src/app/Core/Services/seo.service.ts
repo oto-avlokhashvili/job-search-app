@@ -4,7 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 
 export const SITE_URL = 'https://jobup.ge';
 export const SITE_NAME = 'Job Up';
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/favicon/web-app-manifest-512x512.png`;
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 export interface SeoConfig {
   title: string;
@@ -49,7 +49,10 @@ export class SeoService {
     this.meta.updateTag({ property: 'og:site_name', content: SITE_NAME });
     this.meta.updateTag({ property: 'og:locale', content: 'ka_GE' });
 
-    this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.meta.updateTag({
+      name: 'twitter:card',
+      content: image === DEFAULT_OG_IMAGE ? 'summary_large_image' : 'summary',
+    });
     this.meta.updateTag({ name: 'twitter:title', content: config.title });
     this.meta.updateTag({ name: 'twitter:description', content: description });
     this.meta.updateTag({ name: 'twitter:image', content: image });

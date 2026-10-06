@@ -3,4 +3,50 @@ Allow: /
 Disallow: /private/
 Disallow: /auth
 
+# Search engines and AI search/answer crawlers are explicitly welcome on public pages.
+User-agent: Googlebot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: Bingbot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: GPTBot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /private/
+Disallow: /auth
+
 Sitemap: https://jobup.ge/sitemap.xml
