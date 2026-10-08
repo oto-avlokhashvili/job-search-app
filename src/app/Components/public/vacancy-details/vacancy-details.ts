@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
@@ -27,7 +26,6 @@ export class VacancyDetails implements OnInit {
   public authService = inject(AuthService);
   public stateStore = inject(StateStore);
   private jobsService = inject(JobsService);
-  private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
@@ -84,7 +82,9 @@ export class VacancyDetails implements OnInit {
     return extractSalary(job);
   });
 
-  formattedDescription = computed<SafeHtml | null>(() => {
+  // Returned as a plain string so [innerHTML] runs it through Angular's sanitizer:
+  // descriptions come from scraped portals and logged-in users, so they're untrusted.
+  formattedDescription = computed<string | null>(() => {
     const job = this.stateStore.selectedJob();
     if (!job) return null;
 
@@ -96,8 +96,7 @@ export class VacancyDetails implements OnInit {
 
     if (!raw) return null;
 
-    const formattedHtml = this.formatDescriptionText(raw);
-    return this.sanitizer.bypassSecurityTrustHtml(formattedHtml);
+    return this.formatDescriptionText(raw);
   });
 
   private formatDescriptionText(text: string): string {
@@ -205,7 +204,8 @@ export class VacancyDetails implements OnInit {
       content = content
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     // 1. Process Markdown links: [Label](URL) or [URL](URL)

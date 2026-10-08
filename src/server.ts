@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { join } from 'node:path';
 import { API_TARGET } from './environments/api-target';
+import { INTERNAL_API_KEY, PROXY_SHARED_SECRET } from './environments/server-secrets';
 import { generateJobSlug } from './app/Core/Utils/slug-generator';
 import { parseJobDate, toIsoDate } from './app/Core/Utils/date-parse';
 import { LANDING_PAGES } from './app/Core/Utils/landing-pages';
@@ -90,6 +91,19 @@ app.use(
     target: API_TARGET,
     changeOrigin: true,
     pathRewrite: { '^/api': '' },
+    on: {
+      // Every proxied request reaches the API from this server's address, so pass the
+      // visitor's own IP for the API's per-IP rate limits. Never relay a client-sent one.
+      proxyReq: (proxyReq, req) => {
+        proxyReq.removeHeader('x-client-ip');
+        proxyReq.removeHeader('x-proxy-key');
+        const clientIp = (req as express.Request).ip;
+        if (PROXY_SHARED_SECRET && clientIp) {
+          proxyReq.setHeader('X-Proxy-Key', PROXY_SHARED_SECRET);
+          proxyReq.setHeader('X-Client-IP', clientIp);
+        }
+      },
+    },
   }),
 );
 
@@ -110,12 +124,10 @@ app.get('/privacy-policy', (req, res) => res.redirect(301, '/privacy'));
 app.get('/terms-and-conditions', (req, res) => res.redirect(301, '/terms'));
 
 /**
- * Dynamic sitemap of every active vacancy. Fetched straight from the backend
- * (bypassing the public page-5 limit above) and cached in memory for an hour.
+ * Dynamic sitemap of every active vacancy. Fetched from the backend's internal
+ * /job/sitemap endpoint (the public list is capped) and cached in memory for an hour.
  */
 const SITEMAP_TTL_MS = 60 * 60 * 1000;
-const SITEMAP_PAGE_SIZE = 5000;
-const SITEMAP_MAX_PAGES = 5; // backend rejects page > 5
 let sitemapCache: { xml: string; expiresAt: number } | null = null;
 let sitemapInFlight: Promise<string> | null = null;
 
@@ -138,27 +150,25 @@ async function buildSitemap(): Promise<string> {
   ];
   const seen = new Set<string>();
 
-  for (let page = 1; page <= SITEMAP_MAX_PAGES; page++) {
-    const response = await fetch(`${API_TARGET}/job/all?page=${page}&limit=${SITEMAP_PAGE_SIZE}`);
-    if (!response.ok) throw new Error(`Backend responded ${response.status} for sitemap page ${page}`);
-    const { jobs = [] } = (await response.json()) as {
-      jobs?: { id: number; vacancy?: string; company?: string; publishDate?: string; deadline?: string }[];
-    };
+  const response = await fetch(`${API_TARGET}/job/sitemap`, {
+    headers: { 'X-Internal-Key': INTERNAL_API_KEY },
+  });
+  if (!response.ok) throw new Error(`Backend responded ${response.status} for /job/sitemap`);
+  const { jobs = [] } = (await response.json()) as {
+    jobs?: { id: number; vacancy?: string; company?: string; publishDate?: string; deadline?: string }[];
+  };
 
-    for (const job of jobs) {
-      if (!job?.id || seen.has(String(job.id))) continue;
-      const deadline = parseJobDate(job.deadline);
-      if (deadline && deadline < today) continue; // expired
-      seen.add(String(job.id));
+  for (const job of jobs) {
+    if (!job?.id || seen.has(String(job.id))) continue;
+    const deadline = parseJobDate(job.deadline);
+    if (deadline && deadline < today) continue; // expired
+    seen.add(String(job.id));
 
-      const loc = `${SITE_URL}/vacancies/${generateJobSlug(job.vacancy, job.company, job.id)}`;
-      const lastmod = toIsoDate(job.publishDate);
-      urls.push(
-        `<url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>daily</changefreq><priority>0.7</priority></url>`,
-      );
-    }
-
-    if (jobs.length < SITEMAP_PAGE_SIZE) break;
+    const loc = `${SITE_URL}/vacancies/${generateJobSlug(job.vacancy, job.company, job.id)}`;
+    const lastmod = toIsoDate(job.publishDate);
+    urls.push(
+      `<url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>daily</changefreq><priority>0.7</priority></url>`,
+    );
   }
 
   return [
@@ -224,7 +234,7 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
 
-  startIndexingNotifier({ apiTarget: API_TARGET, siteUrl: SITE_URL });
+  startIndexingNotifier({ apiTarget: API_TARGET, siteUrl: SITE_URL, internalApiKey: INTERNAL_API_KEY });
 }
 
 /**

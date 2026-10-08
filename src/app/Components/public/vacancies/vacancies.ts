@@ -158,20 +158,41 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.locationSearch.set(val);
     });
 
-    this.queryParamsSub = this.route.queryParams.subscribe(params => {
-      if (params['source']) {
-        this.sourceFilter.setValue(params['source']);
-      }
-      if (params['location']) {
-        this.locationFilter.setValue(params['location']);
-      }
-      if (params['search']) {
-        this.searchFilter.setValue(params['search']);
-      }
+    // The URL is the single source of truth for filters: a missing param means "all",
+    // so returning from a job, refreshing or sharing a link restores the same list.
+    this.queryParamsSub = this.route.queryParamMap.subscribe(params => {
+      const date = params.get('date');
+      this.searchFilter.setValue(params.get('search') ?? '');
+      this.sourceFilter.setValue(params.get('source') ?? 'all');
+      this.locationFilter.setValue(params.get('location') ?? 'all');
+      this.dateRangeFilter.setValue(this.dateRangeOptions.some(o => o.value === date) ? date! : 'all');
 
       // loadJobs is a no-op when the same filters are already loaded.
-      this.loadJobs(this.searchFilter.value);
+      this.loadJobs();
     });
+  }
+
+  /** Writes the current filter controls to the URL; the queryParamMap subscription loads them. */
+  applyFilters() {
+    const search = this.searchFilter.value.trim();
+    const tree = this.router.createUrlTree([], {
+      relativeTo: this.route,
+      queryParams: {
+        search: search || null,
+        source: this.sourceFilter.value !== 'all' ? this.sourceFilter.value : null,
+        location: this.locationFilter.value !== 'all' ? this.locationFilter.value : null,
+        date: this.dateRangeFilter.value !== 'all' ? this.dateRangeFilter.value : null,
+      },
+    });
+
+    if (this.router.serializeUrl(tree) === this.router.url) {
+      // Same URL means no navigation; load directly so e.g. a retry after an error still works.
+      this.loadJobs();
+      return;
+    }
+    // replaceUrl: filter tweaks don't pile up history entries. scroll: 'manual' stops the
+    // router's scroll-to-top; loadJobs scrolls to the results itself.
+    this.router.navigateByUrl(tree, { replaceUrl: true, scroll: 'manual' });
   }
 
   ngAfterViewInit() {
@@ -545,7 +566,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
   setSource(source: string) {
     this.sourceFilter.setValue(source);
-    this.loadJobs(this.searchFilter.value);
+    this.applyFilters();
   }
 
   toggleSourceCard(source: string) {
@@ -557,13 +578,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setPopularSearch(keyword: string) {
-    if (this.searchFilter.value === keyword) {
-      this.searchFilter.setValue('');
-      this.loadJobs('');
-    } else {
-      this.searchFilter.setValue(keyword);
-      this.loadJobs(keyword);
-    }
+    this.searchFilter.setValue(this.searchFilter.value === keyword ? '' : keyword);
+    this.applyFilters();
   }
 
   clearFilters() {
@@ -573,7 +589,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.sourceFilter.setValue('all');
     this.dateRangeFilter.setValue('all');
     this.closeAllDropdowns();
-    this.loadJobs('');
+    this.applyFilters();
   }
 
   getSelectedSourceLabel(): string {
@@ -605,19 +621,19 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   selectSource(value: string) {
     this.sourceFilter.setValue(value);
     this.isSourceOpen.set(false);
-    this.loadJobs();
+    this.applyFilters();
   }
 
   selectLocation(value: string) {
     this.locationFilter.setValue(value);
     this.isLocationOpen.set(false);
-    this.loadJobs();
+    this.applyFilters();
   }
 
   selectDateRange(value: string) {
     this.dateRangeFilter.setValue(value);
     this.isDateRangeOpen.set(false);
-    this.loadJobs();
+    this.applyFilters();
   }
 
   toggleSourceDropdown(event: Event) {

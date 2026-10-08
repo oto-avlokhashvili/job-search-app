@@ -24,6 +24,8 @@ interface ServiceAccount {
 interface IndexingOptions {
   apiTarget: string;
   siteUrl: string;
+  /** Sent as X-Internal-Key; /job/sitemap is an internal endpoint. */
+  internalApiKey: string;
 }
 
 const POLL_INTERVAL_MS = 30 * 60 * 1000;
@@ -91,7 +93,9 @@ async function notifyNewJobs(sa: ServiceAccount, options: IndexingOptions, isFir
   }
   if (sentToday >= DAILY_CAP) return;
 
-  const response = await fetch(`${options.apiTarget}/job/all?page=1&limit=${RECENT_JOBS_LIMIT}`);
+  const response = await fetch(`${options.apiTarget}/job/sitemap?limit=${RECENT_JOBS_LIMIT}`, {
+    headers: { 'X-Internal-Key': options.internalApiKey },
+  });
   if (!response.ok) throw new Error(`backend responded ${response.status}`);
   const { jobs = [] } = (await response.json()) as {
     jobs?: { id: number; vacancy?: string; company?: string; publishDate?: string }[];

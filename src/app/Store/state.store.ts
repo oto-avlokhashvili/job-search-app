@@ -14,6 +14,7 @@ import { extractSalary } from '../Core/Utils/salary-extractor';
 
 export const JOBUP_SOURCE = 'jobup.ge';
 export const JOBUP_LOGO = '/favicon/favicon-96x96.png';
+const PUBLIC_JOBS_PAGE_SIZE = 30;
 
 // Vacancies posted on Job Up itself (not scraped from an external portal)
 export function isJobUpJob(sourceOrLink?: string, linkFallback?: string, company?: string): boolean {
@@ -174,6 +175,9 @@ let inFlightStatsPromise: Promise<void> | null = null;
 // Keyed by store instance: on the server every request gets its own store, and a
 // module-level variable would let concurrent renders share one request.
 const inFlightPublicJobs = new WeakMap<object, { key: string; promise: Promise<void> }>();
+// Id of the newest public-jobs filter request per store. A response whose id is no
+// longer the newest is discarded, so a slow older request can't overwrite newer results.
+const latestPublicJobsRequest = new WeakMap<object, number>();
 
 /**
  * Reads the per-portal counts from a /job/all response. `mapped` is the page of
@@ -634,16 +638,23 @@ export const StateStore = signalStore(
             }
 
             // Reuse a request that is already running for the same filters, so callers
-            // (App on startup, the vacancies page) never fire it twice.
+            // never fire it twice. Only the newest filter request is kept here.
             const key = [query, source, location, dateRange].join('|');
             const running = inFlightPublicJobs.get(store);
             if (!append && !force && running?.key === key) {
                 return running.promise;
             }
 
+            // A new filter request supersedes everything before it; "load more" keeps the
+            // current id, so it is discarded too if the filters change while it runs.
+            const requestId = (latestPublicJobsRequest.get(store) ?? 0) + (append ? 0 : 1);
+            latestPublicJobsRequest.set(store, requestId);
+            const isStale = () => latestPublicJobsRequest.get(store) !== requestId;
+
             const run = async (): Promise<void> => {
                 const page = append ? store.publicJobsPage() + 1 : 1;
-                const limit = append ? 50 : 30;
+                // Must be the same for every page: the API skips (page - 1) * limit.
+                const limit = PUBLIC_JOBS_PAGE_SIZE;
 
                 if (append) {
                     patchState(store, { publicJobsAppending: true });
@@ -673,6 +684,13 @@ export const StateStore = signalStore(
                     const res: any = await firstValueFrom(
                         jobsService.getJobs(query, page, source, location, '', publishDateParam, limit)
                     );
+
+                    if (isStale()) {
+                        // The newer request owns publicJobsLoading; only a dropped
+                        // "load more" has a flag of its own to reset.
+                        if (append) patchState(store, { publicJobsAppending: false });
+                        return;
+                    }
 
                     const mapped: VacancyItem[] = (res.jobs || []).map((job: any) => ({
                         id: job.id,
@@ -705,6 +723,10 @@ export const StateStore = signalStore(
                         publicJobsDateRange: dateRange,
                     });
                 } catch (err) {
+                    if (isStale()) {
+                        if (append) patchState(store, { publicJobsAppending: false });
+                        return;
+                    }
                     patchState(store, {
                         publicJobsLoading: false,
                         publicJobsAppending: false
@@ -739,11 +761,19 @@ export const StateStore = signalStore(
             inFlightStatsPromise = (async () => {
                 try {
                     const res = await firstValueFrom(jobsService.getStats());
+                    const portals = res?.portalCounts;
                     patchState(store, {
                         stats: res,
                         statsLoaded: true,
                         statsLoading: false,
                         publicDbTotal: res?.activeVacancies || store.publicDbTotal(),
+                        ...(portals ? {
+                            publicJobsGeCount: portals.jobsGe,
+                            publicHrGeCount: portals.hrGe,
+                            publicAworkGeCount: portals.aworkGe,
+                            publicMyjobsGeCount: portals.myjobsGe,
+                            publicLinkedinCount: portals.linkedin,
+                        } : {}),
                     });
                 } catch (err) {
                     patchState(store, { statsLoading: false });

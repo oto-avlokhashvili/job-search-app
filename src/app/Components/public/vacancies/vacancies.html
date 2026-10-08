@@ -296,7 +296,7 @@
               <div class="filter-group-main">
                 <div class="search-input-wrapper">
                   <span class="material-symbols-outlined search-icon">search</span>
-                  <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="loadJobs(searchFilter.value); closeFilterModal()">
+                  <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="applyFilters(); closeFilterModal()">
                 </div>
                 
                 <!-- Source Selector Dropdown -->
@@ -411,7 +411,7 @@
                   }
                 </div>
 
-                <button class="btn-search" (click)="loadJobs(searchFilter.value); closeFilterModal()">ძიება</button>
+                <button class="btn-search" (click)="applyFilters(); closeFilterModal()">ძიება</button>
               </div>
 
               <!-- Popular Searches -->
