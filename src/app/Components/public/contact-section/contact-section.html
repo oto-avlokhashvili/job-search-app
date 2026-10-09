@@ -1,0 +1,34 @@
+<section class="newsletter-section" id="contact">
+  <div class="newsletter-card">
+    <div class="newsletter-grid">
+      <div class="newsletter-info">
+        @if (asPage()) {
+          <h1 class="display-sm">მოგვწერეთ შეტყობინება</h1>
+        } @else {
+          <h2 class="display-sm">მოგვწერეთ შეტყობინება</h2>
+        }
+        <p class="body-lg">გაქვთ კითხვები ან თანამშრომლობის წინადადებები? გამოგვიგზავნეთ შეტყობინება და ჩვენი გუნდი მალე გიპასუხებთ.</p>
+
+        <div class="contact-details">
+          <div class="contact-card">
+            <div class="icon-wrapper">
+              <span class="material-symbols-outlined">mail</span>
+            </div>
+            <div class="contact-text">
+              <span class="contact-label">ელ-ფოსტა</span>
+              <a href="mailto:jobup.ge@gmail.com" class="contact-value">jobup.ge@gmail.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subscribe-form">
+        <input type="email" [formControl]="contactEmail" placeholder="შეიყვანეთ ელ-ფოსტა" aria-label="ელ-ფოსტა" autocomplete="email" class="email-input" [class.is-invalid]="contactEmail.invalid && contactEmail.touched">
+        <textarea [formControl]="contactComment" placeholder="დაწერეთ თქვენი შეტყობინება..." aria-label="შეტყობინება" class="comment-textarea" [class.is-invalid]="contactComment.invalid && contactComment.touched"></textarea>
+        <button class="btn-fluid primary" (click)="sendContactEmail()" [disabled]="contactEmail.invalid || contactComment.invalid || sending()">
+          {{ sending() ? 'იგზავნება...' : 'გაგზავნა' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

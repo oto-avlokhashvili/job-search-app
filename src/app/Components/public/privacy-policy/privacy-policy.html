@@ -9,30 +9,6 @@
       <span class="update-pill">ბოლო განახლება: {{ lastUpdated }}</span>
     </div>
 
-    @if (isLoading()) {
-      <!-- Skeleton Loading State -->
-      <div class="legal-hero-card glass-card skeleton-pulse loading-legal-card">
-        <div class="table-loading-bar"></div>
-        <div class="skeleton-block" style="width: 52px; height: 52px; border-radius: 16px; margin-bottom: 20px;"></div>
-        <div class="skeleton-text" style="width: 320px; height: 28px; margin-bottom: 14px;"></div>
-        <div class="skeleton-text" style="width: 85%; height: 16px; margin-bottom: 8px;"></div>
-        <div class="skeleton-text" style="width: 65%; height: 16px;"></div>
-      </div>
-
-      <div class="legal-content-card glass-card skeleton-pulse">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div class="legal-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px;">
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
-              <div class="skeleton-block" style="width: 28px; height: 28px; border-radius: 8px;"></div>
-              <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '220px' : '280px')" style="height: 20px;"></div>
-            </div>
-            <div class="skeleton-text" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
-            <div class="skeleton-text" style="width: 90%; height: 14px; margin-bottom: 8px;"></div>
-            <div class="skeleton-text" style="width: 70%; height: 14px;"></div>
-          </div>
-        }
-      </div>
-    } @else {
       <!-- Hero Card -->
       <header class="legal-hero-card glass-card animate-fade">
         <div class="hero-icon-badge">
@@ -144,9 +120,38 @@
       </section>
 
       <!-- Section 7 -->
-      <section class="legal-section">
+      <section class="legal-section" id="cookies">
         <div class="section-title-row">
           <div class="section-number">7</div>
+          <h2>ქუქი-ფაილები (Cookies), ანალიტიკა და რეკლამა</h2>
+        </div>
+        <p>
+          ქუქი-ფაილები არის მცირე ზომის ტექსტური ფაილები, რომლებიც ინახება თქვენს მოწყობილობაზე. Job Up და ჩვენი პარტნიორები იყენებენ ქუქი-ფაილებსა და მსგავს ტექნოლოგიებს (მაგ., ბრაუზერის ლოკალურ მეხსიერებას) შემდეგი მიზნებისთვის:
+        </p>
+        <ul class="legal-list">
+          <li>
+            <strong>აუცილებელი ფუნქციები:</strong> ავტორიზაციის შენარჩუნება, თქვენი პარამეტრების (მაგ., ღია/მუქი თემის) დამახსოვრება და პლატფორმის უსაფრთხოება.
+          </li>
+          <li>
+            <strong>ანალიტიკა (Google Analytics):</strong> ვიყენებთ Google Analytics-ს, რათა გავიგოთ, როგორ სარგებლობენ ვიზიტორები საიტით (მაგ., ნანახი გვერდები, ვიზიტის ხანგრძლივობა). ეს მონაცემები გამოიყენება აგრეგირებული სახით პლატფორმის გასაუმჯობესებლად.
+          </li>
+          <li>
+            <strong>რეკლამა (Google AdSense):</strong> საიტზე შეიძლება განთავსდეს Google AdSense-ის რეკლამები. მესამე მხარის მომწოდებლები, მათ შორის Google, იყენებენ ქუქი-ფაილებს რეკლამების საჩვენებლად თქვენი წინა ვიზიტების საფუძველზე ამ ან სხვა ვებგვერდებზე. Google-ის მიერ სარეკლამო ქუქი-ფაილების გამოყენება საშუალებას აძლევს მას და მის პარტნიორებს, გაჩვენონ რეკლამები Job Up-ზე ან ინტერნეტის სხვა საიტებზე თქვენი ვიზიტების მიხედვით.
+          </li>
+        </ul>
+        <p>
+          პერსონალიზებული რეკლამის გამორთვა შეგიძლიათ <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">Google-ის რეკლამის პარამეტრებში</a>, ხოლო მესამე მხარის მომწოდებლების ქუქი-ფაილების გამორთვა — <a href="https://www.aboutads.info/choices" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>-ზე. დამატებითი ინფორმაცია იხილეთ გვერდზე
+          <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">როგორ იყენებს Google მონაცემებს პარტნიორ საიტებზე</a>.
+        </p>
+        <p>
+          ქუქი-ფაილების წაშლა ან დაბლოკვა ასევე შესაძლებელია თქვენი ბრაუზერის პარამეტრებიდან. გაითვალისწინეთ, რომ აუცილებელი ქუქი-ფაილების გამორთვის შემთხვევაში პლატფორმის ზოგიერთი ფუნქცია (მაგ., ავტორიზაცია) შეიძლება სწორად არ იმუშაოს.
+        </p>
+      </section>
+
+      <!-- Section 8 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">8</div>
           <h2>კონტაქტი</h2>
         </div>
         <p>
@@ -165,6 +170,5 @@
       </section>
 
       </div>
-    }
   </div>
 </main>

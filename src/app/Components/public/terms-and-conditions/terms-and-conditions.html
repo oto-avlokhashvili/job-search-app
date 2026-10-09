@@ -9,30 +9,6 @@
       <span class="update-pill">ბოლო განახლება: {{ lastUpdated }}</span>
     </div>
 
-    @if (isLoading()) {
-      <!-- Skeleton Loading State -->
-      <div class="legal-hero-card glass-card skeleton-pulse loading-legal-card">
-        <div class="table-loading-bar"></div>
-        <div class="skeleton-block" style="width: 52px; height: 52px; border-radius: 16px; margin-bottom: 20px;"></div>
-        <div class="skeleton-text" style="width: 320px; height: 28px; margin-bottom: 14px;"></div>
-        <div class="skeleton-text" style="width: 85%; height: 16px; margin-bottom: 8px;"></div>
-        <div class="skeleton-text" style="width: 65%; height: 16px;"></div>
-      </div>
-
-      <div class="legal-content-card glass-card skeleton-pulse">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div class="legal-section" style="border-bottom: 1px solid var(--border-color); padding-bottom: 24px;">
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
-              <div class="skeleton-block" style="width: 28px; height: 28px; border-radius: 8px;"></div>
-              <div class="skeleton-text" [style.width]="(i % 2 === 0 ? '220px' : '280px')" style="height: 20px;"></div>
-            </div>
-            <div class="skeleton-text" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
-            <div class="skeleton-text" style="width: 90%; height: 14px; margin-bottom: 8px;"></div>
-            <div class="skeleton-text" style="width: 70%; height: 14px;"></div>
-          </div>
-        }
-      </div>
-    } @else {
       <!-- Hero Card -->
       <header class="legal-hero-card glass-card animate-fade">
         <div class="hero-icon-badge">
@@ -153,6 +129,5 @@
       </section>
 
       </div>
-    }
   </div>
 </main>

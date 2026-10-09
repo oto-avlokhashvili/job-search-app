@@ -68,6 +68,14 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'about',
+    loadComponent: () => import('./Components/public/about/about').then((m) => m.About),
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./Components/public/contact/contact').then((m) => m.Contact),
+  },
+  {
     path: 'auth',
     redirectTo: 'home',
     pathMatch: 'full'

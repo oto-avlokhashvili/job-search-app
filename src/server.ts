@@ -142,6 +142,8 @@ async function buildSitemap(): Promise<string> {
   const urls: string[] = [
     `<url><loc>${SITE_URL}/vacancies</loc><lastmod>${todayIso}</lastmod><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
     `<url><loc>${SITE_URL}/home</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
+    `<url><loc>${SITE_URL}/about</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
+    `<url><loc>${SITE_URL}/contact</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>`,
     `<url><loc>${SITE_URL}/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
     `<url><loc>${SITE_URL}/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
     ...LANDING_PAGES.map(

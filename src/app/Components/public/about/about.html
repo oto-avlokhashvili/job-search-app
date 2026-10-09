@@ -1,0 +1,86 @@
+<main class="legal-page-wrapper">
+  <div class="legal-container">
+    <div class="legal-header-nav">
+      <a routerLink="/vacancies" class="btn-back-home">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>ვაკანსიებზე დაბრუნება</span>
+      </a>
+    </div>
+
+    <header class="legal-hero-card glass-card animate-fade">
+      <div class="hero-icon-badge">
+        <span class="material-symbols-outlined">info</span>
+      </div>
+      <h1 class="legal-title">ჩვენ შესახებ</h1>
+      <p class="legal-subtitle">
+        Job Up არის ქართული პლატფორმა, რომელიც სამსახურის ძიებას ამარტივებს: საქართველოს წამყვანი პორტალების ვაკანსიები ერთ სივრცეში,
+        მოსახერხებელი ფილტრები და AI აგენტი, რომელიც თქვენს CV-ზე მორგებულ ახალ შეთავაზებებს თავად გიგზავნით.
+      </p>
+    </header>
+
+    <div class="legal-content-card glass-card animate-fade">
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">1</div>
+          <h2>რა პრობლემას ვწყვეტთ</h2>
+        </div>
+        <p>
+          საქართველოში ვაკანსიები სხვადასხვა საიტზეა გაბნეული, ამიტომ სამსახურის მაძიებელს ყოველდღიურად რამდენიმე პორტალის შემოწმება უწევს.
+          Job Up ამ განცხადებებს ავტომატურად აგროვებს, აერთიანებს და დუბლიკატებს ასუფთავებს, რათა ყველა აქტიური ვაკანსია ერთ ადგილას ნახოთ.
+        </p>
+        @if (stateStore.publicDbTotal() > 0) {
+          <p>ამ მომენტში ბაზაში <strong>{{ stateStore.publicDbTotal() | number }}</strong> აქტიური ვაკანსიაა.</p>
+        }
+      </section>
+
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">2</div>
+          <h2>საიდან მოდის ვაკანსიები</h2>
+        </div>
+        <p>
+          ვაკანსიები ყოველდღიურად ახლდება შემდეგი წყაროებიდან: <strong>Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn</strong>.
+          თითოეულ განცხადებაზე მითითებულია მისი ორიგინალი წყარო, ხოლო განაცხადი იგზავნება დამსაქმებლის მიერ მითითებული გზით — ელ-ფოსტით ან ორიგინალ განცხადებაზე გადასვლით.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">3</div>
+          <h2>რას გთავაზობთ</h2>
+        </div>
+        <ul class="legal-list">
+          <li><strong>ერთიანი ძიება:</strong> ფილტრები პორტალის, ქალაქის, გამოქვეყნების თარიღისა და საკვანძო სიტყვების მიხედვით.</li>
+          <li><strong>AI აგენტი:</strong> ატვირთეთ CV და აგენტი თქვენს პროფილს შესაბამის ახალ ვაკანსიებს Telegram-ით ან ელ-ფოსტით გამოგიგზავნით.</li>
+          <li><strong>კანდიდატთა ბაზა:</strong> დატოვეთ CV და დამსაქმებლებმა თავად შეძლებენ თქვენთან დაკავშირებას.</li>
+          <li><strong>უფასო ძირითადი გეგმა:</strong> ვაკანსიების ძიება, CV-ის ატვირთვა და Telegram შეტყობინებები უფასოა, ბარათის დამატების გარეშე.</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">4</div>
+          <h2>თქვენი მონაცემები</h2>
+        </div>
+        <p>
+          ჩვენთვის მნიშვნელოვანია თქვენი პირადი მონაცემების დაცვა. დეტალურად იხილეთ
+          <a routerLink="/privacy">კონფიდენციალურობის პოლიტიკა</a> და <a routerLink="/terms">წესები და პირობები</a>.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">5</div>
+          <h2>დაგვიკავშირდით</h2>
+        </div>
+        <p>კითხვები, შენიშვნები ან თანამშრომლობის იდეები? მოგვწერეთ <a routerLink="/contact">საკონტაქტო გვერდიდან</a> ან პირდაპირ:</p>
+        <div class="contact-box">
+          <div class="contact-item">
+            <span class="material-symbols-outlined">mail</span>
+            <span>ელ-ფოსტა: <a href="mailto:jobup.ge@gmail.com">jobup.ge@gmail.com</a></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

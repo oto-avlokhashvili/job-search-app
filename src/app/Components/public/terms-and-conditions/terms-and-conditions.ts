@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../../Core/Services/theme.service';
@@ -15,7 +15,6 @@ export class TermsAndConditions implements OnInit {
   themeService = inject(ThemeService);
   private seo = inject(SeoService);
   lastUpdated = '2026 წლის სექტემბერი';
-  isLoading = signal(true);
 
   ngOnInit() {
     this.seo.update({
@@ -26,8 +25,5 @@ export class TermsAndConditions implements OnInit {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 300);
   }
 }
