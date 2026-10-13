@@ -11,9 +11,6 @@ import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SeoService } from '../../../Core/Services/seo.service';
-import { MatDialog } from '@angular/material/dialog';
-import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
-import { AiAgentBanner } from '../ai-agent-banner/ai-agent-banner';
 
 export interface VacancyItem {
   id: number;
@@ -31,7 +28,7 @@ export interface VacancyItem {
 @Component({
   selector: 'app-vacancies',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule, AiAgentBanner],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule],
   templateUrl: './vacancies.html',
   styleUrl: './vacancies.scss',
 })
@@ -45,12 +42,12 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private injector = inject(Injector);
   private alertify = inject(AlertifyService);
   private seo = inject(SeoService);
-  private dialog = inject(MatDialog);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
   @ViewChild('vacanciesSection') vacanciesSectionRef!: ElementRef;
   @ViewChild('filtersArea') filtersAreaRef!: ElementRef<HTMLElement>;
+  @ViewChild('sourceChips') sourceChipsRef?: ElementRef<HTMLElement>;
 
   private animationFrameId: number | null = null;
   private isInitialLoad = true;
@@ -82,7 +79,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   isLocationOpen = signal<boolean>(false);
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
-  cvPromoExpanded = signal<boolean>(false);
+  // Arrows on the mobile source chip row; the right one shows by default so the server
+  // render already hints that the row scrolls.
+  chipsCanScrollLeft = signal(false);
+  chipsCanScrollRight = signal(true);
   isFilterModalOpen = signal<boolean>(false);
 
   sourceOptions = computed(() => [
@@ -197,6 +197,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     afterNextRender(() => {
+      this.updateChipsArrows();
       this.ngZone.runOutsideAngular(() => this.initParticles());
     }, { injector: this.injector });
   }
@@ -669,6 +670,11 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.closeAllDropdowns();
   }
 
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.updateChipsArrows();
+  }
+
   @HostListener('window:scroll', [])
   onWindowScroll() {
     if (typeof window !== 'undefined') {
@@ -708,13 +714,17 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     return generateJobSlug(job.vacancy, job.company, job.id);
   }
 
-  openPublicCvModal() {
-    this.dialog.open(PublicCvModal, {
-      width: '520px',
-      maxWidth: '95vw',
-      panelClass: 'public-cv-dialog',
-      autoFocus: false,
-    });
+  updateChipsArrows() {
+    const el = this.sourceChipsRef?.nativeElement;
+    if (!el) return;
+    // 2px tolerance for sub-pixel scroll positions.
+    this.chipsCanScrollLeft.set(el.scrollLeft > 2);
+    this.chipsCanScrollRight.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+
+  scrollChips(direction: 1 | -1) {
+    const el = this.sourceChipsRef?.nativeElement;
+    el?.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' });
   }
 
   scroll(target: string) {

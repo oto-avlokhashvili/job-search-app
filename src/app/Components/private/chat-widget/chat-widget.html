@@ -58,16 +58,37 @@
       <!-- Chat Messages Body -->
       <div class="chat-body" #messagesScroll>
         @if (!isLoggedIn()) {
-          <div class="auth-required-state">
-            <div class="lock-icon-circle">
-              <span class="material-symbols-outlined">lock</span>
+          <!-- Logged-out visitors get the promos as assistant messages, as they arrive -->
+          @if (arrivedPromos() === 0) {
+            <div class="empty-state">
+              <span class="empty-icon">👋</span>
+              <h4>გამარჯობა! მე ვარ შენი AI ასისტენტი.</h4>
+              <p>დაგეხმარები სამსახურის ძიებაში, CV-სა და გასაუბრებისთვის მომზადებაში.</p>
             </div>
-            <h4>ავტორიზაცია აუცილებელია</h4>
-            <p>AI ასისტენტთან სასაუბროდ, ვაკანსიების მოსაძებნად და რეკომენდაციების მისაღებად გაიარეთ ავტორიზაცია.</p>
-            <button class="btn-chat-auth" (click)="openAuthModal()">
-              <span class="material-symbols-outlined">login</span>
-              ავტორიზაცია
-            </button>
+          }
+          <div class="messages-list">
+            @if (arrivedPromos() >= 1) {
+            <div class="message-wrapper assistant">
+              <div class="message-bubble promo-bubble">
+                <p class="message-content">👋 გამარჯობა! ატვირთე CV და რეკრუტერი თავად გიპოვის.</p>
+                <button type="button" class="promo-action" (click)="openCvUpload()">
+                  <span class="material-symbols-outlined">cloud_upload</span>
+                  CV-ის ატვირთვა
+                </button>
+              </div>
+            </div>
+            }
+            @if (arrivedPromos() >= 2) {
+            <div class="message-wrapper assistant">
+              <div class="message-bubble promo-bubble">
+                <p class="message-content">🤖 მიიღე ვაკანსიები შეტყობინებით ყოველ დღე — ჩართე AI აგენტი და ის შენთვის შესაფერის ვაკანსიებს მოძებნის.</p>
+                <button type="button" class="promo-action ai" (click)="openAiAgent()">
+                  <span class="material-symbols-outlined">rocket_launch</span>
+                  AI აგენტის ჩართვა
+                </button>
+              </div>
+            </div>
+            }
           </div>
         } @else if (!stateStore.isOnboardingCompleted()) {
           <div class="auth-required-state profile-required-state">
@@ -138,10 +159,10 @@
       <!-- Chat Input Area -->
       <div class="chat-footer">
         @if (!isLoggedIn()) {
-          <div class="chat-footer-unauth" (click)="openAuthModal()">
-            <span class="material-symbols-outlined">lock</span>
-            <span>შეტყობინების გასაგზავნად გაიარეთ ავტორიზაცია</span>
-          </div>
+          <div class="chat-footer-unauth" (click)="openAuthModal()">გაიარე ავტორიზაცია სასაუბროდ</div>
+          <button type="button" class="send-btn login-btn" (click)="openAuthModal()" title="ავტორიზაცია" aria-label="ავტორიზაცია">
+            <span class="material-symbols-outlined">login</span>
+          </button>
         } @else if (!stateStore.isOnboardingCompleted()) {
           <div class="chat-footer-profile-required" (click)="openOnboarding()">
             <span class="material-symbols-outlined">account_circle</span>
@@ -169,10 +190,35 @@
     </div>
   }
 
+  <!-- New-message preview: shows for a moment, then the message waits in the chat -->
+  @if (previewPromo(); as promo) {
+    <div class="message-preview" animate.leave="preview-leaving" (click)="toggleChat()">
+      <button type="button" class="preview-close" (click)="$event.stopPropagation(); closePreview()" aria-label="დახურვა">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <span class="preview-sender">Job Up AI</span>
+      <span class="preview-text">{{ promo.preview }}</span>
+      @if (promo.id === 'cv') {
+        <button type="button" class="promo-action" (click)="$event.stopPropagation(); openCvUpload()">
+          <span class="material-symbols-outlined">cloud_upload</span>
+          ატვირთვა
+        </button>
+      } @else {
+        <button type="button" class="promo-action ai" (click)="$event.stopPropagation(); openAiAgent()">
+          <span class="material-symbols-outlined">rocket_launch</span>
+          ჩართვა
+        </button>
+      }
+    </div>
+  }
+
   <!-- Floating FAB Button -->
   <button class="chat-fab" [class.active]="isChatOpen()" (click)="toggleChat()" title="გახსენი AI ჩატი">
     <span class="material-symbols-outlined fab-icon">
       {{ isChatOpen() ? 'close' : 'chat' }}
     </span>
+    @if (unreadPromos() > 0 && !isChatOpen() && !previewPromo()) {
+      <span class="unread-badge" [attr.aria-label]="unreadPromos() + ' ახალი შეტყობინება'">{{ unreadPromos() }}</span>
+    }
   </button>
 </div>

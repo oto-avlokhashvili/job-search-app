@@ -1,4 +1,4 @@
-@use '../ai-agent-banner/promo-banner';
+
 
 .vacancies-main-page {
   width: 100%;
@@ -487,32 +487,168 @@ button.btn-search {
   }
 }
 
-.mobile-inline-filters-trigger {
+// ─── Mobile: search row + source chips (replace the cards above) ──
+.mobile-search-row,
+.mobile-source-chips-wrap {
   display: none;
+}
 
-  @media (max-width: 991px) {
-    display: inline-flex;
+@media (max-width: 991px) {
+  .mobile-search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-search-input {
+    flex: 1;
+    min-width: 0;
+    display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
+    padding: 0 14px;
+    height: 44px;
     background: var(--surface-container-lowest);
     border: 1px solid var(--border-color);
-    border-radius: 100px;
-    color: var(--primary);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
+    border-radius: 12px;
     box-shadow: var(--shadow);
+
+    .material-symbols-outlined {
+      font-size: 20px;
+      color: var(--on-surface-variant);
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--on-surface);
+      font-size: 16px; // 16px stops iOS from zooming on focus
+    }
+
+    &:focus-within {
+      border-color: var(--primary);
+    }
+  }
+
+  .mobile-filters-btn {
     position: relative;
+    flex: 0 0 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--primary);
+    box-shadow: var(--shadow);
+    cursor: pointer;
 
     .active-filters-dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: var(--primary);
-      position: absolute;
-      top: 6px;
-      right: 12px;
+    }
+  }
+
+  // Arrows sit beside the chips, so the chips scroll only in the space between them.
+  .mobile-source-chips-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .mobile-source-chips {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 0;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .chips-arrow {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--border-color);
+    color: var(--primary);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  .source-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    color: var(--on-surface);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+
+    .source-chip-logo {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      border-radius: 3px;
+
+      &.circular {
+        border-radius: 50%;
+      }
+    }
+
+    .source-chip-count {
+      color: var(--on-surface-variant);
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    &.active {
+      background: rgba(11, 96, 150, 0.12);
+      border-color: var(--primary);
+      color: var(--primary);
+
+      .source-chip-count {
+        color: var(--primary);
+      }
     }
   }
 }
@@ -935,26 +1071,6 @@ button.btn-search {
     border-color: var(--primary);
     background: rgba(11, 96, 150, 0.05);
     box-shadow: 0 4px 18px rgba(11, 96, 150, 0.12);
-  }
-}
-
-// ─── Vacancies Promo Banners Grid (CV & AI Agent) ─────────────
-.vacancies-promo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
-  margin-bottom: 20px;
-  align-items: stretch;
-
-  @media (max-width: 991px) {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-
-  @media (max-width: 576px) {
-    gap: 12px;
-    margin-bottom: 16px;
   }
 }
 
@@ -1615,3 +1731,13 @@ button.btn-search {
   to { transform: rotate(360deg); }
 }
 
+
+// ─── Mobile: jobs first ────────────────────────────────────────
+// Kept at the end of the file so it overrides the base `display` of these blocks.
+@media (max-width: 991px) {
+  .section-header p.body-lg,
+  .provider-cards-grid,
+  .results-meta.unfiltered {
+    display: none;
+  }
+}

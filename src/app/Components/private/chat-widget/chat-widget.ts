@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
 
 export interface WidgetChatMessage {
@@ -32,6 +33,21 @@ export interface ChatQuota {
   remaining: number;
 }
 
+export interface PromoMessage {
+  id: 'cv' | 'ai';
+  /** Wait after the previous promo (or after page entry for the first one). */
+  delayMs: number;
+  preview: string;
+}
+
+const PROMO_MESSAGES: PromoMessage[] = [
+  { id: 'cv', delayMs: 5_000, preview: '👋 ატვირთე CV და რეკრუტერი თავად გიპოვის' },
+  { id: 'ai', delayMs: 20_000, preview: '🤖 მიიღე ვაკანსიები შეტყობინებით ყოველ დღე' },
+];
+
+const PREVIEW_MS = 3000;
+const PROMO_STATE_KEY = 'chat_widget_promos';
+
 @Component({
   selector: 'app-chat-widget',
   standalone: true,
@@ -46,6 +62,7 @@ export class ChatWidget implements OnInit, AfterViewChecked {
   authService = inject(AuthService);
   stateStore = inject(StateStore);
   dialog = inject(MatDialog);
+  private router = inject(Router);
 
   isLoggedIn = computed(() => this.authService.isLoggedIn());
   isChatOpen = signal<boolean>(false);
@@ -54,6 +71,14 @@ export class ChatWidget implements OnInit, AfterViewChecked {
   isTyping = signal<boolean>(false);
   chatQuota = signal<ChatQuota | null>(null);
   private shouldScrollToBottom = false;
+
+  /**
+   * Promo messages for logged-out visitors arrive in the chat over time. Each arrival
+   * briefly previews above the button and adds to the unread badge.
+   */
+  arrivedPromos = signal(0);
+  unreadPromos = signal(0);
+  previewPromo = signal<PromoMessage | null>(null);
 
   openAuthModal() {
     this.authService.openAuthModal('login');
@@ -95,6 +120,9 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   async ngOnInit() {
     this.loadMessages();
+    if (!this.isLoggedIn() && !this.router.url.startsWith('/private')) {
+      this.schedulePromos();
+    }
     if (this.isLoggedIn()) {
       await this.loadQuota();
     }
@@ -107,7 +135,94 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     }
   }
 
+  /**
+   * Restores promos already delivered this session, then schedules the rest relative
+   * to when the visit started, so a reload doesn't replay or restart them.
+   */
+  private schedulePromos() {
+    const saved = this.loadPromoState();
+    const startedAt = saved?.startedAt ?? Date.now();
+    this.promoStartedAt = startedAt;
+    this.arrivedPromos.set(saved?.arrived ?? 0);
+    this.unreadPromos.set(saved?.unread ?? 0);
+    this.savePromoState();
+
+    const elapsed = Date.now() - startedAt;
+    let dueAt = 0;
+    PROMO_MESSAGES.forEach((promo, i) => {
+      dueAt += promo.delayMs;
+      if (i + 1 > this.arrivedPromos()) {
+        setTimeout(() => this.deliverPromo(i + 1), Math.max(dueAt - elapsed, 0));
+      }
+    });
+  }
+
+  private deliverPromo(count: number) {
+    if (this.isLoggedIn() || count <= this.arrivedPromos()) return;
+    this.arrivedPromos.set(count);
+    if (this.isChatOpen()) {
+      this.shouldScrollToBottom = true;
+    } else {
+      this.unreadPromos.update((n) => n + 1);
+      this.previewPromo.set(PROMO_MESSAGES[count - 1]);
+      clearTimeout(this.previewTimer);
+      this.previewTimer = setTimeout(() => this.previewPromo.set(null), PREVIEW_MS);
+    }
+    this.savePromoState();
+  }
+
+  private promoStartedAt = 0;
+
+  private loadPromoState(): { startedAt: number; arrived: number; unread: number } | null {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(PROMO_STATE_KEY) || 'null');
+      return saved && typeof saved.startedAt === 'number' ? saved : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private savePromoState() {
+    if (!this.promoStartedAt) return;
+    try {
+      sessionStorage.setItem(
+        PROMO_STATE_KEY,
+        JSON.stringify({ startedAt: this.promoStartedAt, arrived: this.arrivedPromos(), unread: this.unreadPromos() }),
+      );
+    } catch {}
+  }
+
+  private previewTimer?: ReturnType<typeof setTimeout>;
+
+  /** Hides the preview only; the message stays unread in the chat. */
+  closePreview() {
+    clearTimeout(this.previewTimer);
+    this.previewPromo.set(null);
+  }
+
+  async openCvUpload() {
+    this.isChatOpen.set(false);
+    this.previewPromo.set(null);
+    // Loaded on demand, like onboarding: the widget is on every public page.
+    const { PublicCvModal } = await import('../../public/public-cv-modal/public-cv-modal');
+    this.dialog.open(PublicCvModal, {
+      width: '520px',
+      maxWidth: '95vw',
+      panelClass: 'public-cv-dialog',
+      autoFocus: false,
+    });
+  }
+
+  openAiAgent() {
+    this.isChatOpen.set(false);
+    this.previewPromo.set(null);
+    this.authService.openAuthModal('login', '/private/profile');
+  }
+
   async toggleChat() {
+    this.unreadPromos.set(0);
+    this.savePromoState();
+    this.previewPromo.set(null);
     const nextState = !this.isChatOpen();
     this.isChatOpen.set(nextState);
     if (nextState) {

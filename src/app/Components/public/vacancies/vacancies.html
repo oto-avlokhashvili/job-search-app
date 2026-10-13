@@ -15,65 +15,10 @@
           </h1>
           <p class="body-lg text-on-surface-variant">გაეცანით ბოლო პერიოდის საუკეთესო პოზიციებს წამყვან ქართულ კომპანიებში</p>
         </div>
-
-        <!-- Mobile Inline Filters Trigger -->
-        <button type="button" class="mobile-inline-filters-trigger" (click)="openFilterModal()">
-          <span class="material-symbols-outlined">tune</span>
-          <span>ფილტრები და ძებნა</span>
-          @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
-            <span class="active-filters-dot"></span>
-          }
-        </button>
-
       </div>
     </div>
 
     <div class="vacancies-container">
-      <!-- Promotional Banners Grid: Public CV & AI Job Alerts -->
-      <div class="vacancies-promo-grid">
-        <!-- Public CV Upload Banner -->
-        <div class="promo-banner cv-promo-banner glass-card" [class.is-expanded]="cvPromoExpanded()">
-          <div class="banner-glow-effect cv-glow"></div>
-          <div class="banner-content">
-            <div class="banner-header" (click)="cvPromoExpanded.set(!cvPromoExpanded())" [attr.aria-expanded]="cvPromoExpanded()">
-              <div class="banner-badge cv-badge">
-                <span class="pulse-dot"></span>
-                <span class="material-symbols-outlined badge-icon">badge</span>
-                <span>კანდიდატთა ბაზა</span>
-              </div>
-              <h2 class="banner-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
-              <span class="material-symbols-outlined promo-toggle-icon">expand_more</span>
-            </div>
-            <p class="banner-subtitle">
-              დატოვე შენი რეზიუმე — წამყვანი ქართული კომპანიები და HR-ები პირდაპირ შემოგთავაზებენ ვაკანსიებს.
-            </p>
-          </div>
-          <div class="banner-footer">
-            <div class="banner-chips">
-              <span class="chip-item">
-                <span class="material-symbols-outlined chip-icon">person_search</span>
-                <span>პირდაპირი შეთავაზებები</span>
-              </span>
-              <span class="chip-item">
-                <span class="material-symbols-outlined chip-icon">verified_user</span>
-                <span>კონფიდენციალური</span>
-              </span>
-              <span class="chip-item">
-                <span class="material-symbols-outlined chip-icon">upload_file</span>
-                <span>სწრაფი ატვირთვა</span>
-              </span>
-            </div>
-            <button type="button" class="btn-banner-action btn-banner-upload" (click)="openPublicCvModal()">
-              <span class="material-symbols-outlined">cloud_upload</span>
-              <span>CV-ის ატვირთვა</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- AI Daily Job Search Banner -->
-        <app-ai-agent-banner></app-ai-agent-banner>
-      </div>
-
       <!-- Provider Status Interactive Cards -->
       <div class="provider-cards-grid">
         <!-- Jobs.ge Card -->
@@ -281,6 +226,56 @@
       <div class="vacancies-results-wrapper" id="results-container">
         <!-- Filters (particles rise from here) -->
         <div class="filters-particles-area" #filtersArea>
+          <!-- Mobile search row: search stays visible, the other filters open in the sheet -->
+          <div class="mobile-search-row">
+            <div class="mobile-search-input">
+              <span class="material-symbols-outlined">search</span>
+              <input
+                type="search"
+                enterkeyhint="search"
+                [formControl]="searchFilter"
+                placeholder="მოძებნე პოზიცია/კომპანია"
+                aria-label="ვაკანსიის ძებნა"
+                (keyup.enter)="applyFilters()"
+              >
+            </div>
+            <button type="button" class="mobile-filters-btn" (click)="openFilterModal()" aria-label="ფილტრები">
+              <span class="material-symbols-outlined">tune</span>
+              @if (locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
+                <span class="active-filters-dot"></span>
+              }
+            </button>
+          </div>
+
+          <!-- Mobile source chips (replace the provider cards on small screens) -->
+          <div class="mobile-source-chips-wrap">
+          <button type="button" class="chips-arrow" [disabled]="!chipsCanScrollLeft()" (click)="scrollChips(-1)" aria-label="წინა">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <div #sourceChips class="mobile-source-chips" role="group" aria-label="პორტალის ფილტრი" (scroll)="updateChipsArrows()">
+            @for (option of sourceOptions(); track option.value) {
+              <button
+                type="button"
+                class="source-chip"
+                [class.active]="sourceFilter.value === option.value"
+                [attr.aria-pressed]="sourceFilter.value === option.value"
+                (click)="setSource(option.value)"
+              >
+                @if (option.logo) {
+                  <img [src]="option.logo" alt="" class="source-chip-logo" [class.circular]="option.isCircular">
+                }
+                <span>{{ option.value === 'all' ? 'ყველა' : option.label }}</span>
+                @if (option.count > 0) {
+                  <span class="source-chip-count">{{ option.count | number }}</span>
+                }
+              </button>
+            }
+          </div>
+          <button type="button" class="chips-arrow" [disabled]="!chipsCanScrollRight()" (click)="scrollChips(1)" aria-label="შემდეგი">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+          </div>
+
           <!-- Filters Bar Backdrop & Modal Container -->
           <div class="filters-modal-backdrop" [class.open]="isFilterModalOpen()" (click)="closeFilterModal()">
             <div #searchContainer class="filters-bar glass-card" (click)="$event.stopPropagation()">
@@ -443,7 +438,7 @@
         </div>
 
         @if (!isLoading() && filteredJobs().length > 0) {
-          <div class="results-meta">
+          <div class="results-meta" [class.unfiltered]="!(searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all')">
             <span class="results-count">
               @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
                 ნაპოვნია <strong>{{ totalRecords() | number }}</strong> ფილტრის შესაბამისი ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)

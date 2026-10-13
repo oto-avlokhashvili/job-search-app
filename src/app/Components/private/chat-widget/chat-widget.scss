@@ -634,32 +634,30 @@
     }
   }
 
+  // Looks like the message input; clicking it (or the login icon) opens auth.
   .chat-footer-unauth {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0.6rem 1rem;
-    background: var(--surface-container-low);
-    border: 1px dashed var(--border-color);
-    border-radius: 12px;
+    min-width: 0;
+    padding: 0.5rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
     color: var(--on-surface-variant);
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     cursor: pointer;
-    transition: all 0.2s ease;
-
-    span.material-symbols-outlined {
-      font-size: 16px;
-      color: var(--primary);
-    }
+    transition: border-color 0.2s;
 
     &:hover {
-      background: rgba(var(--primary-rgb), 0.08);
-      color: var(--primary);
       border-color: var(--primary);
     }
+  }
+
+  .login-btn span {
+    margin-left: 0;
   }
 
   .chat-footer-profile-required {
@@ -886,5 +884,166 @@
     .has-bottom-nav & {
       height: calc(100vh - 165px);
     }
+  }
+}
+
+/* ==========================================================================
+   Unread badge + promo messages for logged-out visitors
+   ========================================================================== */
+.unread-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 2px solid var(--surface);
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  animation: badge-pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.promo-bubble,
+.message-preview {
+  .message-content {
+    margin-bottom: 10px;
+  }
+
+  .promo-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &.ai {
+      background: #8b5cf6;
+    }
+  }
+}
+
+.message-preview {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 260px;
+  max-width: calc(100vw - 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  animation: preview-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  .preview-sender {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .preview-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--on-surface);
+  }
+}
+
+@keyframes preview-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 991px) {
+  .message-preview {
+    bottom: 68px;
+  }
+}
+
+.message-preview .promo-action {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.message-preview {
+  padding-right: 34px;
+
+  .preview-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    padding: 3px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--surface-container);
+    }
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+}
+
+// Closing: the preview shrinks into the chat button, as if the message drops into the chat.
+.message-preview {
+  transform-origin: calc(100% - 28px) calc(100% + 42px);
+
+  &.preview-leaving {
+    animation: preview-into-chat 0.4s cubic-bezier(0.55, 0, 0.75, 0.3) forwards;
+    pointer-events: none;
+  }
+}
+
+@keyframes preview-into-chat {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.1);
   }
 }
