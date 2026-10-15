@@ -552,6 +552,22 @@ body.modal-open {
   }
 }
 
+// Public CV modal on phones: full-width bottom sheet. margin-top:auto pins the pane to the
+// bottom of the CDK overlay wrapper (a flex box), overriding its inline centering.
+@media (max-width: 576px) {
+  .public-cv-dialog {
+    width: 100vw !important;
+    margin: auto 0 0 !important;
+
+    .mat-mdc-dialog-container,
+    .mat-mdc-dialog-surface,
+    .mdc-dialog__container,
+    .mdc-dialog__surface {
+      border-radius: 20px 20px 0 0 !important;
+    }
+  }
+}
+
 /* ─── Onboarding dialog panel ──────────────────────────────── */
 
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {

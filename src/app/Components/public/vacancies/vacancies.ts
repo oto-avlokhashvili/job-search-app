@@ -4,9 +4,13 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { StateStore, detectJobSource, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
+import { StateStore, detectJobSource, formatJobDate, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import type { SavedCvSubmission } from '../public-cv-modal/public-cv-modal';
+import { PUBLIC_CV_STORAGE_KEY } from '../../../Core/Utils/public-cv-storage';
+import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
+import { Cv, PublicCvSearchResult } from '../../../Core/Services/cv';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
@@ -42,6 +46,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private injector = inject(Injector);
   private alertify = inject(AlertifyService);
   private seo = inject(SeoService);
+  private dialog = inject(MatDialog);
+  private cvService = inject(Cv);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
@@ -84,6 +90,15 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   chipsCanScrollLeft = signal(false);
   chipsCanScrollRight = signal(true);
   isFilterModalOpen = signal<boolean>(false);
+  uploadedCv = signal<SavedCvSubmission | null>(null);
+  // CV mode: the list shows vacancies matched to the uploaded CV instead of the filtered feed.
+  cvMode = signal(false);
+  cvLoading = signal(false);
+  cvJobs = signal<VacancyItem[]>([]);
+  cvProfile = signal<PublicCvSearchResult['profile'] | null>(null);
+  cvError = signal('');
+  displayedJobs = computed(() => (this.cvMode() ? this.cvJobs() : this.filteredJobs()));
+  listLoading = computed(() => (this.cvMode() ? this.cvLoading() : this.isLoading()));
 
   sourceOptions = computed(() => [
     { value: 'all', label: 'ყველა პორტალი', icon: 'apps', count: this.dbTotalRecords(), isCircular: false, logo: '' },
@@ -197,6 +212,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     afterNextRender(() => {
+      this.loadUploadedCv();
       this.updateChipsArrows();
       this.ngZone.runOutsideAngular(() => this.initParticles());
     }, { injector: this.injector });
@@ -456,12 +472,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       });
 
       if (!append) {
-        this.searchState = 'burst';
-        setTimeout(() => {
-          if (this.searchState === 'burst') {
-            this.searchState = 'idle';
-          }
-        }, 600);
+        this.burstParticles();
 
         if (!this.isInitialLoad) {
           this.scroll('results-container');
@@ -479,6 +490,16 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       }
       this.searchState = 'idle';
     }
+  }
+
+  /** Ends a search's particle wave: burst outward, then settle back to idle. */
+  private burstParticles() {
+    this.searchState = 'burst';
+    setTimeout(() => {
+      if (this.searchState === 'burst') {
+        this.searchState = 'idle';
+      }
+    }, 600);
   }
 
   loadMore() {
@@ -700,6 +721,112 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     if (typeof document !== 'undefined') {
       document.body.classList.remove('modal-open');
     }
+  }
+
+  async openCvSearchModal(reupload = false) {
+    // Loaded on demand, like the chat widget: most visitors never open it.
+    const { PublicCvModal } = await import('../public-cv-modal/public-cv-modal');
+    const ref = this.dialog.open(PublicCvModal, {
+      width: '520px',
+      maxWidth: '95vw',
+      panelClass: 'public-cv-dialog',
+      autoFocus: false,
+      data: { mode: 'search', reupload },
+    });
+    ref.afterClosed().subscribe((result) => {
+      this.loadUploadedCv();
+      // 'search' = the modal's search button; true = closed after a successful upload.
+      if (result === 'search' || (result === true && this.cvMode())) {
+        this.cvMode.set(true);
+        this.searchByCv();
+      }
+    });
+  }
+
+  /** The search switch: manual filters (default) or CV search, never both at once. */
+  setSearchMode(mode: 'manual' | 'cv') {
+    if (mode === 'manual') {
+      this.exitCvMode();
+      return;
+    }
+    if (this.cvMode()) return;
+    this.cvMode.set(true);
+    this.searchByCv();
+  }
+
+  /** The public CV modal records the last upload in localStorage; mirror it in the banner. */
+  private loadUploadedCv() {
+    try {
+      const stored = localStorage.getItem(PUBLIC_CV_STORAGE_KEY);
+      const parsed: SavedCvSubmission | null = stored ? JSON.parse(stored) : null;
+      this.uploadedCv.set(parsed?.email ? parsed : null);
+    } catch {
+      this.uploadedCv.set(null);
+    }
+  }
+
+  /**
+   * Loads vacancies matched against the uploaded CV (anonymous, token-based) into CV mode.
+   * Without a usable token it does nothing: the CV-mode empty state asks for an upload.
+   */
+  async searchByCv() {
+    const token = this.uploadedCv()?.searchToken;
+    this.cvError.set('');
+    this.cvJobs.set([]);
+    this.cvProfile.set(null);
+    if (!token) return;
+
+    this.cvLoading.set(true);
+    // Same particle wave under the filters card as the manual search.
+    this.searchState = 'searching';
+    try {
+      // CV only: the manual filters are hidden in CV mode and don't narrow the results.
+      const res = await firstValueFrom(this.cvService.searchPublicCv(token));
+      this.cvProfile.set(res.profile);
+      this.cvJobs.set(
+        res.jobs.map((job) => ({
+          id: job.id,
+          vacancy: job.vacancy,
+          company: job.company,
+          location: job.location || 'Remote',
+          source: detectJobSource('', job.link || '', job.company),
+          salaryRange: extractSalary(job),
+          publishDate: formatJobDate(job.publishDate),
+          deadline: job.deadline ? formatJobDate(job.deadline) : '',
+          matchScore: job.match,
+          link: job.link,
+        })),
+      );
+      this.burstParticles();
+      this.scroll('results-container');
+    } catch (err: any) {
+      this.searchState = 'idle';
+      if (err?.status === 401) {
+        // Token no longer valid (CV re-uploaded elsewhere or removed): the empty state asks for a new upload.
+        this.dropSavedCv();
+      } else if (err?.status === 429) {
+        const minutes = Math.ceil((err.error?.retryAfter || 3600) / 60);
+        this.cvError.set(`ძიების ლიმიტი ამოიწურა, სცადეთ ${minutes} წუთში`);
+      } else {
+        this.cvError.set(err?.error?.message || 'CV-ით ძიება ვერ მოხერხდა, სცადეთ თავიდან');
+      }
+    } finally {
+      this.cvLoading.set(false);
+    }
+  }
+
+  exitCvMode() {
+    this.cvMode.set(false);
+    this.cvJobs.set([]);
+    this.cvProfile.set(null);
+    this.cvError.set('');
+  }
+
+  private dropSavedCv() {
+    try {
+      localStorage.removeItem(PUBLIC_CV_STORAGE_KEY);
+    } catch {}
+    this.uploadedCv.set(null);
   }
 
   scrollToFilters() {

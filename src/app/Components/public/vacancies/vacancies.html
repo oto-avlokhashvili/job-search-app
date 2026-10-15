@@ -20,7 +20,7 @@
 
     <div class="vacancies-container">
       <!-- Provider Status Interactive Cards -->
-      <div class="provider-cards-grid">
+      <div class="provider-cards-grid" [class.cv-locked]="cvMode()" [attr.inert]="cvMode() ? '' : null">
         <!-- Jobs.ge Card -->
         <div 
           class="provider-status-card glass-card" 
@@ -226,8 +226,21 @@
       <div class="vacancies-results-wrapper" id="results-container">
         <!-- Filters (particles rise from here) -->
         <div class="filters-particles-area" #filtersArea>
+          <!-- Search mode switch: manual filters (default) or CV search, never both -->
+          <div class="search-mode-switch" [class.cv-active]="cvMode()" role="tablist" aria-label="ძიების რეჟიმი">
+            <button type="button" role="tab" class="search-mode-option" [class.active]="!cvMode()" [attr.aria-selected]="!cvMode()" (click)="setSearchMode('manual')">
+              <span class="material-symbols-outlined">tune</span>
+              ფილტრებით ძიება
+            </button>
+            <button type="button" role="tab" class="search-mode-option" [class.active]="cvMode()" [attr.aria-selected]="cvMode()" (click)="setSearchMode('cv')">
+              <span class="material-symbols-outlined">description</span>
+              CV-ით ძიება
+              <span class="search-mode-ai">AI</span>
+            </button>
+          </div>
+
           <!-- Mobile search row: search stays visible, the other filters open in the sheet -->
-          <div class="mobile-search-row">
+          <div class="mobile-search-row" [class.is-hidden]="cvMode()">
             <div class="mobile-search-input">
               <span class="material-symbols-outlined">search</span>
               <input
@@ -248,7 +261,7 @@
           </div>
 
           <!-- Mobile source chips (replace the provider cards on small screens) -->
-          <div class="mobile-source-chips-wrap">
+          <div class="mobile-source-chips-wrap" [class.is-hidden]="cvMode()">
           <button type="button" class="chips-arrow" [disabled]="!chipsCanScrollLeft()" (click)="scrollChips(-1)" aria-label="წინა">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
@@ -276,6 +289,35 @@
           </button>
           </div>
 
+          <!-- Mobile CV strip: compact stand-in for the CV banner that sits in the desktop filters card -->
+          <div class="cv-mobile-strip" [class.has-cv]="uploadedCv()" [class.is-hidden]="!cvMode()">
+            @if (uploadedCv(); as cv) {
+              <span class="cv-mobile-icon">
+                <span class="material-symbols-outlined">task</span>
+              </span>
+              <div class="cv-mobile-text">
+                <span class="cv-mobile-title">CV ატვირთულია</span>
+                <span class="cv-mobile-sub">{{ cv.fileName || 'მოძებნე მორგებული ვაკანსიები' }}</span>
+              </div>
+              <button type="button" class="cv-mobile-btn" (click)="openCvSearchModal(true)">
+                <span class="material-symbols-outlined">refresh</span>
+                ხელახლა
+              </button>
+            } @else {
+              <span class="cv-mobile-icon">
+                <span class="material-symbols-outlined">description</span>
+              </span>
+              <div class="cv-mobile-text">
+                <span class="cv-mobile-title">მოძებნე CV-ით <span class="cv-mobile-ai">AI</span></span>
+                <span class="cv-mobile-sub">AI შეგირჩევს ვაკანსიებს</span>
+              </div>
+              <button type="button" class="cv-mobile-btn" (click)="openCvSearchModal()">
+                <span class="material-symbols-outlined">upload_file</span>
+                ატვირთვა
+              </button>
+            }
+          </div>
+
           <!-- Filters Bar Backdrop & Modal Container -->
           <div class="filters-modal-backdrop" [class.open]="isFilterModalOpen()" (click)="closeFilterModal()">
             <div #searchContainer class="filters-bar glass-card" (click)="$event.stopPropagation()">
@@ -288,7 +330,7 @@
                 </button>
               </div>
 
-              <div class="filter-group-main">
+              <div class="filter-group-main" [class.is-hidden]="cvMode()">
                 <div class="search-input-wrapper">
                   <span class="material-symbols-outlined search-icon">search</span>
                   <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="applyFilters(); closeFilterModal()">
@@ -410,7 +452,7 @@
               </div>
 
               <!-- Popular Searches -->
-              <div class="popular-searches">
+              <div class="popular-searches" [class.is-hidden]="cvMode()">
                 <span class="popular-searches-label">პოპულარული:</span>
                 <div class="popular-tags">
                   <button 
@@ -433,11 +475,76 @@
                   </button>
                 </div>
               </div>
+
+              <!-- CV Search panel: replaces the manual filters while the switch is on "CV" -->
+              <div class="cv-search-banner" [class.has-cv]="uploadedCv()" [class.is-hidden]="!cvMode()">
+                @if (uploadedCv(); as cv) {
+                  <div class="cv-search-icon">
+                    <span class="material-symbols-outlined">task</span>
+                  </div>
+                  <div class="cv-search-text">
+                    <div class="cv-search-title">
+                      შენი CV ატვირთულია
+                      <span class="cv-ai-badge">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        AI
+                      </span>
+                    </div>
+                    <p class="cv-search-subtitle">
+                      @if (cv.fileName) {
+                        <span class="cv-file-chip" [title]="cv.fileName">
+                          <span class="material-symbols-outlined">description</span>
+                          <span class="cv-file-chip-name">{{ cv.fileName }}</span>
+                        </span>
+                      }
+                      <span>ვაკანსიები შერჩეულია მხოლოდ შენი CV-ის მიხედვით</span>
+                    </p>
+                  </div>
+                  <button type="button" class="btn-cv-reupload" (click)="openCvSearchModal(true)">
+                    <span class="material-symbols-outlined">refresh</span>
+                    <span>CV-ის ხელახლა ატვირთვა</span>
+                  </button>
+                } @else {
+                  <div class="cv-search-icon">
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="cv-search-text">
+                    <div class="cv-search-title">
+                      მოძებნე ვაკანსიები შენი CV-ით
+                      <span class="cv-ai-badge">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        AI
+                      </span>
+                    </div>
+                    <p class="cv-search-subtitle">ატვირთე CV და შეგირჩევთ შენს გამოცდილებაზე მორგებულ ვაკანსიებს</p>
+                  </div>
+                  <button type="button" class="btn-cv-search" (click)="openCvSearchModal()" aria-label="CV-ის ატვირთვა">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    <span>CV-ის ატვირთვა</span>
+                  </button>
+                }
+              </div>
             </div>
           </div>
         </div>
 
-        @if (!isLoading() && filteredJobs().length > 0) {
+        @if (cvMode()) {
+          @if (cvLoading() || displayedJobs().length > 0) {
+            <div class="results-meta cv-results-meta">
+              <span class="results-count">
+                <span class="material-symbols-outlined cv-results-icon">travel_explore</span>
+                @if (cvLoading()) {
+                  CV-ით ძიება მიმდინარეობს...
+                } @else {
+                  შენს CV-ზე მორგებული ვაკანსიები: <strong>{{ displayedJobs().length | number }}</strong>
+                  @if (cvProfile(); as profile) {
+                    <span class="cv-results-role">{{ profile.detectedRole }} · {{ profile.seniorityLevel }}</span>
+                  }
+                }
+              </span>
+            </div>
+          }
+        } @else if (!isLoading() && filteredJobs().length > 0) {
           <div class="results-meta" [class.unfiltered]="!(searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all')">
             <span class="results-count">
               @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
@@ -455,7 +562,7 @@
           </div>
         }
 
-        @if (isLoading()) {
+        @if (listLoading()) {
           <!-- Desktop Table Skeleton View -->
           <div class="vacancies-table-container loading-table">
             <div class="table-loading-bar"></div>
@@ -513,7 +620,7 @@
               </div>
             }
           </div>
-        } @else if (filteredJobs().length > 0) {
+        } @else if (displayedJobs().length > 0) {
           <!-- Desktop Table View -->
           <div class="vacancies-table-container">
             <table class="vacancies-table">
@@ -529,7 +636,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (job of filteredJobs(); track job.id) {
+                @for (job of displayedJobs(); track job.id) {
                   <tr>
                     <td class="col-vacancy">
                       <div class="job-info-cell">
@@ -552,7 +659,12 @@
                           >
                             <span class="job-vacancy">{{ job.vacancy }}</span>
                           </a>
-                          <span class="job-company" [title]="job.company">{{ job.company }}</span>
+                          <span class="job-company" [title]="job.company">
+                            {{ job.company }}
+                            @if (cvMode()) {
+                              <span class="cv-match-badge">{{ job.matchScore }}% შესაბამისობა</span>
+                            }
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -628,7 +740,7 @@
 
           <!-- Mobile Compact Cards View -->
           <div class="vacancies-cards-container">
-            @for (job of filteredJobs(); track job.id) {
+            @for (job of displayedJobs(); track job.id) {
               <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]">
                 <div class="job-card-top">
                   <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
@@ -655,6 +767,9 @@
                 </div>
 
                 <div class="job-card-bottom-pills">
+                  @if (cvMode()) {
+                    <span class="cv-match-badge">{{ job.matchScore }}%</span>
+                  }
                   <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'" [class.jobup-ge]="job.source === jobUpSource">
                     @if (job.source === jobUpSource) {
                       <img [src]="jobUpLogo" alt="Job Up" class="provider-mini-icon">
@@ -705,7 +820,7 @@
             }
           </div>
 
-          @if (hasMoreJobs() && !isLoading()) {
+          @if (!cvMode() && hasMoreJobs() && !isLoading()) {
             <div class="load-more-wrapper text-center">
               <button class="btn-fluid secondary load-more-btn" (click)="loadMore()" [disabled]="isAppending()">
                 @if (isAppending()) {
@@ -721,6 +836,38 @@
               </button>
             </div>
           }
+        } @else if (cvMode()) {
+          <div class="empty-state glass-card">
+            @if (!uploadedCv()?.searchToken) {
+              <!-- No CV yet, or one uploaded before CV search existed (no token) -->
+              <div class="empty-icon-wrap">
+                <span class="material-symbols-outlined">upload_file</span>
+              </div>
+              <h3>{{ uploadedCv() ? 'ატვირთეთ CV თავიდან' : 'ატვირთეთ CV ძიებისთვის' }}</h3>
+              <p>ვაკანსიებს შეგირჩევთ მხოლოდ თქვენი CV-ის — უნარების, გამოცდილებისა და პოზიციის მიხედვით</p>
+              <button class="btn-fluid primary btn-sm" (click)="openCvSearchModal(!!uploadedCv())">
+                CV-ის ატვირთვა
+              </button>
+            } @else if (cvError()) {
+              <div class="empty-icon-wrap">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <h3>CV-ით ძიება ვერ მოხერხდა</h3>
+              <p>{{ cvError() }}</p>
+              <button class="btn-fluid secondary btn-sm" (click)="searchByCv()">
+                თავიდან ცდა
+              </button>
+            } @else {
+              <div class="empty-icon-wrap">
+                <span class="material-symbols-outlined">search_off</span>
+              </div>
+              <h3>CV-ს შესაბამისი ვაკანსიები ვერ მოიძებნა</h3>
+              <p>ახალი ვაკანსიები ყოველდღე ემატება, სცადეთ მოგვიანებით ან ატვირთეთ განახლებული CV</p>
+              <button class="btn-fluid secondary btn-sm" (click)="openCvSearchModal(true)">
+                CV-ის ხელახლა ატვირთვა
+              </button>
+            }
+          </div>
         } @else {
           <!-- Empty State -->
           <div class="empty-state glass-card">
@@ -739,7 +886,7 @@
   </section>
 
   <!-- Floating Scroll to Filters Button (Mobile only) -->
-  @if (showScrollToFilters() && !isFilterModalOpen()) {
+  @if (showScrollToFilters() && !isFilterModalOpen() && !cvMode()) {
     <button
       type="button"
       class="scroll-to-filters-btn animated-fade-in"

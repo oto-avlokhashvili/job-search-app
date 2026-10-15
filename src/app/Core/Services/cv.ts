@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { skipLoading } from '../loading/skip-loading.component';
+import { Job } from '../Interfaces/jobs';
 
 export interface PublicCvSubmissionData {
   email: string;
@@ -10,6 +11,18 @@ export interface PublicCvSubmissionData {
   fullName?: string;
   phoneNumber?: string;
   consent?: boolean;
+  turnstileToken?: string;
+}
+
+export interface PublicCvMatchedJob extends Job {
+  match: number;
+  matchedKeywords: string[];
+}
+
+export interface PublicCvSearchResult {
+  profile: { detectedRole: string; seniorityLevel: string };
+  total: number;
+  jobs: PublicCvMatchedJob[];
 }
 
 @Injectable({
@@ -37,7 +50,18 @@ export class Cv {
     if (data.phoneNumber) {
       formData.append('phoneNumber', data.phoneNumber);
     }
+    if (data.turnstileToken) {
+      formData.append('turnstileToken', data.turnstileToken);
+    }
     return this.http.post(`${this.url}/cv/public-submit`, formData, {
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
+  /** Anonymous CV search; `searchToken` comes from the public-submit response. */
+  searchPublicCv(searchToken: string): Observable<PublicCvSearchResult> {
+    return this.http.get<PublicCvSearchResult>(`${this.url}/cv/public-search`, {
+      headers: { 'X-CV-Token': searchToken },
       context: new HttpContext().set(skipLoading, true),
     });
   }

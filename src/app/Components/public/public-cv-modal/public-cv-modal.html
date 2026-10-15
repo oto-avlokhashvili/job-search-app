@@ -17,10 +17,17 @@
           <span class="material-symbols-outlined">mark_email_read</span>
         </div>
 
-        <h2>თქვენი CV უკვე ბაზაშია</h2>
-        <p class="subtitle">
-          თქვენი რეზიუმე და საკონტაქტო მონაცემები წარმატებით არის შენახული. რეკრუტერები პირდაპირ დაგიკავშირდებიან.
-        </p>
+        @if (isSearchMode) {
+          <h2>თქვენი CV უკვე ატვირთულია</h2>
+          <p class="subtitle">
+            მოძებნეთ თქვენს CV-ზე მორგებული ვაკანსიები ან ატვირთეთ განახლებული რეზიუმე. HR სპეციალისტები ასევე ხედავენ თქვენს CV-ს.
+          </p>
+        } @else {
+          <h2>თქვენი CV უკვე ბაზაშია</h2>
+          <p class="subtitle">
+            თქვენი რეზიუმე და საკონტაქტო მონაცემები წარმატებით არის შენახული. რეკრუტერები პირდაპირ დაგიკავშირდებიან.
+          </p>
+        }
       </div>
 
       <div class="already-submitted-body animate-pop">
@@ -80,37 +87,67 @@
         </div>
 
         <div class="already-actions-group">
-          <button type="button" class="btn-retry" (click)="retryUpload()">
-            <span class="material-symbols-outlined">refresh</span>
-            <span>ახალი CV-ის ატვირთვა / განახლება</span>
-          </button>
+          @if (isSearchMode) {
+            <button type="button" class="btn-retry" (click)="searchWithCv()">
+              <span class="material-symbols-outlined">travel_explore</span>
+              <span>ვაკანსიების ძიება ჩემი CV-ით</span>
+            </button>
 
-          <button type="button" class="btn-close-sub" (click)="close()">
-            <span>გასაგებია / დახურვა</span>
-          </button>
+            <button type="button" class="btn-close-sub" (click)="retryUpload()">
+              <span class="material-symbols-outlined">refresh</span>
+              <span>CV-ის ხელახლა ატვირთვა</span>
+            </button>
+          } @else {
+            <button type="button" class="btn-retry" (click)="retryUpload()">
+              <span class="material-symbols-outlined">refresh</span>
+              <span>ახალი CV-ის ატვირთვა / განახლება</span>
+            </button>
+
+            <button type="button" class="btn-close-sub" (click)="close()">
+              <span>გასაგებია / დახურვა</span>
+            </button>
+          }
         </div>
       </div>
     } @else {
       <!-- Modal Header -->
       <div class="modal-header">
-        <div class="badge-pill">
-          <span class="pulse-dot"></span>
-          <span>კანდიდატთა ბაზა</span>
-        </div>
+        @if (isSearchMode) {
+          <div class="badge-pill">
+            <span class="pulse-dot"></span>
+            <span>CV-ით ძებნა</span>
+          </div>
 
-        <div class="icon-circle">
-          <span class="material-symbols-outlined">person_search</span>
-        </div>
+          <div class="icon-circle">
+            <span class="material-symbols-outlined">travel_explore</span>
+          </div>
 
-        <h2>ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
-        <p class="subtitle">
-          დატოვე შენი რეზიუმე და საკონტაქტო მონაცემები — წამყვანი ქართული კომპანიები და HR სპეციალისტები პირდაპირ შემოგთავაზებენ ვაკანსიებს.
-        </p>
+          <h2>მოძებნე ვაკანსიები შენი CV-ით</h2>
 
-        <div class="talent-pool-clarification-banner">
-          <span class="material-symbols-outlined">info</span>
-          <span><strong>გაითვალისწინეთ:</strong> თქვენი CV ემატება Job Up-ის საერთო ბაზაში (კანდიდატთა ბაზა) სხვადასხვა შემოთავაზებებისთვის და არა კონკრეტულ ვაკანსიაზე.</span>
-        </div>
+          <div class="talent-pool-clarification-banner">
+            <span class="material-symbols-outlined">info</span>
+            <span><strong>გაითვალისწინეთ:</strong> თქვენი CV გამოიყენება როგორც ვაკანსიების მოსაძებნად, ასევე ემატება Job Up-ის კანდიდატთა ბაზაში, სადაც მას იხილავენ HR სპეციალისტები და დამსაქმებლები.</span>
+          </div>
+        } @else {
+          <div class="badge-pill">
+            <span class="pulse-dot"></span>
+            <span>კანდიდატთა ბაზა</span>
+          </div>
+
+          <div class="icon-circle">
+            <span class="material-symbols-outlined">person_search</span>
+          </div>
+
+          <h2>ატვირთე CV და რეკრუტერი თავად გიპოვის</h2>
+          <p class="subtitle">
+            დატოვე შენი რეზიუმე და საკონტაქტო მონაცემები — წამყვანი ქართული კომპანიები და HR სპეციალისტები პირდაპირ შემოგთავაზებენ ვაკანსიებს.
+          </p>
+
+          <div class="talent-pool-clarification-banner">
+            <span class="material-symbols-outlined">info</span>
+            <span><strong>გაითვალისწინეთ:</strong> თქვენი CV ემატება Job Up-ის საერთო ბაზაში (კანდიდატთა ბაზა), სადაც მას HR სპეციალისტები და დამსაქმებლები იხილავენ სხვადასხვა შემოთავაზებებისთვის და არა კონკრეტულ ვაკანსიაზე.</span>
+          </div>
+        }
       </div>
 
       <!-- Form -->
@@ -146,7 +183,8 @@
                 <span class="material-symbols-outlined">cloud_upload</span>
               </div>
               <div class="dropzone-text">
-                <span class="main-drop-text">ჩააგდეთ ფაილი აქ ან <strong>აირჩიეთ კომპიუტერიდან</strong></span>
+                <span class="main-drop-text drop-desktop">ჩააგდეთ ფაილი აქ ან <strong>აირჩიეთ კომპიუტერიდან</strong></span>
+                <span class="main-drop-text drop-mobile"><strong>აირჩიეთ CV ფაილი</strong></span>
                 <span class="sub-drop-text">ფორმატები: PDF, DOCX, DOC (მაქს. 5MB)</span>
               </div>
             </div>
@@ -238,13 +276,25 @@
           <label class="consent-checkbox-label">
             <input type="checkbox" formControlName="consent" class="custom-checkbox" />
             <span class="consent-text">
-              ვეთანხმები ჩემი CV-ის და საკონტაქტო მონაცემების დამუშავებასა და რეკრუტერებისთვის გაზიარებას.
+              ვეთანხმები ჩემი CV-ის და საკონტაქტო მონაცემების დამუშავებასა და HR სპეციალისტებისთვის (რეკრუტერებისთვის) გაზიარებას
+              <a href="/privacy" target="_blank" rel="noopener" class="consent-link">კონფიდენციალურობის პოლიტიკის</a> შესაბამისად.
             </span>
           </label>
           @if (form.get('consent')?.invalid && (form.get('consent')?.touched || hasAttemptedSubmit())) {
             <span class="error-msg">თანხმობის დადასტურება სავალდებულოა</span>
           }
         </div>
+
+        @if (turnstileEnabled) {
+          <div #turnstileHost class="turnstile-host"></div>
+        }
+
+        @if (formError()) {
+          <div class="form-error-banner" role="alert">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ formError() }}</span>
+          </div>
+        }
 
         <!-- Submit Button -->
         <button type="submit" class="submit-btn" [disabled]="loading()">
@@ -257,7 +307,10 @@
           }
         </button>
 
-        <p class="privacy-notice">🔒 თქვენი მონაცემები სრულიად დაცულია და ხელმისაწვდომია მხოლოდ ვერიფიცირებული დამსაქმებლებისთვის.</p>
+        <p class="privacy-notice">
+          🔒 თქვენი მონაცემები სრულიად დაცულია და ხელმისაწვდომია მხოლოდ ვერიფიცირებული დამსაქმებლებისთვის.
+          <a href="/privacy" target="_blank" rel="noopener">კონფიდენციალურობის პოლიტიკა</a>
+        </p>
       </form>
     }
   } @else {
@@ -274,9 +327,16 @@
         <span>თქვენი CV წარმატებით შეინახა. როგორც კი თქვენი პროფილის შესაბამისი ვაკანსია გამოჩნდება, რეკრუტერი პირდაპირ დაგიკავშირდებათ.</span>
       </div>
 
-      <button class="submit-btn done-btn" (click)="close()">
-        <span>გასაგებია</span>
-      </button>
+      @if (isSearchMode) {
+        <button class="submit-btn done-btn" (click)="searchWithCv()">
+          <span class="material-symbols-outlined">travel_explore</span>
+          <span>ვაკანსიების ძიება ჩემი CV-ით</span>
+        </button>
+      } @else {
+        <button class="submit-btn done-btn" (click)="close()">
+          <span>გასაგებია</span>
+        </button>
+      }
     </div>
   }
 </div>

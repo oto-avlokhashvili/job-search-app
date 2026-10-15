@@ -34,10 +34,26 @@
     border-radius: 10px;
   }
 
+  // Bottom sheet: square bottom corners, room for the home indicator, grab handle on top
   @media (max-width: 576px) {
-    padding: 1.25rem 1.05rem 1.15rem;
-    border-radius: 18px;
+    max-width: none;
+    padding: 1.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
     max-height: 92dvh;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 4px;
+      background: var(--outline-variant, #97aed5);
+      opacity: 0.6;
+    }
   }
 }
 
@@ -69,13 +85,13 @@
   }
 
   @media (max-width: 576px) {
-    top: 0.85rem;
-    right: 0.85rem;
-    width: 30px;
-    height: 30px;
+    top: 1.1rem;
+    right: 0.9rem;
+    width: 32px;
+    height: 32px;
 
     .material-symbols-outlined {
-      font-size: 17px;
+      font-size: 18px;
     }
   }
 }
@@ -188,35 +204,63 @@
     }
   }
 
+  // Mobile: compact left-aligned header (icon beside the title) so the form starts higher
   @media (max-width: 576px) {
-    margin-bottom: 0.9rem;
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    column-gap: 12px;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 1rem;
+    padding-right: 2.4rem; // clear the close button
 
     .badge-pill {
-      font-size: 0.68rem;
-      padding: 0.2rem 0.6rem;
-      margin-bottom: 0.45rem;
+      display: none;
     }
 
     .icon-circle {
-      width: 42px;
-      height: 42px;
+      grid-row: 1 / span 2;
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
-      margin-bottom: 0.45rem;
+      margin: 0;
 
       .material-symbols-outlined {
-        font-size: 22px;
+        font-size: 23px;
       }
     }
 
     h2 {
+      align-self: end;
       font-size: 1.05rem;
-      margin-bottom: 0.2rem;
+      margin: 0;
+    }
+
+    // Title only (search mode): center it beside the icon
+    &:not(:has(.subtitle)) h2 {
+      grid-row: 1 / span 2;
+      align-self: center;
     }
 
     .subtitle {
-      font-size: 0.74rem;
-      line-height: 1.35;
-      padding: 0 0.25rem;
+      align-self: start;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+
+    .talent-pool-clarification-banner {
+      grid-column: 1 / -1;
+      align-items: flex-start;
+      max-width: none;
+      margin: 0.85rem -2.4rem 0 0; // span back under the close-button gutter
+      padding: 0.6rem 0.75rem;
+      font-size: 0.78rem;
+      line-height: 1.4;
+
+      .material-symbols-outlined {
+        margin-top: 1px;
+      }
     }
   }
 }
@@ -233,7 +277,7 @@
   gap: 0.95rem;
 
   @media (max-width: 576px) {
-    gap: 0.75rem;
+    gap: 0.9rem;
   }
 }
 
@@ -322,31 +366,27 @@
   }
 
   @media (max-width: 576px) {
-    gap: 0.25rem;
+    gap: 0.35rem;
 
     label {
-      font-size: 0.74rem;
-
-      .optional-tag {
-        display: none;
-      }
+      font-size: 0.8rem;
     }
 
     .input-wrap {
-      padding: 0.52rem 0.7rem;
-      border-radius: 10px;
+      min-height: 48px;
+      padding: 0 0.85rem;
 
       .input-icon {
-        font-size: 16px;
+        font-size: 19px;
       }
 
       input {
-        font-size: 0.8rem;
+        font-size: 16px; // 16px stops iOS from zooming on focus
       }
     }
 
     .error-msg {
-      font-size: 0.68rem;
+      font-size: 0.75rem;
     }
   }
 }
@@ -417,32 +457,46 @@
       color: var(--on-surface-variant);
       opacity: 0.8;
     }
+
+    .drop-mobile {
+      display: none;
+    }
   }
 
+  // Mobile: one horizontal row (icon + text), there's no drag-and-drop on phones anyway
   @media (max-width: 576px) {
-    padding: 0.75rem 0.6rem;
-    gap: 0.3rem;
-    border-radius: 12px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    text-align: left;
 
     .dropzone-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
 
       .material-symbols-outlined {
-        font-size: 18px;
+        font-size: 22px;
       }
     }
 
     .dropzone-text {
-      gap: 0.1rem;
-
       .main-drop-text {
-        font-size: 0.74rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .drop-desktop {
+        display: none;
+      }
+
+      .drop-mobile {
+        display: inline;
       }
 
       .sub-drop-text {
-        font-size: 0.64rem;
+        font-size: 0.75rem;
       }
     }
   }
@@ -495,9 +549,6 @@
         text-overflow: ellipsis;
         max-width: 280px;
 
-        @media (max-width: 480px) {
-          max-width: 170px;
-        }
       }
 
       .file-size {
@@ -532,40 +583,27 @@
   }
 
   @media (max-width: 576px) {
-    padding: 0.5rem 0.65rem;
-    border-radius: 10px;
+    padding: 0.7rem 0.75rem;
 
     .file-card-left {
-      gap: 0.5rem;
-
-      .file-type-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 7px;
-
-        .material-symbols-outlined {
-          font-size: 16px;
-        }
-      }
+      flex: 1;
 
       .file-details {
         .file-name {
-          font-size: 0.76rem;
+          max-width: none;
+          font-size: 0.86rem;
         }
 
         .file-size {
-          font-size: 0.64rem;
+          font-size: 0.72rem;
         }
       }
     }
 
     .btn-remove-file {
-      width: 26px;
-      height: 26px;
-
-      .material-symbols-outlined {
-        font-size: 16px;
-      }
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
     }
   }
 }
@@ -578,8 +616,10 @@
   width: 100%;
   box-sizing: border-box;
 
+  // Mobile: stack name and phone so neither field is squeezed
   @media (max-width: 576px) {
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
   }
 }
 
@@ -611,6 +651,13 @@
       color: var(--on-surface-variant);
       line-height: 1.35;
       transition: color 0.2s ease;
+
+      .consent-link {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
     }
   }
 
@@ -629,23 +676,56 @@
 
   @media (max-width: 576px) {
     .consent-checkbox-label {
-      gap: 0.4rem;
+      gap: 0.6rem;
 
       .custom-checkbox {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
       }
 
       .consent-text {
-        font-size: 0.68rem;
+        font-size: 0.78rem;
+        line-height: 1.45;
       }
     }
 
     .error-msg {
-      font-size: 0.65rem;
-      padding-left: 1.25rem;
+      font-size: 0.75rem;
+      padding-left: 1.75rem;
     }
   }
+}
+
+.form-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+  animation: popIn 0.2s ease;
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+  }
+}
+
+.turnstile-host {
+  display: flex;
+  justify-content: center;
+  min-height: 65px; // reserve the widget's height so the form doesn't jump when it loads
 }
 
 /* ── Submit Button ── */
@@ -693,13 +773,8 @@
   }
 
   @media (max-width: 576px) {
-    padding: 0.72rem 1.2rem;
-    font-size: 0.85rem;
-    border-radius: 10px;
-
-    .material-symbols-outlined {
-      font-size: 17px;
-    }
+    min-height: 50px;
+    font-size: 0.95rem;
   }
 }
 
@@ -709,6 +784,14 @@
 
 .privacy-notice {
   margin: 0;
+
+  a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   text-align: center;
   font-size: 0.7rem;
   color: var(--on-surface-variant);
@@ -716,7 +799,7 @@
   line-height: 1.35;
 
   @media (max-width: 576px) {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -788,37 +871,32 @@
   }
 
   @media (max-width: 576px) {
-    padding: 0.4rem 0 0.15rem;
+    padding: 0.4rem 0 0;
 
     .success-icon-circle {
-      width: 50px;
-      height: 50px;
-      margin-bottom: 0.75rem;
+      width: 56px;
+      height: 56px;
+      margin-bottom: 0.85rem;
 
       .material-symbols-outlined {
-        font-size: 28px;
+        font-size: 30px;
       }
     }
 
     h2 {
-      font-size: 1.15rem;
-      margin-bottom: 0.2rem;
+      font-size: 1.2rem;
     }
 
     .success-desc {
-      font-size: 0.78rem;
-      margin-bottom: 0.75rem;
+      font-size: 0.86rem;
+      margin-bottom: 0.9rem;
     }
 
     .success-card {
-      padding: 0.65rem 0.8rem;
-      font-size: 0.72rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-
-      .info-icon {
-        font-size: 17px;
-      }
+      padding: 0.75rem 0.85rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      margin-bottom: 1.1rem;
     }
   }
 }
@@ -970,6 +1048,10 @@
       width: 100%;
       padding: 0.68rem 1rem;
       border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
       border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
       background: var(--surface-container-low, rgba(0, 0, 0, 0.02));
       color: var(--on-surface-variant);
@@ -988,57 +1070,33 @@
 
   @media (max-width: 576px) {
     .submitted-info-card {
-      padding: 0.4rem 0.65rem;
-      margin-bottom: 0.75rem;
+      padding: 0.35rem 0.75rem;
 
       .info-row {
-        gap: 0.6rem;
-        padding: 0.5rem 0.15rem;
-
-        .info-icon-wrap {
-          width: 30px;
-          height: 30px;
-          border-radius: 8px;
-
-          .material-symbols-outlined {
-            font-size: 16px;
-          }
-        }
+        padding: 0.6rem 0.1rem;
 
         .info-row-content {
           .info-row-label {
-            font-size: 0.62rem;
+            font-size: 0.7rem;
           }
           .info-row-value {
-            font-size: 0.78rem;
+            font-size: 0.86rem;
           }
         }
       }
     }
 
     .status-callout {
-      font-size: 0.72rem;
-      padding: 0.45rem 0.65rem;
-      margin-bottom: 0.9rem;
+      font-size: 0.78rem;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 1rem;
     }
 
     .already-actions-group {
-      gap: 0.5rem;
-
-      .btn-retry {
-        padding: 0.72rem 1rem;
-        font-size: 0.82rem;
-        border-radius: 10px;
-
-        .material-symbols-outlined {
-          font-size: 17px;
-        }
-      }
-
+      .btn-retry,
       .btn-close-sub {
-        padding: 0.62rem 0.85rem;
-        font-size: 0.8rem;
-        border-radius: 10px;
+        min-height: 50px;
+        font-size: 0.92rem;
       }
     }
   }

@@ -899,6 +899,13 @@ $shadow: var(--shadow);
         color: var(--on-surface-variant);
         font-weight: 500;
 
+        .consent-link {
+          color: var(--primary);
+          font-weight: 600;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+
         .required-star {
           color: #ef4444;
           font-weight: 700;
