@@ -4,9 +4,11 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
+import compression from 'compression';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { BlockList, isIP } from 'node:net';
 import { join } from 'node:path';
 import { API_TARGET } from './environments/api-target';
 import { INTERNAL_API_KEY, PROXY_SHARED_SECRET } from './environments/server-secrets';
@@ -19,8 +21,33 @@ const SITE_URL = 'https://jobup.ge';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
+// https://www.cloudflare.com/ips/
+const CLOUDFLARE_RANGES = [
+  '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '141.101.64.0/18',
+  '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20', '197.234.240.0/22', '198.41.128.0/17',
+  '162.158.0.0/15', '104.16.0.0/13', '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22',
+  '2400:cb00::/32', '2606:4700::/32', '2803:f800::/32', '2405:b500::/32', '2405:8100::/32',
+  '2a06:98c0::/29', '2c0f:f248::/32',
+];
+const cloudflareIps = new BlockList();
+for (const range of CLOUDFLARE_RANGES) {
+  const [net, prefix] = range.split('/');
+  cloudflareIps.addSubnet(net, Number(prefix), isIP(net) === 6 ? 'ipv6' : 'ipv4');
+}
+const isCloudflareIp = (addr: string) => {
+  const ip = addr.replace(/^::ffff:/, '');
+  const family = isIP(ip);
+  return family !== 0 && cloudflareIps.check(ip, family === 6 ? 'ipv6' : 'ipv4');
+};
+
 const app = express();
-app.set('trust proxy', 1);
+// Hop 0 is always Railway's edge. Hop 1 is trusted only when it's a Cloudflare edge, so req.ip
+// is the real visitor whether or not the Cloudflare proxy is on, and can't be spoofed by
+// sending an X-Forwarded-For header straight to Railway.
+app.set('trust proxy', (addr: string, i: number) => i === 0 || (i === 1 && isCloudflareIp(addr)));
+
+// Gzip HTML, JS, CSS and proxied API JSON. Railway bills outbound traffic and doesn't compress it for us.
+app.use(compression());
 
 // Railway's proxy adds X-Forwarded-* headers (notably X-Forwarded-For) to every request.
 // Angular falls back to client-side rendering, with an empty page for crawlers,
