@@ -178,6 +178,14 @@ const inFlightPublicJobs = new WeakMap<object, { key: string; promise: Promise<v
 // Id of the newest public-jobs filter request per store. A response whose id is no
 // longer the newest is discarded, so a slow older request can't overwrite newer results.
 const latestPublicJobsRequest = new WeakMap<object, number>();
+// Abort handles of the public-jobs HTTP requests still running per store. A new filter
+// request aborts them (like switchMap), so typing doesn't leave a trail of open requests.
+const activePublicJobsRequests = new WeakMap<object, Set<() => void>>();
+// First-page responses of recent filter combinations, so backspacing to an earlier search
+// or toggling a filter back is served without another API call.
+const PUBLIC_JOBS_CACHE_TTL_MS = 60_000;
+const PUBLIC_JOBS_CACHE_MAX = 20;
+const publicJobsResponseCache = new WeakMap<object, Map<string, { res: any; at: number }>>();
 
 /**
  * Reads the per-portal counts from a /job/all response. `mapped` is the page of
@@ -651,6 +659,25 @@ export const StateStore = signalStore(
             latestPublicJobsRequest.set(store, requestId);
             const isStale = () => latestPublicJobsRequest.get(store) !== requestId;
 
+            let active = activePublicJobsRequests.get(store);
+            if (!active) {
+                active = new Set();
+                activePublicJobsRequests.set(store, active);
+            }
+            if (!append) {
+                // Everything still running belongs to older filters: abort it.
+                active.forEach(abort => abort());
+                active.clear();
+            }
+
+            let cache = publicJobsResponseCache.get(store);
+            if (!cache) {
+                cache = new Map();
+                publicJobsResponseCache.set(store, cache);
+            }
+            // force means the results changed (e.g. login), so nothing cached is trustworthy.
+            if (force) cache.clear();
+
             const run = async (): Promise<void> => {
                 const page = append ? store.publicJobsPage() + 1 : 1;
                 // Must be the same for every page: the API skips (page - 1) * limit.
@@ -681,9 +708,31 @@ export const StateStore = signalStore(
                 }
 
                 try {
-                    const res: any = await firstValueFrom(
-                        jobsService.getJobs(query, page, source, location, '', publishDateParam, limit)
-                    );
+                    const cached = !append ? cache.get(key) : undefined;
+                    let res: any;
+                    if (cached && Date.now() - cached.at < PUBLIC_JOBS_CACHE_TTL_MS) {
+                        res = cached.res;
+                    } else {
+                        let abort!: () => void;
+                        res = await new Promise((resolve, reject) => {
+                            // Unsubscribing aborts the underlying fetch.
+                            const sub = jobsService
+                                .getJobs(query, page, source, location, '', publishDateParam, limit)
+                                .subscribe({ next: resolve, error: reject });
+                            abort = () => {
+                                sub.unsubscribe();
+                                reject(new Error('Superseded by a newer search'));
+                            };
+                            active.add(abort);
+                        }).finally(() => active.delete(abort));
+
+                        if (!append) {
+                            cache.delete(key);
+                            cache.set(key, { res, at: Date.now() });
+                            // Map keeps insertion order, so the first key is the oldest.
+                            if (cache.size > PUBLIC_JOBS_CACHE_MAX) cache.delete(cache.keys().next().value!);
+                        }
+                    }
 
                     if (isStale()) {
                         // The newer request owns publicJobsLoading; only a dropped
