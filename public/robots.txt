@@ -24,17 +24,7 @@ Allow: /
 Disallow: /private/
 Disallow: /auth
 
-User-agent: GPTBot
-Allow: /
-Disallow: /private/
-Disallow: /auth
-
 User-agent: PerplexityBot
-Allow: /
-Disallow: /private/
-Disallow: /auth
-
-User-agent: ClaudeBot
 Allow: /
 Disallow: /private/
 Disallow: /auth
@@ -48,5 +38,21 @@ User-agent: Google-Extended
 Allow: /
 Disallow: /private/
 Disallow: /auth
+
+# AI training crawlers send no visitors; also blocked at Cloudflare (AI Crawl Control).
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: CCBot
+User-agent: Bytespider
+User-agent: TikTokSpider
+User-agent: Amazonbot
+User-agent: FacebookBot
+User-agent: meta-externalagent
+User-agent: Google-CloudVertexBot
+User-agent: PetalBot
+User-agent: Timpibot
+User-agent: Novellum
+User-agent: ProRataInc
+Disallow: /
 
 Sitemap: https://jobup.ge/sitemap.xml

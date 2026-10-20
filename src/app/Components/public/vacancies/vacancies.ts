@@ -9,7 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import type { SavedCvSubmission } from '../public-cv-modal/public-cv-modal';
 import { PUBLIC_CV_STORAGE_KEY } from '../../../Core/Utils/public-cv-storage';
-import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs';
 import { Cv, PublicCvSearchResult } from '../../../Core/Services/cv';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
@@ -154,7 +154,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   filteredJobs = this.stateStore.publicJobs;
 
   private searchSub?: any;
+  private liveSearchSub?: any;
   private queryParamsSub?: any;
+  // Live search while typing must not scroll the input out of view; explicit filter changes do.
+  private scrollToResults = true;
 
   ngOnInit() {
     this.seo.update({
@@ -173,11 +176,23 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.locationSearch.set(val);
     });
 
+    // Search as the user types: wait for a pause, skip single characters, and let an empty
+    // box clear the search. Enter and the search button still apply immediately. Inside the
+    // mobile filter modal nothing applies until ძიება is pressed.
+    this.liveSearchSub = this.searchFilter.valueChanges.pipe(
+      map(val => val.trim()),
+      debounceTime(400),
+      filter(() => !this.isFilterModalOpen()),
+      distinctUntilChanged(),
+      filter(val => val.length === 0 || val.length >= 2),
+    ).subscribe(() => this.applyFilters(false));
+
     // The URL is the single source of truth for filters: a missing param means "all",
     // so returning from a job, refreshing or sharing a link restores the same list.
     this.queryParamsSub = this.route.queryParamMap.subscribe(params => {
       const date = params.get('date');
-      this.searchFilter.setValue(params.get('search') ?? '');
+      // emitEvent: false, so restoring the box from the URL doesn't trigger a live search.
+      this.searchFilter.setValue(params.get('search') ?? '', { emitEvent: false });
       this.sourceFilter.setValue(params.get('source') ?? 'all');
       this.locationFilter.setValue(params.get('location') ?? 'all');
       this.dateRangeFilter.setValue(this.dateRangeOptions.some(o => o.value === date) ? date! : 'all');
@@ -188,7 +203,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Writes the current filter controls to the URL; the queryParamMap subscription loads them. */
-  applyFilters() {
+  applyFilters(scrollToResults = true) {
+    this.scrollToResults = scrollToResults;
     const search = this.searchFilter.value.trim();
     const tree = this.router.createUrlTree([], {
       relativeTo: this.route,
@@ -225,6 +241,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
     }
+    this.liveSearchSub?.unsubscribe();
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }
@@ -475,7 +492,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
         this.burstParticles();
 
         if (!this.isInitialLoad) {
-          this.scroll('results-container');
+          if (this.scrollToResults) this.scroll('results-container');
         } else {
           this.isInitialLoad = false;
         }
