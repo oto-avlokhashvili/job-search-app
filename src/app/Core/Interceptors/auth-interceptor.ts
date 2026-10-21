@@ -28,7 +28,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !isAuthEndpoint(req.url)) {
+      // On the anonymous CV search a 401 means a stale CV token, not an expired session:
+      // refreshing would log anonymous visitors out and send them to /auth.
+      if (error.status === 401 && !isAuthEndpoint(req.url) && !req.url.includes('/cv/public-search')) {
         // The refresh/retry queue below is shared module-level state, unsafe to touch
         // across concurrent SSR requests from different users. SSR only ever renders
         // public/anonymous content, so there's no legitimate refresh flow to run here.

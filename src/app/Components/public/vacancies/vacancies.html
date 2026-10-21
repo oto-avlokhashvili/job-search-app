@@ -290,14 +290,14 @@
           </div>
 
           <!-- Mobile CV strip: compact stand-in for the CV banner that sits in the desktop filters card -->
-          <div class="cv-mobile-strip" [class.has-cv]="uploadedCv()" [class.is-hidden]="!cvMode()">
-            @if (uploadedCv(); as cv) {
+          <div class="cv-mobile-strip" [class.has-cv]="hasCv()" [class.is-hidden]="!cvMode()">
+            @if (hasCv()) {
               <span class="cv-mobile-icon">
                 <span class="material-symbols-outlined">task</span>
               </span>
               <div class="cv-mobile-text">
                 <span class="cv-mobile-title">CV ატვირთულია</span>
-                <span class="cv-mobile-sub">{{ cv.fileName || 'მოძებნე მორგებული ვაკანსიები' }}</span>
+                <span class="cv-mobile-sub">{{ cvFileName() || 'მოძებნე მორგებული ვაკანსიები' }}</span>
               </div>
               <button type="button" class="cv-mobile-btn" (click)="openCvSearchModal(true)">
                 <span class="material-symbols-outlined">refresh</span>
@@ -477,8 +477,8 @@
               </div>
 
               <!-- CV Search panel: replaces the manual filters while the switch is on "CV" -->
-              <div class="cv-search-banner" [class.has-cv]="uploadedCv()" [class.is-hidden]="!cvMode()">
-                @if (uploadedCv(); as cv) {
+              <div class="cv-search-banner" [class.has-cv]="hasCv()" [class.is-hidden]="!cvMode()">
+                @if (hasCv()) {
                   <div class="cv-search-icon">
                     <span class="material-symbols-outlined">task</span>
                   </div>
@@ -491,10 +491,10 @@
                       </span>
                     </div>
                     <p class="cv-search-subtitle">
-                      @if (cv.fileName) {
-                        <span class="cv-file-chip" [title]="cv.fileName">
+                      @if (cvFileName(); as fileName) {
+                        <span class="cv-file-chip" [title]="fileName">
                           <span class="material-symbols-outlined">description</span>
-                          <span class="cv-file-chip-name">{{ cv.fileName }}</span>
+                          <span class="cv-file-chip-name">{{ fileName }}</span>
                         </span>
                       }
                       <span>ვაკანსიები შერჩეულია მხოლოდ შენი CV-ის მიხედვით</span>
@@ -838,7 +838,7 @@
           }
         } @else if (cvMode()) {
           <div class="empty-state glass-card">
-            @if (!uploadedCv()?.searchToken) {
+            @if (!canSearchByCv()) {
               <!-- No CV yet, or one uploaded before CV search existed (no token) -->
               <div class="empty-icon-wrap">
                 <span class="material-symbols-outlined">upload_file</span>

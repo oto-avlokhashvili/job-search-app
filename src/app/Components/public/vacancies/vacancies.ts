@@ -91,6 +91,12 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   chipsCanScrollRight = signal(true);
   isFilterModalOpen = signal<boolean>(false);
   uploadedCv = signal<SavedCvSubmission | null>(null);
+  // Signed-in users can search with the CV saved on their account (profile/dashboard upload).
+  accountCv = computed(() => (this.authService.isLoggedIn() ? this.stateStore.userCv() : null));
+  /** A CV this page can search with: the anonymous upload's token wins, it's the more recent intent here. */
+  canSearchByCv = computed(() => !!this.uploadedCv()?.searchToken || !!this.accountCv());
+  hasCv = computed(() => !!this.uploadedCv() || !!this.accountCv());
+  cvFileName = computed(() => this.uploadedCv()?.fileName || this.accountCv()?.originalName || '');
   // CV mode: the list shows vacancies matched to the uploaded CV instead of the filtered feed.
   cvMode = signal(false);
   cvLoading = signal(false);
@@ -229,6 +235,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     afterNextRender(() => {
       this.loadUploadedCv();
+      if (this.authService.isLoggedIn()) this.stateStore.getCv();
       this.updateChipsArrows();
       this.ngZone.runOutsideAngular(() => this.initParticles());
     }, { injector: this.injector });
@@ -783,22 +790,23 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Loads vacancies matched against the uploaded CV (anonymous, token-based) into CV mode.
-   * Without a usable token it does nothing: the CV-mode empty state asks for an upload.
+   * Loads vacancies matched against the uploaded CV (anonymous, token-based) or, failing that,
+   * the signed-in user's account CV into CV mode. Without either it does nothing: the CV-mode
+   * empty state asks for an upload.
    */
   async searchByCv() {
     const token = this.uploadedCv()?.searchToken;
     this.cvError.set('');
     this.cvJobs.set([]);
     this.cvProfile.set(null);
-    if (!token) return;
+    if (!token && !this.accountCv()) return;
 
     this.cvLoading.set(true);
     // Same particle wave under the filters card as the manual search.
     this.searchState = 'searching';
     try {
       // CV only: the manual filters are hidden in CV mode and don't narrow the results.
-      const res = await firstValueFrom(this.cvService.searchPublicCv(token));
+      const res = await firstValueFrom(token ? this.cvService.searchPublicCv(token) : this.cvService.searchMyCv());
       this.cvProfile.set(res.profile);
       this.cvJobs.set(
         res.jobs.map((job) => ({
@@ -818,9 +826,14 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.scroll('results-container');
     } catch (err: any) {
       this.searchState = 'idle';
-      if (err?.status === 401) {
-        // Token no longer valid (CV re-uploaded elsewhere or removed): the empty state asks for a new upload.
+      if (token && err?.status === 401) {
+        // Token no longer valid (CV re-uploaded elsewhere or removed): fall back to the account CV,
+        // otherwise the empty state asks for a new upload.
         this.dropSavedCv();
+        if (this.accountCv()) {
+          await this.searchByCv();
+          return;
+        }
       } else if (err?.status === 429) {
         const minutes = Math.ceil((err.error?.retryAfter || 3600) / 60);
         this.cvError.set(`ძიების ლიმიტი ამოიწურა, სცადეთ ${minutes} წუთში`);

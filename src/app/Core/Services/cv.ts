@@ -66,6 +66,14 @@ export class Cv {
     });
   }
 
+  /** CV search for a signed-in user, using the CV saved on their account. */
+  searchMyCv(): Observable<PublicCvSearchResult> {
+    return this.http.get<PublicCvSearchResult>(`${this.url}/cv/search`, {
+      withCredentials: true,
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
   getCV(): Observable<any> {
     return this.http.get(`${this.url}/cv`, { withCredentials: true, context: new HttpContext().set(skipLoading, true) });
   }

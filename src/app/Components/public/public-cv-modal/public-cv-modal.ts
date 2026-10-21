@@ -120,7 +120,9 @@ export class PublicCvModal {
 
   constructor() {
     this.checkExistingSubmission();
-    if (this.data?.reupload && this.isAlreadySubmitted()) {
+    // A submission saved before CV search existed has no token, so it can't be searched with.
+    const unsearchable = this.isSearchMode && !this.submittedInfo()?.searchToken;
+    if ((this.data?.reupload || unsearchable) && this.isAlreadySubmitted()) {
       this.retryUpload();
     }
   }
