@@ -838,14 +838,14 @@
           }
         } @else if (cvMode()) {
           <div class="empty-state glass-card">
-            @if (!canSearchByCv()) {
-              <!-- No CV yet, or one uploaded before CV search existed (no token) -->
+            @if (!hasCv()) {
+              <!-- No CV on this device or account -->
               <div class="empty-icon-wrap">
                 <span class="material-symbols-outlined">upload_file</span>
               </div>
-              <h3>{{ uploadedCv() ? 'ატვირთეთ CV თავიდან' : 'ატვირთეთ CV ძიებისთვის' }}</h3>
+              <h3>ატვირთეთ CV ძიებისთვის</h3>
               <p>ვაკანსიებს შეგირჩევთ მხოლოდ თქვენი CV-ის — უნარების, გამოცდილებისა და პოზიციის მიხედვით</p>
-              <button class="btn-fluid primary btn-sm" (click)="openCvSearchModal(!!uploadedCv())">
+              <button class="btn-fluid primary btn-sm" (click)="openCvSearchModal()">
                 CV-ის ატვირთვა
               </button>
             } @else if (cvError()) {

@@ -93,8 +93,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   uploadedCv = signal<SavedCvSubmission | null>(null);
   // Signed-in users can search with the CV saved on their account (profile/dashboard upload).
   accountCv = computed(() => (this.authService.isLoggedIn() ? this.stateStore.userCv() : null));
-  /** A CV this page can search with: the anonymous upload's token wins, it's the more recent intent here. */
-  canSearchByCv = computed(() => !!this.uploadedCv()?.searchToken || !!this.accountCv());
+  /** A CV this page can search with; the browser's own upload wins over the account CV. */
   hasCv = computed(() => !!this.uploadedCv() || !!this.accountCv());
   cvFileName = computed(() => this.uploadedCv()?.fileName || this.accountCv()?.originalName || '');
   // CV mode: the list shows vacancies matched to the uploaded CV instead of the filtered feed.
@@ -795,18 +794,17 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
    * empty state asks for an upload.
    */
   async searchByCv() {
-    const token = this.uploadedCv()?.searchToken;
     this.cvError.set('');
     this.cvJobs.set([]);
     this.cvProfile.set(null);
-    if (!token && !this.accountCv()) return;
+    if (!this.hasCv()) return;
 
     this.cvLoading.set(true);
     // Same particle wave under the filters card as the manual search.
     this.searchState = 'searching';
     try {
       // CV only: the manual filters are hidden in CV mode and don't narrow the results.
-      const res = await firstValueFrom(token ? this.cvService.searchPublicCv(token) : this.cvService.searchMyCv());
+      const res = await this.fetchCvMatches();
       this.cvProfile.set(res.profile);
       this.cvJobs.set(
         res.jobs.map((job) => ({
@@ -826,14 +824,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.scroll('results-container');
     } catch (err: any) {
       this.searchState = 'idle';
-      if (token && err?.status === 401) {
-        // Token no longer valid (CV re-uploaded elsewhere or removed): fall back to the account CV,
-        // otherwise the empty state asks for a new upload.
-        this.dropSavedCv();
-        if (this.accountCv()) {
-          await this.searchByCv();
-          return;
-        }
+      if (err?.status === 404 && !this.hasCv()) {
+        // The saved CV is gone from the database: the empty state asks for a new upload.
       } else if (err?.status === 429) {
         const minutes = Math.ceil((err.error?.retryAfter || 3600) / 60);
         this.cvError.set(`ძიების ლიმიტი ამოიწურა, სცადეთ ${minutes} წუთში`);
@@ -843,6 +835,44 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     } finally {
       this.cvLoading.set(false);
     }
+  }
+
+  /**
+   * The browser that uploaded the CV stays trusted: an upload saved without a token (from before
+   * CV search) or whose token was replaced from another device is reconnected silently instead
+   * of asking for the file again.
+   */
+  private async fetchCvMatches(): Promise<PublicCvSearchResult> {
+    const saved = this.uploadedCv();
+    if (saved) {
+      try {
+        const token = saved.searchToken || (await this.reconnectSavedCv(saved));
+        try {
+          return await firstValueFrom(this.cvService.searchPublicCv(token));
+        } catch (err: any) {
+          if (err?.status !== 401 || !saved.searchToken) throw err;
+          return await firstValueFrom(this.cvService.searchPublicCv(await this.reconnectSavedCv(saved)));
+        }
+      } catch (err: any) {
+        // 404 = no such CV in the database any more; fall back to the account CV if there is one.
+        if (err?.status !== 404) throw err;
+        this.dropSavedCv();
+        if (!this.accountCv()) throw err;
+      }
+    }
+    return firstValueFrom(this.cvService.searchMyCv());
+  }
+
+  /** Gets a fresh search token for the saved upload and stores it, so this happens only once. */
+  private async reconnectSavedCv(saved: SavedCvSubmission): Promise<string> {
+    if (!saved.fileName) throw { status: 404 };
+    const res = await firstValueFrom(this.cvService.reconnectPublicCv(saved.email, saved.fileName));
+    const updated: SavedCvSubmission = { ...saved, searchToken: res.searchToken, searchAvailable: res.searchAvailable };
+    try {
+      localStorage.setItem(PUBLIC_CV_STORAGE_KEY, JSON.stringify(updated));
+    } catch {}
+    this.uploadedCv.set(updated);
+    return res.searchToken;
   }
 
   exitCvMode() {

@@ -66,6 +66,15 @@ export class Cv {
     });
   }
 
+  /** New search token for a CV this browser uploaded earlier, matched by its saved email + file name. */
+  reconnectPublicCv(email: string, fileName: string): Observable<{ searchToken: string; searchAvailable: boolean }> {
+    return this.http.post<{ searchToken: string; searchAvailable: boolean }>(
+      `${this.url}/cv/public-reconnect`,
+      { email, fileName },
+      { context: new HttpContext().set(skipLoading, true) },
+    );
+  }
+
   /** CV search for a signed-in user, using the CV saved on their account. */
   searchMyCv(): Observable<PublicCvSearchResult> {
     return this.http.get<PublicCvSearchResult>(`${this.url}/cv/search`, {
