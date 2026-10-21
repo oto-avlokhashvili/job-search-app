@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { StateStore } from '../../../../Store/state.store';
-import { AlertifyService } from '../../../../Core/Services/alertify.service';
-import { WaitlistService } from '../../../../Core/Services/waitlist.service';
-import { SubscriptionPlan } from '../../../../Core/Interfaces/user';
+import { StateStore } from '../../../Store/state.store';
+import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { WaitlistService } from '../../../Core/Services/waitlist.service';
+import { SubscriptionPlan } from '../../../Core/Interfaces/user';
 
 export interface Plan {
   key: SubscriptionPlan | 'PREMIUM';

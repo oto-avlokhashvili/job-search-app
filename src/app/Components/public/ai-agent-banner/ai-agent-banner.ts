@@ -1,6 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../Core/Services/auth-service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-ai-agent-banner',
@@ -9,8 +8,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
   styleUrl: './ai-agent-banner.scss',
 })
 export class AiAgentBanner {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   // Only has an effect on mobile, where the banner collapses into an accordion.
   expanded = signal(false);
@@ -19,11 +17,10 @@ export class AiAgentBanner {
     this.expanded.update(v => !v);
   }
 
-  handleAiAgentClick() {
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/private/profile']);
-    } else {
-      this.authService.openAuthModal('login', '/private/profile');
-    }
+  /** Sign in, CV and Telegram in one modal; it skips whatever the user has already done. */
+  async handleAiAgentClick() {
+    // Loaded on demand: the banner is on public pages and most visitors never click it.
+    const { openNotificationChannelsModal } = await import('../notification-channels-modal/notification-channels-modal');
+    openNotificationChannelsModal(this.dialog);
   }
 }

@@ -1,7 +1,6 @@
-import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { inject } from '@angular/core';
+import { RedirectFunction, Router, Routes, UrlMatcher, UrlSegment } from '@angular/router';
 import { authGuard } from './Core/Guards/auth-guard';
-import { onboardingGuard, onboardingPageGuard } from './Core/Guards/onboarding.guard';
-import { proGuard } from './Core/Guards/pro.guard';
 
 import { VacancyDetails } from './Components/public/vacancy-details/vacancy-details';
 import { Vacancies } from './Components/public/vacancies/vacancies';
@@ -13,6 +12,11 @@ const landingPageMatcher: UrlMatcher = (segments: UrlSegment[]) =>
   segments.length === 2 && segments[0].path === 'vacancies' && getLandingPage(segments[1].path)
     ? { consumed: segments, posParams: { slug: segments[1] } }
     : null;
+
+// Old notifications URLs land on the profile (history accordion stays closed). Keeps incoming
+// query params (e.g. ?token= from the Google login redirect).
+const toProfileNotifications: RedirectFunction = ({ queryParams }) =>
+  inject(Router).createUrlTree(['/profile'], { queryParams });
 
 export const routes: Routes = [
   {
@@ -80,65 +84,26 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  // Account pages: sign-in only. Lazy-loaded so anonymous visitors (and crawlers) never download them.
   {
-    path: 'private',
-    // Private area is lazy-loaded so anonymous visitors (and crawlers) never download it.
-    loadComponent: () =>
-      import('./Components/private/private-layout/private-layout').then((m) => m.PrivateLayout),
+    path: 'profile',
+    loadComponent: () => import('./Components/public/profile/profile').then((m) => m.Profile),
     canActivate: [authGuard],
-    canActivateChild: [authGuard],
     data: { hideFooter: true },
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./Components/private/dashboard/dashboard').then((m) => m.Dashboard),
-        canActivate: [onboardingGuard, proGuard],
-      },
-      {
-        path: 'dashboard/:id',
-        loadComponent: () => import('./Components/private/dashboard/dashboard').then((m) => m.Dashboard),
-        canActivate: [onboardingGuard, proGuard],
-      },
-      {
-        path: 'chat',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-      {
-        path: 'chat/:id',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
-      {
-        path: 'onboarding',
-        loadComponent: () => import('./Components/private/onboarding/onboarding').then((m) => m.Onboarding),
-        canActivate: [onboardingPageGuard],
-      },
-      {
-        path: 'profile',
-        loadComponent: () => import('./Components/private/profile/profile').then((m) => m.Profile),
-        canActivate: [onboardingGuard],
-      },
-      {
-        path: 'notifications',
-        loadComponent: () => import('./Components/private/sent-jobs/sent-jobs').then((m) => m.SentJobs),
-        canActivate: [onboardingGuard],
-      },
-      {
-        path: 'jobs',
-        redirectTo: 'notifications',
-        pathMatch: 'full'
-      },
-      {
-        path: 'analytics',
-        loadComponent: () => import('./Components/private/analytics/analytics').then((m) => m.Analytics),
-        canActivate: [onboardingGuard],
-      },
-      {
-        path: '',
-        redirectTo: 'profile',
-        pathMatch: 'full'
-      }
-    ]
-  }
+  },
+  // Sent jobs now live in a profile accordion; old links open it.
+  { path: 'notifications', redirectTo: toProfileNotifications, pathMatch: 'full' },
+  {
+    path: 'analytics',
+    loadComponent: () => import('./Components/public/analytics/analytics').then((m) => m.Analytics),
+    canActivate: [authGuard],
+    data: { hideFooter: true },
+  },
+  // Old /private/* URLs (bookmarks, emails, Telegram, the Google login redirect with ?token=).
+  // String redirects keep the query params, so the token reaches authGuard.
+  { path: 'private/notifications', redirectTo: toProfileNotifications, pathMatch: 'full' },
+  { path: 'private/jobs', redirectTo: toProfileNotifications, pathMatch: 'full' },
+  { path: 'private/analytics', redirectTo: 'analytics', pathMatch: 'full' },
+  { path: 'private', redirectTo: 'profile', pathMatch: 'full' },
+  { path: 'private/**', redirectTo: 'profile' },
 ];

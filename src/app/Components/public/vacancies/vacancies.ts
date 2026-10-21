@@ -91,7 +91,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   chipsCanScrollRight = signal(true);
   isFilterModalOpen = signal<boolean>(false);
   uploadedCv = signal<SavedCvSubmission | null>(null);
-  // Signed-in users can search with the CV saved on their account (profile/dashboard upload).
+  // Signed-in users can search with the CV saved on their account (uploaded on the profile page).
   accountCv = computed(() => (this.authService.isLoggedIn() ? this.stateStore.userCv() : null));
   /** A CV this page can search with; the browser's own upload wins over the account CV. */
   hasCv = computed(() => !!this.uploadedCv() || !!this.accountCv());
@@ -824,7 +824,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.scroll('results-container');
     } catch (err: any) {
       this.searchState = 'idle';
-      if (err?.status === 404 && !this.hasCv()) {
+      if (err?.status === 410 && !this.hasCv()) {
         // The saved CV is gone from the database: the empty state asks for a new upload.
       } else if (err?.status === 429) {
         const minutes = Math.ceil((err.error?.retryAfter || 3600) / 60);
@@ -854,8 +854,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
           return await firstValueFrom(this.cvService.searchPublicCv(await this.reconnectSavedCv(saved)));
         }
       } catch (err: any) {
-        // 404 = no such CV in the database any more; fall back to the account CV if there is one.
-        if (err?.status !== 404) throw err;
+        // 410 = no such CV in the database any more (a 404 is just an API without this route); fall back to the account CV if there is one.
+        if (err?.status !== 410) throw err;
         this.dropSavedCv();
         if (!this.accountCv()) throw err;
       }
@@ -865,7 +865,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
   /** Gets a fresh search token for the saved upload and stores it, so this happens only once. */
   private async reconnectSavedCv(saved: SavedCvSubmission): Promise<string> {
-    if (!saved.fileName) throw { status: 404 };
+    if (!saved.fileName) throw { status: 410 };
     const res = await firstValueFrom(this.cvService.reconnectPublicCv(saved.email, saved.fileName));
     const updated: SavedCvSubmission = { ...saved, searchToken: res.searchToken, searchAvailable: res.searchAvailable };
     try {

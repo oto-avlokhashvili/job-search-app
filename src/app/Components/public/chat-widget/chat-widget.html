@@ -28,15 +28,15 @@
 
       <!-- Quota Bar for Basic / Non-PRO users -->
       @if (isLoggedIn() && !stateStore.isPro()) {
-        @if (!stateStore.isOnboardingCompleted()) {
-          <div class="chat-quota-bar profile-pending-bar" (click)="openOnboarding()">
+        @if (!stateStore.alertsReady()) {
+          <div class="chat-quota-bar profile-pending-bar" (click)="openProfile()">
             <div class="quota-info">
               <span class="material-symbols-outlined quota-icon profile-pending-icon">account_circle</span>
               <span class="quota-text">
                 გთხოვთ შეავსოთ პროფილი
               </span>
             </div>
-            <button class="upgrade-link-btn" (click)="$event.stopPropagation(); openOnboarding()" title="პროფილის შევსება">
+            <button class="upgrade-link-btn" (click)="$event.stopPropagation(); openProfile()" title="პროფილის შევსება">
               შევსება →
             </button>
           </div>
@@ -90,14 +90,14 @@
             </div>
             }
           </div>
-        } @else if (!stateStore.isOnboardingCompleted()) {
+        } @else if (!stateStore.alertsReady()) {
           <div class="auth-required-state profile-required-state">
             <div class="lock-icon-circle profile-icon-circle">
               <span class="material-symbols-outlined">account_circle</span>
             </div>
             <h4>შეავსეთ თქვენი პროფილი</h4>
             <p>AI ასისტენტთან სასაუბროდ და პერსონალური რეკომენდაციების მისაღებად, გთხოვთ დაასრულოთ პროფილის შევსება.</p>
-            <button class="btn-chat-auth btn-chat-profile" (click)="openOnboarding()">
+            <button class="btn-chat-auth btn-chat-profile" (click)="openProfile()">
               <span class="material-symbols-outlined">edit_note</span>
               პროფილის შევსება
             </button>
@@ -163,8 +163,8 @@
           <button type="button" class="send-btn login-btn" (click)="openAuthModal()" title="ავტორიზაცია" aria-label="ავტორიზაცია">
             <span class="material-symbols-outlined">login</span>
           </button>
-        } @else if (!stateStore.isOnboardingCompleted()) {
-          <div class="chat-footer-profile-required" (click)="openOnboarding()">
+        } @else if (!stateStore.alertsReady()) {
+          <div class="chat-footer-profile-required" (click)="openProfile()">
             <span class="material-symbols-outlined">account_circle</span>
             <span>გთხოვთ შეავსოთ პროფილი სასაუბროდ</span>
           </div>

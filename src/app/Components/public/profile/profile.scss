@@ -259,197 +259,157 @@
     }
   }
 
-  // Passed Steps Checklist
-  .overview-steps-section {
+  // "პროფილის დასრულება": opens the alerts setup at its missing step
+  .overview-complete-card {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--border-color);
+    gap: 8px;
+    width: 100%;
+    padding: 0.85rem 1.15rem;
+    border-radius: 16px;
+    border: 1px dashed rgba(var(--primary-rgb), 0.45);
+    background: rgba(var(--primary-rgb), 0.06);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-    .steps-desktop-view {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+    &:hover {
+      background: rgba(var(--primary-rgb), 0.1);
+      border-style: solid;
     }
 
-    .steps-mobile-view {
-      display: none;
-    }
-
-    .steps-heading-row {
+    .complete-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
+    }
 
-      .steps-title {
-        font-size: 0.78rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--text-muted);
-      }
+    .complete-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--text-color);
 
-      .steps-percentage-badge {
+      .material-symbols-outlined {
+        font-size: 17px;
         color: var(--primary);
-        font-weight: 800;
-        font-size: 0.72rem;
-        background: rgba(var(--primary-rgb), 0.1);
-        padding: 2px 8px;
-        border-radius: 9999px;
-
-        [data-theme='dark'] & {
-          background: rgba(56, 189, 248, 0.15);
-          color: #38bdf8;
-        }
       }
     }
 
-    // Progress Bar on Desktop (Clean Emerald)
-    .progress-track {
-      width: 100%;
-      height: 6px;
-      border-radius: 9999px;
-      background: var(--surface-container-highest, rgba(151, 174, 213, 0.25));
-      overflow: hidden;
-
-      [data-theme='dark'] & {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .progress-fill {
-        height: 100%;
-        background: #10b981;
-        border-radius: 9999px;
-        transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-    }
-
-    // Passed Steps 4-Row Informative List on Desktop
-    .passed-steps-list {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-top: 4px;
-    }
-
-    .step-check-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 10px;
+    .complete-pct {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 8px;
       border-radius: 12px;
-      border: 1px solid transparent;
-      background: transparent;
-      cursor: default;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(var(--primary-rgb), 0.12);
+      color: var(--primary);
+    }
 
-      .step-bullet-icon {
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--surface-container-low);
-        color: var(--on-surface-variant);
-        flex-shrink: 0;
+    .complete-track {
+      height: 6px;
+      border-radius: 6px;
+      background: var(--surface-container-low);
+      overflow: hidden;
+    }
 
-        .material-symbols-outlined {
-          font-size: 15px;
-        }
+    .complete-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: var(--primary);
+      transition: width 0.4s ease;
+    }
+
+    .complete-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--primary);
+
+      .material-symbols-outlined {
+        font-size: 15px;
       }
+    }
+  }
 
-      .step-meta {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-width: 0;
+  // CV & AI analysis (upload while there is no CV)
+  .overview-cv-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
 
-        .step-name {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: var(--on-surface);
-        }
+    .overview-cv-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
 
-        .step-state {
-          font-size: 0.7rem;
-          color: var(--on-surface-variant);
-          opacity: 0.8;
-        }
-      }
+    .overview-cv-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-color);
 
-      &.completed {
-        .step-bullet-icon {
-          background: rgba(34, 197, 94, 0.12);
-          color: #16a34a;
-
-          [data-theme='dark'] & {
-            color: #4ade80;
-          }
-
-          .material-symbols-outlined {
-            font-weight: 800;
-          }
-        }
-
-        .step-meta .step-state {
-          color: #16a34a;
-
-          [data-theme='dark'] & {
-            color: #4ade80;
-          }
-        }
+      .material-symbols-outlined {
+        font-size: 18px;
+        color: #8b5cf6;
       }
     }
 
-    // 5-Segment Track for Mobile
-    .stepper-segmented-track {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      width: 100%;
-      height: 5px;
-      margin-top: 4px;
+    .cv-status-badge {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--surface-container-low);
+      color: var(--text-muted);
 
-      .progress-step-segment {
-        flex: 1;
-        height: 100%;
-        background: var(--surface-container-highest, rgba(151, 174, 213, 0.25));
-        border-radius: 9999px;
-        overflow: hidden;
-        position: relative;
-        transition: background-color 0.25s ease;
+      &.uploaded {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
 
         [data-theme='dark'] & {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .segment-fill {
-          width: 0%;
-          height: 100%;
-          border-radius: 9999px;
-          transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        &.completed .segment-fill {
-          width: 100%;
-          background: #10b981;
+          color: #4ade80;
         }
       }
     }
 
-    .steps-stats-line {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      margin-top: 4px;
+    // The sidebar is too narrow for the two-column tiles of the old full-width accordion.
+    .insights-duo-grid,
+    .salary-tiles-row {
+      grid-template-columns: 1fr;
+    }
 
-      .steps-stats-text {
-        font-size: 0.74rem;
-        font-weight: 600;
-        color: var(--on-surface-variant);
-        opacity: 0.85;
+    // "მეტის ნახვა" under the CV analysis; rendered on phones only (isMobile in profile.ts).
+    .cv-details-toggle {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 2px;
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+
+      .material-symbols-outlined {
+        font-size: 18px;
       }
     }
   }
@@ -2256,42 +2216,6 @@
         }
       }
     }
-
-    .overview-steps-section {
-      padding-top: 0.35rem;
-      gap: 0.35rem;
-
-      .steps-desktop-view {
-        display: none !important;
-      }
-
-      .steps-mobile-view {
-        display: flex !important;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-
-      .steps-heading-row {
-        .steps-title {
-          font-size: 0.68rem;
-        }
-
-        .steps-percentage-badge {
-          font-size: 0.65rem;
-          padding: 1px 6px;
-        }
-      }
-
-      .stepper-segmented-track {
-        height: 5px;
-        gap: 4px;
-        margin-top: 2px;
-      }
-
-      .steps-stats-line .steps-stats-text {
-        font-size: 0.68rem;
-      }
-    }
   }
 
   .profile-accordions-column {
@@ -2678,6 +2602,565 @@
         font-size: 0.82rem;
         border-radius: 10px;
       }
+    }
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// SENT JOBS ACCORDION (moved from the former /notifications page)
+// ─────────────────────────────────────────────────────────────────────
+
+// Fixed 72px header: keep ?section= scroll targets visible below it
+.accordion-card[id^="section-"] {
+  scroll-margin-top: 88px;
+}
+
+// Vacancies List
+.vacancies-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    gap: 0.55rem;
+  }
+}
+
+// Vacancy Item Card
+.vacancy-item-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 1.25rem 1.45rem;
+  box-shadow: 0 4px 18px rgba(11, 96, 150, 0.04);
+  backdrop-filter: blur(var(--glass-blur));
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.5px;
+    height: 100%;
+    background: transparent;
+    transition: background-color 0.25s ease;
+  }
+
+  &:hover {
+    border-color: rgba(var(--primary-rgb), 0.4);
+    box-shadow: 0 10px 30px rgba(11, 96, 150, 0.1);
+    transform: translateY(-2px);
+
+    &::before {
+      background: var(--primary);
+    }
+
+    .vacancy-card-footer {
+      .view-details-hint {
+        color: var(--primary);
+      }
+
+      .arrow-icon {
+        transform: translateX(4px);
+        color: var(--primary);
+      }
+    }
+  }
+
+  .card-mobile-chevron {
+    display: none;
+  }
+
+  .channel-text-short {
+    display: none;
+  }
+
+  .channel-text-full {
+    display: inline;
+  }
+
+  // Top Line
+  .vacancy-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+
+    .vacancy-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      flex: 1;
+
+      .vacancy-index-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+
+      .vacancy-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--on-surface);
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+    }
+
+    // Match Score Pill
+    .match-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border-radius: 12px;
+      padding: 0.45rem 0.8rem;
+      color: #ffffff;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+      &.tier-strong {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+      }
+
+      &.tier-good {
+        background: linear-gradient(135deg, #eab308, #ca8a04);
+      }
+
+      &.tier-possible {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+
+      .match-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .match-label {
+        font-size: 0.62rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  // Meta Chips
+  .vacancy-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    min-width: 0;
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      background: var(--surface-container-low);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      padding: 4px 10px;
+      max-width: 100%;
+      min-width: 0;
+
+      .chip-icon {
+        font-size: 15px;
+        opacity: 0.75;
+        flex-shrink: 0;
+      }
+
+      .chip-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      &.company-chip {
+        color: var(--on-surface);
+        font-weight: 700;
+
+        .chip-icon {
+          color: var(--primary);
+        }
+      }
+
+      &.salary-chip {
+        color: #16a34a;
+        background: rgba(34, 197, 94, 0.08);
+        border-color: rgba(34, 197, 94, 0.25);
+
+        [data-theme='dark'] & {
+          color: #4ade80;
+          background: rgba(34, 197, 94, 0.12);
+        }
+
+        .chip-icon {
+          color: inherit;
+        }
+      }
+
+      &.channel-chip {
+        color: var(--primary);
+        background: rgba(var(--primary-rgb), 0.07);
+        border-color: rgba(var(--primary-rgb), 0.2);
+
+        .chip-icon {
+          color: inherit;
+        }
+      }
+    }
+  }
+
+  // Footer / Action
+  .vacancy-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border-color);
+
+    .view-details-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--on-surface-variant);
+      transition: color 0.2s ease;
+
+      .material-symbols-outlined {
+        font-size: 16px;
+      }
+    }
+
+    .arrow-icon {
+      font-size: 18px;
+      color: var(--on-surface-variant);
+      opacity: 0.7;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    }
+  }
+
+  // 📱 Mobile Only: Clean 2-Row Card
+  @media (max-width: 768px) {
+    padding: 11px 14px;
+    border-radius: 14px;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    &:active {
+      transform: scale(0.99);
+      background-color: var(--surface-container-low);
+    }
+
+    .card-mobile-chevron {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--on-surface-variant);
+      opacity: 0.35;
+      flex-shrink: 0;
+
+      .material-symbols-outlined {
+        font-size: 19px;
+      }
+    }
+
+    .channel-text-full {
+      display: none;
+    }
+
+    .channel-text-short {
+      display: inline;
+    }
+
+    .vacancy-card-top {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      .vacancy-title-group {
+        gap: 0;
+        flex: 1;
+        min-width: 0;
+
+        .vacancy-index-tag {
+          display: none;
+        }
+
+        .vacancy-title {
+          font-size: 13.5px;
+          font-weight: 750;
+          line-height: 1.25;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .match-pill {
+        flex-direction: row;
+        padding: 2px 7px;
+        min-width: auto;
+        border-radius: 7px;
+        gap: 3px;
+        box-shadow: none;
+
+        .match-value {
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .match-label {
+          font-size: 8.5px;
+          margin-top: 0;
+        }
+      }
+    }
+
+    .vacancy-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+
+      .meta-chip {
+        font-size: 11px;
+        padding: 2.5px 7px;
+        border-radius: 7px;
+        gap: 3.5px;
+        font-weight: 600;
+
+        .chip-icon {
+          font-size: 12.5px;
+        }
+
+        .chip-text {
+          max-width: 125px;
+          font-size: 11px;
+        }
+      }
+    }
+
+    // Hide bulky separate footer row on mobile
+    .vacancy-card-footer {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+    gap: 5px;
+    border-radius: 12px;
+
+    .vacancy-card-top .vacancy-title-group .vacancy-title {
+      font-size: 13px;
+    }
+
+    .vacancy-card-meta .meta-chip {
+      font-size: 10.5px;
+      padding: 2px 6px;
+
+      .chip-text {
+        max-width: 100px;
+        font-size: 10.5px;
+      }
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 3. PAGINATION & EMPTY STATES
+// ─────────────────────────────────────────────────────────────────────
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding: 1.15rem 1.35rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(11, 96, 150, 0.04);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid var(--border-color);
+    background: var(--surface-container-low);
+    color: var(--on-surface);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.25);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  .page-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    padding: 0 0.5rem;
+
+    .separator {
+      color: var(--text-muted);
+    }
+
+    .total {
+      color: var(--on-surface-variant);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.65rem 0.85rem;
+    border-radius: 12px;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+
+    .pagination-btn {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 9px;
+
+      .material-symbols-outlined {
+        font-size: 15px;
+      }
+    }
+
+    .page-indicator {
+      font-size: 0.78rem;
+    }
+  }
+}
+
+// Empty State
+.empty-vacancies-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 24px;
+  padding: 4.5rem 2rem;
+  gap: 0.95rem;
+
+  .empty-icon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(var(--primary-rgb), 0.08);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.35rem;
+
+    .material-symbols-outlined {
+      font-size: 34px;
+    }
+  }
+
+  .empty-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--on-surface);
+    margin: 0;
+  }
+
+  .empty-description {
+    font-size: 0.88rem;
+    color: var(--on-surface-variant);
+    max-width: 440px;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .btn-goto-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0.5rem;
+    background: linear-gradient(135deg, var(--primary) 0%, #0284c7 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.35rem;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(11, 96, 150, 0.25);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(11, 96, 150, 0.35);
     }
   }
 }

@@ -75,6 +75,15 @@ export class Cv {
     );
   }
 
+  /** Attaches a CV uploaded before signing in to this account; `searchToken` proves this browser uploaded it. */
+  claimPublicCv(searchToken?: string): Observable<{ claimed: boolean }> {
+    return this.http.post<{ claimed: boolean }>(`${this.url}/cv/claim-public`, {}, {
+      headers: searchToken ? { 'X-CV-Token': searchToken } : {},
+      withCredentials: true,
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
   /** CV search for a signed-in user, using the CV saved on their account. */
   searchMyCv(): Observable<PublicCvSearchResult> {
     return this.http.get<PublicCvSearchResult>(`${this.url}/cv/search`, {

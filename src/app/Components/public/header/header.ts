@@ -5,7 +5,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
-import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
+import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 
 @Component({
@@ -24,48 +24,26 @@ export class Header {
   private alertify = inject(AlertifyService);
   activeSection = signal('features');
   profileMenuOpen = signal(false);
-  privateMenuOpen = signal(false);
 
-  privateNavItems = computed(() => {
-    const items = [
-      {
-        title: 'შეტყობინებები',
-        subtitle: 'ახალი და შერჩეული ვაკანსიები',
-        icon: '🔔',
-        route: '/private/notifications',
-      },
-      {
-        title: 'პროფილი',
-        subtitle: 'პირადი მონაცემები & პარამეტრები',
-        icon: '⚙️',
-        route: '/private/profile',
-      },
-    ];
-
-    if (this.stateStore.isPro()) {
-      items.unshift({
-        title: 'AI ძიება',
-        subtitle: 'ინტელექტუალური ვაკანსიების ძიება',
-        icon: '🤖',
-        route: '/private/dashboard',
-      });
-    }
-
-    return items;
-  });
-
-  toggleReceiveMessages(event: any) {
+  async toggleReceiveMessages(event: any) {
     event.stopPropagation();
     const checked = event.target.checked;
+    if (checked && !this.stateStore.alertsReady()) {
+      // Missing CV or channel: walk through the setup, which turns alerts on when it's done.
+      event.target.checked = false;
+      await this.openAlertsSetup();
+      return;
+    }
     this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: checked });
     this.alertify.success(checked ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
   }
 
-  toggleReceiveMessagesOutside() {
-    const current = this.stateStore.profile().receiveMessages ?? false;
-    const nextValue = !current;
-    this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: nextValue });
-    this.alertify.success(nextValue ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
+  /** "პროფილის დასრულება": the alerts setup (CV, channel), opened at its first missing step. */
+  async openAlertsSetup() {
+    this.closeProfileMenu();
+    // Loaded on demand: the header is on every page.
+    const { openNotificationChannelsModal } = await import('../notification-channels-modal/notification-channels-modal');
+    openNotificationChannelsModal(this.dialog);
   }
 
   initials = computed(() => {
@@ -74,28 +52,8 @@ export class Header {
     return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
   });
 
-  togglePrivateMenu(event?: Event) {
-    if (event) event.stopPropagation();
-    this.privateMenuOpen.set(!this.privateMenuOpen());
-    if (this.privateMenuOpen()) {
-      this.closeProfileMenu();
-    }
-  }
-
-  openPrivateMenu() {
-    this.privateMenuOpen.set(true);
-    this.closeProfileMenu();
-  }
-
-  closePrivateMenu() {
-    this.privateMenuOpen.set(false);
-  }
-
   toggleProfileMenu() {
     this.profileMenuOpen.set(!this.profileMenuOpen());
-    if (this.profileMenuOpen()) {
-      this.closePrivateMenu();
-    }
   }
 
   closeProfileMenu() {
@@ -104,7 +62,6 @@ export class Header {
 
   logout() {
     this.closeProfileMenu();
-    this.closePrivateMenu();
     this.authService.logOut().then(() => {
       this.router.navigate(['/home']);
     });
@@ -112,7 +69,6 @@ export class Header {
 
   openUpgradeModal() {
     this.closeProfileMenu();
-    this.closePrivateMenu();
     this.dialog.open(SubscriptionModal, {
       width: '960px',
       maxWidth: '96vw',
@@ -125,9 +81,6 @@ export class Header {
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.nav-dropdown-container')) {
-      this.closePrivateMenu();
-    }
     if (!target.closest('.user-profile-menu')) {
       this.closeProfileMenu();
     }

@@ -228,6 +228,26 @@ body.modal-open {
 }
 
 
+// Signed-in pages (profile, notifications, analytics) set this as their host class.
+// Background is full-bleed; the content lines up with the header's logo and profile
+// edges: same 1440px column and 48 / 20 / 14px gutters as .header-container.
+.account-page {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--app-bg);
+  padding: calc(72px + 2rem) max(48px, calc((100% - 1440px) / 2 + 48px)) 0;
+
+  // Leave room for the fixed 64px mobile bottom nav from the header.
+  @media (max-width: 991px) {
+    padding: calc(72px + 1.5rem) 20px calc(64px + 1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 576px) {
+    padding: calc(72px + 1rem) 14px calc(64px + 1rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -440,6 +460,42 @@ body.modal-open {
   }
 }
 
+/* ─── Notification channels dialog panel ──────────────────── */
+
+// The modal draws its own card; strip Material's surface so the rounded corners show.
+.channels-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+  --mat-dialog-container-color: transparent;
+  padding: 0 !important;
+}
+
+.channels-dialog .mat-mdc-dialog-surface {
+  background: transparent !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+  border-radius: 20px !important;
+  overflow: visible !important;
+}
+
+// The mobile bottom nav (z-index 1040) sits above the dialog layer (1000) and would cover the
+// bottom of any sheet; Material marks the page with this class while a dialog is open.
+.cdk-global-scrollblock .mobile-bottom-nav {
+  display: none !important;
+}
+
+// Phones: full-width bottom sheet, like the public CV modal (margin-top:auto pins the pane
+// to the bottom of the CDK overlay wrapper). The modal rounds its own top corners.
+@media (max-width: 576px) {
+  .channels-dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: auto 0 0 !important;
+
+    .mat-mdc-dialog-surface {
+      border-radius: 20px 20px 0 0 !important;
+    }
+  }
+}
+
 /* ─── Subscription dialog panel ───────────────────────────── */
 
 // Transparent container so .sub-modal's own background shows through
@@ -565,146 +621,6 @@ body.modal-open {
     .mdc-dialog__surface {
       border-radius: 20px 20px 0 0 !important;
     }
-  }
-}
-
-/* ─── Onboarding dialog panel ──────────────────────────────── */
-
-.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  background-color: rgba(15, 23, 42, 0.65) !important;
-}
-
-.onboarding-dialog .mat-mdc-dialog-container {
-  --mdc-dialog-container-color: transparent;
-  border-radius: 24px !important;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35) !important;
-  padding: 0 !important;
-  max-height: 94svh !important;
-  overflow: hidden !important;
-}
-
-.onboarding-dialog .mat-mdc-dialog-surface {
-  border-radius: 24px !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  max-height: none !important;
-}
-
-.onboarding-dialog.cdk-overlay-pane {
-  max-height: 94svh !important;
-}
-
-@media (max-width: 900px) {
-  .onboarding-dialog {
-    max-width: 100vw !important;
-    width: calc(100vw - 1.5rem) !important;
-    margin: 0 0.75rem !important;
-    max-height: 95svh !important;
-  }
-
-  .onboarding-dialog .mat-mdc-dialog-container,
-  .onboarding-dialog .mat-mdc-dialog-surface {
-    border-radius: 18px !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .onboarding-dialog {
-    width: calc(100vw - 1rem) !important;
-    margin: 0 0.5rem !important;
-    max-height: 96svh !important;
-  }
-
-  .onboarding-dialog .mat-mdc-dialog-container,
-  .onboarding-dialog .mat-mdc-dialog-surface {
-    border-radius: 14px !important;
-  }
-}
-
-/* ─── Onboarding Dark Mode Stepper Overrides ──────────────── */
-[data-theme='dark'] {
-
-  .vertical-step-item {
-    &:hover:not(.locked) {
-      background: rgba(255, 255, 255, 0.04) !important;
-    }
-
-    &.active {
-      background: rgba(59, 130, 246, 0.1) !important;
-      border-color: rgba(59, 130, 246, 0.3) !important;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
-
-      .step-node-bubble {
-        background: #0b6096 !important;
-        border-color: #38bdf8 !important;
-        color: #ffffff !important;
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
-      }
-
-      .step-name {
-        color: #ffffff !important;
-      }
-
-      .step-sub {
-        color: #94a3b8 !important;
-      }
-
-      .active-dot {
-        background: #38bdf8 !important;
-        box-shadow: 0 0 6px #38bdf8 !important;
-      }
-    }
-
-    &.completed:not(.active) {
-      .step-node-bubble {
-        background: rgba(16, 185, 129, 0.14) !important;
-        border-color: rgba(16, 185, 129, 0.4) !important;
-        color: #34d399 !important;
-
-        .check-icon {
-          color: #34d399 !important;
-        }
-      }
-
-      .step-name {
-        color: #e2e8f0 !important;
-      }
-
-      .step-sub {
-        color: #94a3b8 !important;
-      }
-    }
-
-    &.locked {
-      .step-node-bubble {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        color: #475569 !important;
-      }
-
-      .step-name {
-        color: #475569 !important;
-      }
-
-      .step-sub {
-        color: #334155 !important;
-      }
-    }
-
-    .step-node-bubble {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(255, 255, 255, 0.14) !important;
-      color: #94a3b8 !important;
-    }
-  }
-
-  .sidebar-tip-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
   }
 }
 

@@ -11,6 +11,7 @@ import { Ai } from '../Core/Services/ai';
 import { Cv } from '../Core/Services/cv';
 import { SubscriptionService } from '../Core/Services/subscription.service';
 import { extractSalary } from '../Core/Utils/salary-extractor';
+import { PUBLIC_CV_STORAGE_KEY } from '../Core/Utils/public-cv-storage';
 
 export const JOBUP_SOURCE = 'jobup.ge';
 export const JOBUP_LOGO = '/favicon/favicon-96x96.png';
@@ -222,6 +223,29 @@ function extractPortalCounts(counts: any, mapped: VacancyItem[]) {
     };
 }
 
+/**
+ * Attaches a CV uploaded before signing in to the account (the API matches this browser's search
+ * token, or the verified account email). Resolves true when a CV was attached.
+ */
+async function claimPublicCv(cvService: Cv): Promise<boolean> {
+    let token: string | undefined;
+    try {
+        token = JSON.parse(localStorage.getItem(PUBLIC_CV_STORAGE_KEY) || 'null')?.searchToken;
+    } catch {}
+    try {
+        const { claimed } = await firstValueFrom(cvService.claimPublicCv(token));
+        if (claimed) {
+            // The CV now lives on the account; the anonymous copy of it is gone.
+            try {
+                localStorage.removeItem(PUBLIC_CV_STORAGE_KEY);
+            } catch {}
+        }
+        return claimed;
+    } catch {
+        return false;
+    }
+}
+
 export const StateStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
@@ -250,43 +274,17 @@ export const StateStore = signalStore(
             return isSubActive || ['BASIC', 'PRO', 'PREMIUM'].includes(p?.subscription || '');
         });
 
-        const hasCvStep = computed(() => !!store.userCv() && !store.cvLoading());
-        const hasInfoStep = computed(() => {
+        // Profile completion = the alerts setup's steps: account (done once signed in), CV, channel.
+        const hasCvStep = computed(() => !!store.userCv());
+        /** A channel alerts can go to: Telegram, or a verified email on PRO. */
+        const hasChannelStep = computed(() => {
             const p = store.profile();
-            const queries = store.searchQuery() || [];
-            const hasName = !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
-            const hasKeywords = isPro() ? true : (queries.length >= 1 || (p?.searchQuery && p.searchQuery.length >= 1));
-            return hasName && hasKeywords;
+            return !!p?.telegramChatId || (isPro() && !!p?.isEmailVerified);
         });
-        const hasNotificationStep = computed(() => {
-            const p = store.profile();
-            const channelOk = isPro() ? !!p?.isEmailVerified : (!!p?.telegramChatId || !!p?.receiveMessages);
-            return !!p?.receiveMessages || channelOk;
-        });
-        const hasSubscriptionStep = computed(() => {
-            return hasActiveSubscription();
-        });
-
-        const onboardingPercentage = computed(() => {
-            let score = 0;
-            if (hasSubscriptionStep()) score += 25;
-            if (hasCvStep()) score += 25;
-            if (hasInfoStep()) score += 25;
-            if (hasNotificationStep()) score += 25;
-            return score;
-        });
-
-        const firstIncompleteStep = computed(() => {
-            if (!hasSubscriptionStep()) return 1;
-            if (!hasCvStep()) return 2;
-            if (!hasInfoStep()) return 3;
-            if (!hasNotificationStep()) return 4;
-            return 1;
-        });
-
-        const isOnboardingCompleted = computed(() => {
-            return hasSubscriptionStep() && hasCvStep() && hasInfoStep() && hasNotificationStep();
-        });
+        const profilePercentage = computed(() =>
+            Math.round(((1 + Number(hasCvStep()) + Number(hasChannelStep())) / 3) * 100));
+        /** Everything alerts need: a CV and a connected channel. */
+        const alertsReady = computed(() => hasCvStep() && hasChannelStep());
 
         return {
             plan,
@@ -294,16 +292,13 @@ export const StateStore = signalStore(
             isBasic,
             hasActiveSubscription,
             hasCvStep,
-            hasInfoStep,
-            hasNotificationStep,
-            hasSubscriptionStep,
-            onboardingPercentage,
-            firstIncompleteStep,
-            isOnboardingCompleted,
+            hasChannelStep,
+            profilePercentage,
+            alertsReady,
         };
     }),
     withMethods((store, authService = inject(AuthService), jobsService = inject(JobsService), userService = inject(Users), aiService = inject(Ai), cvService = inject(Cv), subscriptionService = inject(SubscriptionService)) => ({
-        async loadProfile(force: boolean = false): Promise<void> {
+        async loadProfile(force: boolean = false, silent: boolean = false): Promise<void> {
             if (!force && store.profileLoaded() && store.profile().id !== 0) {
                 return;
             }
@@ -313,7 +308,7 @@ export const StateStore = signalStore(
 
             inFlightProfilePromise = (async () => {
                 try {
-                    const profile = await authService.getUserProfile();
+                    const profile = await authService.getUserProfile(silent);
                     patchState(store, {
                         profile,
                         profileLoaded: true,
@@ -440,7 +435,11 @@ export const StateStore = signalStore(
                     if (!store.profileLoaded() || store.profile().id === 0 || inFlightProfilePromise) {
                         await this.loadProfile();
                     }
-                    const res = await firstValueFrom(cvService.getCV());
+                    const res = await firstValueFrom(cvService.getCV()).catch(async (err) => {
+                        // No account CV yet: take over the CV this person uploaded before signing in.
+                        if (err?.status !== 404 || !(await claimPublicCv(cvService))) throw err;
+                        return firstValueFrom(cvService.getCV());
+                    });
                     patchState(store, { userCv: res, cvLoading: false, cvLoaded: true, searchQuery: res?.summary?.searchQueries ?? [] });
                 } catch (err) {
                     patchState(store, { userCv: null, cvLoading: false, cvLoaded: true });
@@ -509,21 +508,26 @@ export const StateStore = signalStore(
             });
         },
 
-        uploadCv(file: File, consent: boolean = true) {
+        /** Resolves true once the CV is saved (callers that don't care can ignore the result). */
+        uploadCv(file: File, consent: boolean = true): Promise<boolean> {
             patchState(store, { cvLoading: true });
-            cvService.upload(file, consent).subscribe({
-                next: (res) => {
-                    patchState(store, { userCv: res, cvLoading: false });
-                    cvService.getCV().subscribe({
-                        next: (fullCv) => {
-                            patchState(store, { userCv: fullCv, searchQuery: fullCv?.summary?.searchQueries ?? [] });
-                        }
-                    });
-                },
-                error: (err) => {
-                    patchState(store, { cvLoading: false });
-                    console.error('Error uploading CV:', err);
-                }
+            return new Promise((resolve) => {
+                cvService.upload(file, consent).subscribe({
+                    next: (res) => {
+                        patchState(store, { userCv: res, cvLoading: false, cvLoaded: true });
+                        cvService.getCV().subscribe({
+                            next: (fullCv) => {
+                                patchState(store, { userCv: fullCv, searchQuery: fullCv?.summary?.searchQueries ?? [] });
+                            }
+                        });
+                        resolve(true);
+                    },
+                    error: (err) => {
+                        patchState(store, { cvLoading: false });
+                        console.error('Error uploading CV:', err);
+                        resolve(false);
+                    }
+                });
             });
         },
 

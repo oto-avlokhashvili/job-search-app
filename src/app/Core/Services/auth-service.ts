@@ -92,9 +92,10 @@ export class AuthService {
     return user;
   }
 
-  async getUserProfile(): Promise<any> {
-
-    const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true } )
+  // silent: skip the global loading overlay (used for background polling).
+  async getUserProfile(silent = false): Promise<any> {
+    const context = new HttpContext().set(skipLoading, silent);
+    const profile$ = this.http.get(this.url + '/auth/profile', { withCredentials: true, context })
     const profile = firstValueFrom(profile$)
     return profile;
   }

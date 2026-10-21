@@ -5,6 +5,7 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './analytics.html',
   styleUrl: './analytics.scss',
+  host: { class: 'account-page' },
 })
 export class Analytics {
 

@@ -1,15 +1,17 @@
 import { Component, effect, inject, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { map } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { StateStore } from '../../../Store/state.store';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { MatDialog } from '@angular/material/dialog';
-import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
-import { QrModal } from '../qr-modal/qr-modal';
-import { EmailVerifyModal } from '../dashboard/email-verify-modal/email-verify-modal';
-import { Onboarding } from '../onboarding/onboarding';
-import { environment } from '../../../../environments/environment';
+import { SubscriptionModal } from '../subscription-modal/subscription-modal';
+import { NotificationChannel, openNotificationChannelsModal } from '../notification-channels-modal/notification-channels-modal';
+import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 
 @Component({
   selector: 'app-profile',
@@ -17,6 +19,7 @@ import { environment } from '../../../../environments/environment';
   imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
+  host: { class: 'account-page' },
 })
 export class Profile {
   validators = signal(false);
@@ -25,32 +28,17 @@ export class Profile {
   authService = inject(AuthService);
   private alertify = inject(AlertifyService);
   dialog = inject(MatDialog);
+  private router = inject(Router);
   keywordInputValue = signal<string>('');
 
-  hasNameStep = computed(() => {
-    const p = this.stateStore.profile();
-    return !!p?.firstName?.trim() && p?.firstName !== '---' && !!p?.lastName?.trim() && p?.lastName !== '---';
-  });
-  hasCvStep = computed(() => this.stateStore.hasCvStep());
-  hasKeywordsStep = computed(() => (this.stateStore.searchQuery()?.length || 0) > 0);
-  hasNotificationStep = computed(() => this.stateStore.hasNotificationStep());
-  hasSubscriptionStep = computed(() => this.stateStore.hasSubscriptionStep());
-
-  completedStepsCount = computed(() => {
-    return [
-      this.hasNameStep(),
-      this.hasCvStep(),
-      this.hasKeywordsStep(),
-      this.hasNotificationStep(),
-      this.hasSubscriptionStep(),
-    ].filter(Boolean).length;
-  });
-
-  completedPercentage = computed(() => Math.round((this.completedStepsCount() / 5) * 100));
+  // Sent jobs ("შეტყობინებების ისტორია" accordion; this used to be the /notifications page)
+  sentJobsPage = signal<number>(1);
+  sentJobsLimit = 10;
 
   openAccordions = signal<Record<string, boolean>>({
     info: false,
     keywords: true,
+    channels: false,
     notifications: false,
     cv: false,
     subscription: false,
@@ -61,6 +49,9 @@ export class Profile {
       ...state,
       [section]: !state[section],
     }));
+    if (section === 'notifications' && this.isAccordionOpen('notifications')) {
+      this.loadSentJobs();
+    }
   }
 
   isAccordionOpen(section: string): boolean {
@@ -77,6 +68,14 @@ export class Profile {
     const name = this.stateStore.userCv()?.originalName || '';
     return name.toLowerCase().endsWith('.doc') || name.toLowerCase().endsWith('.docx');
   });
+
+  // Phones show only the salary estimate of the CV analysis; "მეტის ნახვა" reveals the rest.
+  isMobile = toSignal(
+    inject(BreakpointObserver).observe('(max-width: 768px)').pipe(map((state) => state.matches)),
+    { initialValue: false },
+  );
+  cvDetailsExpanded = signal(false);
+  showAllCvDetails = computed(() => !this.isMobile() || this.cvDetailsExpanded());
 
   cvTextSummary = computed(() => {
     const cv = this.stateStore.userCv();
@@ -108,6 +107,9 @@ export class Profile {
   });
 
   constructor() {
+    // No-op when already loaded; needed after the Google login redirect, which signs in on this page.
+    this.stateStore.ensureDataLoaded();
+
     effect(() => {
       const profile = this.stateStore.profile();
       const loaded = this.stateStore.profileLoaded();
@@ -223,6 +225,12 @@ export class Profile {
 
   toggleReceiveMessages(event: any) {
     const checked = event.target.checked;
+    if (checked && !this.stateStore.alertsReady()) {
+      // Missing CV or channel: walk through the setup, which turns alerts on when it's done.
+      event.target.checked = false;
+      this.openChannels();
+      return;
+    }
     this.profileForm.patchValue({ receiveMessages: checked });
     this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: checked });
     this.alertify.success(checked ? 'შეტყობინებების მიღება გააქტიურდა' : 'შეტყობინებების მიღება გამორთულია');
@@ -238,53 +246,26 @@ export class Profile {
     });
   }
 
-  telegramLink = signal<string>("");
-  async generateTelegramToken() {
-    const res = await this.authService.generateTelegramToken();
-    this.telegramLink.set(`${environment.telegramUrl}?start=${res}`);
-
-    if (res) {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        window.location.href = this.telegramLink();
-      } else {
-        this.openDialog(this.telegramLink());
-      }
-    }
+  openChannels(channel?: NotificationChannel) {
+    openNotificationChannelsModal(this.dialog, channel);
   }
 
-  openDialog(link: string) {
-    const dialogRef = this.dialog.open(QrModal, {
-      width: '400px',
-      disableClose: true,
-      autoFocus: false,
-      data: { telegramLink: link }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
-        this.stateStore.loadProfile();
-      }
-    });
+  loadSentJobs() {
+    this.stateStore.loadSentJobs(this.sentJobsPage(), this.sentJobsLimit, false);
   }
 
-  openEmailVerification() {
-    const dialogRef = this.dialog.open(EmailVerifyModal, {
-      width: '450px',
-      maxWidth: '95vw',
-      data: { email: this.stateStore.profile().email },
-      disableClose: false,
-      autoFocus: false,
-    });
+  onSentJobsPageChange(page: number) {
+    const lastPage = this.stateStore.sentJobs().lastPage;
+    if (page < 1 || (lastPage && page > lastPage)) return;
+    this.sentJobsPage.set(page);
+    this.loadSentJobs();
+    document.getElementById('section-notifications')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
-    dialogRef.afterClosed().subscribe(verified => {
-      if (verified) {
-        this.stateStore.updateProfile(this.stateStore.profile()?.id, { receiveMessages: true });
-        this.stateStore.loadProfile();
-      }
-    });
+  openVacancyDetails(item: any) {
+    const jobId = item?.jobId || item?.id;
+    if (!jobId) return;
+    this.router.navigate(['/vacancies', generateJobSlug(item.vacancy || item.title, item.company, jobId)]);
   }
 
   deleteCv() {
@@ -366,29 +347,5 @@ export class Profile {
 
     this.processFile(file);
     event.target.value = '';
-  }
-
-  switchToEmail() {
-    this.stateStore.updateProfile(this.stateStore.profile()?.id, { telegramChatId: '' });
-  }
-
-  openOnboardingWizard(step: number = 1) {
-    const dialogRef = this.dialog.open(Onboarding, {
-      width: '1100px',
-      maxWidth: '96vw',
-      maxHeight: '94vh',
-      panelClass: 'onboarding-dialog',
-      disableClose: false,
-      autoFocus: false,
-    });
-
-    if (dialogRef.componentInstance) {
-      dialogRef.componentInstance.goToStep(step);
-    }
-
-    dialogRef.afterClosed().subscribe(async () => {
-      await this.stateStore.loadProfile(true);
-      await this.stateStore.getCv(true);
-    });
   }
 }

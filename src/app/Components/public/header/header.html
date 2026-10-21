@@ -6,58 +6,17 @@
         <span class="logo-text">Job Up</span>
       </div>
       <div class="nav-links-desktop">
-        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">აღმოაჩინე</a>
+        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
         <a class="nav-link" [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')">ვაკანსიები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
-          <div class="nav-dropdown-container" (mouseenter)="openPrivateMenu()" (mouseleave)="closePrivateMenu()">
-            <button class="nav-link dropdown-toggle-btn" [class.active]="router.url.startsWith('/private')" (click)="togglePrivateMenu($event)">
-              <span>პირადი სივრცე</span>
-              <span class="material-symbols-outlined dropdown-arrow" [class.rotated]="privateMenuOpen()">expand_more</span>
-            </button>
-
-            @if (privateMenuOpen()) {
-              <div class="private-dropdown-menu">
-                <div class="dropdown-menu-header">
-                  <span class="menu-label">პირადი მენიუ</span>
-                </div>
-                <div class="dropdown-items-list">
-                  <a *ngFor="let item of privateNavItems()"
-                     [routerLink]="item.route"
-                     [class.active]="router.url.startsWith(item.route)"
-                     class="private-dropdown-item"
-                     (click)="closePrivateMenu()">
-                    <div class="item-icon-box">
-                      <span class="item-icon">{{ item.icon }}</span>
-                    </div>
-                    <div class="item-meta">
-                      <span class="item-title">{{ item.title }}</span>
-                      <span class="item-desc">{{ item.subtitle }}</span>
-                    </div>
-                    <span class="material-symbols-outlined item-chevron">chevron_right</span>
-                  </a>
-                </div>
-              </div>
-            }
-          </div>
+          <a class="nav-link" [routerLink]="'/profile'" [class.active]="router.url.startsWith('/profile')">პროფილი</a>
         }
       </div>
     </div>
 
     <div class="action-group">
-      @if (authService.isLoggedIn()) {
-        <div class="nav-notifications-switch-container" [title]="stateStore.profile().receiveMessages ? 'შეტყობინებები ჩართულია' : 'შეტყობინებები გამორთულია'">
-          <span class="material-symbols-outlined icon" [class.active]="stateStore.profile().receiveMessages">
-            {{ stateStore.profile().receiveMessages ? 'notifications_active' : 'notifications_off' }}
-          </span>
-          <label class="switch small">
-            <input type="checkbox" [checked]="stateStore.profile().receiveMessages" (change)="toggleReceiveMessages($event)">
-            <span class="slider round"></span>
-          </label>
-        </div>
-      }
-
       <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
         {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
       </button>
@@ -92,14 +51,14 @@
                   <span class="slider round"></span>
                 </label>
               </div>
-              @if (!stateStore.isOnboardingCompleted()) {
-                <a routerLink="/private/onboarding" class="dropdown-item onboarding-btn" (click)="closeProfileMenu()">
+              @if (!stateStore.alertsReady()) {
+                <button type="button" class="dropdown-item onboarding-btn" (click)="openAlertsSetup()">
                   <span class="onboarding-btn-content">
                     <span class="icon">✨</span>
                     <span class="label">პროფილის დასრულება</span>
                   </span>
-                  <span class="pct-badge">{{ stateStore.onboardingPercentage() }}%</span>
-                </a>
+                  <span class="pct-badge">{{ stateStore.profilePercentage() }}%</span>
+                </button>
               }
               @if (stateStore.profile().subscription === 'BASIC') {
                 <button class="dropdown-item upgrade-btn" (click)="openUpgradeModal()">
@@ -127,7 +86,7 @@
   </div>
 
   <div class="mobile-menu" [class.active]="menuOpen">
-    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">აღმოაჩინე</a>
+    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
     <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
@@ -146,7 +105,17 @@
 <!-- Mobile Bottom Dock Navigation -->
 @if (authService.isLoggedIn()) {
   <div class="mobile-bottom-nav">
-    <!-- 1. ვაკანსიები -->
+    <!-- 1. მთავარი -->
+    <a class="bottom-nav-item"
+       [class.active]="router.url === '/home' || router.url === '/'"
+       (click)="scroll('features')">
+      <div class="nav-icon-wrap">
+        <span class="material-symbols-outlined nav-icon">home</span>
+      </div>
+      <span class="nav-label">მთავარი</span>
+    </a>
+
+    <!-- 2. ვაკანსიები -->
     <a class="bottom-nav-item"
        [routerLink]="'/vacancies'"
        [class.active]="router.url.startsWith('/vacancies')">
@@ -156,32 +125,10 @@
       <span class="nav-label">ვაკანსიები</span>
     </a>
 
-    <!-- 2. AI ძიება -->
-    @if (stateStore.isPro()) {
-      <a class="bottom-nav-item"
-         [routerLink]="'/private/dashboard'"
-         [class.active]="router.url.includes('/private/dashboard')">
-        <div class="nav-icon-wrap">
-          <span class="material-symbols-outlined nav-icon">smart_toy</span>
-        </div>
-        <span class="nav-label">AI ძიება</span>
-      </a>
-    }
-
-    <!-- 3. შეტყობინებები -->
+    <!-- 3. პროფილი -->
     <a class="bottom-nav-item"
-       [routerLink]="'/private/notifications'"
-       [class.active]="router.url.includes('/private/notifications')">
-      <div class="nav-icon-wrap">
-        <span class="material-symbols-outlined nav-icon">notifications</span>
-      </div>
-      <span class="nav-label">შეტყობინებები</span>
-    </a>
-
-    <!-- 4. პროფილი -->
-    <a class="bottom-nav-item"
-       [routerLink]="'/private/profile'"
-       [class.active]="router.url.includes('/private/profile')">
+       [routerLink]="'/profile'"
+       [class.active]="router.url.startsWith('/profile')">
       <div class="nav-icon-wrap">
         <span class="material-symbols-outlined nav-icon">person</span>
       </div>

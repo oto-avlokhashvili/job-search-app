@@ -1,8 +1,12 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
+  // Account pages: no server session exists, so render fully client-side.
+  { path: 'profile', renderMode: RenderMode.Client },
+  { path: 'notifications', renderMode: RenderMode.Client },
+  { path: 'analytics', renderMode: RenderMode.Client },
   {
-    // Private/authenticated area: no server session exists, so render fully client-side.
+    // Old /private/* URLs only redirect to the account pages above.
     path: 'private/**',
     renderMode: RenderMode.Client
   },

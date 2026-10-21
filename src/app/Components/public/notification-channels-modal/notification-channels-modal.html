@@ -1,0 +1,258 @@
+<div class="channels-modal">
+  <header class="cm-header">
+    <div class="cm-heading">
+      <h2 class="cm-title">შეტყობინებების ჩართვა</h2>
+      <p class="cm-subtitle">
+        @switch (step()) {
+          @case ('account') { შედით ან დარეგისტრირდით — ყველაფერი ამ ფანჯარაშია }
+          @case ('cv') { ატვირთეთ CV, რომ ვაკანსიები მას მოვარგოთ }
+          @default { აირჩიეთ სად მიიღოთ ახალი ვაკანსიები }
+        }
+      </p>
+    </div>
+    <button type="button" class="cm-close" (click)="close()" aria-label="დახურვა">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </header>
+
+  <!-- Setup progress: account → CV → channel -->
+  <ol class="cm-progress">
+    @for (s of steps; track s.key; let i = $index) {
+      <li class="cm-progress-step" [class.done]="isStepDone(s.key)" [class.current]="s.key === step()">
+        <span class="cm-progress-dot">
+          @if (isStepDone(s.key)) {
+            <span class="material-symbols-outlined">check</span>
+          } @else {
+            {{ i + 1 }}
+          }
+        </span>
+        <span class="cm-progress-label">{{ s.label }}</span>
+      </li>
+    }
+  </ol>
+
+  @if (step() === 'account') {
+    <div class="cm-body">
+      <div class="cm-tabs inline" role="tablist">
+        <button type="button" role="tab" class="cm-tab" [class.active]="authMode() === 'login'"
+                [attr.aria-selected]="authMode() === 'login'" (click)="setAuthMode('login')">შესვლა</button>
+        <button type="button" role="tab" class="cm-tab" [class.active]="authMode() === 'register'"
+                [attr.aria-selected]="authMode() === 'register'" (click)="setAuthMode('register')">რეგისტრაცია</button>
+      </div>
+
+      <form class="cm-form" (ngSubmit)="submitAccount()">
+        @if (authMode() === 'register') {
+          <div class="cm-field-row">
+            <input class="cm-input" name="firstName" placeholder="სახელი" autocomplete="given-name"
+                   [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" [disabled]="accountLoading()" />
+            <input class="cm-input" name="lastName" placeholder="გვარი" autocomplete="family-name"
+                   [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" [disabled]="accountLoading()" />
+          </div>
+        }
+        <input class="cm-input" name="email" type="email" placeholder="ელ-ფოსტა" autocomplete="email"
+               [ngModel]="email()" (ngModelChange)="email.set($event)" [disabled]="accountLoading()" />
+        <input class="cm-input" name="password" type="password" placeholder="პაროლი"
+               [attr.autocomplete]="authMode() === 'login' ? 'current-password' : 'new-password'"
+               [ngModel]="password()" (ngModelChange)="password.set($event)" [disabled]="accountLoading()" />
+
+        @if (accountError()) {
+          <div class="cm-message error">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ accountError() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="cm-btn primary" [disabled]="!canSubmitAccount() || accountLoading()">
+          @if (accountLoading()) {
+            <span class="cm-spinner small"></span>
+          } @else {
+            {{ authMode() === 'login' ? 'შესვლა და გაგრძელება' : 'რეგისტრაცია და გაგრძელება' }}
+          }
+        </button>
+      </form>
+
+      <div class="cm-divider"><span>ან</span></div>
+
+      <button type="button" class="cm-btn secondary" (click)="signInWithGoogle()" [disabled]="accountLoading()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+        </svg>
+        <span>Google-ით გაგრძელება</span>
+      </button>
+    </div>
+  } @else if (checkingCv()) {
+    <div class="cm-body cm-center">
+      <span class="cm-spinner"></span>
+    </div>
+  } @else if (step() === 'cv') {
+    <div class="cm-body">
+      <div class="cm-state">
+        <div class="cm-state-icon cv"><span class="material-symbols-outlined">description</span></div>
+        <h3>ატვირთეთ თქვენი CV</h3>
+        <p>AI ამოიცნობს თქვენს პოზიციასა და უნარებს და მხოლოდ შესაბამის ვაკანსიებს გამოგიგზავნით.</p>
+      </div>
+
+      <label class="cm-consent">
+        <input type="checkbox" [checked]="cvConsent()" (change)="cvConsent.set($any($event.target).checked)" [disabled]="cvUploading()" />
+        <span>ვეთანხმები ჩემი CV-ს და მასში არსებული პერსონალური მონაცემების შენახვასა და დამუშავებას.</span>
+      </label>
+
+      @if (cvError()) {
+        <div class="cm-message error">
+          <span class="material-symbols-outlined">error</span>
+          <span>{{ cvError() }}</span>
+        </div>
+      }
+
+      <input #cvInput type="file" accept=".pdf,.doc,.docx" hidden (change)="onCvSelected($event)" />
+      <button type="button" class="cm-btn primary" [disabled]="!cvConsent() || cvUploading()" (click)="cvInput.click()">
+        @if (cvUploading()) {
+          <span class="cm-spinner small"></span>
+          <span>AI აანალიზებს CV-ს…</span>
+        } @else {
+          <span class="material-symbols-outlined">upload_file</span>
+          <span>CV-ს არჩევა (PDF, Word)</span>
+        }
+      </button>
+    </div>
+  } @else {
+  <div class="cm-tabs" role="tablist">
+    <button type="button" role="tab" class="cm-tab telegram" [class.active]="tab() === 'telegram'"
+            [attr.aria-selected]="tab() === 'telegram'" (click)="selectTab('telegram')">
+      <span class="material-symbols-outlined">send</span>
+      <span>Telegram</span>
+      @if (telegramConnected()) {
+        <span class="cm-tab-dot" title="დაკავშირებულია"></span>
+      }
+    </button>
+    <button type="button" role="tab" class="cm-tab email" [class.active]="tab() === 'email'"
+            [attr.aria-selected]="tab() === 'email'" (click)="selectTab('email')">
+      <span class="material-symbols-outlined">mail</span>
+      <span>ელ-ფოსტა</span>
+      @if (!isPro()) {
+        <span class="cm-pro-tag">PRO</span>
+      } @else if (emailVerified()) {
+        <span class="cm-tab-dot" title="დადასტურებულია"></span>
+      }
+    </button>
+  </div>
+
+  <div class="cm-body">
+    @if (tab() === 'telegram') {
+      @if (telegramConnected()) {
+        <div class="cm-state success">
+          <div class="cm-state-icon"><span class="material-symbols-outlined">check_circle</span></div>
+          <h3>Telegram დაკავშირებულია</h3>
+          <p>ახალი ვაკანსიები იგზავნება თქვენს Telegram ბოტში.</p>
+          <span class="cm-meta">Chat ID: <strong>{{ profile().telegramChatId }}</strong></span>
+        </div>
+      } @else {
+        <ol class="cm-steps">
+          <li><span class="cm-step-num">1</span><span>{{ isMobile ? 'გახსენით ბოტი Telegram-ში' : 'დაასკანერეთ QR კოდი ტელეფონით' }}</span></li>
+          <li><span class="cm-step-num">2</span><span>დააჭირეთ <strong>Start</strong>-ს ბოტში</span></li>
+          <li><span class="cm-step-num">3</span><span>ეს ფანჯარა თავად განახლდება</span></li>
+        </ol>
+
+        @if (telegramLoading() && !telegramLink()) {
+          <div class="cm-qr-placeholder"><span class="cm-spinner"></span></div>
+        } @else if (telegramError()) {
+          <div class="cm-message error">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ telegramError() }}</span>
+          </div>
+          <button type="button" class="cm-btn secondary" (click)="createTelegramLink()">თავიდან ცდა</button>
+        } @else if (telegramLink()) {
+          @if (!isMobile) {
+            <div class="cm-qr">
+              <qrcode [qrdata]="telegramLink()" [width]="200" errorCorrectionLevel="M" />
+            </div>
+          }
+          <button type="button" class="cm-btn telegram" (click)="openTelegram()">
+            <span class="material-symbols-outlined">send</span>
+            <span>Telegram-ში გახსნა</span>
+          </button>
+          @if (telegramWaiting()) {
+            <p class="cm-waiting"><span class="cm-spinner small"></span> ველოდებით დაკავშირებას…</p>
+          }
+        }
+      }
+    } @else {
+      @if (!isPro()) {
+        <div class="cm-state locked">
+          <div class="cm-state-icon"><span class="material-symbols-outlined">workspace_premium</span></div>
+          <h3>ელ-ფოსტის შეტყობინებები PRO-შია</h3>
+          <p>BASIC გეგმაზე ვაკანსიები იგზავნება Telegram-ზე. განაახლეთ PRO-ზე ელ-ფოსტით მისაღებად.</p>
+          <div class="cm-actions">
+            <button type="button" class="cm-btn secondary" (click)="selectTab('telegram')">Telegram-ის გამოყენება</button>
+            <button type="button" class="cm-btn primary" (click)="openUpgrade()">განახლება PRO-ზე</button>
+          </div>
+        </div>
+      } @else if (emailVerified()) {
+        <div class="cm-state success">
+          <div class="cm-state-icon"><span class="material-symbols-outlined">mark_email_read</span></div>
+          <h3>ელ-ფოსტა დადასტურებულია</h3>
+          <p>{{ profile().email }}</p>
+          @if (telegramConnected()) {
+            <span class="cm-meta">ამჟამად შეტყობინებები მოდის Telegram-ზე.</span>
+            <button type="button" class="cm-btn secondary" (click)="useEmailInstead()">
+              <span class="material-symbols-outlined">mail</span>
+              <span>ელ-ფოსტაზე გადართვა</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="cm-text">
+          {{ codeSent() ? 'დადასტურების კოდი გაიგზავნა:' : 'დადასტურების კოდს გამოგიგზავნით:' }}
+          <strong>{{ profile().email }}</strong>
+        </p>
+
+        @if (codeSent()) {
+          <input class="cm-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                 placeholder="000000" [ngModel]="code()" (ngModelChange)="code.set($event)"
+                 [disabled]="emailLoading()" (keydown.enter)="verifyCode()" />
+        }
+
+        @if (emailError()) {
+          <div class="cm-message error">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ emailError() }}</span>
+          </div>
+        } @else if (emailSuccess()) {
+          <div class="cm-message success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>{{ emailSuccess() }}</span>
+          </div>
+        }
+
+        <div class="cm-actions">
+          <button type="button" class="cm-btn secondary" [disabled]="emailLoading() || resendCooldown() > 0" (click)="sendCode()">
+            @if (resendCooldown() > 0) {
+              ხელახლა გაგზავნა ({{ resendCooldown() }}წმ)
+            } @else {
+              {{ codeSent() ? 'კოდის ხელახლა გაგზავნა' : 'კოდის გაგზავნა' }}
+            }
+          </button>
+          @if (codeSent()) {
+            <button type="button" class="cm-btn primary" [disabled]="emailLoading() || code().trim().length !== 6" (click)="verifyCode()">
+              @if (emailLoading()) {
+                <span class="cm-spinner small"></span>
+              } @else {
+                დადასტურება
+              }
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+  }
+
+  <footer class="cm-footer">
+    <button type="button" class="cm-btn ghost" (click)="close()">
+      {{ telegramConnected() || emailVerified() ? 'დასრულება' : 'მოგვიანებით' }}
+    </button>
+  </footer>
+</div>

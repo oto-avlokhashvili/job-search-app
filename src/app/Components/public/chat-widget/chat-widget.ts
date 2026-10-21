@@ -16,7 +16,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { SubscriptionModal } from '../private-layout/subscription-modal/subscription-modal';
+import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 
 export interface WidgetChatMessage {
   id: string;
@@ -84,27 +84,9 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     this.authService.openAuthModal('login');
   }
 
-  async openOnboarding(step: number = 1) {
-    // Loaded on demand: onboarding is large and the widget is on every public page.
-    const { Onboarding } = await import('../onboarding/onboarding');
-    const dialogRef = this.dialog.open(Onboarding, {
-      width: '1100px',
-      maxWidth: '96vw',
-      maxHeight: '94vh',
-      panelClass: 'onboarding-dialog',
-      disableClose: false,
-      autoFocus: false,
-    });
-
-    if (dialogRef.componentInstance) {
-      dialogRef.componentInstance.goToStep(step);
-    }
-
-    dialogRef.afterClosed().subscribe(async () => {
-      await this.stateStore.loadProfile(true);
-      await this.stateStore.getCv(true);
-      this.loadQuota();
-    });
+  openProfile() {
+    this.isChatOpen.set(false);
+    this.router.navigate(['/profile']);
   }
 
   openUpgradeModal() {
@@ -120,7 +102,7 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   async ngOnInit() {
     this.loadMessages();
-    if (!this.isLoggedIn() && !this.router.url.startsWith('/private')) {
+    if (!this.isLoggedIn()) {
       this.schedulePromos();
     }
     if (this.isLoggedIn()) {
@@ -203,8 +185,8 @@ export class ChatWidget implements OnInit, AfterViewChecked {
   async openCvUpload() {
     this.isChatOpen.set(false);
     this.previewPromo.set(null);
-    // Loaded on demand, like onboarding: the widget is on every public page.
-    const { PublicCvModal } = await import('../../public/public-cv-modal/public-cv-modal');
+    // Loaded on demand: the widget is on every public page.
+    const { PublicCvModal } = await import('../public-cv-modal/public-cv-modal');
     this.dialog.open(PublicCvModal, {
       width: '520px',
       maxWidth: '95vw',
@@ -213,10 +195,12 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     });
   }
 
-  openAiAgent() {
+  async openAiAgent() {
     this.isChatOpen.set(false);
     this.previewPromo.set(null);
-    this.authService.openAuthModal('login', '/private/profile');
+    // Sign in, CV and Telegram in one modal. Loaded on demand: the widget is on every public page.
+    const { openNotificationChannelsModal } = await import('../notification-channels-modal/notification-channels-modal');
+    openNotificationChannelsModal(this.dialog);
   }
 
   async toggleChat() {

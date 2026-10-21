@@ -55,16 +55,8 @@ export class Auth {
             console.error('Error hydrating profile on login:', err);
           }
 
-          const returnUrl = this.authService.returnUrl();
-          const hasSubscription = this.stateStore.hasActiveSubscription();
-
-          let targetUrl = '/private/onboarding';
-          if (returnUrl) {
-            targetUrl = returnUrl;
-            this.authService.returnUrl.set(null);
-          } else if (hasSubscription) {
-            targetUrl = this.stateStore.isPro() ? '/private/dashboard' : '/private/profile';
-          }
+          const targetUrl = this.authService.returnUrl() || '/profile';
+          this.authService.returnUrl.set(null);
 
           try {
             await this.router.navigateByUrl(targetUrl);

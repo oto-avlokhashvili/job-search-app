@@ -9,7 +9,7 @@ import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { environment } from '../../../../environments/environment';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
-import { SubscriptionModal } from '../../private/private-layout/subscription-modal/subscription-modal';
+import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { WaitlistModal } from '../waitlist-modal/waitlist-modal';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { JobsService } from '../../../Core/Services/jobs-service';
@@ -80,7 +80,7 @@ export class Home implements OnInit {
 
   handleHeroClick() {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/private/profile']);
+      this.router.navigate(['/profile']);
     } else {
       this.authService.openAuthModal('login');
     }
