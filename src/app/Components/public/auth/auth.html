@@ -96,20 +96,22 @@
                 </button>
                 <div class="signup-options">
                     <span class="signup-options-title">არ გაქვს ანგარიში?</span>
-                    <div class="signup-options-grid">
+                    <div class="signup-options-list">
                         <button type="button" class="signup-option" (click)="openRegistration(false)">
-                            <span class="material-symbols-outlined">person</span>
+                            <span class="option-icon material-symbols-outlined">person</span>
                             <span class="option-text">
                                 <strong>რეგისტრაცია</strong>
                                 <small>ვეძებ სამუშაოს</small>
                             </span>
+                            <span class="option-arrow material-symbols-outlined">chevron_right</span>
                         </button>
                         <button type="button" class="signup-option" (click)="openRegistration(true)">
-                            <span class="material-symbols-outlined">business_center</span>
+                            <span class="option-icon material-symbols-outlined">business_center</span>
                             <span class="option-text">
                                 <strong>HR რეგისტრაცია</strong>
                                 <small>ვეძებ კანდიდატებს</small>
                             </span>
+                            <span class="option-arrow material-symbols-outlined">chevron_right</span>
                         </button>
                     </div>
                 </div>
@@ -151,21 +153,23 @@
                         placeholder="შეიყვანეთ ელ-ფოსტა" required [class.is-invalid]="isInvalid('email')">
                 </div>
 
-                <div class="mb-3">
-                    <label for="regPassword" class="form-label">პაროლი</label>
-                    <input formControlName="password" type="password" class="form-control" id="regPassword"
-                        placeholder="შეიყვანეთ პაროლი" required [class.is-invalid]="isInvalid('password')">
-                </div>
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">პაროლი</label>
+                        <input formControlName="password" type="password" class="form-control" id="regPassword"
+                            placeholder="პაროლი" required [class.is-invalid]="isInvalid('password')">
+                    </div>
 
-                <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">გაიმეორე პაროლი</label>
-                    <input formControlName="confirmPassword" type="password" class="form-control" id="confirmPassword"
-                        placeholder="შეიყვანეთ გაიმეორე პაროლი" required
-                        [class.is-invalid]="isInvalid('confirmPassword')">
-                    @if (isPasswordMismatch() && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty || validators())) {
-                        <span class="error-feedback">პაროლები არ ემთხვევა ერთმანეთს</span>
-                    }
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">გაიმეორე პაროლი</label>
+                        <input formControlName="confirmPassword" type="password" class="form-control" id="confirmPassword"
+                            placeholder="გაიმეორე პაროლი" required
+                            [class.is-invalid]="isInvalid('confirmPassword')">
+                    </div>
                 </div>
+                @if (isPasswordMismatch() && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty || validators())) {
+                    <span class="error-feedback" style="margin-top: -8px; margin-bottom: 10px;">პაროლები არ ემთხვევა ერთმანეთს</span>
+                }
 
                 <button type="submit" [disabled]="isRegistering()" class="btn btn-primary btn-login mt-3">
                     @if (isRegistering()) {
