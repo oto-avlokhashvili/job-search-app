@@ -725,14 +725,14 @@
                     {{ stateStore.isPro() 
                         ? 'სრული AI შესაძლებლობები, შეუზღუდავი ძიება და მყისიერი შეტყობინებები გააქტიურებულია.' 
                         : stateStore.isBasic() 
-                        ? 'ყოველდღიური Telegram შეტყობინებები გააქტიურებულია. AI ძიებისთვის განაახლეთ Pro-ზე.'
+                        ? 'AI ანალიზი და Telegram შეტყობინებები გააქტიურებულია. უფრო ზუსტი AI-სთვის განაახლეთ Pro-ზე.'
                         : 'გაააქტიურეთ გამოწერა მეტი შესაძლებლობისა და ავტომატური შეტყობინებებისთვის.' }}
                   </p>
 
                   <div class="sub-perks-list">
                     <div class="sub-perk-row">
                       <span class="material-symbols-outlined perk-check">check_circle</span>
-                      <span>{{ stateStore.isPro() ? 'შეუზღუდავი AI ძიება & ანალიზი' : stateStore.isBasic() ? '10 ვაკანსია დღეში' : 'საბაზისო პლატფორმა' }}</span>
+                      <span>{{ stateStore.isPro() ? 'შეუზღუდავი AI ძიება & ანალიზი' : stateStore.isBasic() ? 'AI ძიება & ანალიზი' : 'საბაზისო პლატფორმა' }}</span>
                     </div>
                     <div class="sub-perk-row">
                       <span class="material-symbols-outlined perk-check">check_circle</span>

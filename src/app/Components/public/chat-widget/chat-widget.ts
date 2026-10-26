@@ -46,6 +46,8 @@ const PROMO_MESSAGES: PromoMessage[] = [
 ];
 
 const PREVIEW_MS = 3000;
+/** Gap between one preview closing and the next popping up, so the leave animation can finish. */
+const NEXT_PREVIEW_GAP_MS = 1000;
 const PROMO_STATE_KEY = 'chat_widget_promos';
 
 @Component({
@@ -148,7 +150,7 @@ export class ChatWidget implements OnInit, AfterViewChecked {
       this.unreadPromos.update((n) => n + 1);
       this.previewPromo.set(PROMO_MESSAGES[count - 1]);
       clearTimeout(this.previewTimer);
-      this.previewTimer = setTimeout(() => this.previewPromo.set(null), PREVIEW_MS);
+      this.previewTimer = setTimeout(() => this.closePreview(), PREVIEW_MS);
     }
     this.savePromoState();
   }
@@ -176,10 +178,19 @@ export class ChatWidget implements OnInit, AfterViewChecked {
 
   private previewTimer?: ReturnType<typeof setTimeout>;
 
-  /** Hides the preview only; the message stays unread in the chat. */
+  /**
+   * Hides the preview only; the message stays unread in the chat. Once a preview closes
+   * (by its X or on its own), the next promo pops up right away instead of on its schedule.
+   */
   closePreview() {
     clearTimeout(this.previewTimer);
+    const closed = this.previewPromo();
     this.previewPromo.set(null);
+    if (!closed) return;
+    const next = PROMO_MESSAGES.indexOf(closed) + 2;
+    if (next <= PROMO_MESSAGES.length) {
+      setTimeout(() => this.deliverPromo(next), NEXT_PREVIEW_GAP_MS);
+    }
   }
 
   async openCvUpload() {

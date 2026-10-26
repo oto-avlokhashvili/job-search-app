@@ -103,8 +103,7 @@
 </nav>
 
 <!-- Mobile Bottom Dock Navigation -->
-@if (authService.isLoggedIn()) {
-  <div class="mobile-bottom-nav">
+<div class="mobile-bottom-nav">
     <!-- 1. მთავარი -->
     <a class="bottom-nav-item"
        [class.active]="router.url === '/home' || router.url === '/'"
@@ -125,14 +124,22 @@
       <span class="nav-label">ვაკანსიები</span>
     </a>
 
-    <!-- 3. პროფილი -->
-    <a class="bottom-nav-item"
-       [routerLink]="'/profile'"
-       [class.active]="router.url.startsWith('/profile')">
-      <div class="nav-icon-wrap">
-        <span class="material-symbols-outlined nav-icon">person</span>
-      </div>
-      <span class="nav-label">პროფილი</span>
-    </a>
+    <!-- 3. პროფილი, or sign in for visitors -->
+    @if (authService.isLoggedIn()) {
+      <a class="bottom-nav-item"
+         [routerLink]="'/profile'"
+         [class.active]="router.url.startsWith('/profile')">
+        <div class="nav-icon-wrap">
+          <span class="material-symbols-outlined nav-icon">person</span>
+        </div>
+        <span class="nav-label">პროფილი</span>
+      </a>
+    } @else {
+      <a class="bottom-nav-item" (click)="authService.openAuthModal('login')">
+        <div class="nav-icon-wrap">
+          <span class="material-symbols-outlined nav-icon">login</span>
+        </div>
+        <span class="nav-label">შესვლა</span>
+      </a>
+    }
   </div>
-}

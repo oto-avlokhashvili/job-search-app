@@ -889,8 +889,7 @@
   @if (showScrollToFilters() && !isFilterModalOpen() && !cvMode()) {
     <button
       type="button"
-      class="scroll-to-filters-btn animated-fade-in"
-      [class.has-bottom-nav]="authService.isLoggedIn()"
+      class="scroll-to-filters-btn animated-fade-in has-bottom-nav"
       (click)="openFilterModal()"
       title="ფილტრები"
     >
