@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, HostListener, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, DestroyRef, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HrService } from '../../../Core/Services/hr';
@@ -42,6 +42,16 @@ export class HrSearch {
     seniority: [this.hrStore.searchForm().seniority],
   });
 
+  // One-tap searches under the form.
+  popularSearches = ['Accountant', 'Sales Manager', 'Developer', 'Marketing', 'Customer Support', 'Designer'];
+  // Placeholder cards while the first page of CVs loads.
+  skeletons = [1, 2, 3, 4];
+
+  // Popular searches scroll sideways; arrows appear only when there is more in that direction.
+  private quickTrack = viewChild<ElementRef<HTMLElement>>('quickTrack');
+  canScrollLeft = signal(false);
+  canScrollRight = signal(false);
+
   // Custom experience dropdown (the native <select> can't be styled to match).
   seniorityOpen = signal(false);
   private seniorityValue = toSignal(this.form.controls.seniority.valueChanges, {
@@ -72,6 +82,20 @@ export class HrSearch {
   constructor() {
     // Keep what was typed (even if not searched yet) for the next visit.
     inject(DestroyRef).onDestroy(() => this.hrStore.saveSearchForm(this.form.getRawValue()));
+    afterNextRender(() => this.updateQuickArrows());
+  }
+
+  @HostListener('window:resize')
+  updateQuickArrows() {
+    const el = this.quickTrack()?.nativeElement;
+    if (!el) return;
+    this.canScrollLeft.set(el.scrollLeft > 2);
+    this.canScrollRight.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+
+  scrollQuick(direction: 1 | -1) {
+    const el = this.quickTrack()?.nativeElement;
+    el?.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' });
   }
 
   toggleSeniority() {
@@ -99,6 +123,11 @@ export class HrSearch {
     if (this.form.invalid) return;
     const { keyword, location, seniority } = this.form.getRawValue();
     this.hrStore.search({ keyword: keyword.trim(), location: location.trim(), seniority });
+  }
+
+  quickSearch(term: string) {
+    this.form.controls.keyword.setValue(term);
+    this.submit();
   }
 
   selectTab(tab: HrSearchTab) {
