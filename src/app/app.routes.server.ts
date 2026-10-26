@@ -5,6 +5,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'profile', renderMode: RenderMode.Client },
   { path: 'notifications', renderMode: RenderMode.Client },
   { path: 'analytics', renderMode: RenderMode.Client },
+  { path: 'hr', renderMode: RenderMode.Client },
+  { path: 'hr/**', renderMode: RenderMode.Client },
   {
     // Old /private/* URLs only redirect to the account pages above.
     path: 'private/**',

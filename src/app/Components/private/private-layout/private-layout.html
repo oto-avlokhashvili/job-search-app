@@ -1,0 +1,109 @@
+<div class="hr-shell">
+  <!-- HR-only header (the public header is hidden on /hr) -->
+  <header class="hr-header">
+    <div class="hr-header-start">
+      <button class="icon-btn menu-btn" type="button" aria-label="მენიუ" (click)="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <a class="header-logo" routerLink="/hr">
+        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo">
+        <span class="logo-text">Job Up</span>
+        <span class="hr-badge">HR</span>
+      </a>
+    </div>
+
+    <div class="hr-header-end">
+      <button class="icon-btn" type="button" aria-label="თემის შეცვლა" (click)="themeService.toggle()">
+        <span class="material-symbols-outlined">{{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
+      <div class="user">
+        <span class="avatar">{{ initials() }}</span>
+        <div class="user-text">
+          <span class="name">{{ stateStore.profile().firstName }} {{ stateStore.profile().lastName }}</span>
+          @if (stateStore.profile().companyName; as company) {
+            <span class="company">{{ company }}</span>
+          }
+        </div>
+      </div>
+      <button class="icon-btn" type="button" aria-label="გასვლა" (click)="logout()">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+    </div>
+  </header>
+
+  @if (isSidebarOpen()) {
+    <div class="backdrop" (click)="closeSidebar()"></div>
+  }
+
+  <aside class="sidebar" [class.open]="isSidebarOpen()">
+    <nav class="nav">
+      @if (isApproved()) {
+        <span class="nav-label">კანდიდატები</span>
+        <a routerLink="/hr/search" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="material-symbols-outlined">person_search</span>
+          <span class="nav-title">ძიება</span>
+        </a>
+        <a routerLink="/hr/candidates" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="material-symbols-outlined">bookmark_manager</span>
+          <span class="nav-title">ჩემი კანდიდატები</span>
+          @if (unlockedCount()) {
+            <span class="nav-count">{{ unlockedCount() }}</span>
+          }
+        </a>
+
+        @if (isAdmin()) {
+          <span class="nav-label">ადმინისტრირება</span>
+          <a routerLink="/hr/admin" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="material-symbols-outlined">verified_user</span>
+            <span class="nav-title">HR ანგარიშები</span>
+            @if (pendingCount()) {
+              <span class="nav-count alert">{{ pendingCount() }}</span>
+            }
+          </a>
+        }
+      } @else {
+        <span class="nav-label">ანგარიში</span>
+        <a routerLink="/hr/pending" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="material-symbols-outlined">hourglass_top</span>
+          <span class="nav-title">დადასტურების მოლოდინში</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      @if (usage(); as u) {
+        <div class="usage-card">
+          <div class="usage-head">
+            <span class="material-symbols-outlined">data_usage</span>
+            <span>ლიმიტები</span>
+            @if (u.unlimited) {
+              <span class="unlimited">შეუზღუდავი</span>
+            }
+          </div>
+          @if (!u.unlimited) {
+            <div class="usage-item" [class.warn]="percent(u.cvUnlocks) >= 80">
+              <div class="usage-row">
+                <span>კონტაქტები / თვე</span>
+                <strong>{{ u.cvUnlocks.used }}<small>/{{ u.cvUnlocks.limit }}</small></strong>
+              </div>
+              <div class="bar"><span [style.width.%]="percent(u.cvUnlocks)"></span></div>
+            </div>
+            <div class="usage-item" [class.warn]="percent(u.linkedinSearches) >= 80">
+              <div class="usage-row">
+                <span>LinkedIn / დღე</span>
+                <strong>{{ u.linkedinSearches.used }}<small>/{{ u.linkedinSearches.limit }}</small></strong>
+              </div>
+              <div class="bar"><span [style.width.%]="percent(u.linkedinSearches)"></span></div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+      <router-outlet />
+    </div>
+  </main>
+</div>

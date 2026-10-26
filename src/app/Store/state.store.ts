@@ -187,6 +187,27 @@ const activePublicJobsRequests = new WeakMap<object, Set<() => void>>();
 const PUBLIC_JOBS_CACHE_TTL_MS = 60_000;
 const PUBLIC_JOBS_CACHE_MAX = 20;
 const publicJobsResponseCache = new WeakMap<object, Map<string, { res: any; at: number }>>();
+// Vacancies already opened and the "similar jobs" list per query, so going back to a
+// vacancy page shows it right away instead of loading it again. Per store, like above.
+const JOB_DETAILS_CACHE_MAX = 50;
+const jobDetailsCache = new WeakMap<object, Map<string, Job>>();
+const similarJobsCache = new WeakMap<object, Map<string, Job[]>>();
+
+function storeCache<T>(caches: WeakMap<object, Map<string, T>>, store: object): Map<string, T> {
+    let cache = caches.get(store);
+    if (!cache) {
+        cache = new Map();
+        caches.set(store, cache);
+    }
+    return cache;
+}
+
+/** Adds to a cache, dropping the oldest entry once it holds `max`. */
+function remember<T>(cache: Map<string, T>, key: string, value: T, max = JOB_DETAILS_CACHE_MAX) {
+    cache.delete(key);
+    cache.set(key, value);
+    if (cache.size > max) cache.delete(cache.keys().next().value!);
+}
 
 /**
  * Reads the per-portal counts from a /job/all response. `mapped` is the page of
@@ -599,11 +620,18 @@ export const StateStore = signalStore(
         },
 
         loadJobById(id: number | string) {
+            const jobs = storeCache(jobDetailsCache, store);
+            const cached = jobs.get(String(id));
+            if (cached) {
+                patchState(store, { selectedJob: cached, selectedJobLoading: false, selectedJobError: null, selectedJobErrorStatus: null });
+                return;
+            }
             patchState(store, { selectedJobLoading: true, selectedJobError: null, selectedJobErrorStatus: null });
             jobsService.getJobById(id).subscribe({
                 next: (res: any) => {
                     const loadedJob = res?.job || res;
                     if (loadedJob && (loadedJob.id || loadedJob.vacancy)) {
+                        remember(jobs, String(id), loadedJob);
                         patchState(store, { selectedJob: loadedJob, selectedJobLoading: false, selectedJobError: null });
                     } else {
                         patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის მონაცემები ვერ მოიძებნა', selectedJobErrorStatus: 404 });
@@ -614,6 +642,18 @@ export const StateStore = signalStore(
                     patchState(store, { selectedJob: null, selectedJobLoading: false, selectedJobError: 'ვაკანსიის ჩატვირთვისას დაფიქსირდა შეცდომა ან ვაკანსია ვერ მოიძებნა', selectedJobErrorStatus: err?.status ?? 0 });
                 }
             });
+        },
+
+        /** Jobs matching a vacancy's title, for its "similar jobs" block. Cached per query. */
+        async loadSimilarJobs(query: string): Promise<Job[]> {
+            const cache = storeCache(similarJobsCache, store);
+            const key = query.trim().toLowerCase();
+            const cached = cache.get(key);
+            if (cached) return cached;
+            const res = await firstValueFrom(jobsService.getJobs(query, 1, 'all', 'all', '', 'all', 6));
+            const jobs: Job[] = res?.jobs || [];
+            remember(cache, key, jobs);
+            return jobs;
         },
 
         clearSelectedJob() {

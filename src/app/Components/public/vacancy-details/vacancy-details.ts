@@ -5,7 +5,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
-import { JobsService } from '../../../Core/Services/jobs-service';
 import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
@@ -25,7 +24,6 @@ export class VacancyDetails implements OnInit {
   public alertify = inject(AlertifyService);
   public authService = inject(AuthService);
   public stateStore = inject(StateStore);
-  private jobsService = inject(JobsService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
@@ -401,9 +399,9 @@ export class VacancyDetails implements OnInit {
 
   private fetchSimilarJobs(query: string, currentJobId: number | string) {
     this.similarJobsLoading.set(true);
-    this.jobsService.getJobs(query, 1, 'all', 'all', '', 'all', 6).subscribe({
-      next: (res) => {
-        const jobs = (res.jobs || [])
+    this.stateStore.loadSimilarJobs(query).then(
+      (found) => {
+        const jobs = found
           .filter((j: Job) => String(j.id) !== String(currentJobId))
           .slice(0, 4)
           .map((j: Job) => ({
@@ -422,11 +420,11 @@ export class VacancyDetails implements OnInit {
         this.similarJobsLoading.set(false);
         this.similarJobsLoaded.set(true);
       },
-      error: () => {
+      () => {
         this.similarJobsLoading.set(false);
         this.similarJobsLoaded.set(true);
-      }
-    });
+      },
+    );
   }
 
   navigateToTag(tag: { label: string; query: string; type: 'role' | 'company' | 'location' }) {

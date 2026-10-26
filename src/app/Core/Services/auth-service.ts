@@ -80,6 +80,10 @@ export class AuthService {
   userRegistration(obj: UserRegistration): Observable<User> {
     return this.http.post<User>(this.url + "/user", obj, { withCredentials: true })
   }
+  // Employer account: same email verification, then waits for admin approval.
+  hrRegistration(obj: UserRegistration & { companyName: string }): Observable<User> {
+    return this.http.post<User>(this.url + "/user/hr", obj, { withCredentials: true })
+  }
   async refreshToken() {
     const refresh$ = this.http.post(this.url + "/auth/refresh", null, {
       withCredentials: true

@@ -1,0 +1,81 @@
+@let c = candidate();
+<article class="card" [class.unlocked]="c.unlocked">
+  <header class="head">
+    <div class="title">
+      <h3>{{ c.detectedRole || 'სპეციალისტი' }}</h3>
+      <div class="meta">
+        @if (c.seniorityLevel) {
+          <span class="chip level">{{ c.seniorityLevel }}</span>
+        }
+        @if (location()) {
+          <span class="meta-item">
+            <span class="material-symbols-outlined">location_on</span>{{ location() }}
+          </span>
+        }
+        <span class="meta-item">
+          <span class="material-symbols-outlined">update</span>{{ c.updatedAt | date: 'dd.MM.yyyy' }}
+        </span>
+      </div>
+    </div>
+    @if (c.match !== undefined) {
+      <span class="match" [class.high]="c.match >= 75">{{ c.match }}%</span>
+    }
+  </header>
+
+  @if (c.careerDirection && c.careerDirection !== c.detectedRole) {
+    <p class="direction">
+      <span class="material-symbols-outlined">trending_up</span>{{ c.careerDirection }}
+    </p>
+  }
+
+  @if (skills().length) {
+    <div class="skills">
+      @for (skill of skills(); track skill) {
+        <span class="chip" [class.hit]="isMatched(skill)">{{ skill }}</span>
+      }
+    </div>
+  }
+
+  @if (c.domains.length) {
+    <p class="domains">{{ c.domains.join(' · ') }}</p>
+  }
+
+  <footer class="foot">
+    @if (c.unlocked && c.contact) {
+      <div class="contact">
+        @if (c.contact.fullName) {
+          <span class="contact-item name">
+            <span class="material-symbols-outlined">person</span>{{ c.contact.fullName }}
+          </span>
+        }
+        @if (c.contact.email) {
+          <a class="contact-item" [href]="'mailto:' + c.contact.email">
+            <span class="material-symbols-outlined">mail</span>{{ c.contact.email }}
+          </a>
+        }
+        @if (c.contact.phoneNumber) {
+          <a class="contact-item" [href]="'tel:' + c.contact.phoneNumber">
+            <span class="material-symbols-outlined">call</span>{{ c.contact.phoneNumber }}
+          </a>
+        }
+      </div>
+      <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
+        <span class="material-symbols-outlined">download</span>
+        CV-ის ჩამოტვირთვა
+      </button>
+    } @else {
+      <span class="locked">
+        <span class="material-symbols-outlined">lock</span>
+        საკონტაქტო მონაცემები დაფარულია
+      </span>
+      <button class="btn-action primary" type="button" [disabled]="busy()" (click)="unlock.emit(c)">
+        @if (busy()) {
+          <span class="spinner"></span>
+        } @else {
+          <span class="material-symbols-outlined">lock_open</span>
+        }
+        კონტაქტის გახსნა
+      </button>
+    }
+  </footer>
+</article>

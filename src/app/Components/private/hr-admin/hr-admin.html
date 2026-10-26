@@ -1,0 +1,39 @@
+<section class="page">
+  <header class="page-head">
+    <h1>HR ანგარიშები</h1>
+    <p>დაადასტურეთ დამსაქმებლები, რომ კანდიდატების ძიება გაეხსნათ</p>
+  </header>
+
+  @if (loading()) {
+    <div class="empty"><span class="spinner"></span></div>
+  } @else {
+    @for (group of [{ title: 'დადასტურების მოლოდინში', list: pending(), approved: false }, { title: 'დადასტურებული', list: approved(), approved: true }]; track group.title) {
+      <h2>{{ group.title }} <span class="count">{{ group.list.length }}</span></h2>
+      @if (group.list.length === 0) {
+        <p class="none">სია ცარიელია</p>
+      } @else {
+        <div class="table">
+          @for (account of group.list; track account.id) {
+            <div class="row">
+              <div class="who">
+                <strong>{{ account.companyName || '—' }}</strong>
+                <span>{{ account.firstName }} {{ account.lastName }} · {{ account.email }}</span>
+              </div>
+              <div class="info">
+                <span class="badge" [class.ok]="account.isEmailVerified">
+                  {{ account.isEmailVerified ? 'ელ-ფოსტა დადასტურებულია' : 'ელ-ფოსტა დაუდასტურებელია' }}
+                </span>
+                <span class="date">{{ account.createdAt | date: 'dd.MM.yyyy' }}</span>
+              </div>
+              @if (group.approved) {
+                <button type="button" class="btn" [disabled]="busyId() === account.id" (click)="setApproval(account, false)">გაუქმება</button>
+              } @else {
+                <button type="button" class="btn primary" [disabled]="busyId() === account.id" (click)="setApproval(account, true)">დადასტურება</button>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+</section>

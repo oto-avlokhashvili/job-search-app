@@ -18,7 +18,7 @@
                         <span class="logo-text">Job Up</span>
                     </div>
                     <h2>{{ loginMode() ? 'გამარჯობა' : 'რეგისტრაცია' }}</h2>
-                    <p>{{ loginMode() ? 'შედით თქვენს ანგარიშზე გასაგრძელებლად' : 'შექმენით ანგარიში და დაიწყეთ სამუშაოს ძიება' }}</p>
+                    <p>{{ loginMode() ? 'შედით თქვენს ანგარიშზე გასაგრძელებლად' : isEmployer() ? 'შექმენით დამსაქმებლის ანგარიში და მოძებნეთ კანდიდატები' : 'შექმენით ანგარიში და დაიწყეთ სამუშაოს ძიება' }}</p>
                 </div>
             }
 
@@ -42,7 +42,11 @@
                         </div>
                     }
 
-                    <p class="success-hint">თქვენი ანგარიში შექმნილია. შეგიძლიათ გაიაროთ ავტორიზაცია.</p>
+                    @if (registeredAsEmployer()) {
+                        <p class="success-hint">დამსაქმებლის ანგარიში შექმნილია. კანდიდატების ძიება გაიხსნება მას შემდეგ, რაც ადმინისტრატორი დაადასტურებს თქვენს ანგარიშს.</p>
+                    } @else {
+                        <p class="success-hint">თქვენი ანგარიში შექმნილია. შეგიძლიათ გაიაროთ ავტორიზაცია.</p>
+                    }
 
                     <button type="button" (click)="goToLoginAfterRegister()" class="btn btn-primary btn-login mt-4">
                         <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
@@ -90,21 +94,56 @@
                     </svg>
                     Google-ით შესვლა
                 </button>
-                <div class="signup-link mt-4">
-                    არ გაქვს ანგარიში? <a (click)="modeChanger()">რეგისტრაცია</a>
+                <div class="signup-options">
+                    <span class="signup-options-title">არ გაქვს ანგარიში?</span>
+                    <div class="signup-options-grid">
+                        <button type="button" class="signup-option" (click)="openRegistration(false)">
+                            <span class="material-symbols-outlined">person</span>
+                            <span class="option-text">
+                                <strong>რეგისტრაცია</strong>
+                                <small>ვეძებ სამუშაოს</small>
+                            </span>
+                        </button>
+                        <button type="button" class="signup-option" (click)="openRegistration(true)">
+                            <span class="material-symbols-outlined">business_center</span>
+                            <span class="option-text">
+                                <strong>HR რეგისტრაცია</strong>
+                                <small>ვეძებ კანდიდატებს</small>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </form>
             }@else{
             <form class="login-form" [formGroup]="registerForm" (ngSubmit)="register()">
-                <div class="mb-3">
-                    <label for="firstName" class="form-label">სახელი</label>
-                    <input formControlName="firstName" type="text" class="form-control" id="firstName"
-                        placeholder="შეიყვანეთ სახელი" required [class.is-invalid]="isInvalid('firstName')">
+                <div class="account-type" role="radiogroup" aria-label="ანგარიშის ტიპი">
+                    <button type="button" role="radio" [attr.aria-checked]="!isEmployer()" [class.active]="!isEmployer()" (click)="toggleEmployer(false)">
+                        <span class="material-symbols-outlined">person</span>
+                        მაძიებელი
+                    </button>
+                    <button type="button" role="radio" [attr.aria-checked]="isEmployer()" [class.active]="isEmployer()" (click)="toggleEmployer(true)">
+                        <span class="material-symbols-outlined">business_center</span>
+                        დამსაქმებელი
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label for="lastName" class="form-label">გვარი</label>
-                    <input formControlName="lastName" type="text" class="form-control" id="lastName"
-                        placeholder="შეიყვანეთ გვარი" required [class.is-invalid]="isInvalid('lastName')">
+                @if (isEmployer()) {
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">კომპანია</label>
+                        <input formControlName="companyName" type="text" class="form-control" id="companyName"
+                            placeholder="კომპანიის დასახელება" [class.is-invalid]="isInvalid('companyName')">
+                    </div>
+                }
+                <div class="form-row">
+                    <div class="mb-3">
+                        <label for="firstName" class="form-label">სახელი</label>
+                        <input formControlName="firstName" type="text" class="form-control" id="firstName"
+                            placeholder="სახელი" required [class.is-invalid]="isInvalid('firstName')">
+                    </div>
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">გვარი</label>
+                        <input formControlName="lastName" type="text" class="form-control" id="lastName"
+                            placeholder="გვარი" required [class.is-invalid]="isInvalid('lastName')">
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="regEmail" class="form-label">ელ-ფოსტა</label>
@@ -137,13 +176,8 @@
                     }
                 </button>
 
-
-                <div class="divider">
-                    <span>OR</span>
-                </div>
-
                 <div class="signup-link">
-                    დაბრუნდი <a (click)="modeChanger()">ავტორიზაციაზე</a>
+                    უკვე გაქვს ანგარიში? <a (click)="modeChanger()">შესვლა</a>
                 </div>
             </form>
             }

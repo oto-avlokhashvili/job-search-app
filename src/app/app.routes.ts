@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { RedirectFunction, Router, Routes, UrlMatcher, UrlSegment } from '@angular/router';
 import { authGuard } from './Core/Guards/auth-guard';
+import { hrGuard } from './Core/Guards/hr-guard';
 
 import { VacancyDetails } from './Components/public/vacancy-details/vacancy-details';
 import { Vacancies } from './Components/public/vacancies/vacancies';
@@ -98,6 +99,34 @@ export const routes: Routes = [
     loadComponent: () => import('./Components/public/analytics/analytics').then((m) => m.Analytics),
     canActivate: [authGuard],
     data: { hideFooter: true },
+  },
+  // HR area: private layout (own sidebar, no public header/footer). hrGuard checks role + admin approval.
+  {
+    path: 'hr',
+    loadComponent: () => import('./Components/private/private-layout/private-layout').then((m) => m.PrivateLayout),
+    canActivate: [authGuard],
+    canActivateChild: [hrGuard],
+    data: { hideLayout: true },
+    children: [
+      { path: '', redirectTo: 'search', pathMatch: 'full' },
+      {
+        path: 'search',
+        loadComponent: () => import('./Components/private/hr-search/hr-search').then((m) => m.HrSearch),
+      },
+      {
+        path: 'candidates',
+        loadComponent: () => import('./Components/private/hr-candidates/hr-candidates').then((m) => m.HrCandidates),
+      },
+      {
+        path: 'admin',
+        loadComponent: () => import('./Components/private/hr-admin/hr-admin').then((m) => m.HrAdmin),
+        data: { adminOnly: true },
+      },
+      {
+        path: 'pending',
+        loadComponent: () => import('./Components/private/hr-pending/hr-pending').then((m) => m.HrPending),
+      },
+    ],
   },
   // Old /private/* URLs (bookmarks, emails, Telegram, the Google login redirect with ?token=).
   // String redirects keep the query params, so the token reaches authGuard.

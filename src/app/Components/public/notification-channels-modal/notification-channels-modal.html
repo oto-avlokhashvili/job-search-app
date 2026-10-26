@@ -97,7 +97,7 @@
 
       <label class="cm-consent">
         <input type="checkbox" [checked]="cvConsent()" (change)="cvConsent.set($any($event.target).checked)" [disabled]="cvUploading()" />
-        <span>ვეთანხმები ჩემი CV-ს და მასში არსებული პერსონალური მონაცემების შენახვასა და დამუშავებას.</span>
+        <span>ვეთანხმები ჩემი CV-ს და მასში არსებული პერსონალური მონაცემების შენახვას, დამუშავებას და ვერიფიცირებული დამსაქმებლებისთვის (HR სპეციალისტებისთვის) გაზიარებას.</span>
       </label>
 
       @if (cvError()) {

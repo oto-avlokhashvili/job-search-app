@@ -1,0 +1,135 @@
+<section class="page">
+  <header class="page-head">
+    <h1>კანდიდატების ძიება</h1>
+    <p>მოძებნეთ კანდიდატები Job Up-ის CV ბაზაში და LinkedIn-ზე</p>
+  </header>
+
+  <form class="search" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="field grow">
+      <span>პოზიცია ან უნარები</span>
+      <input formControlName="keyword" type="text" placeholder="მაგ: Accountant, Excel"
+        [class.invalid]="form.controls.keyword.invalid && form.controls.keyword.touched">
+      <small>რამდენიმე მნიშვნელობა გამოყავით მძიმით</small>
+    </label>
+    <label class="field">
+      <span>ლოკაცია</span>
+      <input formControlName="location" type="text" placeholder="მაგ: Tbilisi">
+    </label>
+    <div class="field">
+      <span id="seniority-label">გამოცდილება</span>
+      <div class="select" [class.open]="seniorityOpen()">
+        <button type="button" class="select-trigger" aria-haspopup="listbox" aria-labelledby="seniority-label"
+          [attr.aria-expanded]="seniorityOpen()" (click)="toggleSeniority()">
+          <span class="material-symbols-outlined lead-icon">{{ selectedSeniority().icon }}</span>
+          <span class="select-value">{{ selectedSeniority().label }}</span>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </button>
+
+        @if (seniorityOpen()) {
+          <ul class="select-panel" role="listbox" aria-labelledby="seniority-label">
+            @for (option of seniorityOptions; track option.value) {
+              <li>
+                <button type="button" role="option" [attr.aria-selected]="option.value === form.controls.seniority.value"
+                  [class.selected]="option.value === form.controls.seniority.value" (click)="chooseSeniority(option.value)">
+                  <span class="material-symbols-outlined option-icon">{{ option.icon }}</span>
+                  <span class="option-text">
+                    <strong>{{ option.label }}</strong>
+                    <small>{{ option.hint }}</small>
+                  </span>
+                  <span class="material-symbols-outlined check">check</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+    <button class="btn-search" type="submit">
+      <span class="material-symbols-outlined">search</span>
+      ძიება
+    </button>
+  </form>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" [class.active]="tab() === 'cvs'" [attr.aria-selected]="tab() === 'cvs'" (click)="selectTab('cvs')">
+      <span class="material-symbols-outlined">description</span>
+      CV ბაზა
+      @if (cvSearched()) {
+        <span class="count">{{ cvTotal() }}</span>
+      }
+    </button>
+    <button type="button" role="tab" [class.active]="tab() === 'linkedin'" [attr.aria-selected]="tab() === 'linkedin'" (click)="selectTab('linkedin')">
+      <span class="material-symbols-outlined">travel_explore</span>
+      LinkedIn
+    </button>
+  </div>
+
+  @if (!query()) {
+    <div class="empty">
+      <span class="material-symbols-outlined">person_search</span>
+      <p>შეიყვანეთ პოზიცია ან უნარები და დააჭირეთ „ძიებას“</p>
+    </div>
+  } @else if (tab() === 'cvs') {
+    @if (cvError()) {
+      <div class="notice error">{{ cvError() }}</div>
+    }
+    @if (cvLoading() && cvs().length === 0) {
+      <div class="loading"><span class="spinner"></span></div>
+    } @else if (cvSearched() && cvs().length === 0) {
+      <div class="empty">
+        <span class="material-symbols-outlined">search_off</span>
+        <p>შესაბამისი კანდიდატი ვერ მოიძებნა. სცადეთ სხვა სიტყვები ან LinkedIn-ის ჩანართი.</p>
+      </div>
+    } @else {
+      <div class="results">
+        @for (candidate of cvs(); track candidate.id) {
+          <app-hr-candidate-card
+            [candidate]="candidate"
+            [busy]="busyId() === candidate.id"
+            (unlock)="unlock($event)"
+            (download)="download($event)" />
+        }
+      </div>
+      @if (cvs().length < cvTotal()) {
+        <button class="btn-more" type="button" [disabled]="cvLoading()" (click)="searchCvs(cvPage() + 1)">
+          {{ cvLoading() ? 'იტვირთება...' : 'მეტის ჩვენება' }}
+        </button>
+      }
+    }
+  } @else {
+    @if (linkedinError()) {
+      <div class="notice error">{{ linkedinError() }}</div>
+    }
+    @if (linkedinLoading() && profiles().length === 0) {
+      <div class="loading">
+        <span class="spinner"></span>
+        <p>LinkedIn-ზე ძიებას რამდენიმე წამი სჭირდება...</p>
+      </div>
+    } @else if (linkedinSearched() && profiles().length === 0) {
+      <div class="empty">
+        <span class="material-symbols-outlined">search_off</span>
+        <p>LinkedIn-ზე „Open to work“ პროფილი ვერ მოიძებნა.</p>
+      </div>
+    } @else {
+      <div class="results">
+        @for (profile of profiles(); track profile.url) {
+          <a class="profile" [href]="profile.url" target="_blank" rel="noopener noreferrer">
+            <div class="profile-head">
+              <h3>{{ profile.name }}</h3>
+              <span class="material-symbols-outlined">open_in_new</span>
+            </div>
+            @if (profile.headline) {
+              <p class="headline">{{ profile.headline }}</p>
+            }
+            <p class="snippet">{{ profile.snippet }}</p>
+          </a>
+        }
+      </div>
+      @if (linkedinHasMore()) {
+        <button class="btn-more" type="button" [disabled]="linkedinLoading()" (click)="searchLinkedin(linkedinPage() + 1)">
+          {{ linkedinLoading() ? 'იტვირთება...' : 'მეტის ჩვენება' }}
+        </button>
+      }
+    }
+  }
+</section>

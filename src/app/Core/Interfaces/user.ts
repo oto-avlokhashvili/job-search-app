@@ -1,4 +1,4 @@
-export type UserRole = 'USER' | 'ADMIN';
+export type UserRole = 'USER' | 'HR' | 'ADMIN';
 
 export type SubscriptionPlan = 'BASIC' | 'PRO';
 
@@ -24,6 +24,8 @@ export interface User {
   lastName: string;
   email: string;
   role?: UserRole;
+  companyName?: string | null;
+  hrApproved?: boolean;
   subscriptionDetails?: SubscriptionDetails | null;
   subscription?: string | null;
   createdAt: string;

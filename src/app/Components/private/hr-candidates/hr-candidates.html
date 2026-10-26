@@ -1,0 +1,26 @@
+<section class="page">
+  <header class="page-head">
+    <h1>ჩემი კანდიდატები</h1>
+    <p>კანდიდატები, რომელთა საკონტაქტო მონაცემებიც გახსენით</p>
+  </header>
+
+  @if (error()) {
+    <div class="notice error">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="empty"><span class="spinner"></span></div>
+  } @else if (!error() && candidates().length === 0) {
+    <div class="empty">
+      <span class="material-symbols-outlined">group</span>
+      <p>ჯერ არცერთი კანდიდატის კონტაქტი არ გაგიხსნიათ.</p>
+      <a routerLink="/hr/search" class="btn-link">კანდიდატების ძიება</a>
+    </div>
+  } @else {
+    <div class="results">
+      @for (candidate of candidates(); track candidate.id) {
+        <app-hr-candidate-card [candidate]="candidate" [busy]="busyId() === candidate.id" (download)="download($event)" />
+      }
+    </div>
+  }
+</section>

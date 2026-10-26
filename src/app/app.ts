@@ -58,8 +58,13 @@ export class App {
     .pipe(filter(e => e instanceof NavigationEnd))
     .subscribe((e: NavigationEnd) => {
       let r = this.route.firstChild;
-      while (r?.firstChild) r = r.firstChild;
-      this.hideLayout.set(r?.snapshot.data['hideLayout'] ?? false);
+      // hideLayout is set on layout parents (e.g. /hr), so any route in the chain can turn it on.
+      let hideLayout = !!r?.snapshot.data['hideLayout'];
+      while (r?.firstChild) {
+        r = r.firstChild;
+        hideLayout ||= !!r.snapshot.data['hideLayout'];
+      }
+      this.hideLayout.set(hideLayout);
       this.hideFooter.set(r?.snapshot.data['hideFooter'] ?? false);
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
 
@@ -73,6 +78,11 @@ export class App {
   private async continueAlertsSetup() {
     // Forced: logging out keeps the previous account's profile and CV in the store.
     await this.stateStore.loadProfile(true);
+    // HR accounts have no job alerts; they land in the HR area instead (covers the Google redirect too).
+    if (this.stateStore.profile().role === 'HR') {
+      if (!this.router.url.startsWith('/hr')) await this.router.navigate(['/hr']);
+      return;
+    }
     await this.stateStore.getCv(true); // also attaches a CV uploaded before signing in
     if (!this.authService.isLoggedIn() || this.stateStore.alertsReady()) return;
 

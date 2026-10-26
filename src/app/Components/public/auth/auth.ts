@@ -35,12 +35,23 @@ export class Auth {
     email: ['', Validators.required],
     password: ['', Validators.required],
     confirmPassword: ['', Validators.required],
+    // Required only for employer sign-up (see toggleEmployer).
+    companyName: [''],
   })
 
   isLoggingIn = signal(false);
   isRegistering = signal(false);
   registrationSuccess = signal(false);
   registeredEmail = signal('');
+  isEmployer = signal(false);
+  registeredAsEmployer = signal(false);
+
+  toggleEmployer(checked: boolean) {
+    this.isEmployer.set(checked);
+    const company = this.registerForm.controls.companyName;
+    company.setValidators(checked ? [Validators.required, Validators.maxLength(150)] : []);
+    company.updateValueAndValidity();
+  }
 
   logIn() {
     this.validators.set(true);
@@ -55,7 +66,10 @@ export class Auth {
             console.error('Error hydrating profile on login:', err);
           }
 
-          const targetUrl = this.authService.returnUrl() || '/profile';
+          const returnUrl = this.authService.returnUrl();
+          const targetUrl = this.stateStore.profile().role === 'HR'
+            ? (returnUrl?.startsWith('/hr') ? returnUrl : '/hr')
+            : returnUrl || '/profile';
           this.authService.returnUrl.set(null);
 
           try {
@@ -91,16 +105,25 @@ export class Auth {
     }
 
     const email = this.registerForm.get('email')?.value || '';
+    const { firstName, lastName, password: pass, companyName } = this.registerForm.getRawValue();
+    const user = { firstName: firstName!, lastName: lastName!, email, password: pass! } as UserRegistration;
+    const asEmployer = this.isEmployer();
     this.isRegistering.set(true);
 
-    this.authService.userRegistration(this.registerForm.value as UserRegistration).subscribe({
+    const request$ = asEmployer
+      ? this.authService.hrRegistration({ ...user, companyName: companyName!.trim() })
+      : this.authService.userRegistration(user);
+
+    request$.subscribe({
       next: () => {
         this.isRegistering.set(false);
         this.validators.set(false);
         this.registeredEmail.set(email);
+        this.registeredAsEmployer.set(asEmployer);
         this.registrationSuccess.set(true);
         this.registerForm.reset();
         this.loginForm.reset();
+        this.toggleEmployer(false);
       },
       error: (err) => {
         this.isRegistering.set(false);
@@ -135,6 +158,13 @@ export class Auth {
     return !!(control && control.invalid && (control.touched || this.validators()));
   }
 
+
+  // Login screen links: job-seeker or employer sign-up (employer pre-ticks the HR option).
+  openRegistration(asEmployer: boolean) {
+    this.registrationSuccess.set(false);
+    this.toggleEmployer(asEmployer);
+    this.authService.authModalMode.set('register');
+  }
 
   modeChanger() {
     this.registrationSuccess.set(false);
