@@ -637,7 +637,7 @@
               </thead>
               <tbody>
                 @for (job of displayedJobs(); track job.id) {
-                  <tr>
+                  <tr [attr.data-job-id]="job.id">
                     <td class="col-vacancy">
                       <div class="job-info-cell">
                         <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
@@ -744,7 +744,7 @@
           <!-- Mobile Compact Cards View -->
           <div class="vacancies-cards-container">
             @for (job of displayedJobs(); track job.id) {
-              <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]">
+              <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]" [attr.data-job-id]="job.id">
                 <div class="job-card-top">
                   <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource">
                     @if (job.source === jobUpSource) {

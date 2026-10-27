@@ -1,5 +1,5 @@
 import { Component, ElementRef, inject, Injector, OnInit, signal, computed, effect, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender, untracked } from '@angular/core';
-import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute, NavigationStart } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -28,6 +28,12 @@ export interface VacancyItem {
   matchScore: number;
   link: string;
 }
+
+/**
+ * The job last opened from the list and where its row sat on screen, so going back from the
+ * job puts that row in the same spot. Lives outside the component, which is destroyed meanwhile.
+ */
+let lastOpenedJob: { url: string; jobId: number; viewportTop: number; scrollY: number } | null = null;
 
 @Component({
   selector: 'app-vacancies',
@@ -161,6 +167,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private searchSub?: any;
   private liveSearchSub?: any;
   private queryParamsSub?: any;
+  private navigationSub?: any;
   // Live search while typing must not scroll the input out of view; explicit filter changes do.
   private scrollToResults = true;
 
@@ -205,6 +212,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       // loadJobs is a no-op when the same filters are already loaded.
       this.loadJobs();
     });
+
+    this.navigationSub = this.router.events
+      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
+      .subscribe(e => this.rememberOpenedJob(e.url));
   }
 
   /** Writes the current filter controls to the URL; the queryParamMap subscription loads them. */
@@ -251,6 +262,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }
+    this.navigationSub?.unsubscribe();
     if (typeof document !== 'undefined') {
       document.body.classList.remove('modal-open');
     }
@@ -458,6 +470,80 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       }
       previousLoggedIn = loggedIn;
     });
+
+    // Coming back from the job that was opened from this list (Back, the job page's back
+    // button, its breadcrumb): put that job where it was. While this runs, the previous
+    // navigation is still the job page's.
+    const cameFrom = this.router.lastSuccessfulNavigation()?.finalUrl?.toString() ?? '';
+    if (lastOpenedJob && cameFrom.startsWith('/vacancies/')) {
+      afterNextRender(() => this.holdOpenedJob(), { injector: this.injector });
+    }
+  }
+
+  /**
+   * The router scrolls to the top after the page renders, and a smooth scroll still running
+   * from the job page can land even later, so keep the job in place for a moment instead of
+   * scrolling once. Any scrolling by the user ends it.
+   */
+  private holdOpenedJob() {
+    const until = performance.now() + 1500;
+    let stopped = false;
+    const stop = () => (stopped = true);
+    const userEvents = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+    userEvents.forEach(type => window.addEventListener(type, stop, { once: true, passive: true }));
+
+    const row = this.restoreOpenedJob();
+    row?.classList.add('just-visited');
+    setTimeout(() => row?.classList.remove('just-visited'), 1600);
+
+    const tick = () => {
+      if (stopped || performance.now() > until) {
+        userEvents.forEach(type => window.removeEventListener(type, stop));
+        lastOpenedJob = null;
+        return;
+      }
+      this.restoreOpenedJob();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  /**
+   * Runs as navigation leaves the list, while its rows are still on screen. A (click) on the
+   * rows isn't enough: on rows hydrated from the server render it doesn't fire.
+   */
+  private rememberOpenedJob(url: string) {
+    lastOpenedJob = null;
+    // CV results aren't kept when leaving the page, so there is nothing to return to.
+    if (this.cvMode()) return;
+    const path = decodeURIComponent(url.split(/[?#]/)[0]);
+    const job = this.displayedJobs().find(j => `/vacancies/${this.getJobSlug(j)}` === path);
+    if (!job) return;
+    const row = Array.from(document.querySelectorAll<HTMLElement>(`[data-job-id="${job.id}"]`))
+      .find(el => el.offsetParent !== null);
+    if (!row) return;
+    lastOpenedJob = {
+      url: this.router.url,
+      jobId: job.id,
+      viewportTop: row.getBoundingClientRect().top,
+      scrollY: window.scrollY,
+    };
+  }
+
+  /** Scrolls the opened job back to where it sat on screen; returns its row, if it is listed. */
+  private restoreOpenedJob(): HTMLElement | undefined {
+    const saved = lastOpenedJob;
+    if (!saved || saved.url !== this.router.url) return;
+    // The table (desktop) and the cards (mobile) are both rendered; use whichever is visible.
+    const row = Array.from(document.querySelectorAll<HTMLElement>(`[data-job-id="${saved.jobId}"]`))
+      .find(el => el.offsetParent !== null);
+    if (!row) {
+      if (Math.abs(window.scrollY - saved.scrollY) > 1) window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
+      return;
+    }
+    const offset = row.getBoundingClientRect().top - saved.viewportTop;
+    if (Math.abs(offset) > 1) window.scrollBy({ top: offset, behavior: 'instant' });
+    return row;
   }
 
   async loadJobs(query?: string, append: boolean = false, force: boolean = false) {

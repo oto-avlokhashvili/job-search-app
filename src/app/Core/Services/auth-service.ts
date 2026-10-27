@@ -39,7 +39,7 @@ export class AuthService {
     effect(() => {
       const token = this.token();
       if (this.isBrowser && token) {
-        localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+        localStorage.setItem("ACCESS_TOKEN", token);
       }
     });
     effect(() => {
@@ -57,14 +57,23 @@ export class AuthService {
   setToken(token: string) {
     this.#tokenSignal.set(token);
     if (this.isBrowser) {
-      localStorage.setItem("ACCESS_TOKEN", JSON.stringify(token));
+      localStorage.setItem("ACCESS_TOKEN", token);
     }
   }
   loadUserFromStorage() {
-    const json = localStorage.getItem("ACCESS_TOKEN");
-    if (json) {
-      const user = JSON.parse(json);
-      this.#tokenSignal.set(user);
+    const stored = localStorage.getItem("ACCESS_TOKEN");
+    if (!stored) return;
+    // The token is stored raw; older sessions saved it JSON-quoted.
+    let token: unknown = stored;
+    if (stored.startsWith('"')) {
+      try {
+        token = JSON.parse(stored);
+      } catch {}
+    }
+    if (typeof token === 'string' && token) {
+      this.#tokenSignal.set(token);
+    } else {
+      localStorage.removeItem("ACCESS_TOKEN");
     }
   }
   login(email: string, password: string): Observable<{ token: string }> {

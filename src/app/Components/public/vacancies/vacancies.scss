@@ -2194,3 +2194,21 @@ button.btn-search {
     display: none;
   }
 }
+
+// The row/card of the job the user just came back from
+tr.just-visited {
+  animation: justVisitedRow 1.6s ease-out;
+}
+
+.compact-job-card.just-visited {
+  animation: justVisitedCard 1.6s ease-out;
+}
+
+@keyframes justVisitedRow {
+  0%, 40% { background-color: rgba(var(--primary-rgb), 0.12); }
+  100% { background-color: transparent; }
+}
+
+@keyframes justVisitedCard {
+  0%, 40% { box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.45); }
+}
