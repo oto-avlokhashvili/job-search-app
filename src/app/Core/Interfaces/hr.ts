@@ -23,6 +23,39 @@ export interface HrCandidate {
   matchedKeywords?: string[];
   unlocked: boolean;
   contact: CandidateContact | null;
+  /** Board state; only on "My candidates". Missing = never moved (SOURCED). */
+  pipeline?: PipelineState;
+}
+
+export type PipelineStage = 'SOURCED' | 'CONTACTED' | 'INTERVIEW' | 'OFFER' | 'HIRED' | 'REJECTED';
+
+export interface PipelineState {
+  stage: PipelineStage;
+  rejectionReason: string | null;
+  rating: number | null;
+  tags: string[];
+  position: number | null;
+}
+
+/** Fields to change; null clears rating / rejection reason. */
+export interface PipelineChange {
+  stage?: PipelineStage;
+  rejectionReason?: string | null;
+  rating?: number | null;
+  tags?: string[];
+}
+
+export interface CandidateActivity {
+  id: string;
+  kind: 'NOTE' | 'STAGE_CHANGED' | 'RATING_CHANGED';
+  createdAt: string;
+  author: { id: number; name: string };
+  noteId?: number;
+  body?: string;
+  fromStage?: PipelineStage | null;
+  toStage?: PipelineStage | null;
+  rejectionReason?: string | null;
+  rating?: number | null;
 }
 
 export interface HrCvSearchParams {

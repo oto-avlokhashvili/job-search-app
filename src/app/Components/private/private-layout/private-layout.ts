@@ -1,5 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { HrStore } from '../../../Store/hr.store';
@@ -20,6 +22,14 @@ export class PrivateLayout {
   private hrStore = inject(HrStore);
 
   isSidebarOpen = signal(false);
+  // Pages with route data wideContent (the candidates board) use the full width instead of the centered column.
+  isWide = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map(() => this.readWide()),
+    ),
+    { initialValue: this.readWide() },
+  );
   isAdmin = computed(() => this.stateStore.profile().role === 'ADMIN');
   isApproved = computed(() => this.isAdmin() || !!this.stateStore.profile().hrApproved);
   usage = this.hrStore.usage;
@@ -37,6 +47,14 @@ export class PrivateLayout {
       this.hrStore.loadUnlocked();
       if (this.isAdmin()) this.hrStore.loadAccounts().catch(() => {});
     });
+  }
+
+  // From the router state snapshot: while this layout is being created, child ActivatedRoutes
+  // don't have their snapshot yet.
+  private readWide(): boolean {
+    let r: ActivatedRouteSnapshot | null = this.router.routerState.snapshot.root;
+    while (r?.firstChild) r = r.firstChild;
+    return !!r?.data?.['wideContent'];
   }
 
   percent({ used, limit }: { used: number; limit: number }): number {

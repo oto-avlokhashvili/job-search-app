@@ -427,6 +427,12 @@ body.modal-open {
   flex-direction: column !important;
 }
 
+// Above the HR candidate panel (1001) so its stage menu shows, below the reject dialog (1100)
+// and the auth modal (9999).
+.cdk-overlay-container {
+  z-index: 1050;
+}
+
 .vacancy-dialog.cdk-overlay-pane {
   max-height: 90svh !important;
 }

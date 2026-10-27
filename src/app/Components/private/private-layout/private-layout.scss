@@ -332,6 +332,25 @@ $header-height: 64px;
     }
   }
 
+  // Placeholder while /hr/usage loads
+  .usage-card.loading .shimmer {
+    display: block;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--surface-container) 25%, var(--border-color) 50%, var(--surface-container) 75%);
+    background-size: 200% 100%;
+    animation: usage-shimmer 1.2s ease-in-out infinite;
+
+    &.text {
+      width: 55%;
+      height: 12px;
+    }
+
+    &.num {
+      width: 28px;
+      height: 13px;
+    }
+  }
+
   // Close to the limit: amber instead of blue
   .usage-item.warn {
     .bar span {
@@ -353,6 +372,85 @@ $header-height: 64px;
 .content-inner {
   max-width: 1200px;
   margin: 0 auto;
+
+  // Boards use every pixel beside the sidebar
+  &.wide {
+    max-width: none;
+  }
+}
+
+// ─── Compact sidebar (992–1500px) ────────────────────────────
+// An icon rail that gives the page (the board above all) the room. Hovering or tabbing into it
+// expands it over the content, so nothing on the page shifts.
+$rail-width: 72px;
+
+@media (min-width: 992px) and (max-width: 1500px) {
+  .content {
+    margin-left: $rail-width;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .sidebar {
+    width: $rail-width;
+    overflow-x: hidden;
+    // Dark --card-bg is slightly translucent; over the page it needs a solid base
+    background: linear-gradient(var(--card-bg), var(--card-bg)), var(--surface);
+    transition: width 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover,
+    &:focus-within {
+      width: $sidebar-width;
+      box-shadow: 12px 0 32px rgba(0, 0, 0, 0.22);
+    }
+  }
+
+  .sidebar:not(:hover):not(:focus-within) {
+    // Section labels become thin dividers
+    .nav-label {
+      height: 1px;
+      margin: 0.7rem 0.4rem;
+      padding: 0;
+      font-size: 0;
+      background: var(--border-color);
+
+      &:first-child {
+        display: none;
+      }
+    }
+
+    .nav-title {
+      display: none;
+    }
+
+    // Counts become a small badge on the icon
+    .nav-count {
+      position: absolute;
+      top: 3px;
+      right: 2px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      font-size: 10px;
+      border: 2px solid var(--card-bg);
+      box-sizing: content-box;
+    }
+
+    // Limits: just the icon (amber when close to a limit); the full card shows on hover
+    .usage-card {
+      align-items: center;
+      padding: 0.6rem 0;
+
+      .usage-head > span:not(.material-symbols-outlined),
+      .usage-item {
+        display: none;
+      }
+    }
+  }
+
+  .sidebar-footer .usage-card.warn .usage-head .material-symbols-outlined {
+    color: #f59e0b;
+  }
 }
 
 @media (max-width: 991px) {
@@ -405,5 +503,14 @@ $header-height: 64px;
 
   .user-text {
     display: none;
+  }
+}
+
+@keyframes usage-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }

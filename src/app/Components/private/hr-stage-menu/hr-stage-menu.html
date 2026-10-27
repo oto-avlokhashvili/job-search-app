@@ -1,0 +1,62 @@
+@let cur = current();
+<!-- mousedown/touchstart stop here so pressing the pill doesn't start dragging the card -->
+<button
+  type="button"
+  class="trigger"
+  [class.md]="size() === 'md'"
+  [class.open]="open()"
+  [style.--stage-color]="cur.color"
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  aria-haspopup="listbox"
+  [attr.aria-expanded]="open()"
+  [attr.aria-label]="'ეტაპი: ' + cur.label + '. შეცვლა'"
+  (click)="toggle($event)"
+  (keydown.enter)="$event.stopPropagation()"
+  (mousedown)="$event.stopPropagation()"
+  (touchstart)="$event.stopPropagation()"
+>
+  <span class="material-symbols-outlined icon">{{ cur.icon }}</span>
+  <span class="label">{{ cur.label }}</span>
+  <span class="material-symbols-outlined chevron">expand_more</span>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
+  (overlayOutsideClick)="open.set(false)"
+  (overlayKeydown)="onOverlayKeydown($event)"
+  (detach)="open.set(false)"
+>
+  <div class="menu" role="listbox" aria-label="ეტაპის შეცვლა">
+    <span class="menu-title">ეტაპის შეცვლა</span>
+    @for (s of activeStages; track s.id) {
+      <ng-container *ngTemplateOutlet="option; context: { $implicit: s }" />
+    }
+    <span class="menu-divider">შედეგი</span>
+    @for (s of outcomeStages; track s.id) {
+      <ng-container *ngTemplateOutlet="option; context: { $implicit: s }" />
+    }
+  </div>
+</ng-template>
+
+<ng-template #option let-s>
+  <button
+    type="button"
+    class="option"
+    role="option"
+    [class.current]="s.id === stage()"
+    [attr.aria-selected]="s.id === stage()"
+    [style.--stage-color]="s.color"
+    (click)="choose(s.id)"
+  >
+    <span class="option-icon"><span class="material-symbols-outlined">{{ s.icon }}</span></span>
+    <span class="option-label">{{ s.label }}</span>
+    @if (s.id === stage()) {
+      <span class="material-symbols-outlined check">check</span>
+    }
+  </button>
+</ng-template>

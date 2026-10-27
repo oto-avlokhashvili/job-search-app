@@ -1740,34 +1740,6 @@ button.btn-search {
     font-size: 12.5px;
   }
 
-  .deadline-tag {
-    display: inline-flex;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-
-    &.fresh {
-      background: rgba(34, 197, 94, 0.12);
-      color: #16a34a;
-    }
-
-    &.warning {
-      background: rgba(245, 158, 11, 0.12);
-      color: #d97706;
-    }
-
-    &.urgent {
-      background: rgba(239, 68, 68, 0.12);
-      color: #ef4444;
-    }
-
-    &.expired {
-      background: rgba(100, 116, 139, 0.12);
-      color: #64748b;
-    }
-  }
-
   .apply-btn {
     display: inline-block;
     text-decoration: none;
@@ -1784,6 +1756,63 @@ button.btn-search {
     &:hover {
       background: var(--primary-container);
       transform: translateY(-1px);
+    }
+  }
+}
+
+// ─── Deadline: date over a bar of the time left (table + mobile cards) ───
+.deadline-tag {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 78px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  // Track tint / fill per status
+  --deadline-track: rgba(100, 116, 139, 0.15);
+  --deadline-fill: #64748b;
+
+  &.fresh {
+    color: #16a34a;
+    --deadline-track: rgba(34, 197, 94, 0.15);
+    --deadline-fill: #22c55e;
+  }
+
+  &.warning {
+    color: #d97706;
+    --deadline-track: rgba(245, 158, 11, 0.15);
+    --deadline-fill: #f59e0b;
+  }
+
+  &.urgent {
+    color: #ef4444;
+    --deadline-track: rgba(239, 68, 68, 0.15);
+    --deadline-fill: #ef4444;
+  }
+
+  &.expired {
+    color: #64748b;
+
+    .deadline-date {
+      text-decoration: line-through;
+    }
+  }
+
+  .deadline-bar {
+    display: block;
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--deadline-track);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--deadline-fill);
+      transition: width 0.4s ease;
     }
   }
 }
@@ -1942,7 +1971,12 @@ button.btn-search {
 
     .deadline-tag.mini {
       font-size: 11px;
-      padding: 2px 6px;
+      min-width: 64px;
+      margin-left: auto;
+
+      .deadline-bar {
+        height: 3px;
+      }
     }
   }
 

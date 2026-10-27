@@ -1,7 +1,19 @@
-<section class="page">
+<section class="page" [class.board-mode]="view() === 'board' && candidates().length > 0">
   <header class="page-head">
-    <h1>ჩემი კანდიდატები</h1>
-    <p>კანდიდატები, რომელთა საკონტაქტო მონაცემებიც გახსენით</p>
+    <div>
+      <h1>ჩემი კანდიდატები</h1>
+      <p>კანდიდატები, რომელთა საკონტაქტო მონაცემებიც გახსენით</p>
+    </div>
+    @if (candidates().length) {
+      <div class="view-toggle" role="tablist" aria-label="ხედი">
+        <button type="button" role="tab" [class.active]="view() === 'board'" [attr.aria-selected]="view() === 'board'" (click)="setView('board')">
+          <span class="material-symbols-outlined">view_kanban</span>დაფა
+        </button>
+        <button type="button" role="tab" [class.active]="view() === 'list'" [attr.aria-selected]="view() === 'list'" (click)="setView('list')">
+          <span class="material-symbols-outlined">view_agenda</span>სია
+        </button>
+      </div>
+    }
   </header>
 
   @if (error()) {
@@ -16,6 +28,73 @@
       <p>ჯერ არცერთი კანდიდატის კონტაქტი არ გაგიხსნიათ.</p>
       <a routerLink="/hr/search" class="btn-link">კანდიდატების ძიება</a>
     </div>
+  } @else if (view() === 'board') {
+    <!-- One drop group: cards can go to any column or onto the outcome zones -->
+    <div class="board-area" cdkDropListGroup>
+    <!-- Final outcomes live off the board: drop a card here, click to see the list -->
+    <div class="outcomes">
+      @for (s of outcomeStages; track s.id) {
+        <div class="outcome" [style.--stage-color]="s.color" role="button" tabindex="0"
+          [attr.aria-label]="s.label + ': ' + columns()[s.id].length"
+          cdkDropList [cdkDropListData]="s.id" [cdkDropListSortingDisabled]="true" (cdkDropListDropped)="drop($event)"
+          (click)="openOutcome(s.id)" (keydown.enter)="openOutcome(s.id)">
+          <span class="icon"><span class="material-symbols-outlined">{{ s.icon }}</span></span>
+          <span class="outcome-text">
+            <strong>{{ s.label }}</strong>
+            <small class="when-idle">სიის ნახვა</small>
+            <small class="when-dragging">ჩააგდეთ აქ</small>
+          </span>
+          <span class="count">{{ columns()[s.id].length }}</span>
+          <span class="material-symbols-outlined chevron">chevron_right</span>
+        </div>
+      }
+    </div>
+
+    <div class="board-wrap" [class.fade-left]="canScrollLeft()" [class.fade-right]="canScrollRight()">
+    @if (canScrollLeft()) {
+      <button type="button" class="board-arrow left" aria-label="წინა სვეტები" (click)="scrollBoard(-1)">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+    }
+    @if (canScrollRight()) {
+      <button type="button" class="board-arrow right" aria-label="შემდეგი სვეტები" (click)="scrollBoard(1)">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    }
+    <div class="board" #board cdkScrollable (scroll)="updateBoardArrows()">
+      @for (s of boardStages; track s.id) {
+        @let list = columns()[s.id];
+        <section class="column" [style.--stage-color]="s.color" [attr.aria-label]="s.label">
+          <header class="col-head">
+            <span class="icon"><span class="material-symbols-outlined">{{ s.icon }}</span></span>
+            <span class="col-title">{{ s.label }}</span>
+            <span class="count">{{ list.length }}</span>
+          </header>
+          <div class="col-bar"></div>
+          <div class="col-list" cdkDropList [cdkDropListData]="s.id" (cdkDropListDropped)="drop($event)">
+            @for (c of list; track c.id) {
+              <app-hr-pipeline-card
+                cdkDrag
+                [cdkDragData]="c"
+                [cdkDragStartDelay]="{ touch: 250, mouse: 0 }"
+                (cdkDragStarted)="onDragStarted()"
+                (cdkDragEnded)="onDragEnded()"
+                [candidate]="c"
+                (open)="open($event)"
+                (stageChange)="moveTo(c, $event)"
+              />
+            } @empty {
+              <p class="col-empty">
+                <span class="material-symbols-outlined">drag_indicator</span>
+                გადმოიტანეთ კანდიდატი აქ
+              </p>
+            }
+          </div>
+        </section>
+      }
+    </div>
+    </div>
+    </div>
   } @else {
     <div class="results">
       @for (candidate of candidates(); track candidate.id) {
@@ -24,3 +103,52 @@
     </div>
   }
 </section>
+
+@if (outcomeOpen(); as stageId) {
+  @let meta = stageById[stageId];
+  <div class="drawer-backdrop" (click)="closeOutcome()"></div>
+  <aside class="drawer" [style.--stage-color]="meta.color" role="dialog" aria-modal="true" [attr.aria-label]="meta.label">
+    <header class="drawer-head">
+      <span class="icon"><span class="material-symbols-outlined">{{ meta.icon }}</span></span>
+      <h2>{{ meta.label }}</h2>
+      <span class="count">{{ columns()[stageId].length }}</span>
+      <button type="button" class="drawer-close" aria-label="დახურვა" (click)="closeOutcome()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+    <p class="drawer-hint">კანდიდატის დასაბრუნებლად აირჩიეთ ეტაპი მის ბარათზე</p>
+    <div class="drawer-list">
+      @for (c of columns()[stageId]; track c.id) {
+        <app-hr-pipeline-card [candidate]="c" (open)="open($event)" (stageChange)="moveTo(c, $event)" />
+      } @empty {
+        <p class="col-empty">
+          <span class="material-symbols-outlined">{{ meta.icon }}</span>
+          ჯერ ცარიელია. გადმოიტანეთ ბარათი „{{ meta.label }}“-ზე.
+        </p>
+      }
+    </div>
+  </aside>
+}
+
+@if (selected(); as c) {
+  <app-hr-candidate-panel
+    [candidate]="c"
+    [busy]="busyId() === c.id"
+    [tagSuggestions]="tagSuggestions()"
+    (close)="close()"
+    (download)="download($event)"
+    (stageChange)="moveTo(c, $event)"
+    (editReason)="editReason(c)"
+    (ratingChange)="rate(c, $event)"
+    (tagsChange)="setTags(c, $event)"
+  />
+}
+
+@if (pendingReject(); as pending) {
+  <app-hr-reject-dialog
+    [candidateName]="pending.candidate.contact?.fullName || pending.candidate.detectedRole"
+    [initialReason]="pending.editOnly ? (pending.candidate.pipeline?.rejectionReason ?? null) : null"
+    (confirm)="confirmReject($event)"
+    (cancel)="pendingReject.set(null)"
+  />
+}

@@ -1,10 +1,26 @@
+// Must match private-layout: fixed header + .content's vertical padding
+$header-height: 64px;
+
 .page {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+
+  // Board fills the window below the header; columns scroll on their own.
+  // The min-height keeps small/low-resolution screens usable (the page scrolls instead).
+  &.board-mode {
+    height: calc(100dvh - #{$header-height} - 4rem);
+    min-height: 560px;
+  }
 }
 
 .page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+
   h1 {
     margin: 0 0 0.25rem;
     font-size: 1.6rem;
@@ -18,6 +34,519 @@
   }
 }
 
+.view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--input-bg);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+  }
+}
+
+// ─── Board ───
+// Outcome zones + board share one drop group; this fills the rest of the page height
+.board-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+// ─── Outcome zones (hired / rejected) ───
+.outcomes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.outcome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-color);
+  border-left: 4px solid var(--stage-color);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  .icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 14%, transparent);
+
+    .material-symbols-outlined {
+      font-size: 19px;
+    }
+  }
+
+  .outcome-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+
+    strong {
+      font-size: 0.92rem;
+      color: var(--on-surface);
+    }
+
+    small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .when-dragging {
+      display: none;
+      color: var(--stage-color);
+      font-weight: 600;
+    }
+  }
+
+  .count {
+    min-width: 28px;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 14%, transparent);
+  }
+
+  .chevron {
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--stage-color) 55%, var(--border-color));
+    border-left-color: var(--stage-color);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--stage-color) 30%, transparent);
+  }
+
+  // While a card is being dragged: every zone becomes an obvious target...
+  &.cdk-drop-list-receiving {
+    border-style: dashed;
+    border-color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 6%, var(--card-bg));
+
+    .when-idle {
+      display: none;
+    }
+
+    .when-dragging {
+      display: block;
+    }
+  }
+
+  // ...and the one under the card lights up
+  &.cdk-drop-list-dragging {
+    border-style: solid;
+    border-color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 16%, var(--card-bg));
+    transform: scale(1.02);
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--stage-color) 25%, transparent);
+
+    .when-idle {
+      display: none;
+    }
+
+    .when-dragging {
+      display: block;
+    }
+  }
+
+  // The zone holds no cards; hide the drop placeholder CDK moves into it so it doesn't grow
+  .cdk-drag-placeholder {
+    display: none;
+  }
+}
+
+// ─── Outcome drawer ───
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(15, 23, 42, 0.45);
+  animation: fade-in 0.2s ease;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 901;
+  width: min(420px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--app-bg);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.25);
+  animation: drawer-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1rem 0.85rem;
+  background: var(--card-bg);
+  border-bottom: 3px solid var(--stage-color);
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 14%, transparent);
+  }
+
+  h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .count {
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    background: var(--surface-container);
+  }
+}
+
+.drawer-close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-container-low);
+  }
+}
+
+.drawer-hint {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.drawer-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0 1rem 1rem;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Holds the scrolling board plus the edge arrows, which stay put while the columns move
+.board-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  // Soft fade on the side that has more columns. A mask, not an overlay: the dark page
+  // background is a gradient that an overlay couldn't match.
+  &.fade-right .board {
+    mask-image: linear-gradient(to left, transparent 0, #000 48px);
+  }
+
+  &.fade-left .board {
+    mask-image: linear-gradient(to right, transparent 0, #000 48px);
+  }
+
+  &.fade-left.fade-right .board {
+    mask-image: linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+  }
+}
+
+.board-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--outline-variant);
+  background: var(--card-bg);
+  color: var(--on-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+
+  &.left {
+    left: -8px;
+  }
+
+  &.right {
+    right: -8px;
+  }
+
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-50%) scale(1.06);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25);
+  }
+}
+
+.board {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-auto-flow: column;
+  // Four equal columns (outcomes sit above the board); fits ~1100px of content (a 1440px screen with
+  // the sidebar), below that they keep 250px and scroll
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.4rem;
+  scroll-snap-type: x proximity;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 16px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-color);
+  scroll-snap-align: start;
+  overflow: hidden;
+}
+
+.col-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 0.9rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    color: var(--stage-color);
+    background: color-mix(in srgb, var(--stage-color) 14%, transparent);
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+  }
+
+  .col-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .count {
+    min-width: 26px;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    background: var(--surface-container);
+  }
+}
+
+// Thin stage-colored line under the header
+.col-bar {
+  height: 3px;
+  background: var(--stage-color);
+  opacity: 0.85;
+}
+
+.col-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  transition: background 0.15s ease;
+  scrollbar-width: thin;
+
+  &.cdk-drop-list-receiving,
+  &.cdk-drop-list-dragging {
+    background: color-mix(in srgb, var(--stage-color) 8%, transparent);
+  }
+}
+
+.col-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 1.5rem 0.75rem;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    font-size: 22px;
+    opacity: 0.6;
+  }
+}
+
+// Drag-and-drop: the dragged copy, the gap it leaves, and the slide of the other cards
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  transform: rotate(1.5deg);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.col-list.cdk-drop-list-dragging app-hr-pipeline-card:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@media (max-width: 991px) {
+  .page.board-mode {
+    height: calc(100dvh - #{$header-height} - 2.5rem);
+    min-height: 480px;
+  }
+
+  // One column at a time, swiped sideways
+  .board {
+    grid-auto-columns: minmax(260px, 85%);
+    scroll-snap-type: x mandatory;
+  }
+}
+
+@media (max-width: 576px) {
+  // Compact outcome chips: icon, label, count
+  .outcomes {
+    gap: 0.5rem;
+  }
+
+  // Label + count only: the colored left edge already marks which outcome it is
+  .outcome {
+    gap: 0.5rem;
+    padding: 0.55rem 0.7rem;
+
+    .icon,
+    .outcome-text small,
+    .chevron {
+      display: none !important;
+    }
+
+    .outcome-text strong {
+      font-size: 0.85rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// ─── List view ───
 .results {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));

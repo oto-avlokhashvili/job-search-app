@@ -116,6 +116,7 @@ export const routes: Routes = [
       {
         path: 'candidates',
         loadComponent: () => import('./Components/private/hr-candidates/hr-candidates').then((m) => m.HrCandidates),
+        data: { wideContent: true },
       },
       {
         path: 'admin',

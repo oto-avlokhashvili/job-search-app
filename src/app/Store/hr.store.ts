@@ -3,7 +3,8 @@ import { effect, inject, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HrService } from '../Core/Services/hr';
 import { AuthService } from '../Core/Services/auth-service';
-import { HrAccount, HrCandidate, HrUsage, LinkedinProfile, SeniorityLevel } from '../Core/Interfaces/hr';
+import { HrAccount, HrCandidate, HrUsage, LinkedinProfile, PipelineChange, SeniorityLevel } from '../Core/Interfaces/hr';
+import { applyChange, pipelineOf } from '../Core/Utils/pipeline';
 
 export type HrSearchTab = 'cvs' | 'linkedin';
 export interface HrSearchQuery {
@@ -49,6 +50,7 @@ interface HrState {
 
     // Quota shown in the sidebar; refreshed after anything that spends it.
     usage: HrUsage | null;
+    usageLoading: boolean;
 }
 
 const initialState: HrState = {
@@ -80,6 +82,7 @@ const initialState: HrState = {
     accountsLoading: false,
 
     usage: null,
+    usageLoading: false,
 };
 
 /**
@@ -191,6 +194,32 @@ export const HrStore = signalStore(
                 methods.loadUsage(true);
             },
 
+            /**
+             * Board change on "My candidates", shown at once and rolled back if the server refuses.
+             * `order` = the candidate's column after a drop (CV ids, top to bottom). Throws on failure.
+             */
+            async updatePipeline(cvId: number, change: PipelineChange, order?: number[]) {
+                const before = store.unlocked();
+                const positions = new Map(order?.map((id, i) => [id, i]));
+                patchState(store, {
+                    unlocked: before.map((c) => {
+                        const pipeline = c.id === cvId ? applyChange(pipelineOf(c), change) : pipelineOf(c);
+                        const position = positions.get(c.id);
+                        if (c.id !== cvId && position === undefined) return c;
+                        return { ...c, pipeline: position === undefined ? pipeline : { ...pipeline, position } };
+                    }),
+                });
+                try {
+                    const saved = await firstValueFrom(hrService.updatePipeline(cvId, { ...change, order }));
+                    patchState(store, {
+                        unlocked: store.unlocked().map((c) => (c.id === cvId ? { ...c, pipeline: saved } : c)),
+                    });
+                } catch (err) {
+                    patchState(store, { unlocked: before });
+                    throw err;
+                }
+            },
+
             async loadUnlocked(force = false) {
                 if (store.unlockedLoading() || (!force && store.unlockedLoaded())) return;
                 patchState(store, { unlockedLoading: true, unlockedError: '' });
@@ -222,11 +251,15 @@ export const HrStore = signalStore(
             },
 
             async loadUsage(force = false) {
-                if (!force && store.usage()) return;
+                // The guard starts this before the layout exists; don't fire a second request meanwhile.
+                if (!force && (store.usage() || store.usageLoading())) return;
+                patchState(store, { usageLoading: true });
                 try {
                     patchState(store, { usage: await firstValueFrom(hrService.getUsage()) });
                 } catch {
                     // The sidebar just keeps the last known numbers.
+                } finally {
+                    patchState(store, { usageLoading: false });
                 }
             },
 

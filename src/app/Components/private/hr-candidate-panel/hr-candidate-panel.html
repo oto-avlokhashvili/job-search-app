@@ -1,0 +1,169 @@
+@let c = candidate();
+@let p = pipeline();
+<div class="backdrop" (click)="close.emit()"></div>
+<aside #panel class="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" tabindex="-1">
+  <header class="panel-head">
+    <div>
+      <h2 id="panel-title">{{ c.contact?.fullName || c.detectedRole || 'კანდიდატი' }}</h2>
+      <span class="stage-pill" [style.--stage-color]="stage().color">
+        <span class="material-symbols-outlined">{{ stage().icon }}</span>{{ stage().label }}
+      </span>
+    </div>
+    <button type="button" class="icon-btn" (click)="close.emit()" aria-label="დახურვა">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </header>
+
+  <!-- Two columns on desktop: pipeline fields + CV on the left, notes and history on the right -->
+  <div class="panel-body">
+    <div class="col col-main">
+    <section class="block">
+      <div class="field">
+        <span class="label">ეტაპი</span>
+        <app-hr-stage-menu size="md" [stage]="p.stage" (stageChange)="stageChange.emit($event)" />
+      </div>
+
+      @if (p.stage === 'REJECTED') {
+        <div class="reason">
+          <span>{{ p.rejectionReason || 'მიზეზი არ არის მითითებული' }}</span>
+          <button type="button" class="link-btn" (click)="editReason.emit()">შეცვლა</button>
+        </div>
+      }
+
+      <div class="field">
+        <span class="label">შეფასება</span>
+        <div class="stars" role="radiogroup" aria-label="შეფასება" (mouseleave)="hoverRating.set(0)">
+          @for (n of stars; track n) {
+            <button
+              type="button"
+              class="star"
+              role="radio"
+              [class.on]="n <= shownRating()"
+              [attr.aria-checked]="p.rating === n"
+              [attr.aria-label]="n + ' / 5'"
+              (mouseenter)="hoverRating.set(n)"
+              (click)="setRating(n)"
+            >
+              <span class="material-symbols-outlined">star</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="field tags-field">
+        <span class="label">თეგები</span>
+        <div class="tags-box">
+          @for (tag of p.tags; track tag) {
+            <span class="tag">
+              #{{ tag }}
+              <button type="button" (click)="removeTag(tag)" [attr.aria-label]="tag + ' წაშლა'">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </span>
+          }
+          @if (p.tags.length < maxTags) {
+            <input
+              type="text"
+              maxlength="30"
+              placeholder="დაამატეთ თეგი"
+              [value]="tagInput()"
+              (input)="tagInput.set($any($event.target).value)"
+              (keydown)="onTagKeydown($event)"
+              (blur)="addTag()"
+            />
+          }
+        </div>
+        @if (tagInput() && suggestions().length) {
+          <div class="suggestions">
+            @for (s of suggestions(); track s) {
+              <!-- mousedown: runs before the input's blur adds the half-typed text -->
+              <button type="button" (mousedown)="$event.preventDefault(); addTag(s)">#{{ s }}</button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="block">
+      <app-hr-candidate-card [candidate]="c" [busy]="busy()" (download)="download.emit($event)" />
+    </section>
+    </div>
+
+    <div class="col col-side">
+    <section class="block">
+      <h3>ჩანაწერები და ისტორია</h3>
+      <div class="note-form">
+        <textarea
+          rows="3"
+          maxlength="2000"
+          placeholder="დაწერეთ ჩანაწერი… (Ctrl+Enter შესანახად)"
+          [value]="noteText()"
+          (input)="noteText.set($any($event.target).value)"
+          (keydown)="onNoteKeydown($event)"
+        ></textarea>
+        <button type="button" class="btn-primary" [disabled]="!noteText().trim() || savingNote()" (click)="addNote()">
+          @if (savingNote()) {
+            <span class="spinner"></span>
+          }
+          შენახვა
+        </button>
+      </div>
+
+      @if (activityError()) {
+        <p class="muted error">{{ activityError() }}</p>
+      } @else if (activityLoading() && !activity().length) {
+        <div class="center"><span class="spinner"></span></div>
+      } @else if (!activity().length) {
+        <p class="muted">ჯერ ჩანაწერები არ არის.</p>
+      }
+
+      <ol class="timeline">
+        @for (item of activity(); track item.id) {
+          <li [class.note]="item.kind === 'NOTE'">
+            @switch (item.kind) {
+              @case ('NOTE') {
+                <p class="note-body">{{ item.body }}</p>
+              }
+              @case ('STAGE_CHANGED') {
+                <p class="event">
+                  <span class="material-symbols-outlined">swap_horiz</span>
+                  @if (item.fromStage) {
+                    {{ stageById[item.fromStage].label }} →
+                  }
+                  <strong>{{ item.toStage ? stageById[item.toStage].label : '' }}</strong>
+                </p>
+                @if (item.rejectionReason) {
+                  <p class="event-reason">{{ item.rejectionReason }}</p>
+                }
+              }
+              @case ('RATING_CHANGED') {
+                <p class="event">
+                  <span class="material-symbols-outlined">star</span>
+                  @if (item.rating) {
+                    შეფასება: <strong>{{ item.rating }}/5</strong>
+                  } @else {
+                    შეფასება მოიხსნა
+                  }
+                </p>
+              }
+            }
+            <div class="item-meta">
+              <span>{{ item.author.name }} · {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+              @if (item.kind === 'NOTE') {
+                <button
+                  type="button"
+                  class="link-btn danger"
+                  [disabled]="deletingNoteId() === item.noteId"
+                  (click)="deleteNote(item)"
+                >
+                  წაშლა
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+    </section>
+    </div>
+  </div>
+</aside>

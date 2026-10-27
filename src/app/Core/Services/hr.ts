@@ -4,8 +4,11 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { skipLoading } from '../loading/skip-loading.component';
 import {
+  CandidateActivity,
   HrAccount,
   HrCandidate,
+  PipelineChange,
+  PipelineState,
   HrCvSearchParams,
   HrCvSearchResult,
   HrUsage,
@@ -44,6 +47,25 @@ export class HrService {
 
   listUnlocked(): Observable<HrCandidate[]> {
     return this.http.get<HrCandidate[]>(`${this.url}/hr/candidates/unlocked`, { context: this.context() });
+  }
+
+  // "My candidates" board. `order` = CV ids of the candidate's column after a drop, top to bottom.
+  updatePipeline(cvId: number, change: PipelineChange & { order?: number[] }): Observable<PipelineState> {
+    return this.http.patch<PipelineState>(`${this.url}/hr/candidates/${cvId}/pipeline`, change, {
+      context: this.context(),
+    });
+  }
+
+  getActivity(cvId: number): Observable<CandidateActivity[]> {
+    return this.http.get<CandidateActivity[]>(`${this.url}/hr/candidates/${cvId}/activity`, { context: this.context() });
+  }
+
+  addNote(cvId: number, body: string): Observable<CandidateActivity> {
+    return this.http.post<CandidateActivity>(`${this.url}/hr/candidates/${cvId}/notes`, { body }, { context: this.context() });
+  }
+
+  deleteNote(noteId: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/hr/candidates/notes/${noteId}`, { context: this.context() });
   }
 
   /** Fetches the CV file and hands it to the browser as a download. */

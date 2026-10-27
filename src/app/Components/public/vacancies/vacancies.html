@@ -705,7 +705,10 @@
                     <td class="col-deadline">
                       @let dStatus = getDeadlineStatus(job.deadline, job.publishDate);
                       <span class="deadline-tag" [ngClass]="dStatus.class">
-                        {{ dStatus.text }}
+                        <span class="deadline-date">{{ dStatus.text }}</span>
+                        @if (dStatus.class !== 'none') {
+                          <span class="deadline-bar"><span [style.width.%]="dStatus.progress"></span></span>
+                        }
                       </span>
                     </td>
                     <td class="col-action">
@@ -796,7 +799,10 @@
 
                   @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
                   <span class="deadline-tag mini" [ngClass]="mStatus.class">
-                    {{ mStatus.text }}
+                    <span class="deadline-date">{{ mStatus.text }}</span>
+                    @if (mStatus.class !== 'none') {
+                      <span class="deadline-bar"><span [style.width.%]="mStatus.progress"></span></span>
+                    }
                   </span>
                 </div>
               </a>

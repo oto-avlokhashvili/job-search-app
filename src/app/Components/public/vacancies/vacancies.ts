@@ -561,52 +561,55 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getDeadlineStatus(deadlineStr?: string, publishDateStr?: string): { text: string; class: 'fresh' | 'warning' | 'urgent' | 'expired' | 'none' } {
+  private parseJobDate(dateStr?: string): Date | null {
+    if (!dateStr) return null;
+    const trimmed = dateStr.trim();
+    let date: Date;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+      const [day, month, year] = trimmed.split('/').map(Number);
+      date = new Date(year, month - 1, day);
+    } else {
+      date = new Date(trimmed);
+    }
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  /**
+   * Deadline cell: color class plus `progress` (0–100) for the bar = share of the application
+   * window still left. Without a deadline the bar shows freshness over a 30-day window instead.
+   */
+  getDeadlineStatus(
+    deadlineStr?: string,
+    publishDateStr?: string,
+  ): { text: string; class: 'fresh' | 'warning' | 'urgent' | 'expired' | 'none'; progress: number } {
     const targetDateStr = deadlineStr || publishDateStr;
-    if (!targetDateStr) return { text: 'მითითებული არ არის', class: 'none' };
+    if (!targetDateStr) return { text: 'მითითებული არ არის', class: 'none', progress: 0 };
 
-    let targetDate: Date | null = null;
-    try {
-      if (typeof targetDateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(targetDateStr.trim())) {
-        const [day, month, year] = targetDateStr.trim().split('/').map(Number);
-        targetDate = new Date(year, month - 1, day);
-      } else {
-        targetDate = new Date(targetDateStr);
-      }
-    } catch {
-      targetDate = null;
-    }
+    const targetDate = this.parseJobDate(targetDateStr);
+    if (!targetDate) return { text: targetDateStr, class: 'none', progress: 0 };
 
-    if (!targetDate || isNaN(targetDate.getTime())) {
-      return { text: targetDateStr, class: 'none' };
-    }
-
-    const now = new Date();
-    const diffMs = targetDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-    const formattedText = this.formatDate(targetDateStr);
+    const dayMs = 1000 * 60 * 60 * 24;
+    const now = Date.now();
+    const diffDays = Math.ceil((targetDate.getTime() - now) / dayMs);
+    const text = this.formatDate(targetDateStr);
+    const clamp = (p: number) => Math.max(0, Math.min(100, Math.round(p)));
 
     if (deadlineStr) {
-      if (diffDays < 0) {
-        return { text: formattedText, class: 'expired' };
-      } else if (diffDays <= 7) {
-        return { text: formattedText, class: 'urgent' };
-      } else if (diffDays <= 21) {
-        return { text: formattedText, class: 'warning' };
-      } else {
-        return { text: formattedText, class: 'fresh' };
-      }
-    } else {
-      const daysOld = Math.abs(diffDays);
-      if (daysOld <= 7) {
-        return { text: formattedText, class: 'fresh' };
-      } else if (daysOld <= 21) {
-        return { text: formattedText, class: 'warning' };
-      } else {
-        return { text: formattedText, class: 'urgent' };
-      }
+      if (diffDays < 0) return { text, class: 'expired', progress: 0 };
+
+      const published = this.parseJobDate(publishDateStr);
+      const windowMs =
+        published && published < targetDate ? targetDate.getTime() - published.getTime() : 30 * dayMs;
+      // Keep a sliver visible until the day itself passes
+      const progress = Math.max(4, clamp(((targetDate.getTime() - now) / windowMs) * 100));
+      const cls = diffDays <= 7 ? 'urgent' : diffDays <= 21 ? 'warning' : 'fresh';
+      return { text, class: cls, progress };
     }
+
+    const daysOld = Math.abs(diffDays);
+    const progress = Math.max(4, clamp(100 - (daysOld / 30) * 100));
+    const cls = daysOld <= 7 ? 'fresh' : daysOld <= 21 ? 'warning' : 'urgent';
+    return { text, class: cls, progress };
   }
 
   setSource(source: string) {

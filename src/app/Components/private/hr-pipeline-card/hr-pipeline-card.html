@@ -1,0 +1,62 @@
+@let c = candidate();
+@let p = pipeline();
+<article class="card" tabindex="0" [style.--stage-color]="stage().color" (click)="open.emit(c)" (keydown.enter)="open.emit(c)">
+  <div class="head">
+    <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+    <div class="who">
+      <h4>{{ c.contact?.fullName || c.detectedRole || 'კანდიდატი' }}</h4>
+      <p class="role">
+        {{ c.detectedRole }}
+        @if (c.seniorityLevel) {
+          <span class="level">{{ c.seniorityLevel }}</span>
+        }
+      </p>
+    </div>
+    @if (p.rating) {
+      <span class="rating" [attr.aria-label]="'შეფასება ' + p.rating + '/5'">
+        <span class="material-symbols-outlined">star</span>{{ p.rating }}
+      </span>
+    }
+  </div>
+
+  @if (skills().length) {
+    <div class="skills">
+      @for (skill of skills(); track skill) {
+        <span class="chip">{{ skill }}</span>
+      }
+    </div>
+  }
+
+  @if (visibleTags().length) {
+    <div class="tags">
+      @for (tag of visibleTags(); track tag) {
+        <span class="tag">#{{ tag }}</span>
+      }
+      @if (hiddenTags() > 0) {
+        <span class="tag more">+{{ hiddenTags() }}</span>
+      }
+    </div>
+  }
+
+  @if (p.stage === 'REJECTED' && p.rejectionReason) {
+    <p class="reason">
+      <span class="material-symbols-outlined">info</span>{{ p.rejectionReason }}
+    </p>
+  }
+
+  <div class="foot">
+    @if (c.contact?.phoneNumber) {
+      <a class="phone" [href]="'tel:' + c.contact!.phoneNumber" (click)="$event.stopPropagation()">
+        <span class="material-symbols-outlined">call</span>{{ c.contact!.phoneNumber }}
+      </a>
+    } @else if (c.contact?.email) {
+      <a class="phone" [href]="'mailto:' + c.contact!.email" (click)="$event.stopPropagation()">
+        <span class="material-symbols-outlined">mail</span>{{ c.contact!.email }}
+      </a>
+    } @else {
+      <span></span>
+    }
+
+    <app-hr-stage-menu [stage]="p.stage" (stageChange)="stageChange.emit($event)" />
+  </div>
+</article>

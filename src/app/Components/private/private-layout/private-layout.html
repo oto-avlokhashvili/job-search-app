@@ -72,7 +72,7 @@
 
     <div class="sidebar-footer">
       @if (usage(); as u) {
-        <div class="usage-card">
+        <div class="usage-card" [class.warn]="!u.unlimited && (percent(u.cvUnlocks) >= 80 || percent(u.linkedinSearches) >= 80)">
           <div class="usage-head">
             <span class="material-symbols-outlined">data_usage</span>
             <span>ლიმიტები</span>
@@ -97,12 +97,26 @@
             </div>
           }
         </div>
+      } @else if (isApproved()) {
+        <!-- Same footprint as the card so the sidebar doesn't jump when the numbers land -->
+        <div class="usage-card loading" aria-busy="true">
+          <div class="usage-head">
+            <span class="material-symbols-outlined">data_usage</span>
+            <span>ლიმიტები</span>
+          </div>
+          @for (_ of [1, 2]; track $index) {
+            <div class="usage-item">
+              <div class="usage-row"><span class="shimmer text"></span><span class="shimmer num"></span></div>
+              <div class="bar"><span class="shimmer"></span></div>
+            </div>
+          }
+        </div>
       }
     </div>
   </aside>
 
   <main class="content">
-    <div class="content-inner">
+    <div class="content-inner" [class.wide]="isWide()">
       <router-outlet />
     </div>
   </main>
