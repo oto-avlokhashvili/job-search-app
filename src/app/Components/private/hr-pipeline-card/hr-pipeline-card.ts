@@ -12,6 +12,8 @@ import { HrStageMenu } from '../hr-stage-menu/hr-stage-menu';
 })
 export class HrPipelineCard {
   candidate = input.required<HrCandidate>();
+  /** Main board: which vacancy this card belongs to. */
+  vacancyLabel = input<string | null>(null);
   open = output<HrCandidate>();
   stageChange = output<PipelineStage>();
 

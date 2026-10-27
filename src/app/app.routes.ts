@@ -118,6 +118,12 @@ export const routes: Routes = [
         loadComponent: () => import('./Components/private/hr-candidates/hr-candidates').then((m) => m.HrCandidates),
         data: { wideContent: true },
       },
+      // One vacancy's board: same page, filtered
+      {
+        path: 'candidates/v/:vacancyId',
+        loadComponent: () => import('./Components/private/hr-candidates/hr-candidates').then((m) => m.HrCandidates),
+        data: { wideContent: true },
+      },
       {
         path: 'admin',
         loadComponent: () => import('./Components/private/hr-admin/hr-admin').then((m) => m.HrAdmin),

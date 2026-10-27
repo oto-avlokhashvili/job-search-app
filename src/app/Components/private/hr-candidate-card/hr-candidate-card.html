@@ -40,6 +40,18 @@
     <p class="domains">{{ c.domains.join(' · ') }}</p>
   }
 
+  @if (addable() && memberships().length) {
+    <div class="in-vacancies">
+      @for (m of memberships(); track m.entryId) {
+        <a class="vacancy-chip" [routerLink]="['/hr/candidates/v', m.vacancyId]" [style.--stage-color]="m.stage.color">
+          <span class="material-symbols-outlined">work</span>
+          <span class="vacancy-title">{{ m.title }}</span>
+          <span class="vacancy-stage">{{ m.stage.label }}</span>
+        </a>
+      }
+    </div>
+  }
+
   <footer class="foot">
     @if (c.unlocked && c.contact) {
       <div class="contact">
@@ -59,23 +71,32 @@
           </a>
         }
       </div>
-      <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
-        <span class="material-symbols-outlined">download</span>
-        CV-ის ჩამოტვირთვა
-      </button>
+      <div class="actions">
+        <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
+          <span class="material-symbols-outlined">download</span>
+          CV-ის ჩამოტვირთვა
+        </button>
+        @if (addable()) {
+          <app-hr-vacancy-picker variant="ghost" [candidate]="c" [busy]="busy()" (add)="addToVacancy.emit($event)" />
+        }
+      </div>
     } @else {
       <span class="locked">
         <span class="material-symbols-outlined">lock</span>
         საკონტაქტო მონაცემები დაფარულია
       </span>
-      <button class="btn-action primary" type="button" [disabled]="busy()" (click)="unlock.emit(c)">
-        @if (busy()) {
-          <span class="spinner"></span>
-        } @else {
-          <span class="material-symbols-outlined">lock_open</span>
-        }
-        კონტაქტის გახსნა
-      </button>
+      @if (addable()) {
+        <app-hr-vacancy-picker [candidate]="c" [busy]="busy()" (add)="addToVacancy.emit($event)" (unlockOnly)="unlock.emit(c)" />
+      } @else {
+        <button class="btn-action primary" type="button" [disabled]="busy()" (click)="unlock.emit(c)">
+          @if (busy()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="material-symbols-outlined">lock_open</span>
+          }
+          კონტაქტის გახსნა
+        </button>
+      }
     }
   </footer>
 </article>

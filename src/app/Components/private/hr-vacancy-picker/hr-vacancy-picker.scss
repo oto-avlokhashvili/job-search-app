@@ -1,0 +1,339 @@
+:host {
+  display: inline-flex;
+}
+
+// Same size and colors as the card's other action buttons
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem 0.55rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.15s ease, background 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 19px;
+  }
+
+  .chevron {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &.open .chevron {
+    transform: rotate(180deg);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  &.ghost {
+    padding: calc(0.55rem - 1px) 0.6rem calc(0.55rem - 1px) 0.85rem;
+    border: 1px solid rgba(var(--primary-rgb), 0.35);
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary);
+    font-size: 0.85rem;
+  }
+}
+
+// ─── Menu (CDK overlay) ──────────────────────────────────────
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  padding: 0.4rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  // Dark --card-bg is slightly translucent; over page text it needs a solid base
+  background: linear-gradient(var(--card-bg), var(--card-bg)), var(--surface);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  animation: menu-in 0.14s ease-out;
+}
+
+.menu-title {
+  padding: 0.35rem 0.6rem 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0.2rem 0.3rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    color: var(--on-surface);
+    font: inherit;
+    font-size: 0.85rem;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--primary);
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  .option-icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.12);
+
+    .material-symbols-outlined {
+      font-size: 17px;
+    }
+  }
+
+  .option-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hint {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+
+    &.target {
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.12);
+    }
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    outline: none;
+    background: rgba(var(--primary-rgb), 0.08);
+  }
+
+  &.member {
+    cursor: default;
+
+    .option-icon {
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.14);
+    }
+
+    .option-label {
+      color: var(--text-muted);
+    }
+  }
+
+  &.new {
+    margin-top: 0.2rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 10px 10px;
+    color: var(--primary);
+
+    .option-icon {
+      border: 1px dashed rgba(var(--primary-rgb), 0.5);
+      background: transparent;
+    }
+  }
+}
+
+.create {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+  padding: 0.45rem 0.2rem 0.15rem;
+  border-top: 1px solid var(--border-color);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.45rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--primary);
+    background: var(--input-bg);
+    color: var(--on-surface);
+    font: inherit;
+    font-size: 0.88rem;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.create-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.unlock-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 10px 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    color: var(--on-surface);
+  }
+}
+
+.empty,
+.error {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.error {
+  color: #ef4444;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 0.6rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  &.dark {
+    border-color: var(--surface-container);
+    border-top-color: var(--primary);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@media (max-width: 576px) {
+  // Full-width card action, like the card's other buttons
+  :host {
+    width: 100%;
+  }
+
+  .trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search input,
+  .create input {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu {
+    animation: none;
+  }
+}

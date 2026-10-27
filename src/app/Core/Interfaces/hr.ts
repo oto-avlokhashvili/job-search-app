@@ -23,13 +23,41 @@ export interface HrCandidate {
   matchedKeywords?: string[];
   unlocked: boolean;
   contact: CandidateContact | null;
-  /** Board state; only on "My candidates". Missing = never moved (SOURCED). */
+  /** This HR's vacancies the CV is in (unlocked CVs only). */
+  vacancies?: VacancyMembership[];
+  /** Board card state; only on "My candidates". A CV in two vacancies gives two cards. */
   pipeline?: PipelineState;
+}
+
+/** A card on the boards: one CV in one vacancy (or in none). */
+export type BoardCard = HrCandidate & { pipeline: PipelineState };
+
+export interface VacancyMembership {
+  entryId: number;
+  vacancyId: number;
+  stage: PipelineStage;
+}
+
+export type VacancyStatus = 'OPEN' | 'CLOSED';
+
+/** The HR's own hiring position; each has its own board. */
+export interface HrVacancy {
+  id: number;
+  title: string;
+  status: VacancyStatus;
+  createdAt: string;
+  updatedAt: string;
+  /** Server counts at load time; the sidebar counts from the board once it's loaded. */
+  total: number;
+  stages: Partial<Record<PipelineStage, number>>;
 }
 
 export type PipelineStage = 'SOURCED' | 'CONTACTED' | 'INTERVIEW' | 'OFFER' | 'HIRED' | 'REJECTED';
 
 export interface PipelineState {
+  /** Board entry id: identifies the card (a CV can have several). */
+  id: number;
+  vacancyId: number | null;
   stage: PipelineStage;
   rejectionReason: string | null;
   rating: number | null;
@@ -52,6 +80,8 @@ export interface CandidateActivity {
   author: { id: number; name: string };
   noteId?: number;
   body?: string;
+  /** Board the change was made on (null = no vacancy). */
+  vacancyId?: number | null;
   fromStage?: PipelineStage | null;
   toStage?: PipelineStage | null;
   rejectionReason?: string | null;

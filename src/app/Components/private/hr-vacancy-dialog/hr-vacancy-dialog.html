@@ -1,0 +1,39 @@
+<div class="overlay" (click)="cancel.emit()">
+  <form
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="vacancy-dialog-title"
+    (click)="$event.stopPropagation()"
+    (keydown)="onKeydown($event)"
+    (submit)="$event.preventDefault(); save()"
+  >
+    <h2 id="vacancy-dialog-title">{{ vacancy() ? 'ვაკანსიის გადარქმევა' : 'ახალი ვაკანსია' }}</h2>
+    <p class="sub">თითოეულ ვაკანსიას თავისი კანდიდატების დაფა აქვს</p>
+
+    <label class="field">
+      <span>დასახელება</span>
+      <input
+        #titleInput
+        type="text"
+        maxlength="120"
+        placeholder="მაგ: ბუღალტერი"
+        [value]="title()"
+        (input)="title.set($any($event.target).value)"
+      />
+    </label>
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button type="button" class="btn ghost" (click)="cancel.emit()">გაუქმება</button>
+      <button type="submit" class="btn primary" [disabled]="!title().trim() || saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        }
+        {{ vacancy() ? 'შენახვა' : 'შექმნა' }}
+      </button>
+    </div>
+  </form>
+</div>

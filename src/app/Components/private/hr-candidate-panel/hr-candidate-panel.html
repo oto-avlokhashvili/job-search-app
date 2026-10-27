@@ -31,6 +31,27 @@
       }
 
       <div class="field">
+        <span class="label">ვაკანსია</span>
+        <div class="vacancy-field">
+          @if (vacancyTitle(); as title) {
+            <span class="vacancy-name"><span class="material-symbols-outlined">work</span>{{ title }}</span>
+            <button type="button" class="link-btn danger" [disabled]="busy()" (click)="removeFromVacancy.emit()">ამოღება</button>
+          } @else {
+            <span class="vacancy-name none">ვაკანსიის გარეშე</span>
+          }
+          <app-hr-vacancy-picker variant="ghost" [candidate]="pickerCandidate()" [busy]="busy()" (add)="addToVacancy.emit($event)" />
+        </div>
+      </div>
+      @if (otherVacancies().length) {
+        <p class="also-in">
+          ასევე:
+          @for (o of otherVacancies(); track o.vacancyId) {
+            <span class="also-chip" [style.--stage-color]="stageById[o.stage].color">{{ o.title }} · {{ stageById[o.stage].label }}</span>
+          }
+        </p>
+      }
+
+      <div class="field">
         <span class="label">შეფასება</span>
         <div class="stars" role="radiogroup" aria-label="შეფასება" (mouseleave)="hoverRating.set(0)">
           @for (n of stars; track n) {
@@ -131,6 +152,9 @@
                     {{ stageById[item.fromStage].label }} →
                   }
                   <strong>{{ item.toStage ? stageById[item.toStage].label : '' }}</strong>
+                  @if (eventVacancy(item); as title) {
+                    <span class="event-vacancy">{{ title }}</span>
+                  }
                 </p>
                 @if (item.rejectionReason) {
                   <p class="event-reason">{{ item.rejectionReason }}</p>

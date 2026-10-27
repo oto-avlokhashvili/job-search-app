@@ -1,6 +1,11 @@
 @let c = candidate();
 @let p = pipeline();
 <article class="card" tabindex="0" [style.--stage-color]="stage().color" (click)="open.emit(c)" (keydown.enter)="open.emit(c)">
+  @if (vacancyLabel(); as label) {
+    <span class="vacancy" [attr.title]="label">
+      <span class="material-symbols-outlined">work</span>{{ label }}
+    </span>
+  }
   <div class="head">
     <span class="avatar" aria-hidden="true">{{ initials() }}</span>
     <div class="who">

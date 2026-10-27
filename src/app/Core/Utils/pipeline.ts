@@ -27,6 +27,8 @@ export const REJECTION_REASONS = ['არ შეესაბამება მ�
 export const MAX_TAGS = 10;
 
 export const DEFAULT_PIPELINE: PipelineState = {
+  id: 0,
+  vacancyId: null,
   stage: 'SOURCED',
   rejectionReason: null,
   rating: null,

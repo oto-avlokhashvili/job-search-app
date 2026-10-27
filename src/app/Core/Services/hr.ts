@@ -4,7 +4,9 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { skipLoading } from '../loading/skip-loading.component';
 import {
+  BoardCard,
   CandidateActivity,
+  HrVacancy,
   HrAccount,
   HrCandidate,
   PipelineChange,
@@ -45,13 +47,42 @@ export class HrService {
     return this.http.post<HrCandidate>(`${this.url}/hr/candidates/${cvId}/unlock`, null, { context: this.context() });
   }
 
-  listUnlocked(): Observable<HrCandidate[]> {
-    return this.http.get<HrCandidate[]>(`${this.url}/hr/candidates/unlocked`, { context: this.context() });
+  // Every card of this HR: the boards filter it per vacancy on the client.
+  getBoard(): Observable<BoardCard[]> {
+    return this.http.get<BoardCard[]>(`${this.url}/hr/board`, { context: this.context() });
   }
 
-  // "My candidates" board. `order` = CV ids of the candidate's column after a drop, top to bottom.
-  updatePipeline(cvId: number, change: PipelineChange & { order?: number[] }): Observable<PipelineState> {
-    return this.http.patch<PipelineState>(`${this.url}/hr/candidates/${cvId}/pipeline`, change, {
+  // `order` = entry ids of the card's column after a drop, top to bottom.
+  updatePipeline(entryId: number, change: PipelineChange & { order?: number[] }): Observable<PipelineState> {
+    return this.http.patch<PipelineState>(`${this.url}/hr/board/${entryId}`, change, { context: this.context() });
+  }
+
+  /** Takes a card off its vacancy. Returns the card when it was the CV's last one (it stays without a vacancy). */
+  removeFromVacancy(entryId: number): Observable<PipelineState | null> {
+    return this.http.delete<PipelineState | null>(`${this.url}/hr/board/${entryId}`, { context: this.context() });
+  }
+
+  listVacancies(): Observable<{ vacancies: HrVacancy[]; unassigned: number }> {
+    return this.http.get<{ vacancies: HrVacancy[]; unassigned: number }>(`${this.url}/hr/vacancies`, {
+      context: this.context(),
+    });
+  }
+
+  createVacancy(title: string): Observable<HrVacancy> {
+    return this.http.post<HrVacancy>(`${this.url}/hr/vacancies`, { title }, { context: this.context() });
+  }
+
+  updateVacancy(id: number, change: Partial<Pick<HrVacancy, 'title' | 'status'>>): Observable<HrVacancy> {
+    return this.http.patch<HrVacancy>(`${this.url}/hr/vacancies/${id}`, change, { context: this.context() });
+  }
+
+  deleteVacancy(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/hr/vacancies/${id}`, { context: this.context() });
+  }
+
+  /** Opens the contacts if needed (counts toward the quota once per CV) and adds the CV to the vacancy. */
+  addToVacancy(vacancyId: number, cvId: number): Observable<BoardCard> {
+    return this.http.post<BoardCard>(`${this.url}/hr/vacancies/${vacancyId}/candidates/${cvId}`, null, {
       context: this.context(),
     });
   }

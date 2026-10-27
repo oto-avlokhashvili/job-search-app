@@ -4,6 +4,16 @@
     <p>მოძებნეთ კანდიდატები Job Up-ის CV ბაზაში და LinkedIn-ზე</p>
   </header>
 
+  @if (targetVacancy(); as v) {
+    <div class="target-vacancy">
+      <span class="material-symbols-outlined">work</span>
+      <span class="target-text">ძიება ვაკანსიისთვის: <a [routerLink]="['/hr/candidates/v', v.id]">{{ v.title }}</a></span>
+      <button type="button" aria-label="ვაკანსიის მოხსნა" (click)="clearTargetVacancy()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  }
+
   <form class="search" [formGroup]="form" (ngSubmit)="submit()">
     <div class="search-fields">
       <label class="field grow">
@@ -193,7 +203,9 @@
           <app-hr-candidate-card
             [candidate]="candidate"
             [busy]="busyId() === candidate.id"
+            [addable]="true"
             (unlock)="unlock($event)"
+            (addToVacancy)="addToVacancy(candidate, $event)"
             (download)="download($event)" />
         }
       </div>

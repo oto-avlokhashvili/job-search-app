@@ -1,0 +1,111 @@
+<button
+  type="button"
+  class="trigger"
+  [class.ghost]="variant() === 'ghost'"
+  [class.open]="open()"
+  [disabled]="busy()"
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="open()"
+  (click)="toggle()"
+>
+  @if (busy()) {
+    <span class="spinner"></span>
+  } @else {
+    <span class="material-symbols-outlined">playlist_add</span>
+  }
+  {{ variant() === 'ghost' ? 'ვაკანსიაში' : 'ვაკანსიაში დამატება' }}
+  <span class="material-symbols-outlined chevron">expand_more</span>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
+  (overlayOutsideClick)="close()"
+  (overlayKeydown)="onOverlayKeydown($event)"
+  (detach)="close()"
+>
+  <div class="menu" role="dialog" aria-label="ვაკანსიაში დამატება">
+    <span class="menu-title">ვაკანსიაში დამატება</span>
+
+    @if (showSearch()) {
+      <label class="search">
+        <span class="material-symbols-outlined">search</span>
+        <input
+          type="text"
+          placeholder="ვაკანსიის ძიება"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)"
+        />
+      </label>
+    }
+
+    <div class="list">
+      @if (loading()) {
+        <div class="center"><span class="spinner dark"></span></div>
+      }
+      @for (v of shown(); track v.id) {
+        <button
+          type="button"
+          class="option"
+          [class.member]="isMember(v.id)"
+          [disabled]="isMember(v.id)"
+          (click)="choose(v.id)"
+        >
+          <span class="option-icon">
+            <span class="material-symbols-outlined">{{ isMember(v.id) ? 'check' : 'work' }}</span>
+          </span>
+          <span class="option-label">{{ v.title }}</span>
+          @if (isMember(v.id)) {
+            <span class="hint">დამატებულია</span>
+          } @else if (v.id === targetId()) {
+            <span class="hint target">ძიება</span>
+          }
+        </button>
+      } @empty {
+        @if (!loading() && query()) {
+          <p class="empty">ვერ მოიძებნა</p>
+        }
+      }
+    </div>
+
+    @if (creating()) {
+      <form class="create" (submit)="$event.preventDefault(); create()">
+        <input
+          #newInput
+          type="text"
+          maxlength="120"
+          placeholder="ვაკანსიის დასახელება"
+          [value]="newTitle()"
+          (input)="newTitle.set($any($event.target).value)"
+        />
+        <button type="submit" class="create-btn" [disabled]="!newTitle().trim() || saving()" aria-label="შექმნა">
+          @if (saving()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="material-symbols-outlined">check</span>
+          }
+        </button>
+      </form>
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+    } @else {
+      <button type="button" class="option new" (click)="startCreate()">
+        <span class="option-icon"><span class="material-symbols-outlined">add</span></span>
+        <span class="option-label">ახალი ვაკანსია</span>
+      </button>
+    }
+
+    @if (!candidate().unlocked) {
+      <button type="button" class="unlock-only" (click)="chooseUnlockOnly()">
+        <span class="material-symbols-outlined">lock_open</span>
+        მხოლოდ კონტაქტის გახსნა
+      </button>
+    }
+  </div>
+</ng-template>

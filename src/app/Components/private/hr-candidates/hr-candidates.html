@@ -1,9 +1,43 @@
+@let v = vacancy();
 <section class="page" [class.board-mode]="view() === 'board' && candidates().length > 0">
   <header class="page-head">
-    <div>
-      <h1>ჩემი კანდიდატები</h1>
-      <p>კანდიდატები, რომელთა საკონტაქტო მონაცემებიც გახსენით</p>
-    </div>
+    @if (vacancyId() === null) {
+      <div>
+        <h1>ჩემი კანდიდატები</h1>
+        <p>ყველა კანდიდატი, რომლის კონტაქტიც გახსენით, ყველა ვაკანსიიდან</p>
+      </div>
+    } @else {
+      <div class="vacancy-head">
+        <a routerLink="/hr/candidates" class="back">
+          <span class="material-symbols-outlined">arrow_back</span>ჩემი კანდიდატები
+        </a>
+        <h1>
+          {{ v?.title || 'ვაკანსია' }}
+          @if (v?.status === 'CLOSED') {
+            <span class="status closed">დახურული</span>
+          }
+        </h1>
+        @if (v) {
+          <div class="vacancy-actions">
+            @if (v.status === 'OPEN') {
+              <button type="button" class="action primary" (click)="searchForVacancy(v)">
+                <span class="material-symbols-outlined">person_search</span>კანდიდატების ძიება
+              </button>
+            }
+            <button type="button" class="action" (click)="renaming.set(true)">
+              <span class="material-symbols-outlined">edit</span>გადარქმევა
+            </button>
+            <button type="button" class="action" [disabled]="vacancyBusy()" (click)="toggleClosed(v)">
+              <span class="material-symbols-outlined">{{ v.status === 'OPEN' ? 'archive' : 'unarchive' }}</span>
+              {{ v.status === 'OPEN' ? 'დახურვა' : 'ხელახლა გახსნა' }}
+            </button>
+            <button type="button" class="action danger" [disabled]="vacancyBusy()" (click)="deleteVacancy(v)">
+              <span class="material-symbols-outlined">delete</span>წაშლა
+            </button>
+          </div>
+        }
+      </div>
+    }
     @if (candidates().length) {
       <div class="view-toggle" role="tablist" aria-label="ხედი">
         <button type="button" role="tab" [class.active]="view() === 'board'" [attr.aria-selected]="view() === 'board'" (click)="setView('board')">
@@ -16,17 +50,43 @@
     }
   </header>
 
+  <!-- Main board: all cards, or only the ones not in any vacancy -->
+  @if (vacancyId() === null && unassignedCount() > 0 && unassignedCount() < allCount()) {
+    <div class="scope" role="tablist" aria-label="ფილტრი">
+      <button type="button" role="tab" [class.active]="scope() === 'all'" [attr.aria-selected]="scope() === 'all'" (click)="setScope('all')">
+        ყველა <span class="count">{{ allCount() }}</span>
+      </button>
+      <button type="button" role="tab" [class.active]="scope() === 'none'" [attr.aria-selected]="scope() === 'none'" (click)="setScope('none')">
+        ვაკანსიის გარეშე <span class="count">{{ unassignedCount() }}</span>
+      </button>
+    </div>
+  }
+
   @if (error()) {
     <div class="notice error">{{ error() }}</div>
   }
 
-  @if (loading()) {
+  @if (vacancyMissing()) {
+    <div class="empty">
+      <span class="material-symbols-outlined">work_off</span>
+      <p>ვაკანსია ვერ მოიძებნა. შესაძლოა წაშლილია.</p>
+      <a routerLink="/hr/candidates" class="btn-link">ყველა კანდიდატი</a>
+    </div>
+  } @else if (loading()) {
     <div class="empty"><span class="spinner"></span></div>
   } @else if (!error() && candidates().length === 0) {
     <div class="empty">
-      <span class="material-symbols-outlined">group</span>
-      <p>ჯერ არცერთი კანდიდატის კონტაქტი არ გაგიხსნიათ.</p>
-      <a routerLink="/hr/search" class="btn-link">კანდიდატების ძიება</a>
+      @if (vacancyId() === null) {
+        <span class="material-symbols-outlined">group</span>
+        <p>ჯერ არცერთი კანდიდატის კონტაქტი არ გაგიხსნიათ.</p>
+        <a routerLink="/hr/search" class="btn-link">კანდიდატების ძიება</a>
+      } @else {
+        <span class="material-symbols-outlined">person_add</span>
+        <p>ამ ვაკანსიაში ჯერ კანდიდატი არ არის. დაამატეთ ძიების გვერდიდან ან კანდიდატის ბარათიდან.</p>
+        @if (v?.status === 'OPEN') {
+          <button type="button" class="btn-link" (click)="searchForVacancy(v!)">კანდიდატების ძიება</button>
+        }
+      }
     </div>
   } @else if (view() === 'board') {
     <!-- One drop group: cards can go to any column or onto the outcome zones -->
@@ -72,7 +132,7 @@
           </header>
           <div class="col-bar"></div>
           <div class="col-list" cdkDropList [cdkDropListData]="s.id" (cdkDropListDropped)="drop($event)">
-            @for (c of list; track c.id) {
+            @for (c of list; track c.pipeline.id) {
               <app-hr-pipeline-card
                 cdkDrag
                 [cdkDragData]="c"
@@ -80,7 +140,8 @@
                 (cdkDragStarted)="onDragStarted()"
                 (cdkDragEnded)="onDragEnded()"
                 [candidate]="c"
-                (open)="open($event)"
+                [vacancyLabel]="labelFor(c)"
+                (open)="open(c)"
                 (stageChange)="moveTo(c, $event)"
               />
             } @empty {
@@ -97,7 +158,7 @@
     </div>
   } @else {
     <div class="results">
-      @for (candidate of candidates(); track candidate.id) {
+      @for (candidate of listCandidates(); track candidate.id) {
         <app-hr-candidate-card [candidate]="candidate" [busy]="busyId() === candidate.id" (download)="download($event)" />
       }
     </div>
@@ -118,8 +179,8 @@
     </header>
     <p class="drawer-hint">კანდიდატის დასაბრუნებლად აირჩიეთ ეტაპი მის ბარათზე</p>
     <div class="drawer-list">
-      @for (c of columns()[stageId]; track c.id) {
-        <app-hr-pipeline-card [candidate]="c" (open)="open($event)" (stageChange)="moveTo(c, $event)" />
+      @for (c of columns()[stageId]; track c.pipeline.id) {
+        <app-hr-pipeline-card [candidate]="c" [vacancyLabel]="labelFor(c)" (open)="open(c)" (stageChange)="moveTo(c, $event)" />
       } @empty {
         <p class="col-empty">
           <span class="material-symbols-outlined">{{ meta.icon }}</span>
@@ -141,14 +202,20 @@
     (editReason)="editReason(c)"
     (ratingChange)="rate(c, $event)"
     (tagsChange)="setTags(c, $event)"
+    (addToVacancy)="addToVacancy(c, $event)"
+    (removeFromVacancy)="removeFromVacancy(c)"
   />
 }
 
 @if (pendingReject(); as pending) {
   <app-hr-reject-dialog
-    [candidateName]="pending.candidate.contact?.fullName || pending.candidate.detectedRole"
-    [initialReason]="pending.editOnly ? (pending.candidate.pipeline?.rejectionReason ?? null) : null"
+    [candidateName]="pending.card.contact?.fullName || pending.card.detectedRole"
+    [initialReason]="pending.editOnly ? pending.card.pipeline.rejectionReason : null"
     (confirm)="confirmReject($event)"
     (cancel)="pendingReject.set(null)"
   />
+}
+
+@if (renaming() && v) {
+  <app-hr-vacancy-dialog [vacancy]="v" (saved)="renaming.set(false)" (cancel)="renaming.set(false)" />
 }

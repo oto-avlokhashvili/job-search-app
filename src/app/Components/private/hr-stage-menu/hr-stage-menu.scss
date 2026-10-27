@@ -94,7 +94,8 @@
   padding: 0.4rem;
   border-radius: 14px;
   border: 1px solid var(--border-color);
-  background: var(--card-bg);
+  // Dark --card-bg is slightly translucent; over page text it needs a solid base
+  background: linear-gradient(var(--card-bg), var(--card-bg)), var(--surface);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
   animation: menu-in 0.14s ease-out;
 }

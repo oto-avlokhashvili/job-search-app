@@ -3,8 +3,18 @@ import { effect, inject, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HrService } from '../Core/Services/hr';
 import { AuthService } from '../Core/Services/auth-service';
-import { HrAccount, HrCandidate, HrUsage, LinkedinProfile, PipelineChange, SeniorityLevel } from '../Core/Interfaces/hr';
-import { applyChange, pipelineOf } from '../Core/Utils/pipeline';
+import {
+    BoardCard,
+    HrAccount,
+    HrCandidate,
+    HrUsage,
+    HrVacancy,
+    LinkedinProfile,
+    PipelineChange,
+    SeniorityLevel,
+    VacancyMembership,
+} from '../Core/Interfaces/hr';
+import { applyChange } from '../Core/Utils/pipeline';
 
 export type HrSearchTab = 'cvs' | 'linkedin';
 export interface HrSearchQuery {
@@ -37,11 +47,19 @@ interface HrState {
     linkedinSearched: boolean;
     linkedinError: string;
 
-    // Candidates whose contacts this HR has opened, newest first.
-    unlocked: HrCandidate[];
-    unlockedLoaded: boolean;
-    unlockedLoading: boolean;
-    unlockedError: string;
+    /** Vacancy to add candidates to from the search page ("search for this vacancy"). */
+    searchVacancyId: number | null;
+
+    // Every board card of this HR, newest first: one per CV per vacancy, or one without a vacancy.
+    // The main board shows them all; a vacancy board filters by vacancyId.
+    board: BoardCard[];
+    boardLoaded: boolean;
+    boardLoading: boolean;
+    boardError: string;
+
+    vacancies: HrVacancy[];
+    vacanciesLoaded: boolean;
+    vacanciesLoading: boolean;
 
     // Admin: HR accounts to approve.
     accounts: HrAccount[];
@@ -72,10 +90,16 @@ const initialState: HrState = {
     linkedinSearched: false,
     linkedinError: '',
 
-    unlocked: [],
-    unlockedLoaded: false,
-    unlockedLoading: false,
-    unlockedError: '',
+    searchVacancyId: null,
+
+    board: [],
+    boardLoaded: false,
+    boardLoading: false,
+    boardError: '',
+
+    vacancies: [],
+    vacanciesLoaded: false,
+    vacanciesLoading: false,
 
     accounts: [],
     accountsLoaded: false,
@@ -179,57 +203,143 @@ export const HrStore = signalStore(
                 }
             },
 
-            /** Opens a CV's contacts. Throws so the page can show the server's message. */
+            /** Opens a CV's contacts without adding it to a vacancy. Throws so the page can show the server's message. */
             async unlock(candidate: HrCandidate) {
                 const unlocked = await firstValueFrom(hrService.unlock(candidate.id));
                 // Keep the search-specific fields (match, matchedKeywords) from the original card.
-                const merged = { ...candidate, ...unlocked };
-                patchState(store, {
-                    cvs: store.cvs().map((c) => (c.id === unlocked.id ? merged : c)),
-                    // "My candidates" is newest first; add it there too instead of refetching.
-                    unlocked: store.unlockedLoaded()
-                        ? [merged, ...store.unlocked().filter((c) => c.id !== unlocked.id)]
-                        : store.unlocked(),
-                });
+                patchState(store, { cvs: store.cvs().map((c) => (c.id === unlocked.id ? { ...c, ...unlocked } : c)) });
+                // The server put it on the main board without a vacancy; pick that card up.
+                if (store.boardLoaded()) methods.loadBoard(true);
                 methods.loadUsage(true);
             },
 
+            /** Adds a CV to a vacancy, opening its contacts first if needed. Throws on failure. */
+            async addToVacancy(candidate: HrCandidate, vacancyId: number) {
+                const card = await firstValueFrom(hrService.addToVacancy(vacancyId, candidate.id));
+                if (store.boardLoaded()) {
+                    // A card without a vacancy moves into the vacancy (same id); otherwise it's a new card.
+                    patchState(store, { board: [card, ...store.board().filter((c) => c.pipeline.id !== card.pipeline.id)] });
+                }
+                const now = new Date().toISOString();
+                patchState(store, {
+                    cvs: store.cvs().map((c) => {
+                        if (c.id !== card.id) return c;
+                        const { pipeline, ...fields } = card;
+                        return { ...c, ...fields };
+                    }),
+                    // Recently used vacancies are listed first
+                    vacancies: store.vacancies().map((v) => (v.id === vacancyId ? { ...v, updatedAt: now } : v)),
+                });
+                methods.loadUsage(true);
+                return card;
+            },
+
             /**
-             * Board change on "My candidates", shown at once and rolled back if the server refuses.
-             * `order` = the candidate's column after a drop (CV ids, top to bottom). Throws on failure.
+             * Board change, shown at once and rolled back if the server refuses.
+             * `order` = the card's column after a drop (entry ids, top to bottom). Throws on failure.
              */
-            async updatePipeline(cvId: number, change: PipelineChange, order?: number[]) {
-                const before = store.unlocked();
+            async updatePipeline(entryId: number, change: PipelineChange, order?: number[]) {
+                const before = store.board();
                 const positions = new Map(order?.map((id, i) => [id, i]));
                 patchState(store, {
-                    unlocked: before.map((c) => {
-                        const pipeline = c.id === cvId ? applyChange(pipelineOf(c), change) : pipelineOf(c);
-                        const position = positions.get(c.id);
-                        if (c.id !== cvId && position === undefined) return c;
+                    board: before.map((c) => {
+                        const id = c.pipeline.id;
+                        const position = positions.get(id);
+                        if (id !== entryId && position === undefined) return c;
+                        const pipeline = id === entryId ? applyChange(c.pipeline, change) : c.pipeline;
                         return { ...c, pipeline: position === undefined ? pipeline : { ...pipeline, position } };
                     }),
                 });
+                methods.syncSearchMemberships();
                 try {
-                    const saved = await firstValueFrom(hrService.updatePipeline(cvId, { ...change, order }));
+                    const saved = await firstValueFrom(hrService.updatePipeline(entryId, { ...change, order }));
                     patchState(store, {
-                        unlocked: store.unlocked().map((c) => (c.id === cvId ? { ...c, pipeline: saved } : c)),
+                        board: store.board().map((c) => (c.pipeline.id === entryId ? { ...c, pipeline: saved } : c)),
                     });
                 } catch (err) {
-                    patchState(store, { unlocked: before });
+                    patchState(store, { board: before });
+                    methods.syncSearchMemberships();
                     throw err;
                 }
             },
 
-            async loadUnlocked(force = false) {
-                if (store.unlockedLoading() || (!force && store.unlockedLoaded())) return;
-                patchState(store, { unlockedLoading: true, unlockedError: '' });
+            /** Takes a card off its vacancy; the CV's last card stays on the main board without one. Throws on failure. */
+            async removeFromVacancy(card: BoardCard) {
+                const kept = await firstValueFrom(hrService.removeFromVacancy(card.pipeline.id));
+                patchState(store, {
+                    board: kept
+                        ? store.board().map((c) => (c.pipeline.id === kept.id ? { ...c, pipeline: kept } : c))
+                        : store.board().filter((c) => c.pipeline.id !== card.pipeline.id),
+                });
+                methods.syncSearchMemberships();
+            },
+
+            async loadBoard(force = false) {
+                if (store.boardLoading() || (!force && store.boardLoaded())) return;
+                patchState(store, { boardLoading: true, boardError: '' });
                 try {
-                    patchState(store, { unlocked: await firstValueFrom(hrService.listUnlocked()), unlockedLoaded: true });
+                    patchState(store, { board: await firstValueFrom(hrService.getBoard()), boardLoaded: true });
+                    methods.syncSearchMemberships();
                 } catch (err) {
-                    patchState(store, { unlockedError: hrService.errorMessage(err, 'კანდიდატების ჩატვირთვა ვერ მოხერხდა') });
+                    patchState(store, { boardError: hrService.errorMessage(err, 'კანდიდატების ჩატვირთვა ვერ მოხერხდა') });
                 } finally {
-                    patchState(store, { unlockedLoading: false });
+                    patchState(store, { boardLoading: false });
                 }
+            },
+
+            /** Search results show which vacancies a CV is in; keep that in step with the board. */
+            syncSearchMemberships() {
+                if (!store.boardLoaded() || !store.cvs().length) return;
+                const byCv = new Map<number, VacancyMembership[]>();
+                for (const c of store.board()) {
+                    if (c.pipeline.vacancyId === null) continue;
+                    const list = byCv.get(c.id) ?? [];
+                    list.push({ entryId: c.pipeline.id, vacancyId: c.pipeline.vacancyId, stage: c.pipeline.stage });
+                    byCv.set(c.id, list);
+                }
+                patchState(store, {
+                    cvs: store.cvs().map((c) => (c.unlocked ? { ...c, vacancies: byCv.get(c.id) ?? [] } : c)),
+                });
+            },
+
+            async loadVacancies(force = false) {
+                if (store.vacanciesLoading() || (!force && store.vacanciesLoaded())) return;
+                patchState(store, { vacanciesLoading: true });
+                try {
+                    const res = await firstValueFrom(hrService.listVacancies());
+                    patchState(store, { vacancies: res.vacancies, vacanciesLoaded: true });
+                } catch {
+                    // The sidebar just shows no vacancies; the boards still work from the board cards.
+                } finally {
+                    patchState(store, { vacanciesLoading: false });
+                }
+            },
+
+            /** Throws so the dialog can show the server's message (e.g. the open-vacancy limit). */
+            async createVacancy(title: string) {
+                const vacancy = await firstValueFrom(hrService.createVacancy(title));
+                patchState(store, { vacancies: [vacancy, ...store.vacancies()] });
+                return vacancy;
+            },
+
+            async updateVacancy(id: number, change: Partial<Pick<HrVacancy, 'title' | 'status'>>) {
+                const saved = await firstValueFrom(hrService.updateVacancy(id, change));
+                patchState(store, { vacancies: store.vacancies().map((v) => (v.id === id ? saved : v)) });
+                return saved;
+            },
+
+            /** Its candidates stay unlocked; the server moves or drops their cards, so the board reloads. */
+            async deleteVacancy(id: number) {
+                await firstValueFrom(hrService.deleteVacancy(id));
+                patchState(store, {
+                    vacancies: store.vacancies().filter((v) => v.id !== id),
+                    searchVacancyId: store.searchVacancyId() === id ? null : store.searchVacancyId(),
+                });
+                await methods.loadBoard(true);
+            },
+
+            setSearchVacancy(id: number | null) {
+                patchState(store, { searchVacancyId: id });
             },
 
             /** Throws on failure so the admin page can show its own message. */

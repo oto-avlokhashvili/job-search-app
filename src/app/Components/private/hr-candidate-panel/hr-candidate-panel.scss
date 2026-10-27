@@ -154,6 +154,68 @@
   color: var(--on-surface-variant);
 }
 
+.vacancy-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.vacancy-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  overflow-wrap: anywhere;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary);
+  }
+
+  &.none {
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+}
+
+// Push the picker to the end of the row
+.vacancy-field app-hr-vacancy-picker {
+  margin-left: auto;
+}
+
+.also-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: -0.35rem 0 0 calc(80px + 0.75rem);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.also-chip {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--stage-color);
+  background: color-mix(in srgb, var(--stage-color) 12%, transparent);
+}
+
+.event-vacancy {
+  padding: 0.05rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
 .stars {
   display: flex;
   gap: 2px;
@@ -470,7 +532,8 @@
   }
 
   .reason,
-  .suggestions {
+  .suggestions,
+  .also-in {
     margin-left: 0;
   }
 }

@@ -1,6 +1,7 @@
 import { afterNextRender, Component, computed, DestroyRef, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { HrCandidate, SeniorityLevel } from '../../../Core/Interfaces/hr';
@@ -18,7 +19,7 @@ interface SeniorityOption {
 // Query, tab and results live in HrStore, so coming back to the page shows them again.
 @Component({
   selector: 'app-hr-search',
-  imports: [ReactiveFormsModule, HrCandidateCard],
+  imports: [ReactiveFormsModule, RouterLink, HrCandidateCard],
   templateUrl: './hr-search.html',
   styleUrl: './hr-search.scss',
 })
@@ -63,6 +64,11 @@ export class HrSearch {
 
   tab = this.hrStore.searchTab;
   query = this.hrStore.searchQuery;
+  // Set by "search for this vacancy" on a vacancy board; listed first in the add menu
+  targetVacancy = computed(() => {
+    const id = this.hrStore.searchVacancyId();
+    return this.hrStore.vacancies().find((v) => v.id === id && v.status === 'OPEN') ?? null;
+  });
 
   cvs = this.hrStore.cvs;
   cvTotal = this.hrStore.cvTotal;
@@ -151,6 +157,23 @@ export class HrSearch {
     } finally {
       this.busyId.set(null);
     }
+  }
+
+  async addToVacancy(candidate: HrCandidate, vacancyId: number) {
+    this.busyId.set(candidate.id);
+    try {
+      await this.hrStore.addToVacancy(candidate, vacancyId);
+      const title = this.hrStore.vacancies().find((v) => v.id === vacancyId)?.title;
+      this.alertify.success(title ? `კანდიდატი დაემატა: ${title}` : 'კანდიდატი დაემატა');
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'ვაკანსიაში დამატება ვერ მოხერხდა'));
+    } finally {
+      this.busyId.set(null);
+    }
+  }
+
+  clearTargetVacancy() {
+    this.hrStore.setSearchVacancy(null);
   }
 
   async download(candidate: HrCandidate) {

@@ -1,29 +1,34 @@
-import { afterNextRender, Component, computed, effect, ElementRef, HostListener, inject, OnInit, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { afterNextRender, Component, computed, effect, ElementRef, HostListener, inject, OnInit, signal, untracked, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { map } from 'rxjs';
 import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { HrCandidate, PipelineChange, PipelineStage } from '../../../Core/Interfaces/hr';
-import { OUTCOME_STAGES, PIPELINE_STAGES, pipelineOf, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
+import { BoardCard, HrCandidate, HrVacancy, PipelineChange, PipelineStage } from '../../../Core/Interfaces/hr';
+import { OUTCOME_STAGES, PIPELINE_STAGES, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
 import { HrStore } from '../../../Store/hr.store';
 import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
 import { HrPipelineCard } from '../hr-pipeline-card/hr-pipeline-card';
 import { HrCandidatePanel } from '../hr-candidate-panel/hr-candidate-panel';
 import { HrRejectDialog } from '../hr-reject-dialog/hr-reject-dialog';
+import { HrVacancyDialog } from '../hr-vacancy-dialog/hr-vacancy-dialog';
 
 type View = 'board' | 'list';
+type Scope = 'all' | 'none';
 const VIEW_KEY = 'hr-candidates-view';
 
 interface PendingReject {
-  candidate: HrCandidate;
+  card: BoardCard;
   /** Column order to save with the move; absent when only the reason is edited. */
   order?: number[];
   editOnly?: boolean;
 }
 
-// Candidates whose contacts this HR has opened, as a pipeline board (default) or the plain list.
-// Loaded once into HrStore; unlocking on the search page adds to it there.
+// The HR's candidate boards, as a pipeline board (default) or the plain list.
+// /hr/candidates is the main board with every card (a CV in two vacancies shows twice, labelled);
+// /hr/candidates/v/:vacancyId is one vacancy's board. All cards live in HrStore; the page filters them.
 @Component({
   selector: 'app-hr-candidates',
   imports: [
@@ -37,6 +42,7 @@ interface PendingReject {
     HrPipelineCard,
     HrCandidatePanel,
     HrRejectDialog,
+    HrVacancyDialog,
   ],
   templateUrl: './hr-candidates.html',
   styleUrl: './hr-candidates.scss',
@@ -45,11 +51,42 @@ export class HrCandidates implements OnInit {
   private hrService = inject(HrService);
   private hrStore = inject(HrStore);
   private alertify = inject(AlertifyService);
+  private router = inject(Router);
 
-  candidates = this.hrStore.unlocked;
+  /** null on the main board. */
+  vacancyId = toSignal(
+    inject(ActivatedRoute).paramMap.pipe(
+      map((p) => {
+        const id = Number(p.get('vacancyId'));
+        return Number.isInteger(id) && id > 0 ? id : null;
+      }),
+    ),
+    { initialValue: null },
+  );
+  vacancy = computed(() => this.hrStore.vacancies().find((v) => v.id === this.vacancyId()) ?? null);
+  // The id in the URL isn't one of this HR's vacancies (deleted, or a stale link)
+  vacancyMissing = computed(() => this.vacancyId() !== null && this.hrStore.vacanciesLoaded() && !this.vacancy());
+  vacancyTitles = computed(() => new Map(this.hrStore.vacancies().map((v) => [v.id, v.title])));
+
+  // Main board only: every card, or only the ones not in any vacancy
+  scope = signal<Scope>('all');
+  allCount = computed(() => this.hrStore.board().length);
+  unassignedCount = computed(() => this.hrStore.board().filter((c) => c.pipeline.vacancyId === null).length);
+
+  candidates = computed(() => {
+    const board = this.hrStore.board();
+    const id = this.vacancyId();
+    if (id !== null) return board.filter((c) => c.pipeline.vacancyId === id);
+    return this.scope() === 'none' ? board.filter((c) => c.pipeline.vacancyId === null) : board;
+  });
+  // The list view shows each CV once, even when it's in several vacancies
+  listCandidates = computed(() => {
+    const seen = new Set<number>();
+    return this.candidates().filter((c) => !seen.has(c.id) && seen.add(c.id));
+  });
   // Spinner only for the very first load; later visits show the stored list right away.
-  loading = computed(() => !this.hrStore.unlockedLoaded() && !this.hrStore.unlockedError());
-  error = this.hrStore.unlockedError;
+  loading = computed(() => !this.hrStore.boardLoaded() && !this.hrStore.boardError());
+  error = this.hrStore.boardError;
   busyId = signal<number | null>(null);
 
   stages = PIPELINE_STAGES;
@@ -62,17 +99,14 @@ export class HrCandidates implements OnInit {
   view = signal<View>('board');
 
   /**
-   * Cards per stage. Never-ordered cards (e.g. just unlocked) come first, newest first as the
+   * Cards per stage. Never-ordered cards (e.g. just added) come first, newest first as the
    * store keeps them; then the order saved by drag-and-drop.
    */
   columns = computed(() => {
-    const byStage = Object.fromEntries(this.stages.map((s) => [s.id, [] as HrCandidate[]])) as Record<
-      PipelineStage,
-      HrCandidate[]
-    >;
-    this.candidates().forEach((c) => byStage[pipelineOf(c).stage].push(c));
+    const byStage = Object.fromEntries(this.stages.map((s) => [s.id, [] as BoardCard[]])) as Record<PipelineStage, BoardCard[]>;
+    this.candidates().forEach((c) => byStage[c.pipeline.stage].push(c));
     for (const list of Object.values(byStage)) {
-      const rank = (c: HrCandidate) => pipelineOf(c).position ?? -1;
+      const rank = (c: BoardCard) => c.pipeline.position ?? -1;
       // Stable sort keeps the newest-first order among equal ranks
       list.sort((a, b) => rank(a) - rank(b));
     }
@@ -81,13 +115,16 @@ export class HrCandidates implements OnInit {
 
   tagSuggestions = computed(() => {
     const seen = new Map<string, string>();
-    this.candidates().forEach((c) => pipelineOf(c).tags.forEach((t) => seen.set(t.toLowerCase(), t)));
+    this.hrStore.board().forEach((c) => c.pipeline.tags.forEach((t) => seen.set(t.toLowerCase(), t)));
     return [...seen.values()].sort((a, b) => a.localeCompare(b));
   });
 
+  // Selected card by entry id
   selectedId = signal<number | null>(null);
-  selected = computed(() => this.candidates().find((c) => c.id === this.selectedId()) ?? null);
+  selected = computed(() => this.hrStore.board().find((c) => c.pipeline.id === this.selectedId()) ?? null);
   pendingReject = signal<PendingReject | null>(null);
+  renaming = signal(false);
+  vacancyBusy = signal(false);
 
   private panel = viewChild(HrCandidatePanel);
   // The click that ends a drag must not open the panel
@@ -111,6 +148,16 @@ export class HrCandidates implements OnInit {
       observer.observe(el);
       onCleanup(() => observer.disconnect());
     });
+
+    // Switching to another vacancy's board: close what was open for the previous one
+    effect(() => {
+      this.vacancyId();
+      untracked(() => {
+        this.selectedId.set(null);
+        this.outcomeOpen.set(null);
+        this.renaming.set(false);
+      });
+    });
   }
 
   updateBoardArrows() {
@@ -130,7 +177,8 @@ export class HrCandidates implements OnInit {
   }
 
   ngOnInit() {
-    this.hrStore.loadUnlocked();
+    this.hrStore.loadBoard();
+    this.hrStore.loadVacancies();
   }
 
   setView(view: View) {
@@ -142,6 +190,12 @@ export class HrCandidates implements OnInit {
     }
   }
 
+  /** Main board: the vacancy label on a card, unless the card has none. */
+  labelFor(card: BoardCard): string | null {
+    if (this.vacancyId() !== null || card.pipeline.vacancyId === null) return null;
+    return this.vacancyTitles().get(card.pipeline.vacancyId) ?? null;
+  }
+
   onDragStarted() {
     this.dragging = true;
   }
@@ -150,8 +204,8 @@ export class HrCandidates implements OnInit {
     setTimeout(() => (this.dragging = false));
   }
 
-  open(candidate: HrCandidate) {
-    if (!this.dragging) this.selectedId.set(candidate.id);
+  open(card: BoardCard) {
+    if (!this.dragging) this.selectedId.set(card.pipeline.id);
   }
 
   close() {
@@ -167,34 +221,36 @@ export class HrCandidates implements OnInit {
     this.outcomeOpen.set(null);
   }
 
-  drop(event: CdkDragDrop<PipelineStage, PipelineStage, HrCandidate>) {
-    const candidate = event.item.data;
+  drop(event: CdkDragDrop<PipelineStage, PipelineStage, BoardCard>) {
+    const card = event.item.data;
     const from = event.previousContainer.data;
     const to = event.container.data;
     if (from === to && event.previousIndex === event.currentIndex) return;
 
-    const order = this.columns()[to].map((c) => c.id).filter((id) => id !== candidate.id);
-    order.splice(event.currentIndex, 0, candidate.id);
+    const entryId = card.pipeline.id;
+    const order = this.columns()[to].map((c) => c.pipeline.id).filter((id) => id !== entryId);
+    order.splice(event.currentIndex, 0, entryId);
 
     if (to === 'REJECTED' && from !== 'REJECTED') {
-      this.pendingReject.set({ candidate, order });
+      this.pendingReject.set({ card, order });
       return;
     }
-    this.save(candidate, from === to ? {} : { stage: to }, order);
+    this.save(card, from === to ? {} : { stage: to }, order);
   }
 
-  /** Stage menu (card or panel): the candidate goes to the top of its new column. */
-  moveTo(candidate: HrCandidate, stage: PipelineStage) {
-    const order = [candidate.id, ...this.columns()[stage].map((c) => c.id).filter((id) => id !== candidate.id)];
+  /** Stage menu (card or panel): the card goes to the top of its new column. */
+  moveTo(card: BoardCard, stage: PipelineStage) {
+    const entryId = card.pipeline.id;
+    const order = [entryId, ...this.columns()[stage].map((c) => c.pipeline.id).filter((id) => id !== entryId)];
     if (stage === 'REJECTED') {
-      this.pendingReject.set({ candidate, order });
+      this.pendingReject.set({ card, order });
       return;
     }
-    this.save(candidate, { stage }, order);
+    this.save(card, { stage }, order);
   }
 
-  editReason(candidate: HrCandidate) {
-    this.pendingReject.set({ candidate, editOnly: true });
+  editReason(card: BoardCard) {
+    this.pendingReject.set({ card, editOnly: true });
   }
 
   confirmReject(reason: string | null) {
@@ -202,18 +258,18 @@ export class HrCandidates implements OnInit {
     this.pendingReject.set(null);
     if (!pending) return;
     if (pending.editOnly) {
-      this.save(pending.candidate, { rejectionReason: reason });
+      this.save(pending.card, { rejectionReason: reason });
     } else {
-      this.save(pending.candidate, { stage: 'REJECTED', rejectionReason: reason }, pending.order);
+      this.save(pending.card, { stage: 'REJECTED', rejectionReason: reason }, pending.order);
     }
   }
 
-  rate(candidate: HrCandidate, rating: number | null) {
-    this.save(candidate, { rating });
+  rate(card: BoardCard, rating: number | null) {
+    this.save(card, { rating });
   }
 
-  setTags(candidate: HrCandidate, tags: string[]) {
-    this.save(candidate, { tags });
+  setTags(card: BoardCard, tags: string[]) {
+    this.save(card, { tags });
   }
 
   async download(candidate: HrCandidate) {
@@ -227,6 +283,74 @@ export class HrCandidates implements OnInit {
     }
   }
 
+  /** From the panel: the CV gets a card on another vacancy's board too. */
+  async addToVacancy(card: BoardCard, vacancyId: number) {
+    this.busyId.set(card.id);
+    try {
+      const added = await this.hrStore.addToVacancy(card, vacancyId);
+      this.alertify.success(`კანდიდატი დაემატა: ${this.vacancyTitles().get(vacancyId) ?? ''}`);
+      // A card without a vacancy moved into the vacancy: the panel keeps showing it (same id)
+      if (added.pipeline.id === card.pipeline.id) this.panel()?.loadActivity();
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'ვაკანსიაში დამატება ვერ მოხერხდა'));
+    } finally {
+      this.busyId.set(null);
+    }
+  }
+
+  async removeFromVacancy(card: BoardCard) {
+    this.busyId.set(card.id);
+    try {
+      await this.hrStore.removeFromVacancy(card);
+      // On this vacancy's board the card is gone; the panel closes on its own (no selected card)
+      this.alertify.success('კანდიდატი ამოღებულია ვაკანსიიდან');
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'ვაკანსიიდან ამოღება ვერ მოხერხდა'));
+    } finally {
+      this.busyId.set(null);
+    }
+  }
+
+  setScope(scope: Scope) {
+    this.scope.set(scope);
+  }
+
+  /** Search page with this vacancy as the target: its title as the query, adds go here first. */
+  searchForVacancy(vacancy: HrVacancy) {
+    this.hrStore.setSearchVacancy(vacancy.id);
+    this.hrStore.search({ ...this.hrStore.searchForm(), keyword: vacancy.title });
+    this.router.navigate(['/hr/search']);
+  }
+
+  async toggleClosed(vacancy: HrVacancy) {
+    this.vacancyBusy.set(true);
+    try {
+      await this.hrStore.updateVacancy(vacancy.id, { status: vacancy.status === 'OPEN' ? 'CLOSED' : 'OPEN' });
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'ვაკანსიის შენახვა ვერ მოხერხდა'));
+    } finally {
+      this.vacancyBusy.set(false);
+    }
+  }
+
+  deleteVacancy(vacancy: HrVacancy) {
+    this.alertify.confirm(
+      'ვაკანსიის წაშლა',
+      `„${vacancy.title}“ წაიშლება. კანდიდატები დარჩება მთავარ დაფაზე, ჩანაწერებთან და ისტორიასთან ერთად.`,
+      async () => {
+        this.vacancyBusy.set(true);
+        try {
+          await this.hrStore.deleteVacancy(vacancy.id);
+          this.router.navigate(['/hr/candidates']);
+        } catch (err) {
+          this.alertify.error(this.hrService.errorMessage(err, 'ვაკანსიის წაშლა ვერ მოხერხდა'));
+        } finally {
+          this.vacancyBusy.set(false);
+        }
+      },
+    );
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onEscape(event: Event) {
     // Already handled by an open overlay (the stage menu closes itself and marks the event)
@@ -237,11 +361,11 @@ export class HrCandidates implements OnInit {
     else this.closeOutcome();
   }
 
-  private async save(candidate: HrCandidate, change: PipelineChange, order?: number[]) {
+  private async save(card: BoardCard, change: PipelineChange, order?: number[]) {
     try {
-      await this.hrStore.updatePipeline(candidate.id, change, order);
+      await this.hrStore.updatePipeline(card.pipeline.id, change, order);
       // Stage and rating changes show up in the panel's history
-      if ((change.stage || change.rating !== undefined) && this.selectedId() === candidate.id) {
+      if ((change.stage || change.rating !== undefined) && this.selectedId() === card.pipeline.id) {
         this.panel()?.loadActivity();
       }
     } catch (err) {

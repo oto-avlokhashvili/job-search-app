@@ -17,22 +17,26 @@ import { CandidateActivity, HrCandidate, PipelineStage } from '../../../Core/Int
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { MAX_TAGS, pipelineOf, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
+import { HrStore } from '../../../Store/hr.store';
 import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
 import { HrStageMenu } from '../hr-stage-menu/hr-stage-menu';
+import { HrVacancyPicker } from '../hr-vacancy-picker/hr-vacancy-picker';
 
 /**
- * Side panel for one board candidate: stage, rating, tags, notes and history, plus the full card.
+ * Modal for one board card: vacancy, stage, rating, tags, notes and history, plus the full card.
+ * Notes and history are per candidate, shared by all of its cards.
  * Board changes go out as outputs (the page owns the store and the reject dialog); notes are saved here.
  */
 @Component({
   selector: 'app-hr-candidate-panel',
-  imports: [DatePipe, HrCandidateCard, HrStageMenu],
+  imports: [DatePipe, HrCandidateCard, HrStageMenu, HrVacancyPicker],
   templateUrl: './hr-candidate-panel.html',
   styleUrl: './hr-candidate-panel.scss',
 })
 export class HrCandidatePanel {
   private hrService = inject(HrService);
   private alertify = inject(AlertifyService);
+  private hrStore = inject(HrStore);
 
   candidate = input.required<HrCandidate>();
   busy = input(false);
@@ -45,12 +49,34 @@ export class HrCandidatePanel {
   editReason = output<void>();
   ratingChange = output<number | null>();
   tagsChange = output<string[]>();
+  addToVacancy = output<number>();
+  removeFromVacancy = output<void>();
 
   stageById = STAGE_BY_ID;
   maxTags = MAX_TAGS;
   stars = [1, 2, 3, 4, 5];
 
   pipeline = computed(() => pipelineOf(this.candidate()));
+
+  private titles = computed(() => new Map(this.hrStore.vacancies().map((v) => [v.id, v.title])));
+  vacancyTitle = computed(() => {
+    const id = this.pipeline().vacancyId;
+    return id === null ? null : (this.titles().get(id) ?? null);
+  });
+  // The CV's cards on other vacancies' boards (it can be in several)
+  private siblings = computed(() =>
+    this.hrStore.board().filter((c) => c.id === this.candidate().id && c.pipeline.vacancyId !== null),
+  );
+  otherVacancies = computed(() =>
+    this.siblings()
+      .filter((c) => c.pipeline.id !== this.pipeline().id && this.titles().has(c.pipeline.vacancyId!))
+      .map((c) => ({ vacancyId: c.pipeline.vacancyId!, title: this.titles().get(c.pipeline.vacancyId!)!, stage: c.pipeline.stage })),
+  );
+  // The picker marks the vacancies the CV is already in
+  pickerCandidate = computed(() => ({
+    ...this.candidate(),
+    vacancies: this.siblings().map((c) => ({ entryId: c.pipeline.id, vacancyId: c.pipeline.vacancyId!, stage: c.pipeline.stage })),
+  }));
   stage = computed(() => STAGE_BY_ID[this.pipeline().stage]);
   hoverRating = signal(0);
   shownRating = computed(() => this.hoverRating() || this.pipeline().rating || 0);
@@ -102,6 +128,11 @@ export class HrCandidatePanel {
     } finally {
       if (this.candidate().id === id) this.activityLoading.set(false);
     }
+  }
+
+  /** History is shared by the CV's cards: name the vacancy a stage change was made in. */
+  eventVacancy(item: CandidateActivity): string | null {
+    return item.vacancyId ? (this.titles().get(item.vacancyId) ?? null) : null;
   }
 
   setRating(value: number) {

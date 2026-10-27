@@ -43,13 +43,45 @@
           <span class="material-symbols-outlined">person_search</span>
           <span class="nav-title">ძიება</span>
         </a>
-        <a routerLink="/hr/candidates" routerLinkActive="active" (click)="closeSidebar()">
+        <a routerLink="/hr/candidates" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
           <span class="material-symbols-outlined">bookmark_manager</span>
           <span class="nav-title">ჩემი კანდიდატები</span>
-          @if (unlockedCount()) {
-            <span class="nav-count">{{ unlockedCount() }}</span>
+          @if (candidateCount()) {
+            <span class="nav-count">{{ candidateCount() }}</span>
           }
         </a>
+
+        <!-- Each vacancy's own board -->
+        <div class="sub-nav">
+          @for (v of openVacancies(); track v.id) {
+            <a class="sub" [routerLink]="['/hr/candidates/v', v.id]" routerLinkActive="active" [attr.title]="v.title" (click)="closeSidebar()">
+              <span class="nav-title">{{ v.title }}</span>
+              @if (vacancyCount(v)) {
+                <span class="nav-count">{{ vacancyCount(v) }}</span>
+              }
+            </a>
+          }
+          @if (closedVacancies().length) {
+            <button type="button" class="sub toggle" [attr.aria-expanded]="showClosed()" (click)="showClosed.set(!showClosed())">
+              <span class="nav-title">დახურული ({{ closedVacancies().length }})</span>
+              <span class="material-symbols-outlined chevron" [class.open]="showClosed()">expand_more</span>
+            </button>
+            @if (showClosed()) {
+              @for (v of closedVacancies(); track v.id) {
+                <a class="sub closed" [routerLink]="['/hr/candidates/v', v.id]" routerLinkActive="active" [attr.title]="v.title" (click)="closeSidebar()">
+                  <span class="nav-title">{{ v.title }}</span>
+                  @if (vacancyCount(v)) {
+                    <span class="nav-count">{{ vacancyCount(v) }}</span>
+                  }
+                </a>
+              }
+            }
+          }
+          <button type="button" class="sub add" (click)="creatingVacancy.set(true)">
+            <span class="material-symbols-outlined">add</span>
+            <span class="nav-title">ახალი ვაკანსია</span>
+          </button>
+        </div>
 
         @if (isAdmin()) {
           <span class="nav-label">ადმინისტრირება</span>
@@ -121,3 +153,7 @@
     </div>
   </main>
 </div>
+
+@if (creatingVacancy()) {
+  <app-hr-vacancy-dialog (saved)="onVacancyCreated($event)" (cancel)="creatingVacancy.set(false)" />
+}
