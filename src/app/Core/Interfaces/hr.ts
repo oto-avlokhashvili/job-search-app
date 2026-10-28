@@ -73,9 +73,17 @@ export interface PipelineChange {
   tags?: string[];
 }
 
+export type InterviewEventKind =
+  | 'INTERVIEW_SCHEDULED'
+  | 'INTERVIEW_UPDATED'
+  | 'INTERVIEW_CONFIRMED'
+  | 'INTERVIEW_DECLINED'
+  | 'INTERVIEW_RESCHEDULE_REQUESTED'
+  | 'INTERVIEW_CANCELLED';
+
 export interface CandidateActivity {
   id: string;
-  kind: 'NOTE' | 'STAGE_CHANGED' | 'RATING_CHANGED';
+  kind: 'NOTE' | 'STAGE_CHANGED' | 'RATING_CHANGED' | InterviewEventKind;
   createdAt: string;
   author: { id: number; name: string };
   noteId?: number;
@@ -86,6 +94,69 @@ export interface CandidateActivity {
   toStage?: PipelineStage | null;
   rejectionReason?: string | null;
   rating?: number | null;
+  /** Interview events: the interview time then, and the candidate's note */
+  interviewAt?: string | null;
+  note?: string | null;
+}
+
+export type InterviewFormat = 'ONLINE' | 'ONSITE';
+export type InterviewStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'RESCHEDULE_REQUESTED' | 'CANCELLED';
+
+/** An interview scheduled for a board card (entryId). */
+export interface HrInterview {
+  id: number;
+  entryId: number;
+  cvId: number;
+  vacancyId: number | null;
+  startsAt: string;
+  durationMin: number;
+  format: InterviewFormat;
+  location: string;
+  message: string | null;
+  alternatives: string[];
+  status: InterviewStatus;
+  candidateNote: string | null;
+  proposedTimes: string[];
+  /** Null when saved without emailing the candidate */
+  sentTo: string | null;
+  respondedAt: string | null;
+  createdAt: string;
+  /** The candidate's answer page */
+  link: string;
+}
+
+export interface InterviewDraft {
+  startsAt: string;
+  durationMin: number;
+  format: InterviewFormat;
+  location: string;
+  message: string;
+  alternatives: string[];
+}
+
+/** What the candidate's answer page gets (no sign-in, the link is the key). */
+export interface PublicInterview {
+  status: InterviewStatus;
+  startsAt: string;
+  durationMin: number;
+  format: InterviewFormat;
+  location: string;
+  message: string | null;
+  alternatives: { slot: number; startsAt: string }[];
+  proposedTimes: string[];
+  candidateNote: string | null;
+  position: string;
+  company: string;
+  hrName: string;
+  candidateName: string;
+  canRespond: boolean;
+}
+
+export interface InterviewAnswer {
+  action: 'confirm' | 'decline' | 'reschedule';
+  slot?: number;
+  note?: string;
+  proposedTimes?: string[];
 }
 
 export interface HrCvSearchParams {

@@ -43,6 +43,10 @@ export class PrivateLayout {
   openVacancies = computed(() => this.hrStore.vacancies().filter((v) => v.status === 'OPEN'));
   closedVacancies = computed(() => this.hrStore.vacancies().filter((v) => v.status === 'CLOSED'));
   showClosed = signal(false);
+  // Interviews: answers waiting for the HR (badge in amber), otherwise how many are coming up
+  private aheadInterviews = computed(() => this.hrStore.interviews().filter((i) => new Date(i.startsAt).getTime() > Date.now()));
+  interviewsNeedingAnswer = computed(() => this.aheadInterviews().filter((i) => i.status === 'RESCHEDULE_REQUESTED').length);
+  upcomingInterviews = computed(() => this.aheadInterviews().filter((i) => i.status === 'PENDING' || i.status === 'CONFIRMED').length);
   creatingVacancy = signal(false);
   // Live counts from the board once it's loaded (moves and adds update them); the server's until then
   private cardsPerVacancy = computed(() => {
@@ -65,6 +69,7 @@ export class PrivateLayout {
         // Feed the sidebar badges; the pages reuse these lists without refetching.
         this.hrStore.loadBoard();
         this.hrStore.loadVacancies();
+        this.hrStore.loadInterviews();
         if (isAdmin) this.hrStore.loadAccounts().catch(() => {});
       });
     });

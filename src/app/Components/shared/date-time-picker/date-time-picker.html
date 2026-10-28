@@ -1,0 +1,52 @@
+<div class="picker" [style.--accent]="accent()">
+  <div class="month">
+    <span class="month-label">{{ monthLabel() }}</span>
+    <div class="nav">
+      <button type="button" aria-label="წინა კვირა" [disabled]="!canPrev()" (click)="page(-1)">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button type="button" aria-label="შემდეგი კვირა" [disabled]="!canNext()" (click)="page(1)">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="days" role="radiogroup" aria-label="თარიღი">
+    @for (d of days(); track d.key) {
+      <button
+        type="button"
+        class="day"
+        role="radio"
+        [class.weekend]="d.weekend"
+        [class.active]="d.key === selectedDay()"
+        [attr.aria-checked]="d.key === selectedDay()"
+        [disabled]="d.disabled"
+        [attr.aria-label]="d.weekday + ', ' + d.day + ' ' + d.month"
+        (click)="pickDay(d)"
+      >
+        <span class="weekday">{{ d.weekday }}</span>
+        <span class="num">{{ d.day }}</span>
+        <span class="mon">{{ d.month }}</span>
+      </button>
+    }
+  </div>
+
+  <label class="time-row">
+    <span class="time-label"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>დრო</span>
+    <span class="select-wrap">
+      <select (change)="pickTime(+$any($event.target).value)">
+        @if (selectedMinutes() === null) {
+          <option value="" disabled selected>აირჩიეთ დრო</option>
+        }
+        @for (g of timeGroups(); track g.label) {
+          <optgroup [label]="g.label">
+            @for (s of g.slots; track s.minutes) {
+              <option [value]="s.minutes" [disabled]="s.disabled" [selected]="s.minutes === selectedMinutes()">{{ s.label }}</option>
+            }
+          </optgroup>
+        }
+      </select>
+      <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
+    </span>
+  </label>
+</div>

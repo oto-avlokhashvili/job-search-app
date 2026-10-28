@@ -9,6 +9,8 @@ import {
     HrCandidate,
     HrUsage,
     HrVacancy,
+    HrInterview,
+    InterviewDraft,
     LinkedinProfile,
     PipelineChange,
     SeniorityLevel,
@@ -24,6 +26,7 @@ export interface HrSearchQuery {
 }
 
 const CV_PAGE_SIZE = 20;
+const sortInterviews = (list: HrInterview[]) => [...list].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 const LINKEDIN_MAX_PAGE = 10;
 
 interface HrState {
@@ -60,6 +63,11 @@ interface HrState {
     vacancies: HrVacancy[];
     vacanciesLoaded: boolean;
     vacanciesLoading: boolean;
+
+    // Interviews from the last month on, soonest first; cards show their latest one
+    interviews: HrInterview[];
+    interviewsLoaded: boolean;
+    interviewsLoading: boolean;
 
     // Admin: HR accounts to approve.
     accounts: HrAccount[];
@@ -100,6 +108,10 @@ const initialState: HrState = {
     vacancies: [],
     vacanciesLoaded: false,
     vacanciesLoading: false,
+
+    interviews: [],
+    interviewsLoaded: false,
+    interviewsLoading: false,
 
     accounts: [],
     accountsLoaded: false,
@@ -336,6 +348,42 @@ export const HrStore = signalStore(
                     searchVacancyId: store.searchVacancyId() === id ? null : store.searchVacancyId(),
                 });
                 await methods.loadBoard(true);
+            },
+
+            async loadInterviews(force = false) {
+                if (store.interviewsLoading() || (!force && store.interviewsLoaded())) return;
+                patchState(store, { interviewsLoading: true });
+                try {
+                    patchState(store, { interviews: await firstValueFrom(hrService.listInterviews()), interviewsLoaded: true });
+                } catch {
+                    // Cards just show no interview info; the next visit retries
+                } finally {
+                    patchState(store, { interviewsLoading: false });
+                }
+            },
+
+            /** Schedules an interview; the server also moves the card to INTERVIEW. Throws on failure. */
+            async scheduleInterview(card: BoardCard, draft: InterviewDraft, send: boolean) {
+                const { interview, pipeline } = await firstValueFrom(hrService.scheduleInterview(card.pipeline.id, { ...draft, send }));
+                patchState(store, {
+                    interviews: sortInterviews([...store.interviews().filter((i) => i.id !== interview.id), interview]),
+                    board: store.board().map((c) => (c.pipeline.id === pipeline.id ? { ...c, pipeline } : c)),
+                });
+                methods.syncSearchMemberships();
+                return interview;
+            },
+
+            /** Edit, accept a proposed time or cancel. Throws on failure. */
+            async updateInterview(id: number, change: Parameters<HrService['updateInterview']>[1]) {
+                const saved = await firstValueFrom(hrService.updateInterview(id, change));
+                patchState(store, {
+                    interviews: sortInterviews(
+                        saved.status === 'CANCELLED'
+                            ? store.interviews().filter((i) => i.id !== id)
+                            : store.interviews().map((i) => (i.id === id ? saved : i)),
+                    ),
+                });
+                return saved;
             },
 
             setSearchVacancy(id: number | null) {

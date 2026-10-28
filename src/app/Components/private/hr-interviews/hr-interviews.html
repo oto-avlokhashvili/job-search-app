@@ -1,0 +1,64 @@
+<section class="page">
+  <header class="page-head">
+    <h1>გასაუბრებები</h1>
+    <p>დაგეგმილი გასაუბრებები და კანდიდატების პასუხები</p>
+  </header>
+
+  @if (loading()) {
+    <div class="empty"><span class="spinner"></span></div>
+  } @else if (empty()) {
+    <div class="empty">
+      <span class="material-symbols-outlined">event</span>
+      <p>ჯერ გასაუბრება არ დაგიგეგმავთ. გადაიტანეთ კანდიდატი „გასაუბრების“ ეტაპზე ან გახსენით მისი ბარათი.</p>
+      <a routerLink="/hr/candidates" class="btn-link">ჩემი კანდიდატები</a>
+    </div>
+  } @else {
+    @if (needsAnswer().length) {
+      <h2 class="group alert"><span class="material-symbols-outlined">update</span>პასუხს საჭიროებს</h2>
+      <ul class="list">
+        @for (row of needsAnswer(); track row.interview.id) {
+          <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
+        }
+      </ul>
+    }
+
+    @for (group of upcomingDays(); track group.day) {
+      <h2 class="group">{{ group.day }}</h2>
+      <ul class="list">
+        @for (row of group.rows; track row.interview.id) {
+          <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
+        }
+      </ul>
+    }
+
+    @if (past().length) {
+      <h2 class="group muted">გასული</h2>
+      <ul class="list past">
+        @for (row of past(); track row.interview.id) {
+          <ng-container *ngTemplateOutlet="item; context: { $implicit: row, past: true }" />
+        }
+      </ul>
+    }
+  }
+</section>
+
+<ng-template #item let-row let-past="past">
+  @let st = statusOf(row);
+  <li>
+    <a class="iv-row" [routerLink]="boardLink(row)" [queryParams]="{ open: row.interview.entryId }" [style.--iv-color]="st.color">
+      <span class="when">
+        <strong>{{ past ? short(row.interview.startsAt) : time(row.interview.startsAt) }}</strong>
+        <small>{{ row.interview.durationMin }} წთ</small>
+      </span>
+      <span class="who">
+        <strong>{{ name(row) }}</strong>
+        <small>
+          {{ row.vacancy || row.card?.detectedRole || '' }}
+          · {{ row.interview.format === 'ONLINE' ? 'ონლაინ' : 'ოფისში' }}
+        </small>
+      </span>
+      <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
+      <span class="material-symbols-outlined chevron">chevron_right</span>
+    </a>
+  </li>
+</ng-template>

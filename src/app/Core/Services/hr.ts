@@ -6,6 +6,10 @@ import { skipLoading } from '../loading/skip-loading.component';
 import {
   BoardCard,
   CandidateActivity,
+  HrInterview,
+  InterviewAnswer,
+  InterviewDraft,
+  PublicInterview,
   HrVacancy,
   HrAccount,
   HrCandidate,
@@ -60,6 +64,36 @@ export class HrService {
   /** Takes a card off its vacancy. Returns the card when it was the CV's last one (it stays without a vacancy). */
   removeFromVacancy(entryId: number): Observable<PipelineState | null> {
     return this.http.delete<PipelineState | null>(`${this.url}/hr/board/${entryId}`, { context: this.context() });
+  }
+
+  // Interviews: from the last month on, soonest first
+  listInterviews(): Observable<HrInterview[]> {
+    return this.http.get<HrInterview[]>(`${this.url}/hr/interviews`, { context: this.context() });
+  }
+
+  /** Moves the card to INTERVIEW too; `send: false` saves it without emailing the candidate. */
+  scheduleInterview(entryId: number, draft: InterviewDraft & { send: boolean }): Observable<{ interview: HrInterview; pipeline: PipelineState }> {
+    return this.http.post<{ interview: HrInterview; pipeline: PipelineState }>(`${this.url}/hr/board/${entryId}/interviews`, draft, {
+      context: this.context(),
+    });
+  }
+
+  updateInterview(
+    id: number,
+    change: Partial<InterviewDraft> & { acceptProposed?: number; cancel?: boolean; notify?: boolean },
+  ): Observable<HrInterview> {
+    return this.http.patch<HrInterview>(`${this.url}/hr/interviews/${id}`, change, { context: this.context() });
+  }
+
+  // Candidate side (public page, no sign-in)
+  getPublicInterview(token: string): Observable<PublicInterview> {
+    return this.http.get<PublicInterview>(`${this.url}/interview/${encodeURIComponent(token)}`, { context: this.context() });
+  }
+
+  answerInterview(token: string, answer: InterviewAnswer): Observable<PublicInterview> {
+    return this.http.post<PublicInterview>(`${this.url}/interview/${encodeURIComponent(token)}/answer`, answer, {
+      context: this.context(),
+    });
   }
 
   listVacancies(): Observable<{ vacancies: HrVacancy[]; unassigned: number }> {

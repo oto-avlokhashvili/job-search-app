@@ -1,0 +1,415 @@
+// Same family as the reject / vacancy dialogs, wider; scrolls inside on short screens
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 540px);
+  max-height: calc(100dvh - 32px);
+  border-radius: 18px;
+  background: linear-gradient(var(--card-bg), var(--card-bg)), var(--surface);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  outline: none;
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.2rem 1.35rem 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    margin: 0;
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: var(--on-surface);
+  }
+
+  .sub {
+    margin: 0.1rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+// Amber like the "Interview" stage
+.head-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+
+  .material-symbols-outlined {
+    font-size: 22px;
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 1.1rem 1.35rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+
+  > span {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+
+    small {
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+  }
+}
+
+// Label on the left, the picked time on the right
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.75rem;
+}
+
+input[type='text'],
+textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 0.92rem;
+  color-scheme: light dark;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+}
+
+textarea {
+  resize: vertical;
+}
+
+.when {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.13);
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+}
+
+// Alternative times: chips; the one being edited opens a picker below
+.alts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.alt {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--primary-rgb), 0.35);
+  background: rgba(var(--primary-rgb), 0.08);
+  overflow: hidden;
+
+  &.editing {
+    border-color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.16);
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .alt-label {
+    gap: 0.3rem;
+    padding: 0.35rem 0.4rem 0.35rem 0.65rem;
+    font-size: 0.83rem;
+    font-weight: 700;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+
+  .alt-remove {
+    padding: 0.35rem 0.5rem 0.35rem 0.25rem;
+    color: var(--text-muted);
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      color: #ef4444;
+    }
+  }
+}
+
+.alt-done {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-end;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 17px;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  button {
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--on-surface-variant);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.active {
+      border-color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.12);
+      color: var(--primary);
+    }
+  }
+}
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--input-bg);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.9rem;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+  }
+}
+
+.add-alt {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.3rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px dashed rgba(var(--primary-rgb), 0.5);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+}
+
+.send {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  background: rgba(var(--primary-rgb), 0.07);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--on-surface);
+  cursor: pointer;
+
+  input {
+    margin-top: 0.2rem;
+    accent-color: var(--primary);
+  }
+
+  small {
+    display: block;
+    font-weight: 500;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+}
+
+.no-email,
+.hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: #f59e0b;
+  }
+}
+
+.error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ef4444;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.9rem 1.35rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &.ghost {
+    background: var(--surface-container);
+    color: var(--on-surface);
+  }
+
+  &.primary {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 576px) {
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  // Phone: bottom sheet
+  .dialog {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 18px 18px 0 0;
+  }
+
+  input[type='text'],
+  textarea {
+    font-size: 16px; // no zoom on iOS
+  }
+
+  .actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

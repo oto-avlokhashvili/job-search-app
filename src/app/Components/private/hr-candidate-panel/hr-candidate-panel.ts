@@ -13,7 +13,18 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { CandidateActivity, HrCandidate, PipelineStage } from '../../../Core/Interfaces/hr';
+import { CandidateActivity, HrCandidate, HrInterview, PipelineStage } from '../../../Core/Interfaces/hr';
+import { formatDay, formatShort, formatTime, INTERVIEW_STATUS } from '../../../Core/Utils/interview';
+
+// History lines for interview events; the candidate's own answers are signed with their name
+const INTERVIEW_EVENTS: Record<string, { label: string; icon: string; color: string; byCandidate?: boolean }> = {
+  INTERVIEW_SCHEDULED: { label: 'გასაუბრება დაიგეგმა:', icon: 'event', color: '#f59e0b' },
+  INTERVIEW_UPDATED: { label: 'გასაუბრება შეიცვალა:', icon: 'edit_calendar', color: '#f59e0b' },
+  INTERVIEW_CONFIRMED: { label: 'გასაუბრება დადასტურდა:', icon: 'event_available', color: '#22c55e', byCandidate: true },
+  INTERVIEW_DECLINED: { label: 'კანდიდატმა უარი თქვა:', icon: 'event_busy', color: '#ef4444', byCandidate: true },
+  INTERVIEW_RESCHEDULE_REQUESTED: { label: 'კანდიდატმა სხვა დრო ითხოვა:', icon: 'update', color: '#8b5cf6', byCandidate: true },
+  INTERVIEW_CANCELLED: { label: 'გასაუბრება გაუქმდა:', icon: 'event_busy', color: '#64748b' },
+};
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { MAX_TAGS, pipelineOf, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
@@ -51,6 +62,19 @@ export class HrCandidatePanel {
   tagsChange = output<string[]>();
   addToVacancy = output<number>();
   removeFromVacancy = output<void>();
+
+  /** This card's interview, if one is scheduled */
+  interview = input<HrInterview | null>(null);
+  scheduleInterview = output<void>();
+  editInterview = output<HrInterview>();
+  cancelInterview = output<HrInterview>();
+  acceptProposed = output<{ interview: HrInterview; index: number }>();
+
+  interviewStatus = INTERVIEW_STATUS;
+  day = formatDay;
+  time = formatTime;
+  short = (iso: string) => formatShort(iso);
+  copied = signal(false);
 
   stageById = STAGE_BY_ID;
   maxTags = MAX_TAGS;
@@ -127,6 +151,33 @@ export class HrCandidatePanel {
       }
     } finally {
       if (this.candidate().id === id) this.activityLoading.set(false);
+    }
+  }
+
+  interviewEvent(item: CandidateActivity) {
+    return INTERVIEW_EVENTS[item.kind] ?? { label: item.kind, icon: 'event', color: 'var(--text-muted)' };
+  }
+
+  /** Interview answers come from the candidate, not the HR who owns the history. */
+  authorOf(item: CandidateActivity): string {
+    return INTERVIEW_EVENTS[item.kind]?.byCandidate ? this.candidate().contact?.fullName || 'კანდიდატი' : item.author.name;
+  }
+
+  endTime(iv: HrInterview) {
+    return formatTime(new Date(new Date(iv.startsAt).getTime() + iv.durationMin * 60000));
+  }
+
+  isUrl(value: string) {
+    return /^https?:\/\/\S+$/i.test(value.trim());
+  }
+
+  async copyLink(iv: HrInterview) {
+    try {
+      await navigator.clipboard.writeText(iv.link);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch {
+      this.alertify.message(iv.link);
     }
   }
 

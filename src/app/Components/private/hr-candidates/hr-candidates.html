@@ -141,6 +141,7 @@
                 (cdkDragEnded)="onDragEnded()"
                 [candidate]="c"
                 [vacancyLabel]="labelFor(c)"
+                [interview]="interviewByEntry().get(c.pipeline.id) ?? null"
                 (open)="open(c)"
                 (stageChange)="moveTo(c, $event)"
               />
@@ -180,7 +181,7 @@
     <p class="drawer-hint">კანდიდატის დასაბრუნებლად აირჩიეთ ეტაპი მის ბარათზე</p>
     <div class="drawer-list">
       @for (c of columns()[stageId]; track c.pipeline.id) {
-        <app-hr-pipeline-card [candidate]="c" [vacancyLabel]="labelFor(c)" (open)="open(c)" (stageChange)="moveTo(c, $event)" />
+        <app-hr-pipeline-card [candidate]="c" [vacancyLabel]="labelFor(c)" [interview]="interviewByEntry().get(c.pipeline.id) ?? null" (open)="open(c)" (stageChange)="moveTo(c, $event)" />
       } @empty {
         <p class="col-empty">
           <span class="material-symbols-outlined">{{ meta.icon }}</span>
@@ -204,6 +205,11 @@
     (tagsChange)="setTags(c, $event)"
     (addToVacancy)="addToVacancy(c, $event)"
     (removeFromVacancy)="removeFromVacancy(c)"
+    [interview]="interviewByEntry().get(c.pipeline.id) ?? null"
+    (scheduleInterview)="openScheduleInterview(c)"
+    (editInterview)="editInterview(c, $event)"
+    (cancelInterview)="confirmCancelInterview($event)"
+    (acceptProposed)="acceptProposed($event.interview, $event.index)"
   />
 }
 
@@ -218,4 +224,15 @@
 
 @if (renaming() && v) {
   <app-hr-vacancy-dialog [vacancy]="v" (saved)="renaming.set(false)" (cancel)="renaming.set(false)" />
+}
+
+@if (interviewDialog(); as pending) {
+  <app-hr-interview-dialog
+    [card]="pending.card"
+    [interview]="pending.interview ?? null"
+    [fromMove]="pending.fromMove"
+    (saved)="onInterviewSaved()"
+    (skip)="skipInterview()"
+    (cancel)="interviewDialog.set(null)"
+  />
 }

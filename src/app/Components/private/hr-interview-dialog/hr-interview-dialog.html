@@ -1,0 +1,146 @@
+<div class="overlay" (click)="cancel.emit()">
+  <form
+    #dialog
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="interview-title"
+    tabindex="-1"
+    (click)="$event.stopPropagation()"
+    (keydown)="onKeydown($event)"
+    (submit)="$event.preventDefault(); submit()"
+  >
+    <header class="head">
+      <span class="head-icon"><span class="material-symbols-outlined">event</span></span>
+      <div>
+        <h2 id="interview-title">{{ editing() ? 'გასაუბრების შეცვლა' : 'გასაუბრების დაგეგმვა' }}</h2>
+        <p class="sub">{{ name() }}</p>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="field">
+        <span class="field-head">
+          თარიღი და დრო
+          @if (preview()) {
+            <span class="when"><span class="material-symbols-outlined">event</span>{{ preview() }}</span>
+          }
+        </span>
+        <app-date-time-picker [(value)]="startsAt" accent="#f59e0b" />
+      </div>
+
+      <div class="field">
+        <span>ხანგრძლივობა</span>
+        <div class="chips" role="radiogroup" aria-label="ხანგრძლივობა">
+          @for (d of durations; track d) {
+            <button type="button" role="radio" [class.active]="durationMin() === d" [attr.aria-checked]="durationMin() === d" (click)="durationMin.set(d)">
+              {{ d }} წთ
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <span>ფორმატი</span>
+        <div class="segmented" role="radiogroup" aria-label="ფორმატი">
+          <button type="button" role="radio" [class.active]="format() === 'ONLINE'" [attr.aria-checked]="format() === 'ONLINE'" (click)="format.set('ONLINE')">
+            <span class="material-symbols-outlined">videocam</span>ონლაინ
+          </button>
+          <button type="button" role="radio" [class.active]="format() === 'ONSITE'" [attr.aria-checked]="format() === 'ONSITE'" (click)="format.set('ONSITE')">
+            <span class="material-symbols-outlined">apartment</span>ოფისში
+          </button>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>{{ format() === 'ONLINE' ? 'შეხვედრის ლინკი' : 'მისამართი' }}</span>
+        <input
+          type="text"
+          maxlength="500"
+          [placeholder]="format() === 'ONLINE' ? 'https://meet.google.com/…' : 'მაგ: თბილისი, ჭავჭავაძის 1, მე-3 სართული'"
+          [value]="location()"
+          (input)="location.set($any($event.target).value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>შეტყობინება კანდიდატს <small>(არასავალდებულო)</small></span>
+        <textarea
+          rows="2"
+          maxlength="1000"
+          placeholder="მაგ: გთხოვთ, თან იქონიოთ პორტფოლიო"
+          [value]="message()"
+          (input)="message.set($any($event.target).value)"
+        ></textarea>
+      </label>
+
+      <div class="field">
+        <span>ალტერნატიული დრო <small>(კანდიდატი ერთი დაჭერით აირჩევს მეილიდან)</small></span>
+        @if (alternatives().length) {
+          <div class="alts">
+            @for (alt of alternatives(); track $index; let i = $index) {
+              <span class="alt" [class.editing]="editingAlt() === i">
+                <button type="button" class="alt-label" (click)="editingAlt.set(editingAlt() === i ? null : i)">
+                  <span class="material-symbols-outlined">schedule</span>{{ short(alt) }}
+                </button>
+                <button type="button" class="alt-remove" aria-label="წაშლა" (click)="removeAlternative(i)">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </span>
+            }
+          </div>
+        }
+        @if (editingAlt() !== null) {
+          <app-date-time-picker [value]="alternatives()[editingAlt()!]" (valueChange)="setAlternative(editingAlt()!, $event)" />
+          <button type="button" class="alt-done" (click)="editingAlt.set(null)">
+            <span class="material-symbols-outlined">check</span>მზადაა
+          </button>
+        } @else if (alternatives().length < maxAlternatives) {
+          <button type="button" class="add-alt" (click)="addAlternative()">
+            <span class="material-symbols-outlined">add</span>ალტერნატიული დროის დამატება
+          </button>
+        }
+      </div>
+
+      @if (email(); as mail) {
+        <label class="send">
+          <input type="checkbox" [checked]="send()" (change)="send.set($any($event.target).checked)" />
+          <span>
+            @if (!editing() || neverSent()) {
+              მოწვევის გაგზავნა ელ-ფოსტით
+            } @else {
+              კანდიდატს ცვლილების შეტყობინება
+            }
+            <small>{{ mail }}</small>
+          </span>
+        </label>
+      } @else {
+        <p class="no-email">
+          <span class="material-symbols-outlined">mail_off</span>
+          კანდიდატს ელ-ფოსტა არ აქვს: შეინახეთ და გაუზიარეთ პასუხის ლინკი სხვა გზით.
+        </p>
+      }
+      @if (timeChanged()) {
+        <p class="hint">ახალ დროს კანდიდატი ხელახლა დაადასტურებს.</p>
+      }
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+    </div>
+
+    <footer class="actions">
+      <button type="button" class="btn ghost" (click)="cancel.emit()">გაუქმება</button>
+      @if (fromMove()) {
+        <button type="button" class="btn ghost" (click)="skip.emit()">მხოლოდ ეტაპის შეცვლა</button>
+      }
+      <button type="submit" class="btn primary" [disabled]="!startsAt() || saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        } @else {
+          <span class="material-symbols-outlined">{{ send() && email() ? 'send' : 'check' }}</span>
+        }
+        {{ send() && email() ? 'გაგზავნა' : 'შენახვა' }}
+      </button>
+    </footer>
+  </form>
+</div>

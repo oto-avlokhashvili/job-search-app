@@ -105,6 +105,58 @@
       </div>
     </section>
 
+    <section class="block interview-block">
+      <h3>გასაუბრება</h3>
+      @if (interview(); as iv) {
+        @let st = interviewStatus[iv.status];
+        <div class="iv-card" [style.--iv-color]="st.color">
+          <div class="iv-top">
+            <span class="iv-status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
+            <span class="iv-sent">
+              @if (iv.sentTo) {
+                <span class="material-symbols-outlined">mark_email_read</span>გაგზავნილია
+              } @else {
+                <span class="material-symbols-outlined">mail_off</span>არ გაგზავნილა
+              }
+            </span>
+          </div>
+          <p class="iv-when">{{ day(iv.startsAt) }}, {{ time(iv.startsAt) }}–{{ endTime(iv) }}</p>
+          <p class="iv-where">
+            <span class="material-symbols-outlined">{{ iv.format === 'ONLINE' ? 'videocam' : 'location_on' }}</span>
+            @if (iv.format === 'ONLINE' && isUrl(iv.location)) {
+              <a [href]="iv.location" target="_blank" rel="noopener">შეხვედრის ლინკი</a>
+            } @else {
+              {{ iv.location || (iv.format === 'ONLINE' ? 'ონლაინ' : 'ოფისში') }}
+            }
+          </p>
+
+          @if (iv.candidateNote) {
+            <p class="iv-note">„{{ iv.candidateNote }}“</p>
+          }
+          @if (iv.status === 'RESCHEDULE_REQUESTED' && iv.proposedTimes.length) {
+            <div class="iv-proposed">
+              <span>კანდიდატის შემოთავაზება:</span>
+              @for (t of iv.proposedTimes; track t; let i = $index) {
+                <button type="button" class="proposed" (click)="acceptProposed.emit({ interview: iv, index: i })">
+                  <span class="material-symbols-outlined">check</span>{{ short(t) }}
+                </button>
+              }
+            </div>
+          }
+
+          <div class="iv-actions">
+            <button type="button" class="link-btn" (click)="editInterview.emit(iv)">შეცვლა</button>
+            <button type="button" class="link-btn" (click)="copyLink(iv)">{{ copied() ? 'დაკოპირდა ✓' : 'პასუხის ლინკი' }}</button>
+            <button type="button" class="link-btn danger" (click)="cancelInterview.emit(iv)">გაუქმება</button>
+          </div>
+        </div>
+      } @else {
+        <button type="button" class="schedule-btn" (click)="scheduleInterview.emit()">
+          <span class="material-symbols-outlined">event</span>გასაუბრების დაგეგმვა
+        </button>
+      }
+    </section>
+
     <section class="block">
       <app-hr-candidate-card [candidate]="c" [busy]="busy()" (download)="download.emit($event)" />
     </section>
@@ -170,9 +222,25 @@
                   }
                 </p>
               }
+              @default {
+                @let ev = interviewEvent(item);
+                <p class="event">
+                  <span class="material-symbols-outlined" [style.color]="ev.color">{{ ev.icon }}</span>
+                  {{ ev.label }}
+                  @if (item.interviewAt) {
+                    <strong>{{ short(item.interviewAt) }}</strong>
+                  }
+                  @if (eventVacancy(item); as title) {
+                    <span class="event-vacancy">{{ title }}</span>
+                  }
+                </p>
+                @if (item.note) {
+                  <p class="event-reason">„{{ item.note }}“</p>
+                }
+              }
             }
             <div class="item-meta">
-              <span>{{ item.author.name }} · {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
+              <span>{{ authorOf(item) }} · {{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</span>
               @if (item.kind === 'NOTE') {
                 <button
                   type="button"

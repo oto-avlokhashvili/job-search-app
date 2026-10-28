@@ -7,6 +7,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'analytics', renderMode: RenderMode.Client },
   { path: 'hr', renderMode: RenderMode.Client },
   { path: 'hr/**', renderMode: RenderMode.Client },
+  // Private link: nothing to index, and the answer must come from the candidate's browser
+  { path: 'interview/**', renderMode: RenderMode.Client },
   {
     // Old /private/* URLs only redirect to the account pages above.
     path: 'private/**',

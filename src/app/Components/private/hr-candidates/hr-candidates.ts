@@ -6,8 +6,10 @@ import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cd
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { BoardCard, HrCandidate, HrVacancy, PipelineChange, PipelineStage } from '../../../Core/Interfaces/hr';
+import { BoardCard, HrCandidate, HrInterview, HrVacancy, PipelineChange, PipelineStage } from '../../../Core/Interfaces/hr';
 import { OUTCOME_STAGES, PIPELINE_STAGES, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
+import { formatShort, interviewsByEntry, isUpcoming } from '../../../Core/Utils/interview';
+import { HrInterviewDialog } from '../hr-interview-dialog/hr-interview-dialog';
 import { HrStore } from '../../../Store/hr.store';
 import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
 import { HrPipelineCard } from '../hr-pipeline-card/hr-pipeline-card';
@@ -24,6 +26,15 @@ interface PendingReject {
   /** Column order to save with the move; absent when only the reason is edited. */
   order?: number[];
   editOnly?: boolean;
+}
+
+interface PendingInterview {
+  card: BoardCard;
+  /** Edit this one instead of scheduling */
+  interview?: HrInterview;
+  /** Set when the dialog came from a stage move: the column order to save */
+  order?: number[];
+  fromMove: boolean;
 }
 
 // The HR's candidate boards, as a pipeline board (default) or the plain list.
@@ -43,6 +54,7 @@ interface PendingReject {
     HrCandidatePanel,
     HrRejectDialog,
     HrVacancyDialog,
+    HrInterviewDialog,
   ],
   templateUrl: './hr-candidates.html',
   styleUrl: './hr-candidates.scss',
@@ -53,9 +65,12 @@ export class HrCandidates implements OnInit {
   private alertify = inject(AlertifyService);
   private router = inject(Router);
 
+  private route = inject(ActivatedRoute);
+  private openParam = toSignal(this.route.queryParamMap.pipe(map((q) => q.get('open'))), { initialValue: null });
+
   /** null on the main board. */
   vacancyId = toSignal(
-    inject(ActivatedRoute).paramMap.pipe(
+    this.route.paramMap.pipe(
       map((p) => {
         const id = Number(p.get('vacancyId'));
         return Number.isInteger(id) && id > 0 ? id : null;
@@ -123,6 +138,9 @@ export class HrCandidates implements OnInit {
   selectedId = signal<number | null>(null);
   selected = computed(() => this.hrStore.board().find((c) => c.pipeline.id === this.selectedId()) ?? null);
   pendingReject = signal<PendingReject | null>(null);
+  interviewDialog = signal<PendingInterview | null>(null);
+  // The interview each card shows (by entry id)
+  interviewByEntry = computed(() => interviewsByEntry(this.hrStore.interviews()));
   renaming = signal(false);
   vacancyBusy = signal(false);
 
@@ -147,6 +165,16 @@ export class HrCandidates implements OnInit {
       const observer = new ResizeObserver(() => this.updateBoardArrows());
       observer.observe(el);
       onCleanup(() => observer.disconnect());
+    });
+
+    // ?open=<entryId> (from the interviews page): open that card once the board is there
+    effect(() => {
+      const open = Number(this.openParam());
+      if (!open || !this.hrStore.boardLoaded()) return;
+      untracked(() => {
+        if (this.hrStore.board().some((c) => c.pipeline.id === open)) this.selectedId.set(open);
+        this.router.navigate([], { queryParams: { open: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      });
     });
 
     // Switching to another vacancy's board: close what was open for the previous one
@@ -179,6 +207,8 @@ export class HrCandidates implements OnInit {
   ngOnInit() {
     this.hrStore.loadBoard();
     this.hrStore.loadVacancies();
+    // Fresh on every visit: candidates answer by email in the meantime
+    this.hrStore.loadInterviews(true);
   }
 
   setView(view: View) {
@@ -235,7 +265,8 @@ export class HrCandidates implements OnInit {
       this.pendingReject.set({ card, order });
       return;
     }
-    this.save(card, from === to ? {} : { stage: to }, order);
+    if (from === to) this.save(card, {}, order);
+    else this.move(card, to, order);
   }
 
   /** Stage menu (card or panel): the card goes to the top of its new column. */
@@ -246,7 +277,83 @@ export class HrCandidates implements OnInit {
       this.pendingReject.set({ card, order });
       return;
     }
-    this.save(card, { stage }, order);
+    this.move(card, stage, order);
+  }
+
+  /**
+   * A stage change: into "Interview" offers scheduling one (unless it already has one); leaving it
+   * while an interview is still ahead asks whether to cancel that interview.
+   */
+  private move(card: BoardCard, stage: PipelineStage, order: number[], extra: PipelineChange = {}) {
+    const from = card.pipeline.stage;
+    const interview = this.interviewByEntry().get(card.pipeline.id);
+    if (stage === 'INTERVIEW' && from !== 'INTERVIEW' && !(interview && isUpcoming(interview))) {
+      this.interviewDialog.set({ card, order, fromMove: true });
+      return;
+    }
+    this.save(card, { ...extra, stage }, order);
+    if (from === 'INTERVIEW' && stage !== 'INTERVIEW' && interview && isUpcoming(interview)) {
+      this.alertify.confirm(
+        'გასაუბრების გაუქმება',
+        `${formatShort(interview.startsAt)}-ზე დაგეგმილი გასაუბრება გავაუქმოთ? კანდიდატი მიიღებს შეტყობინებას.`,
+        () => this.cancelInterview(interview, true),
+        () => {},
+      );
+    }
+  }
+
+  // ─── Interviews ────────────────────────────────────────────────
+
+  openScheduleInterview(card: BoardCard) {
+    this.interviewDialog.set({ card, fromMove: false });
+  }
+
+  editInterview(card: BoardCard, interview: HrInterview) {
+    this.interviewDialog.set({ card, interview, fromMove: false });
+  }
+
+  onInterviewSaved() {
+    const pending = this.interviewDialog();
+    this.interviewDialog.set(null);
+    // The server moved the card to "Interview"; show it at the top like any move
+    if (pending?.order) this.save(pending.card, {}, pending.order);
+    if (pending && this.selectedId() === pending.card.pipeline.id) this.panel()?.loadActivity();
+    this.alertify.success(pending?.interview ? 'გასაუბრება განახლდა' : 'გასაუბრება დაიგეგმა');
+  }
+
+  /** "Just move" from the dialog: the card goes to "Interview" without one. */
+  skipInterview() {
+    const pending = this.interviewDialog();
+    this.interviewDialog.set(null);
+    if (pending) this.save(pending.card, { stage: 'INTERVIEW' }, pending.order);
+  }
+
+  async cancelInterview(interview: HrInterview, notify = true) {
+    try {
+      await this.hrStore.updateInterview(interview.id, { cancel: true, notify });
+      this.alertify.success('გასაუბრება გაუქმდა');
+      if (this.selected()?.pipeline.id === interview.entryId) this.panel()?.loadActivity();
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'გაუქმება ვერ მოხერხდა'));
+    }
+  }
+
+  confirmCancelInterview(interview: HrInterview) {
+    this.alertify.confirm(
+      'გასაუბრების გაუქმება',
+      `${formatShort(interview.startsAt)}-ზე დაგეგმილი გასაუბრება გაუქმდება${interview.sentTo ? ' და კანდიდატი მიიღებს შეტყობინებას' : ''}.`,
+      () => this.cancelInterview(interview),
+    );
+  }
+
+  async acceptProposed(interview: HrInterview, index: number) {
+    try {
+      await this.hrStore.updateInterview(interview.id, { acceptProposed: index, notify: true });
+      this.alertify.success('დრო დადასტურდა, კანდიდატს ეცნობა');
+      this.panel()?.loadActivity();
+    } catch (err) {
+      this.alertify.error(this.hrService.errorMessage(err, 'დადასტურება ვერ მოხერხდა'));
+    }
   }
 
   editReason(card: BoardCard) {
@@ -260,7 +367,7 @@ export class HrCandidates implements OnInit {
     if (pending.editOnly) {
       this.save(pending.card, { rejectionReason: reason });
     } else {
-      this.save(pending.card, { stage: 'REJECTED', rejectionReason: reason }, pending.order);
+      this.move(pending.card, 'REJECTED', pending.order ?? [], { rejectionReason: reason });
     }
   }
 

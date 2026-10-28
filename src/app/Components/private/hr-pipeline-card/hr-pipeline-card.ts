@@ -1,5 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
-import { HrCandidate, PipelineStage } from '../../../Core/Interfaces/hr';
+import { HrCandidate, HrInterview, PipelineStage } from '../../../Core/Interfaces/hr';
+import { formatShort, INTERVIEW_STATUS } from '../../../Core/Utils/interview';
 import { pipelineOf, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
 import { HrStageMenu } from '../hr-stage-menu/hr-stage-menu';
 
@@ -14,10 +15,16 @@ export class HrPipelineCard {
   candidate = input.required<HrCandidate>();
   /** Main board: which vacancy this card belongs to. */
   vacancyLabel = input<string | null>(null);
+  /** Scheduled interview: time and the candidate's answer */
+  interview = input<HrInterview | null>(null);
   open = output<HrCandidate>();
   stageChange = output<PipelineStage>();
 
   pipeline = computed(() => pipelineOf(this.candidate()));
+  interviewBadge = computed(() => {
+    const iv = this.interview();
+    return iv ? { ...INTERVIEW_STATUS[iv.status], when: formatShort(iv.startsAt) } : null;
+  });
   stage = computed(() => STAGE_BY_ID[this.pipeline().stage]);
   initials = computed(() => {
     const c = this.candidate();

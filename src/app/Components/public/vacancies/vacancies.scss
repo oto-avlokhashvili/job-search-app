@@ -1567,8 +1567,8 @@ button.btn-search {
     background: var(--surface-container-low);
 
     th {
-      padding: 14px 18px;
-      font-size: 12.5px;
+      padding: 10px 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--on-surface-variant);
       text-transform: uppercase;
@@ -1589,29 +1589,31 @@ button.btn-search {
     }
 
     td {
-      padding: 16px 18px;
+      padding: 8px 12px;
       vertical-align: middle;
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--on-surface);
     }
   }
 
   .col-vacancy {
     min-width: 260px;
+    // Takes the spare width, so the title shows more before it's cut off
+    width: 40%;
   }
 
   .job-info-cell {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
 
     .company-logo-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
       color: #ffffff;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -1621,7 +1623,7 @@ button.btn-search {
       &.jobup-logo {
         background: #ffffff;
         border: 1px solid var(--outline-variant, rgba(11, 96, 150, 0.2));
-        padding: 6px;
+        padding: 4px;
 
         img { width: 100%; height: 100%; object-fit: contain; }
       }
@@ -1630,7 +1632,7 @@ button.btn-search {
     .job-titles {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 0;
       min-width: 0;
 
       .job-vacancy-link {
@@ -1642,11 +1644,11 @@ button.btn-search {
         text-align: left;
         cursor: pointer;
         color: var(--on-surface);
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 700;
         line-height: 1.3;
         transition: color 0.15s ease;
-        max-width: 280px;
+        max-width: 420px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1657,7 +1659,8 @@ button.btn-search {
       }
 
       .job-company {
-        font-size: 12.5px;
+        font-size: 12px;
+        line-height: 1.3;
         color: var(--on-surface-variant);
         font-weight: 500;
       }
@@ -1667,10 +1670,10 @@ button.btn-search {
   .provider-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
+    gap: 5px;
+    padding: 2px 8px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     background: var(--surface-container);
     color: var(--on-surface);
@@ -1743,10 +1746,11 @@ button.btn-search {
   .apply-btn {
     display: inline-block;
     text-decoration: none;
-    padding: 7px 16px;
-    font-size: 12.5px;
+    padding: 5px 12px;
+    font-size: 12px;
     font-weight: 700;
-    border-radius: 8px;
+    line-height: 1.4;
+    border-radius: 7px;
     background: var(--primary);
     color: #ffffff;
     border: none;
@@ -1764,9 +1768,10 @@ button.btn-search {
 .deadline-tag {
   display: inline-flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 78px;
+  gap: 3px;
+  min-width: 72px;
   font-size: 12px;
+  line-height: 1.3;
   font-weight: 600;
   color: var(--on-surface-variant);
   // Track tint / fill per status
@@ -1824,7 +1829,7 @@ button.btn-search {
   @media (max-width: 991px) {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 24px;
   }
 }
@@ -1832,29 +1837,29 @@ button.btn-search {
 .compact-job-card {
   color: inherit;
   text-decoration: none;
-  padding: 14px 16px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   background: var(--surface-container-lowest);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   .job-card-top {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 
     .company-logo-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
       color: #ffffff;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -1864,7 +1869,7 @@ button.btn-search {
       &.jobup-logo {
         background: #ffffff;
         border: 1px solid var(--outline-variant, rgba(11, 96, 150, 0.2));
-        padding: 6px;
+        padding: 4px;
 
         img { width: 100%; height: 100%; object-fit: contain; }
       }
@@ -1875,8 +1880,9 @@ button.btn-search {
       min-width: 0;
 
       .card-vacancy-title {
-        margin: 0 0 3px 0;
-        font-size: 14px;
+        margin: 0 0 1px 0;
+        font-size: 13.5px;
+        line-height: 1.3;
         font-weight: 700;
         color: var(--on-surface);
         white-space: nowrap;
@@ -1889,6 +1895,7 @@ button.btn-search {
         align-items: center;
         gap: 6px;
         font-size: 12px;
+        line-height: 1.35;
         color: var(--on-surface-variant);
 
         .card-company-name {
@@ -1928,9 +1935,10 @@ button.btn-search {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
       font-size: 11px;
+      line-height: 1.4;
       font-weight: 600;
       background: var(--surface-container);
       color: var(--on-surface);
@@ -1957,9 +1965,10 @@ button.btn-search {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
       font-size: 11px;
+      line-height: 1.4;
       font-weight: 700;
       background: rgba(11, 96, 150, 0.1);
       color: var(--primary);

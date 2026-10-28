@@ -80,6 +80,12 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () => import('./Components/public/contact/contact').then((m) => m.Contact),
   },
+  // Candidate's answer to an interview invitation (link from the email; no sign-in)
+  {
+    path: 'interview/:token',
+    loadComponent: () => import('./Components/public/interview-answer/interview-answer').then((m) => m.InterviewAnswer),
+    data: { hideFooter: true },
+  },
   {
     path: 'auth',
     redirectTo: 'home',
@@ -117,6 +123,10 @@ export const routes: Routes = [
         path: 'candidates',
         loadComponent: () => import('./Components/private/hr-candidates/hr-candidates').then((m) => m.HrCandidates),
         data: { wideContent: true },
+      },
+      {
+        path: 'interviews',
+        loadComponent: () => import('./Components/private/hr-interviews/hr-interviews').then((m) => m.HrInterviews),
       },
       // One vacancy's board: same page, filtered
       {

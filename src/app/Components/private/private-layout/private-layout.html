@@ -83,6 +83,16 @@
           </button>
         </div>
 
+        <a routerLink="/hr/interviews" routerLinkActive="active" (click)="closeSidebar()">
+          <span class="material-symbols-outlined">event</span>
+          <span class="nav-title">გასაუბრებები</span>
+          @if (interviewsNeedingAnswer()) {
+            <span class="nav-count alert" title="კანდიდატმა სხვა დრო ითხოვა">{{ interviewsNeedingAnswer() }}</span>
+          } @else if (upcomingInterviews()) {
+            <span class="nav-count">{{ upcomingInterviews() }}</span>
+          }
+        </a>
+
         @if (isAdmin()) {
           <span class="nav-label">ადმინისტრირება</span>
           <a routerLink="/hr/admin" routerLinkActive="active" (click)="closeSidebar()">

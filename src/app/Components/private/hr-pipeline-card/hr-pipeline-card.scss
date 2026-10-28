@@ -53,6 +53,42 @@
   }
 }
 
+// Interview time + the candidate's answer, in the status color
+.interview {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--iv-color) 30%, transparent);
+  background: color-mix(in srgb, var(--iv-color) 10%, transparent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  min-width: 0;
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: var(--iv-color);
+  }
+
+  .iv-when {
+    flex-shrink: 0;
+  }
+
+  .iv-status {
+    margin-left: auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--iv-color);
+  }
+}
+
 .head {
   display: flex;
   align-items: flex-start;
