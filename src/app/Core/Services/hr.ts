@@ -6,6 +6,7 @@ import { skipLoading } from '../loading/skip-loading.component';
 import {
   BoardCard,
   CandidateActivity,
+  GoogleConnection,
   HrInterview,
   InterviewAnswer,
   InterviewDraft,
@@ -83,6 +84,24 @@ export class HrService {
     change: Partial<InterviewDraft> & { acceptProposed?: number; cancel?: boolean; notify?: boolean },
   ): Observable<HrInterview> {
     return this.http.patch<HrInterview>(`${this.url}/hr/interviews/${id}`, change, { context: this.context() });
+  }
+
+  // Google account for Meet links
+  getGoogleConnection(): Observable<GoogleConnection> {
+    return this.http.get<GoogleConnection>(`${this.url}/hr/google`, { context: this.context() });
+  }
+
+  /** Google's consent page; it sends the HR back to /google-calendar/callback. */
+  googleConnectUrl(): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`${this.url}/hr/google/connect`, null, { context: this.context() });
+  }
+
+  finishGoogleConnect(code: string, state: string): Observable<GoogleConnection> {
+    return this.http.post<GoogleConnection>(`${this.url}/hr/google/callback`, { code, state }, { context: this.context() });
+  }
+
+  disconnectGoogle(): Observable<GoogleConnection> {
+    return this.http.delete<GoogleConnection>(`${this.url}/hr/google`, { context: this.context() });
   }
 
   // Candidate side (public page, no sign-in)

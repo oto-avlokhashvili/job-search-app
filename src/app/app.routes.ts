@@ -86,6 +86,14 @@ export const routes: Routes = [
     loadComponent: () => import('./Components/public/interview-answer/interview-answer').then((m) => m.InterviewAnswer),
     data: { hideFooter: true },
   },
+  // Google's consent page returns here (in a popup) when an HR connects their calendar for Meet links
+  {
+    path: 'google-calendar/callback',
+    loadComponent: () =>
+      import('./Components/private/google-calendar-callback/google-calendar-callback').then((m) => m.GoogleCalendarCallback),
+    canActivate: [authGuard],
+    data: { hideLayout: true },
+  },
   {
     path: 'auth',
     redirectTo: 'home',

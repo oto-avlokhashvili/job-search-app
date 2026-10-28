@@ -4,6 +4,31 @@
     <p>დაგეგმილი გასაუბრებები და კანდიდატების პასუხები</p>
   </header>
 
+  @if (google(); as g) {
+    <div class="google" [class.on]="g.connected">
+      <span class="material-symbols-outlined" aria-hidden="true">{{ g.connected ? 'videocam' : 'videocam_off' }}</span>
+      <div class="google-text">
+        @if (g.connected) {
+          <strong>Google Meet დაკავშირებულია</strong>
+          <small>{{ g.email }} · ონლაინ გასაუბრებებს ლინკი ავტომატურად შეექმნება</small>
+        } @else {
+          <strong>Google Meet</strong>
+          <small>დააკავშირეთ Google Calendar და თითოეულ ონლაინ გასაუბრებას ცალკე ლინკი შეექმნება</small>
+        }
+        @if (googleError()) {
+          <small class="google-error" role="alert">{{ googleError() }}</small>
+        }
+      </div>
+      @if (g.connected) {
+        <button type="button" class="google-btn ghost" (click)="disconnectGoogle()">გათიშვა</button>
+      } @else {
+        <button type="button" class="google-btn" [disabled]="connectingGoogle()" (click)="connectGoogle()">
+          {{ connectingGoogle() ? 'დაელოდეთ…' : 'დაკავშირება' }}
+        </button>
+      }
+    </div>
+  }
+
   @if (loading()) {
     <div class="empty"><span class="spinner"></span></div>
   } @else if (empty()) {

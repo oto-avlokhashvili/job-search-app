@@ -9,6 +9,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'hr/**', renderMode: RenderMode.Client },
   // Private link: nothing to index, and the answer must come from the candidate's browser
   { path: 'interview/**', renderMode: RenderMode.Client },
+  // Google's redirect back with a one-time code: finished with the HR's session in the browser
+  { path: 'google-calendar/**', renderMode: RenderMode.Client },
   {
     // Old /private/* URLs only redirect to the account pages above.
     path: 'private/**',

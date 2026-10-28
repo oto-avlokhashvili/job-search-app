@@ -1,9 +1,10 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BoardCard, HrInterview } from '../../../Core/Interfaces/hr';
 import { formatDay, formatShort, formatTime, INTERVIEW_STATUS } from '../../../Core/Utils/interview';
 import { HrStore } from '../../../Store/hr.store';
+import { GoogleCalendar } from '../../../Core/Services/google-calendar';
 
 interface Row {
   interview: HrInterview;
@@ -21,6 +22,12 @@ interface Row {
 })
 export class HrInterviews implements OnInit {
   private hrStore = inject(HrStore);
+  private googleCalendar = inject(GoogleCalendar);
+
+  // Google account the Meet links are created in
+  google = this.googleCalendar.connection;
+  connectingGoogle = this.googleCalendar.connecting;
+  googleError = signal('');
 
   time = formatTime;
   short = (iso: string) => formatShort(iso);
@@ -61,6 +68,22 @@ export class HrInterviews implements OnInit {
     this.hrStore.loadInterviews(true);
     this.hrStore.loadBoard();
     this.hrStore.loadVacancies();
+    this.googleCalendar.load();
+  }
+
+  async connectGoogle() {
+    this.googleError.set('');
+    const result = await this.googleCalendar.connect();
+    if (!result.ok && result.error) this.googleError.set(result.error);
+  }
+
+  async disconnectGoogle() {
+    this.googleError.set('');
+    try {
+      await this.googleCalendar.disconnect();
+    } catch {
+      this.googleError.set('გათიშვა ვერ მოხერხდა');
+    }
   }
 
   statusOf(row: Row) {

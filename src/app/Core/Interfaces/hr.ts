@@ -121,6 +121,8 @@ export interface HrInterview {
   sentTo: string | null;
   respondedAt: string | null;
   createdAt: string;
+  /** `location` is a Google Meet link generated in the HR's calendar */
+  googleMeet: boolean;
   /** The candidate's answer page */
   link: string;
 }
@@ -132,6 +134,14 @@ export interface InterviewDraft {
   location: string;
   message: string;
   alternatives: string[];
+  /** Online: generate a Google Meet link (location is then ignored). Left out on edit: keep what there is. */
+  googleMeet?: boolean;
+}
+
+/** The Google account an HR connected for Meet links. */
+export interface GoogleConnection {
+  connected: boolean;
+  email: string | null;
 }
 
 /** What the candidate's answer page gets (no sign-in, the link is the key). */

@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, computed, ElementRef, inject, input, OnInit, output, signal, viewChild } from '@angular/core';
 import { BoardCard, HrInterview, InterviewDraft, InterviewFormat } from '../../../Core/Interfaces/hr';
 import { HrService } from '../../../Core/Services/hr';
+import { GoogleCalendar } from '../../../Core/Services/google-calendar';
 import { defaultInterviewStart, DURATIONS, formatDay, formatShort, formatTime, MAX_ALTERNATIVES } from '../../../Core/Utils/interview';
 import { HrStore } from '../../../Store/hr.store';
 import { DateTimePicker } from '../../shared/date-time-picker/date-time-picker';
@@ -18,6 +19,7 @@ import { DateTimePicker } from '../../shared/date-time-picker/date-time-picker';
 export class HrInterviewDialog implements OnInit, AfterViewInit {
   private hrStore = inject(HrStore);
   private hrService = inject(HrService);
+  private googleCalendar = inject(GoogleCalendar);
 
   card = input.required<BoardCard>();
   /** Edit this interview instead of creating one */
@@ -46,6 +48,14 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   saving = signal(false);
   error = signal('');
 
+  // Google Meet: a separate generated link per interview, once the HR's Google account is connected
+  google = this.googleCalendar.connection;
+  connectingGoogle = this.googleCalendar.connecting;
+  googleMeet = signal(true);
+  useMeet = computed(() => this.format() === 'ONLINE' && !!this.google()?.connected && this.googleMeet());
+  // The link this interview already has (kept on edit)
+  currentMeet = computed(() => (this.interview()?.googleMeet ? this.interview()!.location : null));
+
   email = computed(() => this.card().contact?.email ?? null);
   name = computed(() => this.card().contact?.fullName || this.card().detectedRole || 'კანდიდატი');
   editing = computed(() => !!this.interview());
@@ -69,11 +79,22 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     if (iv) {
       this.durationMin.set(iv.durationMin);
       this.format.set(iv.format);
+      // Also a generated link: if Google got disconnected since, it stays as a typed one
       this.location.set(iv.location);
       this.message.set(iv.message ?? '');
       this.alternatives.set([...iv.alternatives]);
+      // Editing an interview with a typed link keeps it unless the HR switches Meet on
+      this.googleMeet.set(iv.googleMeet || (iv.format === 'ONLINE' && !iv.location));
     }
     this.send.set(!!this.email());
+    this.googleCalendar.load();
+  }
+
+  async connectGoogle() {
+    this.error.set('');
+    const result = await this.googleCalendar.connect();
+    if (result.ok) this.googleMeet.set(true);
+    else if (result.error) this.error.set(result.error);
   }
 
   ngAfterViewInit() {
@@ -108,13 +129,16 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     const alternatives = [...new Set(this.alternatives())].filter(
       (iso) => iso !== startsAt && new Date(iso).getTime() > Date.now(),
     );
+    const useMeet = this.useMeet();
     const draft: InterviewDraft = {
       startsAt,
       durationMin: this.durationMin(),
       format: this.format(),
-      location: this.location().trim(),
+      location: useMeet ? '' : this.location().trim(),
       message: this.message().trim(),
       alternatives,
+      // Connection unknown (status didn't load): leave an existing Meet link as it is
+      googleMeet: this.google() ? useMeet : undefined,
     };
     const send = this.send() && !!this.email();
 

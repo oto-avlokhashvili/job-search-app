@@ -52,16 +52,40 @@
         </div>
       </div>
 
-      <label class="field">
-        <span>{{ format() === 'ONLINE' ? 'შეხვედრის ლინკი' : 'მისამართი' }}</span>
-        <input
-          type="text"
-          maxlength="500"
-          [placeholder]="format() === 'ONLINE' ? 'https://meet.google.com/…' : 'მაგ: თბილისი, ჭავჭავაძის 1, მე-3 სართული'"
-          [value]="location()"
-          (input)="location.set($any($event.target).value)"
-        />
-      </label>
+      @if (format() === 'ONLINE' && google()?.connected) {
+        <label class="send meet">
+          <input type="checkbox" [checked]="googleMeet()" (change)="googleMeet.set($any($event.target).checked)" />
+          <span>
+            Google Meet ლინკის ავტომატური შექმნა
+            <small>
+              @if (googleMeet() && currentMeet(); as link) {
+                {{ link }}
+              } @else {
+                თითოეულ კანდიდატს ცალკე შეხვედრა · {{ google()?.email }}
+              }
+            </small>
+          </span>
+        </label>
+      }
+
+      @if (!useMeet()) {
+        <label class="field">
+          <span>{{ format() === 'ONLINE' ? 'შეხვედრის ლინკი' : 'მისამართი' }}</span>
+          <input
+            type="text"
+            maxlength="500"
+            [placeholder]="format() === 'ONLINE' ? 'https://meet.google.com/…' : 'მაგ: თბილისი, ჭავჭავაძის 1, მე-3 სართული'"
+            [value]="location()"
+            (input)="location.set($any($event.target).value)"
+          />
+        </label>
+        @if (format() === 'ONLINE' && google() && !google()!.connected) {
+          <button type="button" class="connect-google" [disabled]="connectingGoogle()" (click)="connectGoogle()">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ connectingGoogle() ? 'hourglass_top' : 'add_link' }}</span>
+            {{ connectingGoogle() ? 'დაასრულეთ Google-ის ფანჯარაში…' : 'Google Meet ლინკის ავტომატური შექმნა: დააკავშირეთ Google Calendar' }}
+          </button>
+        }
+      }
 
       <label class="field">
         <span>შეტყობინება კანდიდატს <small>(არასავალდებულო)</small></span>

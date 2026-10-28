@@ -1,0 +1,22 @@
+<main class="page">
+  <div class="card" role="status" aria-live="polite">
+    @if (result(); as r) {
+      @if (r.ok) {
+        <span class="icon ok material-symbols-outlined" aria-hidden="true">check_circle</span>
+        <h1>Google Calendar დაკავშირებულია</h1>
+        @if (r.connection?.email) {
+          <p>{{ r.connection?.email }}</p>
+        }
+        <p class="muted">ონლაინ გასაუბრებებს Google Meet ლინკი ავტომატურად შეექმნება.</p>
+      } @else {
+        <span class="icon fail material-symbols-outlined" aria-hidden="true">error</span>
+        <h1>ვერ დაკავშირდა</h1>
+        <p>{{ r.error }}</p>
+      }
+      <button type="button" class="btn" (click)="back()">გაგრძელება</button>
+    } @else {
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Google-თან დაკავშირება…</p>
+    }
+  </div>
+</main>
