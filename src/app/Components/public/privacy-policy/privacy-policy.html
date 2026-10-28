@@ -73,6 +73,7 @@
           <li>CV-ის AI ანალიზი და თქვენს პროფილზე მორგებული აქტუალური ვაკანსიების მოძიება;</li>
           <li>თქვენი თანხმობით, CV-ის და საკონტაქტო მონაცემების გაზიარება ვერიფიცირებულ დამსაქმებლებთან და HR სპეციალისტებთან (იხ. პუნქტი 5);</li>
           <li>ახალი, შესაბამისი ვაკანსიების შესახებ შეტყობინებების მიწოდება Telegram-ის ან ელ-ფოსტის საშუალებით;</li>
+          <li>HR სპეციალისტის მოთხოვნით, გასაუბრებებისთვის Google Meet ლინკების შექმნა მის Google Calendar-ში (იხ. პუნქტი 6);</li>
           <li>პლატფორმის უსაფრთხოების, სტაბილურობისა და ალგორითმების გაუმჯობესება.</li>
         </ul>
       </section>
@@ -114,9 +115,44 @@
       </section>
 
       <!-- Section 6 -->
-      <section class="legal-section">
+      <section class="legal-section" id="google-calendar">
         <div class="section-title-row">
           <div class="section-number">6</div>
+          <h2>Google Calendar და Google Meet (HR სპეციალისტებისთვის)</h2>
+        </div>
+        <p>
+          HR სპეციალისტს შეუძლია, საკუთარი სურვილით დააკავშიროს თავისი Google ანგარიში, რათა ონლაინ გასაუბრებებს Google Meet ლინკი ავტომატურად შეექმნას. დაკავშირებისას Google გთხოვთ თანხმობას შემდეგ წვდომებზე: <strong>Google Calendar-ის მოვლენების ნახვა და რედაქტირება</strong> (<code>calendar.events</code>) და თქვენი Google ანგარიშის ელ-ფოსტის მისამართი.
+        </p>
+        <ul class="legal-list">
+          <li>
+            <strong>რას ვაკეთებთ:</strong> მხოლოდ იმ გასაუბრებების მოვლენებს ვქმნით, ვცვლით და ვშლით, რომლებსაც თავად გეგმავთ Job Up-ში. თითოეულ გასაუბრებას ცალკე Google Meet ლინკი ექმნება. მოვლენაში მითითებულია კანდიდატის სახელი, პოზიცია და კანდიდატის ელ-ფოსტა.
+          </li>
+          <li>
+            <strong>რას არ ვაკეთებთ:</strong> თქვენი კალენდრის სხვა მოვლენებს არ ვკითხულობთ და არ ვინახავთ; Google-ისგან მიღებულ მონაცემებს არ ვყიდით, არ ვიყენებთ რეკლამისთვის და არ ვიყენებთ ხელოვნური ინტელექტის მოდელების ტრენინგისთვის; Google-ის სახელით ელ-ფოსტას არ ვაგზავნით.
+          </li>
+          <li>
+            <strong>რას ვინახავთ:</strong> დაკავშირებული ანგარიშის ელ-ფოსტას, დაშიფრულ წვდომის ტოკენს (refresh token), ჩვენ მიერ შექმნილი მოვლენის იდენტიფიკატორს და Meet ლინკს.
+          </li>
+          <li>
+            <strong>გათიშვა:</strong> ნებისმიერ დროს შეგიძლიათ გათიშოთ Google ანგარიში „გასაუბრებების“ გვერდიდან ან
+            <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google ანგარიშის პარამეტრებიდან</a>. გათიშვისას ტოკენი იშლება და Google-თან წვდომა უქმდება; უკვე გაგზავნილი ლინკები აგრძელებს მუშაობას.
+          </li>
+        </ul>
+        <p>
+          Job Up-ის მიერ Google API-ებიდან მიღებული ინფორმაციის გამოყენება და ნებისმიერ სხვა აპლიკაციაზე გადაცემა შეესაბამება
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>-ს, მათ შორის Limited Use მოთხოვნებს.
+        </p>
+        <p lang="en">
+          Job Up's use and transfer to any other app of information received from Google APIs will adhere to the
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements.
+          We use Google Calendar access only to create, update and delete the interview events (with Google Meet links) that an HR user schedules in Job Up. We do not read other calendar events, and we do not sell Google user data, use it for advertising, or use it to train AI models.
+        </p>
+      </section>
+
+      <!-- Section 7 -->
+      <section class="legal-section">
+        <div class="section-title-row">
+          <div class="section-number">7</div>
           <h2>მონაცემთა შენახვა და უსაფრთხოება</h2>
         </div>
         <p>
@@ -127,10 +163,10 @@
         </p>
       </section>
 
-      <!-- Section 7 -->
+      <!-- Section 8 -->
       <section class="legal-section">
         <div class="section-title-row">
-          <div class="section-number">7</div>
+          <div class="section-number">8</div>
           <h2>თქვენი უფლებები</h2>
         </div>
         <p>საქართველოს კანონმდებლობის შესაბამისად, თქვენ უფლება გაქვთ:</p>
@@ -138,14 +174,15 @@
           <li>მოითხოვოთ ინფორმაცია თქვენ შესახებ დამუშავებული მონაცემების თაობაზე;</li>
           <li>ნებისმიერ დროს განაახლოთ, შეცვალოთ ან წაშალოთ თქვენი CV და პირადი მონაცემები პროფილის გვერდიდან;</li>
           <li>ნებისმიერ დროს გამორთოთ Telegram ან Email შეტყობინებების მიღება;</li>
+          <li>ნებისმიერ დროს გათიშოთ დაკავშირებული Google ანგარიში (HR სპეციალისტები);</li>
           <li>მოითხოვოთ ანგარიშისა და მასთან დაკავშირებული ყველა მონაცემის სრული წაშლა.</li>
         </ul>
       </section>
 
-      <!-- Section 8 -->
+      <!-- Section 9 -->
       <section class="legal-section" id="cookies">
         <div class="section-title-row">
-          <div class="section-number">8</div>
+          <div class="section-number">9</div>
           <h2>ქუქი-ფაილები (Cookies), ანალიტიკა და რეკლამა</h2>
         </div>
         <p>
@@ -171,10 +208,10 @@
         </p>
       </section>
 
-      <!-- Section 9 -->
+      <!-- Section 10 -->
       <section class="legal-section">
         <div class="section-title-row">
-          <div class="section-number">9</div>
+          <div class="section-number">10</div>
           <h2>კონტაქტი</h2>
         </div>
         <p>
