@@ -192,22 +192,11 @@ $outline-variant-color: #97aed5;
   }
 }
 
+// Looks like the theme switch (.icon-btn); phones sign in from the bottom nav
 .btn-auth {
-  background-color: transparent;
-  color: var(--primary);
-  border: 1.5px solid var(--primary);
-  padding: 10px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: var(--primary);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.2);
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   @media (max-width: 576px) {

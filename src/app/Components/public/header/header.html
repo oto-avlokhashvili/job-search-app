@@ -74,7 +74,7 @@
           }
         </div>
       } @else {
-        <button class="btn-auth" (click)="authService.openAuthModal('login')">ავტორიზაცია</button>
+        <button type="button" class="icon-btn material-symbols-outlined btn-auth" aria-label="ავტორიზაცია" title="ავტორიზაცია" (click)="authService.openAuthModal('login')">person</button>
       }
       
       <div class="hamburger" [class.active]="menuOpen" (click)="menuOpen = !menuOpen">
