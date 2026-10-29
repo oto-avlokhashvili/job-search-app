@@ -10,7 +10,13 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--on-surface, #162f50);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  // Short screens (laptops at 125% zoom): scroll inside instead of running off the top and bottom
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color, rgba(151, 174, 213, 0.3)) transparent;
 
   @media (max-width: 520px) {
     padding: 1.5rem 1.25rem;
