@@ -795,7 +795,8 @@ export const StateStore = signalStore(
                         publishDate: formatJobDate(job.publishDate),
                         deadline: job.deadline ? formatJobDate(job.deadline) : '',
                         matchScore: job.match || Math.floor(Math.random() * 10) + 90,
-                        link: job.link || '/jobs'
+                        link: job.link || '/jobs',
+                        companyLogo: job.companyLogo ?? null,
                     }));
 
                     const total = res.counts?.filteredRecords || 0;

@@ -31,6 +31,8 @@ export interface Job {
   requirements?: string;
   source?: string;
   category?: string;
+  /** Company logo (128px WebP on logos.jobup.ge), when the company has one */
+  companyLogo?: string | null;
 }
 
 export interface AiMatchedJobsResponse {
@@ -69,5 +71,6 @@ export interface VacancyItem {
   deadline?: string;
   matchScore: number;
   link: string;
+  companyLogo?: string | null;
 }
 

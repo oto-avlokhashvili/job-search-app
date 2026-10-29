@@ -1,3 +1,4 @@
+import { CompanyLogos } from '../../../Core/Utils/company-logos';
 import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -414,7 +415,8 @@ export class VacancyDetails implements OnInit {
             publishDate: formatJobDate(j.publishDate),
             deadline: j.deadline ? formatJobDate(j.deadline) : '',
             matchScore: j.match || 95,
-            link: j.link || '/jobs'
+            link: j.link || '/jobs',
+            companyLogo: j.companyLogo ?? null,
           }));
         this.similarJobs.set(jobs);
         this.similarJobsLoading.set(false);
@@ -505,6 +507,7 @@ export class VacancyDetails implements OnInit {
   }
 
   readonly jobUpLogo = JOBUP_LOGO;
+  readonly logos = new CompanyLogos();
 
   detectSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
     return detectJobSource(sourceOrLink, linkFallback, company);

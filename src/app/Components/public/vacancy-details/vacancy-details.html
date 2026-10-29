@@ -76,9 +76,11 @@
         <!-- Hero Information Card -->
         <header class="vacancy-hero-card glass-card">
           <div class="hero-top-section">
-            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j)">
+            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j) || logos.show(j.companyLogo)">
               @if (isJobUp(j)) {
                 <img [src]="jobUpLogo" alt="Job Up">
+              } @else if (logos.show(j.companyLogo)) {
+                <img [src]="j.companyLogo" [alt]="j.company" width="60" height="60" decoding="async" (error)="logos.broken(j.companyLogo)">
               } @else {
                 {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
               }
@@ -328,7 +330,11 @@
                           </div>
                           <h4 class="card-vacancy-title" [title]="item.vacancy">{{ item.vacancy }}</h4>
                           <div class="card-company-row">
-                            <span class="material-symbols-outlined">domain</span>
+                            @if (logos.show(item.companyLogo)) {
+                              <img class="mini-logo" [src]="item.companyLogo" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(item.companyLogo)">
+                            } @else {
+                              <span class="material-symbols-outlined">domain</span>
+                            }
                             <span class="card-company-name">{{ item.company }}</span>
                           </div>
                           <div class="card-bottom">

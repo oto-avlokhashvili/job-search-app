@@ -283,6 +283,19 @@ h2 {
     opacity: 0.7;
   }
 
+  // Company logo in place of the building icon (white tile: logos are made for light backgrounds)
+  .mini-logo {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    padding: 2px;
+    margin-right: 2px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color, rgba(11, 96, 150, 0.15));
+    background: #ffffff;
+    object-fit: contain;
+  }
+
   .card-company-name {
     white-space: nowrap;
     overflow: hidden;

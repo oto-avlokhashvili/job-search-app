@@ -1,3 +1,4 @@
+import { CompanyLogos } from '../../../Core/Utils/company-logos';
 import { Component, ElementRef, inject, Injector, OnInit, signal, computed, effect, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender, untracked } from '@angular/core';
 import { Router, RouterModule, ActivatedRoute, NavigationStart } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
@@ -27,6 +28,7 @@ export interface VacancyItem {
   deadline?: string;
   matchScore: number;
   link: string;
+  companyLogo?: string | null;
 }
 
 /**
@@ -621,6 +623,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   readonly jobUpLogo = JOBUP_LOGO;
+  /** Company logos on the cards; falls back to the letter when an image fails */
+  readonly logos = new CompanyLogos();
   readonly jobUpSource = JOBUP_SOURCE;
 
   detectSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
@@ -907,6 +911,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
           deadline: job.deadline ? formatJobDate(job.deadline) : '',
           matchScore: job.match,
           link: job.link,
+          companyLogo: job.companyLogo ?? null,
         })),
       );
       this.burstParticles();

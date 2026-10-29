@@ -1,3 +1,4 @@
+import { CompanyLogos } from '../../../Core/Utils/company-logos';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -30,6 +31,7 @@ const MAX_PUBLIC_PAGE = 5;
   styleUrl: './vacancy-landing.scss',
 })
 export class VacancyLanding implements OnInit, OnDestroy {
+  readonly logos = new CompanyLogos();
   private route = inject(ActivatedRoute);
   private jobsService = inject(JobsService);
   private seo = inject(SeoService);
@@ -205,6 +207,7 @@ export class VacancyLanding implements OnInit, OnDestroy {
       deadline: job.deadline ? formatJobDate(job.deadline) : '',
       matchScore: job.match || 0,
       link: job.link || '/jobs',
+      companyLogo: job.companyLogo ?? null,
     };
   }
 }
