@@ -116,6 +116,8 @@ export interface HrInterview {
   inviteeEmail: string | null;
   /** Invitation link nobody joined through yet: works until then (one person) */
   inviteExpiresAt: string | null;
+  /** Set on invitations: the position the HR invited for */
+  position: string | null;
   startsAt: string;
   durationMin: number;
   format: InterviewFormat;
@@ -178,6 +180,8 @@ export interface PublicInterview {
 /** An invitation link for one new candidate: the interview plus the vacancy board they join. */
 export interface InviteDraft extends InterviewDraft {
   vacancyId?: number;
+  /** Required without a vacancy; with one it defaults to the vacancy's title */
+  position?: string;
 }
 
 /** A candidate the HR adds by hand: no CV, only on their boards. */

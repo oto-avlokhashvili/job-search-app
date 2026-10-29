@@ -84,6 +84,15 @@
       font-weight: 500;
       color: var(--text-muted);
     }
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  .field-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
   }
 }
 

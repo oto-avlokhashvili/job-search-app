@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, ElementRef, inject, input, OnInit, output, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, input, OnInit, output, signal, untracked, viewChild } from '@angular/core';
 import { BoardCard, HrInterview, InterviewDraft, InterviewFormat } from '../../../Core/Interfaces/hr';
 import { HrService } from '../../../Core/Services/hr';
 import { GoogleCalendar } from '../../../Core/Services/google-calendar';
@@ -71,6 +71,12 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
       .filter((v) => v.status === 'OPEN')
       .map((v) => ({ value: v.id, label: v.title, icon: 'work', group: 'ვაკანსიები' })),
   ]);
+  // Position on the invitation: the vacancy's title (editable), typed when there's no vacancy
+  invitePosition = signal('');
+  positionFromVacancy = signal(true);
+  inviteVacancyTitle = computed(() => this.hrStore.vacancies().find((v) => v.id === this.inviteVacancyId())?.title ?? '');
+  positionRequired = computed(() => this.inviteVacancyId() === null);
+  finalPosition = computed(() => this.invitePosition().replace(/\s+/g, ' ').trim() || this.inviteVacancyTitle().trim());
   createdInvite = signal<HrInterview | null>(null);
   copied = signal(false);
   expiresAt = computed(() => {
@@ -98,6 +104,20 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   });
 
   private dialog = viewChild<ElementRef<HTMLElement>>('dialog');
+
+  constructor() {
+    // Untouched position follows the chosen vacancy
+    effect(() => {
+      const title = this.inviteVacancyTitle();
+      if (untracked(this.positionFromVacancy)) this.invitePosition.set(title);
+    });
+  }
+
+  typePosition(value: string) {
+    this.invitePosition.set(value);
+    // Cleared: back to following the vacancy
+    this.positionFromVacancy.set(!value.trim());
+  }
 
   ngOnInit() {
     const iv = this.interview();
@@ -150,6 +170,10 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   async submit() {
     const startsAt = this.startsAt();
     if (!startsAt || this.saving()) return;
+    if (this.inviting() && !this.finalPosition()) {
+      this.error.set('მიუთითეთ პოზიცია');
+      return;
+    }
     if (new Date(startsAt).getTime() <= Date.now()) {
       this.error.set('აირჩიეთ მომავალი დრო');
       return;
@@ -178,7 +202,9 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
       const vacancyId = this.inviteVacancyId();
       if (!iv && (this.inviting() || !card)) {
         // Stay open on the link: the HR shares it themselves
-        this.createdInvite.set(await this.hrStore.inviteToInterview({ ...draft, ...(vacancyId !== null && { vacancyId }) }));
+        this.createdInvite.set(
+          await this.hrStore.inviteToInterview({ ...draft, position: this.finalPosition(), ...(vacancyId !== null && { vacancyId }) }),
+        );
         return;
       }
       const saved = iv

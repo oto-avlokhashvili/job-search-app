@@ -55,6 +55,26 @@
             <app-select-menu ariaLabel="ვაკანსია" accent="#f59e0b" [options]="vacancyOptions()" [(value)]="inviteVacancyId" />
           </div>
         }
+        <!-- The candidate's page names it: the vacancy fills it in, without one it's typed -->
+        <label class="field">
+          <span>
+            პოზიცია
+            @if (positionRequired()) {
+              <span class="required" aria-hidden="true">*</span>
+            }
+          </span>
+          <input
+            type="text"
+            maxlength="150"
+            [required]="positionRequired()"
+            [placeholder]="inviteVacancyTitle() || 'მაგ: გრაფიკული დიზაინერი'"
+            [value]="invitePosition()"
+            (input)="typePosition($any($event.target).value)"
+          />
+          @if (!positionRequired() && positionFromVacancy()) {
+            <small class="field-note">ვაკანსიის დასახელებიდან, შეგიძლიათ შეცვალოთ</small>
+          }
+        </label>
       }
 
       <div class="field">
@@ -197,7 +217,7 @@
       @if (fromMove()) {
         <button type="button" class="btn ghost" (click)="skip.emit()">მხოლოდ ეტაპის შეცვლა</button>
       }
-      <button type="submit" class="btn primary" [disabled]="!startsAt() || saving()">
+      <button type="submit" class="btn primary" [disabled]="!startsAt() || saving() || (inviting() && !finalPosition())">
         @if (saving()) {
           <span class="spinner"></span>
         } @else {

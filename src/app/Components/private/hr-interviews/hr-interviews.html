@@ -80,7 +80,7 @@
         <span class="who">
           <strong>{{ name(row) }} <span class="invited-tag">მოწვეული</span></strong>
           <small>
-            {{ row.vacancy || 'ვაკანსიის გარეშე' }}
+            {{ row.interview.position || row.vacancy || 'ვაკანსიის გარეშე' }}
             · {{ isExpired(row) ? 'ბმულს ვადა გაუვიდა' : 'ბმული მოქმედებს ' + inviteValidUntil(row) }}
           </small>
         </span>
