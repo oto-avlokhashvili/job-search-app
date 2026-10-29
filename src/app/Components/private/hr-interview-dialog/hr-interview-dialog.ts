@@ -5,14 +5,17 @@ import { GoogleCalendar } from '../../../Core/Services/google-calendar';
 import { defaultInterviewStart, DURATIONS, formatDay, formatShort, formatTime, MAX_ALTERNATIVES } from '../../../Core/Utils/interview';
 import { HrStore } from '../../../Store/hr.store';
 import { DateTimePicker } from '../../shared/date-time-picker/date-time-picker';
+import { SelectMenu, SelectOption } from '../../shared/select-menu/select-menu';
 
 /**
  * Schedule an interview for a card (or edit one). Opened when a card moves to "Interview";
  * then "skip" just moves the card without an interview. Saves through the store.
+ * With `invite`, there is no card: it makes an invitation link (one person, valid a day) for the HR to share;
+ * whoever opens it joins the board by accepting with their details and CV.
  */
 @Component({
   selector: 'app-hr-interview-dialog',
-  imports: [DateTimePicker],
+  imports: [DateTimePicker, SelectMenu],
   templateUrl: './hr-interview-dialog.html',
   styleUrl: './hr-interview-dialog.scss',
 })
@@ -21,9 +24,11 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   private hrService = inject(HrService);
   private googleCalendar = inject(GoogleCalendar);
 
-  card = input.required<BoardCard>();
+  card = input<BoardCard | null>(null);
   /** Edit this interview instead of creating one */
   interview = input<HrInterview | null>(null);
+  /** Invite a new candidate (no card) to this vacancy's board; null vacancy = pick one or none */
+  invite = input<{ vacancyId: number | null } | null>(null);
   /** Opened by a stage move: offers moving without an interview */
   fromMove = input(false);
 
@@ -56,8 +61,29 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   // The link this interview already has (kept on edit)
   currentMeet = computed(() => (this.interview()?.googleMeet ? this.interview()!.location : null));
 
-  email = computed(() => this.card().contact?.email ?? null);
-  name = computed(() => this.card().contact?.fullName || this.card().detectedRole || 'კანდიდატი');
+  // Invite mode: which vacancy board the candidate joins; then the link to share
+  inviteVacancyId = signal<number | null>(null);
+  inviting = computed(() => !!this.invite() && !this.interview());
+  vacancyOptions = computed<SelectOption<number | null>[]>(() => [
+    { value: null, label: 'ვაკანსიის გარეშე', hint: 'მხოლოდ მთავარ დაფაზე', icon: 'dashboard' },
+    ...this.hrStore
+      .vacancies()
+      .filter((v) => v.status === 'OPEN')
+      .map((v) => ({ value: v.id, label: v.title, icon: 'work', group: 'ვაკანსიები' })),
+  ]);
+  createdInvite = signal<HrInterview | null>(null);
+  copied = signal(false);
+  expiresAt = computed(() => {
+    const iso = this.createdInvite()?.inviteExpiresAt;
+    return iso ? `${formatDay(iso)}, ${formatTime(iso)}` : '';
+  });
+
+  email = computed(() => (this.inviting() ? null : (this.card()?.contact?.email ?? this.interview()?.inviteeEmail ?? null)));
+  name = computed(() => {
+    if (this.inviting()) return 'ბმული ერთი კანდიდატისთვის';
+    const card = this.card();
+    return card?.contact?.fullName || card?.detectedRole || this.interview()?.inviteeName || 'კანდიდატი';
+  });
   editing = computed(() => !!this.interview());
   // Edit of an invitation that was never emailed: the checkbox sends it now
   neverSent = computed(() => this.editing() && !this.interview()!.sentTo);
@@ -87,6 +113,8 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
       this.googleMeet.set(iv.googleMeet || (iv.format === 'ONLINE' && !iv.location));
     }
     this.send.set(!!this.email());
+    this.inviteVacancyId.set(this.invite()?.vacancyId ?? null);
+    if (this.inviting()) this.hrStore.loadVacancies();
     this.googleCalendar.load();
   }
 
@@ -146,9 +174,16 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     this.error.set('');
     try {
       const iv = this.interview();
+      const card = this.card();
+      const vacancyId = this.inviteVacancyId();
+      if (!iv && (this.inviting() || !card)) {
+        // Stay open on the link: the HR shares it themselves
+        this.createdInvite.set(await this.hrStore.inviteToInterview({ ...draft, ...(vacancyId !== null && { vacancyId }) }));
+        return;
+      }
       const saved = iv
         ? await this.hrStore.updateInterview(iv.id, { ...draft, notify: send })
-        : await this.hrStore.scheduleInterview(this.card(), draft, send);
+        : await this.hrStore.scheduleInterview(card!, draft, send);
       this.saved.emit(saved);
     } catch (err: any) {
       this.error.set(this.hrService.errorMessage(err, 'გასაუბრების შენახვა ვერ მოხერხდა'));
@@ -160,12 +195,32 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     }
   }
 
+  async copyInviteLink() {
+    const link = this.createdInvite()?.link;
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch {
+      // No clipboard access (http, permissions): the link is selectable in the field
+      this.copied.set(false);
+    }
+  }
+
+  /** Closing: an invite that was made counts as saved */
+  close() {
+    const invite = this.createdInvite();
+    if (invite) this.saved.emit(invite);
+    else this.cancel.emit();
+  }
+
   onKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       // The board also listens for Escape; this dialog is on top
       event.preventDefault();
       event.stopPropagation();
-      this.cancel.emit();
+      this.close();
     }
   }
 }

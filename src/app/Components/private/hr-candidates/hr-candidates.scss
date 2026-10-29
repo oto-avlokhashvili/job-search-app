@@ -129,6 +129,24 @@ $header-height: 64px;
     color: #ef4444;
   }
 
+  // Amber, like the "Interview" stage
+  &.invite {
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.08);
+
+    &:hover:not(:disabled) {
+      border-color: #f59e0b;
+      color: #d97706;
+      background: rgba(245, 158, 11, 0.15);
+    }
+  }
+
+  &.invites-chip {
+    text-decoration: none;
+    color: var(--text-muted);
+  }
+
   &:disabled {
     opacity: 0.55;
     cursor: default;

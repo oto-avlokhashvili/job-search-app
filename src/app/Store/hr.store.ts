@@ -11,6 +11,8 @@ import {
     HrVacancy,
     HrInterview,
     InterviewDraft,
+    InviteDraft,
+    ManualCandidateDraft,
     LinkedinProfile,
     PipelineChange,
     SeniorityLevel,
@@ -328,6 +330,17 @@ export const HrStore = signalStore(
             },
 
             /** Throws so the dialog can show the server's message (e.g. the open-vacancy limit). */
+            /** Adds someone by hand; the new card goes on top of the board. Throws on failure. */
+            async addManualCandidate(draft: ManualCandidateDraft) {
+                const card = await firstValueFrom(hrService.addManualCandidate(draft));
+                const now = new Date().toISOString();
+                patchState(store, {
+                    board: store.boardLoaded() ? [card, ...store.board()] : store.board(),
+                    vacancies: store.vacancies().map((v) => (v.id === draft.vacancyId ? { ...v, updatedAt: now } : v)),
+                });
+                return card;
+            },
+
             async createVacancy(title: string) {
                 const vacancy = await firstValueFrom(hrService.createVacancy(title));
                 patchState(store, { vacancies: [vacancy, ...store.vacancies()] });
@@ -370,6 +383,13 @@ export const HrStore = signalStore(
                     board: store.board().map((c) => (c.pipeline.id === pipeline.id ? { ...c, pipeline } : c)),
                 });
                 methods.syncSearchMemberships();
+                return interview;
+            },
+
+            /** Invites a new candidate; no card until they accept. Throws on failure. */
+            async inviteToInterview(draft: InviteDraft) {
+                const interview = await firstValueFrom(hrService.inviteToInterview(draft));
+                patchState(store, { interviews: sortInterviews([...store.interviews(), interview]) });
                 return interview;
             },
 

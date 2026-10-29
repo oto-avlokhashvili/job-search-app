@@ -16,6 +16,7 @@ import { HrPipelineCard } from '../hr-pipeline-card/hr-pipeline-card';
 import { HrCandidatePanel } from '../hr-candidate-panel/hr-candidate-panel';
 import { HrRejectDialog } from '../hr-reject-dialog/hr-reject-dialog';
 import { HrVacancyDialog } from '../hr-vacancy-dialog/hr-vacancy-dialog';
+import { HrManualCandidateDialog } from '../hr-manual-candidate-dialog/hr-manual-candidate-dialog';
 
 type View = 'board' | 'list';
 type Scope = 'all' | 'none';
@@ -55,6 +56,7 @@ interface PendingInterview {
     HrRejectDialog,
     HrVacancyDialog,
     HrInterviewDialog,
+    HrManualCandidateDialog,
   ],
   templateUrl: './hr-candidates.html',
   styleUrl: './hr-candidates.scss',
@@ -141,6 +143,25 @@ export class HrCandidates implements OnInit {
   interviewDialog = signal<PendingInterview | null>(null);
   // The interview each card shows (by entry id)
   interviewByEntry = computed(() => interviewsByEntry(this.hrStore.interviews()));
+  /** "Invite to an interview" dialog for a new candidate: the vacancy they'd join (null on the main board) */
+  inviting = signal<{ vacancyId: number | null } | null>(null);
+  /** "Add a candidate" by hand: the vacancy preselected (null on the main board) */
+  addingManual = signal<{ vacancyId: number | null } | null>(null);
+  // Invitation links nobody has used yet (no card) and still valid, for this vacancy or, on the main board, all
+  pendingInvites = computed(() => {
+    const vacancyId = this.vacancyId();
+    const now = Date.now();
+    return this.hrStore
+      .interviews()
+      .filter(
+        (i) =>
+          i.entryId === null &&
+          (i.status === 'PENDING' || i.status === 'RESCHEDULE_REQUESTED') &&
+          new Date(i.startsAt).getTime() > now &&
+          (!i.inviteExpiresAt || new Date(i.inviteExpiresAt).getTime() > now) &&
+          (vacancyId === null || i.vacancyId === vacancyId),
+      ).length;
+  });
   renaming = signal(false);
   vacancyBusy = signal(false);
 
@@ -310,6 +331,23 @@ export class HrCandidates implements OnInit {
 
   editInterview(card: BoardCard, interview: HrInterview) {
     this.interviewDialog.set({ card, interview, fromMove: false });
+  }
+
+  openInvite(vacancyId: number | null) {
+    this.inviting.set({ vacancyId });
+  }
+
+  onInvited() {
+    this.inviting.set(null);
+    this.alertify.success('მოწვევის ბმული შეიქმნა: კანდიდატი დაფაზე CV-ის ატვირთვისას გამოჩნდება');
+  }
+
+  onManualAdded(card: BoardCard) {
+    this.addingManual.set(null);
+    const name = card.contact?.fullName || 'კანდიდატი';
+    // Added to another vacancy than the one on screen: say where it went
+    const elsewhere = this.vacancyId() !== null && card.pipeline.vacancyId !== this.vacancyId();
+    this.alertify.success(elsewhere ? `${name} დაემატა სხვა დაფაზე` : `${name} დაემატა დაფაზე`);
   }
 
   onInterviewSaved() {

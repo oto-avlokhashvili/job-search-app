@@ -2,9 +2,22 @@
 <section class="page" [class.board-mode]="view() === 'board' && candidates().length > 0">
   <header class="page-head">
     @if (vacancyId() === null) {
-      <div>
+      <div class="vacancy-head">
         <h1>ჩემი კანდიდატები</h1>
         <p>ყველა კანდიდატი, რომლის კონტაქტიც გახსენით, ყველა ვაკანსიიდან</p>
+        <div class="vacancy-actions">
+          <button type="button" class="action invite" (click)="openInvite(null)">
+            <span class="material-symbols-outlined">person_add</span>მოიწვიე გასაუბრებაზე
+          </button>
+          <button type="button" class="action" (click)="addingManual.set({ vacancyId: null })">
+            <span class="material-symbols-outlined">edit_note</span>ხელით დამატება
+          </button>
+          @if (pendingInvites(); as count) {
+            <a routerLink="/hr/interviews" class="action invites-chip" title="მოწვეულები, რომლებსაც ჯერ არ უპასუხიათ">
+              <span class="material-symbols-outlined">hourglass_top</span>მოწვეული: {{ count }}
+            </a>
+          }
+        </div>
       </div>
     } @else {
       <div class="vacancy-head">
@@ -23,6 +36,17 @@
               <button type="button" class="action primary" (click)="searchForVacancy(v)">
                 <span class="material-symbols-outlined">person_search</span>კანდიდატების ძიება
               </button>
+              <button type="button" class="action invite" (click)="openInvite(v.id)">
+                <span class="material-symbols-outlined">person_add</span>მოიწვიე გასაუბრებაზე
+              </button>
+              <button type="button" class="action" (click)="addingManual.set({ vacancyId: v.id })">
+                <span class="material-symbols-outlined">edit_note</span>ხელით დამატება
+              </button>
+            }
+            @if (pendingInvites(); as count) {
+              <a routerLink="/hr/interviews" class="action invites-chip" title="მოწვეულები, რომლებსაც ჯერ არ უპასუხიათ">
+                <span class="material-symbols-outlined">hourglass_top</span>მოწვეული: {{ count }}
+              </a>
             }
             <button type="button" class="action" (click)="renaming.set(true)">
               <span class="material-symbols-outlined">edit</span>გადარქმევა
@@ -235,4 +259,12 @@
     (skip)="skipInterview()"
     (cancel)="interviewDialog.set(null)"
   />
+}
+
+@if (inviting(); as target) {
+  <app-hr-interview-dialog [invite]="target" (saved)="onInvited()" (cancel)="inviting.set(null)" />
+}
+
+@if (addingManual(); as target) {
+  <app-hr-manual-candidate-dialog [vacancyId]="target.vacancyId" (saved)="onManualAdded($event)" (cancel)="addingManual.set(null)" />
 }

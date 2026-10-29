@@ -72,7 +72,8 @@ export function interviewsByEntry(interviews: HrInterview[], now = Date.now()): 
   const map = new Map<number, HrInterview>();
   const recent = now - 12 * 3600 * 1000;
   for (const iv of interviews) {
-    if (iv.status === 'CANCELLED' || new Date(iv.startsAt).getTime() < recent) continue;
+    // Invitations nobody has accepted yet have no card to show them on
+    if (iv.entryId === null || iv.status === 'CANCELLED' || new Date(iv.startsAt).getTime() < recent) continue;
     const current = map.get(iv.entryId);
     if (!current || iv.createdAt > current.createdAt) map.set(iv.entryId, iv);
   }

@@ -1,0 +1,68 @@
+<div class="overlay" (click)="cancel.emit()">
+  <form
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="manual-dialog-title"
+    (click)="$event.stopPropagation()"
+    (keydown)="onKeydown($event)"
+    (submit)="$event.preventDefault(); save()"
+  >
+    <h2 id="manual-dialog-title">კანდიდატის დამატება</h2>
+    <p class="sub">ხელით დამატებული კანდიდატი მხოლოდ თქვენს დაფაზე ჩანს</p>
+
+    <div class="name-row">
+      <label class="field">
+        <span>სახელი</span>
+        <input #firstInput type="text" maxlength="70" autocomplete="off" [value]="firstName()" (input)="firstName.set($any($event.target).value)" />
+      </label>
+      <label class="field">
+        <span>გვარი</span>
+        <input type="text" maxlength="70" autocomplete="off" [value]="lastName()" (input)="lastName.set($any($event.target).value)" />
+      </label>
+    </div>
+
+    <!-- Board first: a vacancy fills in the position -->
+    <div class="field">
+      <span>დაფა</span>
+      <app-select-menu ariaLabel="დაფა" [options]="boardOptions()" [(value)]="targetVacancyId" />
+      @if (targetVacancyId() !== null) {
+        <small class="note">ვაკანსიის დაფაზე დამატებული კანდიდატი მთავარ დაფაზეც გამოჩნდება</small>
+      }
+    </div>
+
+    <label class="field">
+      <span>
+        პოზიცია
+        @if (positionRequired()) {
+          <span class="required" aria-hidden="true">*</span>
+        }
+      </span>
+      <input
+        type="text"
+        maxlength="150"
+        [required]="positionRequired()"
+        [placeholder]="vacancyTitle() || 'მაგ: გრაფიკული დიზაინერი'"
+        [value]="position()"
+        (input)="typePosition($any($event.target).value)"
+      />
+      @if (!positionRequired() && positionFromVacancy()) {
+        <small class="note">ვაკანსიის დასახელებიდან, შეგიძლიათ შეცვალოთ</small>
+      }
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button type="button" class="btn ghost" (click)="cancel.emit()">გაუქმება</button>
+      <button type="submit" class="btn primary" [disabled]="!valid() || saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        }
+        დამატება
+      </button>
+    </div>
+  </form>
+</div>

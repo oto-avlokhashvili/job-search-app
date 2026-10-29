@@ -27,6 +27,8 @@ export interface HrCandidate {
   vacancies?: VacancyMembership[];
   /** Board card state; only on "My candidates". A CV in two vacancies gives two cards. */
   pipeline?: PipelineState;
+  /** Added by hand by this HR: name and position only, no CV file or AI summary */
+  manual?: boolean;
 }
 
 /** A card on the boards: one CV in one vacancy (or in none). */
@@ -105,9 +107,15 @@ export type InterviewStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'RESCHEDULE
 /** An interview scheduled for a board card (entryId). */
 export interface HrInterview {
   id: number;
-  entryId: number;
-  cvId: number;
+  /** Null while an invited candidate hasn't joined yet (no card) */
+  entryId: number | null;
+  cvId: number | null;
   vacancyId: number | null;
+  /** Invitation to someone not on the platform yet: who joined through it (null until then) */
+  inviteeName: string | null;
+  inviteeEmail: string | null;
+  /** Invitation link nobody joined through yet: works until then (one person) */
+  inviteExpiresAt: string | null;
   startsAt: string;
   durationMin: number;
   format: InterviewFormat;
@@ -160,6 +168,36 @@ export interface PublicInterview {
   hrName: string;
   candidateName: string;
   canRespond: boolean;
+  /** Invited, not on the platform yet: accepting asks for details and a CV */
+  needsProfile: boolean;
+  /** The invitation link's day ran out before anyone joined */
+  inviteExpired: boolean;
+  inviteeEmail: string | null;
+}
+
+/** An invitation link for one new candidate: the interview plus the vacancy board they join. */
+export interface InviteDraft extends InterviewDraft {
+  vacancyId?: number;
+}
+
+/** A candidate the HR adds by hand: no CV, only on their boards. */
+export interface ManualCandidateDraft {
+  firstName: string;
+  lastName: string;
+  position: string;
+  /** Also on this vacancy's board; omitted: the main board only */
+  vacancyId?: number;
+}
+
+/** An invitee's details sent with their answer (with the CV file). */
+export interface InterviewJoin {
+  action: 'confirm' | 'reschedule';
+  slot?: number;
+  note?: string;
+  proposedTimes?: string[];
+  fullName: string;
+  email: string;
+  phoneNumber: string;
 }
 
 export interface InterviewAnswer {

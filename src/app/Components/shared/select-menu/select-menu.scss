@@ -1,0 +1,240 @@
+// Same family as the experience filter on HR search
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.trigger {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.55rem 0 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border-color));
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+}
+
+.lead {
+  font-size: 19px;
+  color: var(--accent);
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  &.placeholder {
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+}
+
+.chevron {
+  font-size: 20px;
+  color: var(--text-muted);
+  transition: transform 0.18s ease;
+}
+
+.select.open {
+  .trigger {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  .chevron {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+}
+
+// ─── The list ────────────────────────────────────────────────
+.panel {
+  position: fixed;
+  z-index: 2000; // above the HR dialogs (1100)
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  // --card-bg is translucent in dark mode; a floating list needs an opaque surface
+  background: var(--surface-container-lowest);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  animation: panel-down 0.14s ease-out;
+
+  &.up {
+    animation-name: panel-up;
+  }
+}
+
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.55rem 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    font-size: 15px;
+    color: var(--accent);
+  }
+}
+
+.section + .section {
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid var(--border-color);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 10px;
+  color: var(--on-surface);
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+
+  &.active {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  &.selected {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  &.disabled {
+    opacity: 0.35;
+    cursor: default;
+    text-decoration: line-through;
+  }
+}
+
+.opt-icon {
+  font-size: 19px;
+  color: var(--text-muted);
+
+  .selected & {
+    color: var(--accent);
+  }
+}
+
+.opt-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  .opt-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+}
+
+.check {
+  font-size: 18px;
+  color: var(--accent);
+}
+
+// ─── Grid layout (times): chips in rows of 4 ─────────────────
+.panel.grid {
+  .items {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 0 2px 4px;
+  }
+
+  .option {
+    justify-content: center;
+    padding: 0.45rem 0;
+    border: 1px solid var(--border-color);
+    font-size: 0.86rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+
+    &.active:not(.selected) {
+      border-color: color-mix(in srgb, var(--accent) 60%, var(--border-color));
+    }
+
+    &.selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    &.disabled {
+      text-decoration: none;
+    }
+  }
+
+  .opt-text {
+    flex: none;
+    align-items: center;
+  }
+}
+
+@keyframes panel-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes panel-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .trigger {
+    font-size: 16px; // no zoom on iOS
+  }
+}

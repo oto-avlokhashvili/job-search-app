@@ -444,3 +444,97 @@ textarea {
     justify-content: center;
   }
 }
+
+// ─── Invite a new candidate ──────────────────────────────────
+.invite-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  background: rgba(var(--primary-rgb), 0.07);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--on-surface-variant);
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--primary);
+  }
+}
+
+.invite-link input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 0.92rem;
+  color-scheme: light dark;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+}
+
+// After creating: the link to share
+.invite-ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+
+  .ready-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 26px;
+    color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.12);
+  }
+
+  strong {
+    font-size: 1.02rem;
+    color: var(--on-surface);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+}
+
+.invite-link {
+  display: flex;
+  gap: 0.5rem;
+
+  input {
+    flex: 1;
+    text-overflow: ellipsis;
+  }
+
+  .btn {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .invite-link input {
+    font-size: 16px; // no zoom on iOS
+  }
+
+  .invite-link {
+    flex-direction: column;
+  }
+}

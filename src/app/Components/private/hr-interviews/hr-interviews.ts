@@ -28,6 +28,8 @@ export class HrInterviews implements OnInit {
   google = this.googleCalendar.connection;
   connectingGoogle = this.googleCalendar.connecting;
   googleError = signal('');
+  copiedId = signal<number | null>(null);
+  renewingId = signal<number | null>(null);
 
   time = formatTime;
   short = (iso: string) => formatShort(iso);
@@ -38,7 +40,7 @@ export class HrInterviews implements OnInit {
     const titles = new Map(this.hrStore.vacancies().map((v) => [v.id, v.title]));
     return this.hrStore.interviews().map((interview) => ({
       interview,
-      card: cards.get(interview.entryId),
+      card: interview.entryId === null ? undefined : cards.get(interview.entryId),
       vacancy: interview.vacancyId ? (titles.get(interview.vacancyId) ?? null) : null,
     }));
   });
@@ -91,7 +93,48 @@ export class HrInterviews implements OnInit {
   }
 
   name(row: Row) {
-    return row.card?.contact?.fullName || row.card?.detectedRole || 'კანდიდატი';
+    if (this.isInvite(row)) return row.interview.inviteeName || 'მოწვევის ბმული';
+    return row.card?.contact?.fullName || row.interview.inviteeName || row.card?.detectedRole || 'კანდიდატი';
+  }
+
+  /** Invitation not accepted yet: the candidate has no card, only the link */
+  isInvite(row: Row) {
+    return row.interview.entryId === null;
+  }
+
+  /** The invitation link's day ran out before anyone used it */
+  isExpired(row: Row) {
+    const until = row.interview.inviteExpiresAt;
+    return this.isInvite(row) && !!until && new Date(until).getTime() <= Date.now();
+  }
+
+  inviteValidUntil(row: Row) {
+    const until = row.interview.inviteExpiresAt;
+    return until ? `${formatShort(until)}-მდე` : '';
+  }
+
+  /** A new link for another day; the old one stops working */
+  async renewLink(row: Row) {
+    if (this.renewingId()) return;
+    this.renewingId.set(row.interview.id);
+    try {
+      const saved = await this.hrStore.updateInterview(row.interview.id, { renewLink: true });
+      await this.copyLink({ ...row, interview: saved });
+    } catch {
+      this.googleError.set('ახალი ბმულის შექმნა ვერ მოხერხდა');
+    } finally {
+      this.renewingId.set(null);
+    }
+  }
+
+  async copyLink(row: Row) {
+    try {
+      await navigator.clipboard.writeText(row.interview.link);
+      this.copiedId.set(row.interview.id);
+      setTimeout(() => this.copiedId.set(null), 2000);
+    } catch {
+      window.prompt('მოწვევის ბმული', row.interview.link);
+    }
   }
 
   /** The board the interview's card is on, with the card opened */

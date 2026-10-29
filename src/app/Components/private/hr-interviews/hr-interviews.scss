@@ -277,3 +277,47 @@
     display: none;
   }
 }
+
+// Invited, not on the board yet
+.invited-tag {
+  margin-left: 0.3rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.copy-link {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  // Expired link: the action is "make a new one"
+  &.renew {
+    border-color: rgba(var(--primary-rgb), 0.45);
+    color: var(--primary);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: progress;
+  }
+}

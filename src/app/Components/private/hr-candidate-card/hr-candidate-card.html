@@ -72,10 +72,18 @@
         }
       </div>
       <div class="actions">
-        <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
-          <span class="material-symbols-outlined">download</span>
-          CV-ის ჩამოტვირთვა
-        </button>
+        @if (c.manual) {
+          <!-- Added by hand: there's no CV file -->
+          <span class="locked">
+            <span class="material-symbols-outlined">edit_note</span>
+            ხელით დამატებული, CV-ის გარეშე
+          </span>
+        } @else {
+          <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
+            <span class="material-symbols-outlined">download</span>
+            CV-ის ჩამოტვირთვა
+          </button>
+        }
         @if (addable()) {
           <app-hr-vacancy-picker variant="ghost" [candidate]="c" [busy]="busy()" (add)="addToVacancy.emit($event)" />
         }

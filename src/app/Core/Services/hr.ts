@@ -10,6 +10,9 @@ import {
   HrInterview,
   InterviewAnswer,
   InterviewDraft,
+  InterviewJoin,
+  InviteDraft,
+  ManualCandidateDraft,
   PublicInterview,
   HrVacancy,
   HrAccount,
@@ -79,9 +82,14 @@ export class HrService {
     });
   }
 
+  /** Invites someone not on the platform yet; they join the board when they accept with their CV. */
+  inviteToInterview(draft: InviteDraft): Observable<HrInterview> {
+    return this.http.post<HrInterview>(`${this.url}/hr/interviews/invite`, draft, { context: this.context() });
+  }
+
   updateInterview(
     id: number,
-    change: Partial<InterviewDraft> & { acceptProposed?: number; cancel?: boolean; notify?: boolean },
+    change: Partial<InterviewDraft> & { acceptProposed?: number; cancel?: boolean; notify?: boolean; renewLink?: boolean },
   ): Observable<HrInterview> {
     return this.http.patch<HrInterview>(`${this.url}/hr/interviews/${id}`, change, { context: this.context() });
   }
@@ -107,6 +115,23 @@ export class HrService {
   // Candidate side (public page, no sign-in)
   getPublicInterview(token: string): Observable<PublicInterview> {
     return this.http.get<PublicInterview>(`${this.url}/interview/${encodeURIComponent(token)}`, { context: this.context() });
+  }
+
+  /** Invitee's answer with their details and CV (the CV is analysed on the server, which takes a few seconds). */
+  joinInterview(token: string, data: InterviewJoin, file: File): Observable<PublicInterview> {
+    const form = new FormData();
+    form.append('action', data.action);
+    if (data.slot !== undefined) form.append('slot', String(data.slot));
+    if (data.note) form.append('note', data.note);
+    if (data.proposedTimes?.length) form.append('proposedTimes', JSON.stringify(data.proposedTimes));
+    form.append('fullName', data.fullName);
+    form.append('email', data.email);
+    form.append('phoneNumber', data.phoneNumber);
+    form.append('consent', 'true');
+    form.append('file', file);
+    return this.http.post<PublicInterview>(`${this.url}/interview/${encodeURIComponent(token)}/join`, form, {
+      context: this.context(),
+    });
   }
 
   answerInterview(token: string, answer: InterviewAnswer): Observable<PublicInterview> {
@@ -138,6 +163,11 @@ export class HrService {
     return this.http.post<BoardCard>(`${this.url}/hr/vacancies/${vacancyId}/candidates/${cvId}`, null, {
       context: this.context(),
     });
+  }
+
+  /** A candidate added by hand (no CV, no quota): main board, plus the vacancy's board if given. */
+  addManualCandidate(draft: ManualCandidateDraft): Observable<BoardCard> {
+    return this.http.post<BoardCard>(`${this.url}/hr/board`, draft, { context: this.context() });
   }
 
   getActivity(cvId: number): Observable<CandidateActivity[]> {

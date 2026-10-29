@@ -1,4 +1,5 @@
 import { Component, computed, effect, input, model, signal, untracked } from '@angular/core';
+import { SelectGroupInfo, SelectMenu, SelectOption } from '../select-menu/select-menu';
 
 const DAY_MS = 86400000;
 const WEEK = 7;
@@ -36,6 +37,7 @@ const range = (from: number, to: number, step: number) =>
  */
 @Component({
   selector: 'app-date-time-picker',
+  imports: [SelectMenu],
   templateUrl: './date-time-picker.html',
   styleUrl: './date-time-picker.scss',
 })
@@ -105,6 +107,16 @@ export class DateTimePicker {
       group('საღამო', 'dark_mode', 17 * 60, 20 * 60),
     ];
   });
+
+  // The same slots for the dropdown, grouped by part of day
+  timeOptions = computed<SelectOption<number>[]>(() =>
+    this.timeGroups().flatMap((g) => g.slots.map((s) => ({ value: s.minutes, label: s.label, disabled: s.disabled, group: g.label }))),
+  );
+  readonly timeGroupInfo: SelectGroupInfo[] = [
+    { label: 'დილა', icon: 'wb_twilight' },
+    { label: 'შუადღე', icon: 'light_mode' },
+    { label: 'საღამო', icon: 'dark_mode' },
+  ];
 
   constructor() {
     // Open on the week of the selected date

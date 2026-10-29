@@ -41,6 +41,14 @@ export class InterviewAnswer implements OnInit {
   // Just answered: show the result instead of the form until "change" is pressed
   answered = signal(false);
 
+  // New candidate (invited, not on the platform): their details and CV come with the answer
+  fullName = signal('');
+  email = signal('');
+  phone = signal('');
+  cvFile = signal<File | null>(null);
+  consent = signal(false);
+  needsProfile = computed(() => !!this.interview()?.needsProfile && this.action() !== 'decline');
+
   maxProposals = MAX_ALTERNATIVES;
   day = formatDay;
   time = formatTime;
@@ -72,6 +80,7 @@ export class InterviewAnswer implements OnInit {
     try {
       const iv = await firstValueFrom(this.hrService.getPublicInterview(this.token));
       this.interview.set(iv);
+      if (iv.inviteeEmail) this.email.set(iv.inviteeEmail);
       // An offered time that is no longer available falls back to the main time
       if (!iv.alternatives.some((alt) => alt.slot === this.slot())) this.slot.set(-1);
       if (iv.status === 'PENDING' && !this.action()) this.action.set('confirm');
@@ -128,10 +137,26 @@ export class InterviewAnswer implements OnInit {
       answer.proposedTimes = times;
     }
 
+    const profileError = this.needsProfile() ? this.checkProfile() : '';
+    if (profileError) {
+      this.sendError.set(profileError);
+      return;
+    }
+
     this.sending.set(true);
     this.sendError.set('');
     try {
-      this.interview.set(await firstValueFrom(this.hrService.answerInterview(this.token, answer)));
+      const saved =
+        this.needsProfile() && action !== 'decline'
+          ? await firstValueFrom(
+              this.hrService.joinInterview(
+                this.token,
+                { ...answer, action, fullName: this.fullName().trim(), email: this.email().trim(), phoneNumber: this.phone().trim() },
+                this.cvFile()!,
+              ),
+            )
+          : await firstValueFrom(this.hrService.answerInterview(this.token, answer));
+      this.interview.set(saved);
       this.answered.set(true);
       this.action.set(null);
     } catch (err) {
@@ -139,6 +164,25 @@ export class InterviewAnswer implements OnInit {
     } finally {
       this.sending.set(false);
     }
+  }
+
+  onFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.cvFile.set(input.files?.[0] ?? null);
+    this.sendError.set('');
+  }
+
+  /** The new candidate's details: '' when complete, otherwise what's missing. */
+  private checkProfile(): string {
+    if (!this.fullName().trim()) return 'მიუთითეთ სახელი და გვარი';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email().trim())) return 'მიუთითეთ სწორი ელ-ფოსტა';
+    if (this.phone().replace(/\D/g, '').length < 6) return 'მიუთითეთ ტელეფონის ნომერი';
+    const file = this.cvFile();
+    if (!file) return 'ატვირთეთ CV (PDF ან Word)';
+    if (!/\.(pdf|docx?)$/i.test(file.name)) return 'CV უნდა იყოს PDF ან Word ფაილი';
+    if (file.size > 5 * 1024 * 1024) return 'CV-ის ზომა არ უნდა აღემატებოდეს 5MB-ს';
+    if (!this.consent()) return 'დაადასტურეთ თანხმობა';
+    return '';
   }
 
   private ensureProposal() {

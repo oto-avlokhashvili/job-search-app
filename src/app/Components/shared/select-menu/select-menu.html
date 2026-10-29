@@ -1,0 +1,81 @@
+<div class="select" [class.open]="open()" [style.--accent]="accent()">
+  <button
+    #trigger
+    type="button"
+    class="trigger"
+    role="combobox"
+    aria-haspopup="listbox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="id + '-list'"
+    [attr.aria-activedescendant]="open() && active() >= 0 ? optionId(active()) : null"
+    (click)="toggle()"
+    (keydown)="onKeydown($event)"
+  >
+    @if (selected()?.icon || icon(); as lead) {
+      <span class="material-symbols-outlined lead" aria-hidden="true">{{ lead }}</span>
+    }
+    <span class="value" [class.placeholder]="!selected()">{{ selected()?.label ?? placeholder() }}</span>
+    <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
+  </button>
+
+  @if (open() && position(); as pos) {
+    <div
+      #panel
+      class="panel"
+      [class.grid]="layout() === 'grid'"
+      [class.up]="pos.bottom !== null"
+      [id]="id + '-list'"
+      role="listbox"
+      [attr.aria-label]="ariaLabel() || null"
+      [style.left.px]="pos.left"
+      [style.width.px]="pos.width"
+      [style.max-height.px]="pos.maxHeight"
+      [style.top.px]="pos.top"
+      [style.bottom.px]="pos.bottom"
+      (pointerdown)="$event.preventDefault()"
+    >
+      @for (section of sections(); track section.label) {
+        <div class="section" role="group" [attr.aria-label]="section.label">
+          @if (section.label) {
+            <div class="group-label">
+              @if (section.icon) {
+                <span class="material-symbols-outlined" aria-hidden="true">{{ section.icon }}</span>
+              }
+              {{ section.label }}
+            </div>
+          }
+          <div class="items">
+            @for (item of section.items; track item.index) {
+              <div
+                class="option"
+                role="option"
+                [id]="optionId(item.index)"
+                [class.active]="item.index === active()"
+                [class.selected]="item.index === selectedIndex()"
+                [class.disabled]="item.option.disabled"
+                [attr.aria-selected]="item.index === selectedIndex()"
+                [attr.aria-disabled]="item.option.disabled || null"
+                (pointerenter)="!item.option.disabled && active.set(item.index)"
+                (click)="choose(item.index)"
+              >
+                @if (item.option.icon && layout() === 'list') {
+                  <span class="material-symbols-outlined opt-icon" aria-hidden="true">{{ item.option.icon }}</span>
+                }
+                <span class="opt-text">
+                  <span class="opt-label">{{ item.option.label }}</span>
+                  @if (item.option.hint && layout() === 'list') {
+                    <small>{{ item.option.hint }}</small>
+                  }
+                </span>
+                @if (layout() === 'list' && item.index === selectedIndex()) {
+                  <span class="material-symbols-outlined check" aria-hidden="true">check</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

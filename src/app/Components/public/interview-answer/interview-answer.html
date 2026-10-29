@@ -7,6 +7,13 @@
       <h1>{{ loadError() }}</h1>
       <p>შეამოწმეთ ბმული ელ-ფოსტაში ან დაუკავშირდით HR-ს.</p>
     </div>
+  } @else if (interview()?.inviteExpired) {
+    <!-- Invitation links work for a day; the HR can send a new one -->
+    <div class="card center empty">
+      <span class="material-symbols-outlined">timer_off</span>
+      <h1>მოწვევის ბმულს ვადა გაუვიდა</h1>
+      <p>ბმული 24 საათი მოქმედებს. სთხოვეთ {{ interview()?.company || interview()?.hrName || 'HR-ს' }} ახალი ბმული.</p>
+    </div>
   } @else if (interview(); as iv) {
     <div class="card">
       <header class="head">
@@ -87,6 +94,36 @@
         </div>
 
         <div class="panel">
+          @if (needsProfile()) {
+            <!-- New candidate: details and CV, sent with the answer -->
+            <fieldset class="profile">
+              <legend>თქვენი მონაცემები</legend>
+              <label class="pf">
+                <span>სახელი და გვარი</span>
+                <input type="text" maxlength="150" autocomplete="name" [value]="fullName()" (input)="fullName.set($any($event.target).value)" />
+              </label>
+              <label class="pf">
+                <span>ელ-ფოსტა</span>
+                <input type="email" maxlength="255" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value)" />
+              </label>
+              <label class="pf">
+                <span>ტელეფონი</span>
+                <input type="tel" maxlength="50" autocomplete="tel" placeholder="5XX XX XX XX" [value]="phone()" (input)="phone.set($any($event.target).value)" />
+              </label>
+              <label class="pf file" [class.has-file]="cvFile()">
+                <span class="material-symbols-outlined">{{ cvFile() ? 'task' : 'upload_file' }}</span>
+                <span class="file-text">
+                  <strong>{{ cvFile()?.name || 'ატვირთეთ CV' }}</strong>
+                  <small>PDF ან Word, მაქსიმუმ 5MB</small>
+                </span>
+                <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFile($event)" />
+              </label>
+              <label class="consent">
+                <input type="checkbox" [checked]="consent()" (change)="consent.set($any($event.target).checked)" />
+                <span>ვეთანხმები, რომ ჩემი CV და საკონტაქტო მონაცემები შეინახება Job Up-ზე და გაეგზავნება {{ iv.company || iv.hrName }}-ს.</span>
+              </label>
+            </fieldset>
+          }
           @switch (action()) {
             @case ('confirm') {
               @if (iv.alternatives.length) {
@@ -108,7 +145,7 @@
               }
               <button type="button" class="btn ok" [disabled]="sending()" (click)="send()">
                 @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">check</span> }
-                დადასტურება
+                {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'დადასტურება' }}
               </button>
             }
             @case ('decline') {
@@ -155,7 +192,7 @@
                 [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
               <button type="button" class="btn re" [disabled]="sending()" (click)="send()">
                 @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">send</span> }
-                გაგზავნა
+                {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'გაგზავნა' }}
               </button>
             }
           }

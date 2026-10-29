@@ -1,4 +1,4 @@
-<div class="overlay" (click)="cancel.emit()">
+<div class="overlay" (click)="close()">
   <form
     #dialog
     class="dialog"
@@ -13,12 +13,50 @@
     <header class="head">
       <span class="head-icon"><span class="material-symbols-outlined">event</span></span>
       <div>
-        <h2 id="interview-title">{{ editing() ? 'გასაუბრების შეცვლა' : 'გასაუბრების დაგეგმვა' }}</h2>
+        <h2 id="interview-title">{{ editing() ? 'გასაუბრების შეცვლა' : inviting() ? 'მოიწვიე გასაუბრებაზე' : 'გასაუბრების დაგეგმვა' }}</h2>
         <p class="sub">{{ name() }}</p>
       </div>
     </header>
 
+    @if (createdInvite(); as created) {
+      <!-- The invite exists: the HR copies the link and sends it however they like -->
+      <div class="body">
+        <div class="invite-ready" role="status">
+          <span class="material-symbols-outlined ready-icon" aria-hidden="true">link</span>
+          <strong>მოწვევის ბმული მზადაა</strong>
+          <p>გაუგზავნეთ კანდიდატს ნებისმიერი გზით: მეილით, მესენჯერით, LinkedIn-ით.</p>
+        </div>
+        <div class="invite-link">
+          <input type="text" readonly [value]="created.link" aria-label="მოწვევის ბმული" (focus)="$any($event.target).select()" />
+          <button type="button" class="btn primary" (click)="copyInviteLink()">
+            <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
+            {{ copied() ? 'დაკოპირდა' : 'კოპირება' }}
+          </button>
+        </div>
+        <p class="hint">
+          ბმული ერთ კანდიდატს ემსახურება და მოქმედებს {{ expiresAt() }}-მდე. ვადის გასვლის შემდეგ ახალს „გასაუბრებების“ გვერდიდან შექმნით.
+        </p>
+      </div>
+      <footer class="actions">
+        <button type="button" class="btn primary" (click)="close()">
+          <span class="material-symbols-outlined">check</span>მზადაა
+        </button>
+      </footer>
+    } @else {
     <div class="body">
+      @if (inviting()) {
+        <p class="invite-note">
+          <span class="material-symbols-outlined">person_add</span>
+          შეიქმნება ბმული, რომელიც 24 საათი მოქმედებს ერთი კანდიდატისთვის. კანდიდატი დაადასტურებს გასაუბრებას, შეავსებს მონაცემებს და ატვირთავს CV-ს, და ავტომატურად დაემატება დაფაზე „გასაუბრების“ ეტაპზე.
+        </p>
+        @if (invite()?.vacancyId === null) {
+          <div class="field">
+            <span>ვაკანსია</span>
+            <app-select-menu ariaLabel="ვაკანსია" accent="#f59e0b" [options]="vacancyOptions()" [(value)]="inviteVacancyId" />
+          </div>
+        }
+      }
+
       <div class="field">
         <span class="field-head">
           თარიღი და დრო
@@ -138,6 +176,8 @@
             <small>{{ mail }}</small>
           </span>
         </label>
+      } @else if (inviting()) {
+        <!-- The note at the top explains the link; nothing is emailed -->
       } @else {
         <p class="no-email">
           <span class="material-symbols-outlined">mail_off</span>
@@ -161,10 +201,11 @@
         @if (saving()) {
           <span class="spinner"></span>
         } @else {
-          <span class="material-symbols-outlined">{{ send() && email() ? 'send' : 'check' }}</span>
+          <span class="material-symbols-outlined">{{ inviting() ? 'link' : send() && email() ? 'send' : 'check' }}</span>
         }
-        {{ send() && email() ? 'გაგზავნა' : 'შენახვა' }}
+        {{ inviting() ? 'ბმულის შექმნა' : send() && email() ? 'გაგზავნა' : 'შენახვა' }}
       </button>
     </footer>
+    }
   </form>
 </div>

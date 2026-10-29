@@ -31,22 +31,19 @@
     }
   </div>
 
-  <label class="time-row">
-    <span class="time-label"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>დრო</span>
-    <span class="select-wrap">
-      <select (change)="pickTime(+$any($event.target).value)">
-        @if (selectedMinutes() === null) {
-          <option value="" disabled selected>აირჩიეთ დრო</option>
-        }
-        @for (g of timeGroups(); track g.label) {
-          <optgroup [label]="g.label">
-            @for (s of g.slots; track s.minutes) {
-              <option [value]="s.minutes" [disabled]="s.disabled" [selected]="s.minutes === selectedMinutes()">{{ s.label }}</option>
-            }
-          </optgroup>
-        }
-      </select>
-      <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
-    </span>
-  </label>
+  <div class="time-row">
+    <span class="time-label" aria-hidden="true"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>დრო</span>
+    <app-select-menu
+      class="time-select"
+      layout="grid"
+      icon="schedule"
+      placeholder="აირჩიეთ დრო"
+      ariaLabel="დრო"
+      [accent]="accent()"
+      [options]="timeOptions()"
+      [groups]="timeGroupInfo"
+      [value]="selectedMinutes()"
+      (valueChange)="$event !== null && pickTime($event)"
+    />
+  </div>
 </div>

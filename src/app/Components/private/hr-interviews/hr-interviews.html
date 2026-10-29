@@ -70,20 +70,54 @@
 <ng-template #item let-row let-past="past">
   @let st = statusOf(row);
   <li>
-    <a class="iv-row" [routerLink]="boardLink(row)" [queryParams]="{ open: row.interview.entryId }" [style.--iv-color]="st.color">
-      <span class="when">
-        <strong>{{ past ? short(row.interview.startsAt) : time(row.interview.startsAt) }}</strong>
-        <small>{{ row.interview.durationMin }} წთ</small>
-      </span>
-      <span class="who">
-        <strong>{{ name(row) }}</strong>
-        <small>
-          {{ row.vacancy || row.card?.detectedRole || '' }}
-          · {{ row.interview.format === 'ONLINE' ? 'ონლაინ' : 'ოფისში' }}
-        </small>
-      </span>
-      <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
-      <span class="material-symbols-outlined chevron">chevron_right</span>
-    </a>
+    @if (isInvite(row)) {
+      <!-- Invited, not on the board yet: no card to open, the link can be copied -->
+      <div class="iv-row" [style.--iv-color]="st.color">
+        <span class="when">
+          <strong>{{ past ? short(row.interview.startsAt) : time(row.interview.startsAt) }}</strong>
+          <small>{{ row.interview.durationMin }} წთ</small>
+        </span>
+        <span class="who">
+          <strong>{{ name(row) }} <span class="invited-tag">მოწვეული</span></strong>
+          <small>
+            {{ row.vacancy || 'ვაკანსიის გარეშე' }}
+            · {{ isExpired(row) ? 'ბმულს ვადა გაუვიდა' : 'ბმული მოქმედებს ' + inviteValidUntil(row) }}
+          </small>
+        </span>
+        <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
+        @if (isExpired(row)) {
+          <button
+            type="button"
+            class="copy-link renew"
+            [disabled]="renewingId() === row.interview.id"
+            (click)="renewLink(row)"
+            title="ახალი ბმული (24 საათი) და კოპირება"
+            aria-label="ახალი ბმულის შექმნა და კოპირება"
+          >
+            <span class="material-symbols-outlined">{{ copiedId() === row.interview.id ? 'check' : 'autorenew' }}</span>
+          </button>
+        } @else {
+          <button type="button" class="copy-link" (click)="copyLink(row)" title="ბმულის კოპირება" aria-label="მოწვევის ბმულის კოპირება">
+            <span class="material-symbols-outlined">{{ copiedId() === row.interview.id ? 'check' : 'link' }}</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <a class="iv-row" [routerLink]="boardLink(row)" [queryParams]="{ open: row.interview.entryId }" [style.--iv-color]="st.color">
+        <span class="when">
+          <strong>{{ past ? short(row.interview.startsAt) : time(row.interview.startsAt) }}</strong>
+          <small>{{ row.interview.durationMin }} წთ</small>
+        </span>
+        <span class="who">
+          <strong>{{ name(row) }}</strong>
+          <small>
+            {{ row.vacancy || row.card?.detectedRole || '' }}
+            · {{ row.interview.format === 'ONLINE' ? 'ონლაინ' : 'ოფისში' }}
+          </small>
+        </span>
+        <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
+        <span class="material-symbols-outlined chevron">chevron_right</span>
+      </a>
+    }
   </li>
 </ng-template>
