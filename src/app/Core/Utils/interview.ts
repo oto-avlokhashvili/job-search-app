@@ -44,6 +44,19 @@ export function formatShort(iso: string | Date, now = new Date()): string {
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
+/** Pieces for a calendar tile: "ოქტ" / 30 / "ხუთშაბათი" */
+export function dateParts(iso: string | Date) {
+  const d = new Date(iso);
+  return { monthShort: MONTHS[d.getMonth()].slice(0, 3), day: d.getDate(), weekday: DAYS[d.getDay()] };
+}
+
+/** "დღეს", "ხვალ", "ზეგ", "5 დღეში"; '' for past days */
+export function relativeDay(iso: string | Date, now = new Date()): string {
+  const diff = Math.round((startOfDay(new Date(iso)) - startOfDay(now)) / 86400000);
+  if (diff < 0) return '';
+  return diff === 0 ? 'დღეს' : diff === 1 ? 'ხვალ' : diff === 2 ? 'ზეგ' : `${diff} დღეში`;
+}
+
 /** Local "YYYY-MM-DD" / "HH:mm" for date and time inputs */
 export const toDateInput = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 export const toTimeInput = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;

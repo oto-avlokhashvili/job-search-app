@@ -35,6 +35,8 @@ export class App {
   // Account pages render client-side only; hide the footer from the first paint, as their route data does.
   hideFooter = signal(typeof window !== 'undefined' && /^\/(profile|notifications|analytics)(\/|$)/.test(window.location.pathname));
   showHeroSection = signal(false);
+  // A page someone opens from a personal link (interview invitation): no chat widget or bottom nav over its buttons
+  standalonePage = signal(typeof window !== 'undefined' && /^\/interview\//.test(window.location.pathname));
   constructor(private router: Router, private route: ActivatedRoute){
     this.themeService.init();
     this.isAuthorized.set(this.authService.isLoggedIn());
@@ -67,6 +69,8 @@ export class App {
       this.hideLayout.set(hideLayout);
       this.hideFooter.set(r?.snapshot.data['hideFooter'] ?? false);
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
+      this.standalonePage.set(!!r?.snapshot.data['standalone']);
+      if (this.isBrowser) document.body.classList.toggle('standalone-page', this.standalonePage());
 
       if (this.isBrowser && typeof gtag !== 'undefined') {
         gtag('config', 'G-GT3YDQ98L2', {

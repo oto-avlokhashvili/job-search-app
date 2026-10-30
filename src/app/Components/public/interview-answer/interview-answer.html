@@ -1,211 +1,385 @@
 <section class="page">
   @if (loading()) {
-    <div class="card center"><span class="spinner"></span></div>
+    <!-- Skeleton in the shape of the invitation -->
+    <div class="invite" aria-busy="true" aria-label="იტვირთება">
+      <div class="sk sk-host"></div>
+      <div class="sk sk-title"></div>
+      <div class="sk sk-ticket"></div>
+      <div class="sk sk-btn"></div>
+    </div>
   } @else if (loadError()) {
-    <div class="card center empty">
-      <span class="material-symbols-outlined">link_off</span>
+    <div class="empty">
+      <span class="empty-icon"><span class="material-symbols-outlined">link_off</span></span>
       <h1>{{ loadError() }}</h1>
       <p>შეამოწმეთ ბმული ელ-ფოსტაში ან დაუკავშირდით HR-ს.</p>
     </div>
   } @else if (interview()?.inviteExpired) {
     <!-- Invitation links work for a day; the HR can send a new one -->
-    <div class="card center empty">
-      <span class="material-symbols-outlined">timer_off</span>
+    <div class="empty">
+      <span class="empty-icon"><span class="material-symbols-outlined">timer_off</span></span>
       <h1>მოწვევის ბმულს ვადა გაუვიდა</h1>
-      <p>ბმული 24 საათი მოქმედებს. სთხოვეთ {{ interview()?.company || interview()?.hrName || 'HR-ს' }} ახალი ბმული.</p>
+      <p>ბმული 24 საათი მოქმედებს. სთხოვეთ {{ host() }}-ს ახალი ბმული.</p>
     </div>
   } @else if (interview(); as iv) {
-    <div class="card">
-      <header class="head">
-        <span class="company">{{ iv.company || iv.hrName }}</span>
-        <h1>{{ iv.candidateName ? 'გამარჯობა, ' + iv.candidateName + '!' : 'გამარჯობა!' }}</h1>
-        <p>გიწვევთ გასაუბრებაზე პოზიციაზე <strong>{{ iv.position }}</strong></p>
+    <article class="invite">
+      <!-- Who invites, for what -->
+      <header class="hero" [class.compact]="compact()">
+        <p class="eyebrow">გიწვევთ გასაუბრებაზე</p>
+        <h1 class="position">{{ iv.position }}</h1>
       </header>
 
-      <!-- Current state -->
-      @switch (iv.status) {
-        @case ('CONFIRMED') {
-          <div class="banner ok">
-            <span class="material-symbols-outlined">event_available</span>
-            <div><strong>გასაუბრება დადასტურებულია</strong><small>გელოდებით! შეხსენებას ელ-ფოსტით მიიღებთ.</small></div>
-          </div>
-        }
-        @case ('DECLINED') {
-          <div class="banner no">
-            <span class="material-symbols-outlined">event_busy</span>
-            <div><strong>თქვენ უარი თქვით გასაუბრებაზე</strong><small>HR-ს ეცნობა თქვენი პასუხი.</small></div>
-          </div>
-        }
-        @case ('RESCHEDULE_REQUESTED') {
-          <div class="banner re">
-            <span class="material-symbols-outlined">update</span>
-            <div>
-              <strong>სხვა დრო შესთავაზეთ</strong>
-              <small>HR აირჩევს ერთ-ერთს და დადასტურებას მიიღებთ ელ-ფოსტით: {{ iv.proposedTimes.map(short).join(' · ') }}</small>
-            </div>
-          </div>
-        }
-        @case ('CANCELLED') {
-          <div class="banner off">
-            <span class="material-symbols-outlined">block</span>
-            <div><strong>გასაუბრება გაუქმებულია</strong><small>კითხვების შემთხვევაში დაუკავშირდით HR-ს.</small></div>
-          </div>
-        }
-      }
-      @if (!iv.canRespond && iv.status !== 'CANCELLED') {
-        <p class="past">გასაუბრების დრო უკვე გავიდა.</p>
-      }
-
-      <dl class="details">
-        <div><dt><span class="material-symbols-outlined">calendar_today</span>თარიღი</dt><dd>{{ day(iv.startsAt) }}</dd></div>
-        <div><dt><span class="material-symbols-outlined">schedule</span>დრო</dt><dd>{{ time(iv.startsAt) }} – {{ endTime() }} <small>({{ iv.durationMin }} წთ)</small></dd></div>
-        <div>
-          <dt><span class="material-symbols-outlined">{{ iv.format === 'ONLINE' ? 'videocam' : 'location_on' }}</span>ადგილი</dt>
-          <dd>
-            @if (iv.format === 'ONLINE') {
-              ონლაინ
-              @if (isLink()) {
-                · <a [href]="iv.location" target="_blank" rel="noopener">შეხვედრის ლინკი</a>
-              } @else if (iv.location) {
-                · {{ iv.location }}
-              }
-            } @else {
-              {{ iv.location || 'ოფისში' }}
+      <!-- When: a calendar tile and the time (full ticket, or the accordion's summary) -->
+      <ng-template #whenBlock let-p>
+        <div class="cal" aria-hidden="true">
+          <span class="cal-month">{{ p.monthShort }}</span>
+          <span class="cal-day">{{ p.day }}</span>
+        </div>
+        <div class="when">
+          <span class="when-day">
+            {{ p.weekday }}
+            @if (relative()) {
+              <span class="rel">{{ relative() }}</span>
             }
-          </dd>
-        </div>
-        <div><dt><span class="material-symbols-outlined">person</span>HR</dt><dd>{{ iv.hrName }}{{ iv.company ? ' · ' + iv.company : '' }}</dd></div>
-      </dl>
-      @if (iv.message) {
-        <p class="message">{{ iv.message }}</p>
-      }
-
-      @if (showForm()) {
-        <div class="tabs" role="tablist" aria-label="პასუხი">
-          <button type="button" role="tab" class="t-ok" [class.active]="action() === 'confirm'" [attr.aria-selected]="action() === 'confirm'" (click)="choose('confirm')">
-            <span class="material-symbols-outlined">check_circle</span>დადასტურება
-          </button>
-          <button type="button" role="tab" class="t-no" [class.active]="action() === 'decline'" [attr.aria-selected]="action() === 'decline'" (click)="choose('decline')">
-            <span class="material-symbols-outlined">cancel</span>უარი
-          </button>
-          <button type="button" role="tab" class="t-re" [class.active]="action() === 'reschedule'" [attr.aria-selected]="action() === 'reschedule'" (click)="choose('reschedule')">
-            <span class="material-symbols-outlined">update</span>სხვა დრო
-          </button>
-        </div>
-
-        <div class="panel">
-          @if (needsProfile()) {
-            <!-- New candidate: details and CV, sent with the answer -->
-            <fieldset class="profile">
-              <legend>თქვენი მონაცემები</legend>
-              <label class="pf">
-                <span>სახელი და გვარი</span>
-                <input type="text" maxlength="150" autocomplete="name" [value]="fullName()" (input)="fullName.set($any($event.target).value)" />
-              </label>
-              <label class="pf">
-                <span>ელ-ფოსტა</span>
-                <input type="email" maxlength="255" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value)" />
-              </label>
-              <label class="pf">
-                <span>ტელეფონი</span>
-                <input type="tel" maxlength="50" autocomplete="tel" placeholder="5XX XX XX XX" [value]="phone()" (input)="phone.set($any($event.target).value)" />
-              </label>
-              <label class="pf file" [class.has-file]="cvFile()">
-                <span class="material-symbols-outlined">{{ cvFile() ? 'task' : 'upload_file' }}</span>
-                <span class="file-text">
-                  <strong>{{ cvFile()?.name || 'ატვირთეთ CV' }}</strong>
-                  <small>PDF ან Word, მაქსიმუმ 5MB</small>
-                </span>
-                <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFile($event)" />
-              </label>
-              <label class="consent">
-                <input type="checkbox" [checked]="consent()" (change)="consent.set($any($event.target).checked)" />
-                <span>ვეთანხმები, რომ ჩემი CV და საკონტაქტო მონაცემები შეინახება Job Up-ზე და გაეგზავნება {{ iv.company || iv.hrName }}-ს.</span>
-              </label>
-            </fieldset>
+          </span>
+          <span class="when-time">{{ time(when()!) }}<span class="dash">–</span>{{ endTime() }}</span>
+          <span class="sr-only">{{ day(when()!) }}, {{ interview()!.durationMin }} წუთი</span>
+          @if (!compact()) {
+            <span class="when-dur" aria-hidden="true">{{ interview()!.durationMin }} წუთი</span>
           }
-          @switch (action()) {
-            @case ('confirm') {
-              @if (iv.alternatives.length) {
-                <p class="label">აირჩიეთ დრო</p>
-                <div class="slots" role="radiogroup">
-                  <label class="slot" [class.active]="slot() === -1">
-                    <input type="radio" name="slot" [checked]="slot() === -1" (change)="slot.set(-1)" />
-                    {{ short(iv.startsAt) }}
-                  </label>
-                  @for (alt of iv.alternatives; track alt.slot) {
-                    <label class="slot" [class.active]="slot() === alt.slot">
-                      <input type="radio" name="slot" [checked]="slot() === alt.slot" (change)="slot.set(alt.slot)" />
-                      {{ short(alt.startsAt) }}
-                    </label>
+        </div>
+      </ng-template>
+
+      <!-- When and where, at a glance. While answering it folds into one line (an accordion) -->
+      @if (parts(); as p) {
+        <section class="ticket" [class.compact]="compact()" [class.open]="detailsOpen()" [attr.data-status]="iv.status" aria-label="გასაუბრების დეტალები">
+          @if (compact()) {
+            <button
+              type="button"
+              class="ticket-main ticket-toggle"
+              aria-controls="ticket-details"
+              [attr.aria-expanded]="detailsOpen()"
+              (click)="detailsOpen.set(!detailsOpen())"
+            >
+              <ng-container *ngTemplateOutlet="whenBlock; context: { $implicit: p }" />
+              <span class="toggle-hint">
+                {{ detailsOpen() ? 'დამალვა' : 'დეტალები' }}
+                <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
+              </span>
+            </button>
+          } @else {
+            <div class="ticket-main">
+              <ng-container *ngTemplateOutlet="whenBlock; context: { $implicit: p }" />
+              @if (iv.status !== 'PENDING') {
+                <span class="status-pill">
+                  @switch (iv.status) {
+                    @case ('CONFIRMED') { <span class="material-symbols-outlined">check_circle</span>დადასტურებული }
+                    @case ('DECLINED') { <span class="material-symbols-outlined">cancel</span>უარყოფილი }
+                    @case ('RESCHEDULE_REQUESTED') { <span class="material-symbols-outlined">update</span>ახალი დრო }
+                    @case ('CANCELLED') { <span class="material-symbols-outlined">block</span>გაუქმებული }
                   }
-                </div>
-              } @else {
-                <p class="label">დაადასტურეთ, რომ გასაუბრებაზე მოხვალთ.</p>
+                </span>
               }
-              <button type="button" class="btn ok" [disabled]="sending()" (click)="send()">
-                @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">check</span> }
-                {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'დადასტურება' }}
-              </button>
-            }
-            @case ('decline') {
-              <label class="label" for="decline-note">მიზეზი <small>(არასავალდებულო)</small></label>
-              <textarea id="decline-note" rows="3" maxlength="500" placeholder="მაგ: სხვა შეთავაზება მივიღე"
-                [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
-              <button type="button" class="btn no" [disabled]="sending()" (click)="send()">
-                @if (sending()) { <span class="spinner light"></span> }
-                უარის გაგზავნა
-              </button>
-            }
-            @case ('reschedule') {
-              <p class="label">რომელი დრო მოგიხერხდებათ? <small>(1–3 ვარიანტი)</small></p>
-              <div class="proposals">
-                @for (p of proposals(); track $index; let i = $index) {
-                  <span class="proposal" [class.editing]="editingProposal() === i">
-                    <button type="button" class="p-label" (click)="editingProposal.set(editingProposal() === i ? null : i)">
-                      <span class="material-symbols-outlined">schedule</span>{{ short(p) }}
-                    </button>
-                    @if (proposals().length > 1) {
-                      <button type="button" class="p-remove" aria-label="წაშლა" (click)="removeProposal(i)">
-                        <span class="material-symbols-outlined">close</span>
-                      </button>
+            </div>
+          }
+
+          @if (!compact() || detailsOpen()) {
+            <div class="ticket-details" id="ticket-details">
+              <div class="ticket-cut" aria-hidden="true"></div>
+              <div class="ticket-meta">
+                <div class="meta-row">
+                  <span class="meta-icon"><span class="material-symbols-outlined">{{ iv.format === 'ONLINE' ? 'videocam' : 'location_on' }}</span></span>
+                  <span class="meta-text">
+                    <strong>@if (iv.format === 'ONLINE') { ონლაინ<span class="wide-only"> შეხვედრა</span> } @else { ოფისში }</strong>
+                    @if (iv.format === 'ONLINE') {
+                      @if (isLink()) {
+                        <a [href]="iv.location" target="_blank" rel="noopener"><span class="wide-only">შეხვედრის&nbsp;</span>ლინკი<span class="material-symbols-outlined">open_in_new</span></a>
+                      } @else if (iv.location) {
+                        <small>{{ iv.location }}</small>
+                      }
+                    } @else if (iv.location) {
+                      <small>{{ iv.location }}</small>
                     }
                   </span>
-                }
-                @if (editingProposal() === null && proposals().length < maxProposals) {
-                  <button type="button" class="add" (click)="addProposal()">
-                    <span class="material-symbols-outlined">add</span>ვარიანტი
-                  </button>
+                </div>
+                @if (iv.hrName) {
+                  <div class="meta-row">
+                    <!-- The company's badge: who invites, next to the person who does -->
+                    <span class="monogram" aria-hidden="true">{{ monogram() }}</span>
+                    <span class="meta-text">
+                      <strong>{{ iv.hrName }}</strong>
+                      <small>HR{{ iv.company ? ' · ' + iv.company : '' }}</small>
+                    </span>
+                  </div>
                 }
               </div>
-              @if (editingProposal() !== null) {
-                <app-date-time-picker
-                  accent="#7c3aed"
-                  [value]="proposals()[editingProposal()!]"
-                  (valueChange)="setProposal(editingProposal()!, $event)"
-                />
-                <button type="button" class="done" (click)="editingProposal.set(null)">
-                  <span class="material-symbols-outlined">check</span>მზადაა
-                </button>
+              <!-- The HR's note to the candidate, part of the details -->
+              @if (iv.message) {
+                <p class="ticket-message"><span class="material-symbols-outlined" aria-hidden="true">chat</span>{{ iv.message }}</p>
               }
-              <textarea rows="2" maxlength="500" placeholder="კომენტარი (არასავალდებულო)" aria-label="კომენტარი"
-                [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
-              <button type="button" class="btn re" [disabled]="sending()" (click)="send()">
-                @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">send</span> }
-                {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'გაგზავნა' }}
-              </button>
-            }
+            </div>
           }
-          @if (sendError()) {
-            <p class="error">{{ sendError() }}</p>
-          }
-        </div>
-      } @else if (iv.canRespond && iv.status !== 'PENDING') {
-        <button type="button" class="change" (click)="change()">
-          <span class="material-symbols-outlined">edit</span>პასუხის შეცვლა
-        </button>
+        </section>
       }
-    </div>
-    <p class="foot">Job Up · ეს ბმული მხოლოდ თქვენთვისაა განკუთვნილი</p>
+
+      @switch (view()) {
+        @case ('choose') {
+          <!-- The confirm accordion, folded: what confirming takes; the big button (or this) opens it -->
+          @if (confirmNeedsStep()) {
+            <section class="step folded" data-action="confirm">
+              <button type="button" class="step-head" aria-expanded="false" (click)="choose('confirm')">
+                <span class="step-icon" aria-hidden="true"><span class="material-symbols-outlined">check_circle</span></span>
+                <span class="step-title">
+                  <h2>დადასტურება</h2>
+                  <small>{{ confirmNeeds() }}</small>
+                </span>
+                <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
+              </button>
+            </section>
+          }
+          <!-- The three answers -->
+          <div class="actions">
+            <p class="ask">მოგიხერხდებათ ამ დროს?</p>
+            <button type="button" class="btn primary ok" [disabled]="sending()" (click)="confirm()">
+              @if (sending()) {
+                <span class="spinner light"></span>
+              } @else {
+                <span class="material-symbols-outlined">check</span>
+              }
+              დადასტურება
+            </button>
+            <div class="secondary">
+              <button type="button" class="btn ghost" (click)="choose('reschedule')">
+                <span class="material-symbols-outlined">event_repeat</span>სხვა დრო
+              </button>
+              <button type="button" class="btn ghost danger" (click)="choose('decline')">
+                <span class="material-symbols-outlined">close</span>უარი
+              </button>
+            </div>
+            @if (changing()) {
+              <button type="button" class="text-btn" (click)="changing.set(false)">დატოვება როგორც არის</button>
+            }
+            @if (sendError()) {
+              <p class="error" role="alert">{{ sendError() }}</p>
+            }
+          </div>
+        }
+
+        @case ('step') {
+          <!-- One answer's step -->
+          <section class="step" [attr.data-action]="action()">
+            <!-- The open answer accordion; folding it goes back to the three answers -->
+            <button type="button" class="step-head" aria-expanded="true" (click)="back()">
+              <span class="step-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">
+                  @switch (action()) {
+                    @case ('confirm') { check_circle }
+                    @case ('decline') { cancel }
+                    @case ('reschedule') { event_repeat }
+                  }
+                </span>
+              </span>
+              <h2>
+                @switch (action()) {
+                  @case ('confirm') { დადასტურება }
+                  @case ('decline') { უარის თქმა }
+                  @case ('reschedule') { სხვა დროის შეთავაზება }
+                }
+              </h2>
+              <span class="material-symbols-outlined chevron up" aria-hidden="true">expand_more</span>
+              <span class="sr-only">დაკეცვა</span>
+            </button>
+
+            @if (needsProfile()) {
+              <!-- New candidate: who they are first (the main task), then the answer's own choices -->
+              <fieldset class="profile">
+                <legend>
+                  თქვენი მონაცემები
+                  <small>{{ host() }} ამით დაგიკავშირდებათ</small>
+                </legend>
+                <label class="pf">
+                  <span>სახელი და გვარი</span>
+                  <input type="text" maxlength="150" autocomplete="name" [class.invalid]="invalid().name" [attr.aria-invalid]="invalid().name || null" [value]="fullName()" (input)="fullName.set($any($event.target).value)" />
+                </label>
+                <div class="pf-row">
+                  <label class="pf">
+                    <span>ელ-ფოსტა</span>
+                    <input type="email" maxlength="255" autocomplete="email" inputmode="email" [class.invalid]="invalid().email" [attr.aria-invalid]="invalid().email || null" [value]="email()" (input)="email.set($any($event.target).value)" />
+                  </label>
+                  <label class="pf">
+                    <span>ტელეფონი</span>
+                    <input type="tel" maxlength="50" autocomplete="tel" inputmode="tel" placeholder="5XX XX XX XX" [class.invalid]="invalid().phone" [attr.aria-invalid]="invalid().phone || null" [value]="phone()" (input)="phone.set($any($event.target).value)" />
+                  </label>
+                </div>
+                <label class="file" [class.has-file]="cvFile() && !invalid().cv" [class.invalid]="invalid().cv">
+                  <span class="file-icon"><span class="material-symbols-outlined">{{ cvFile() ? 'task' : 'upload_file' }}</span></span>
+                  <span class="file-text">
+                    <strong>{{ cvFile()?.name || 'ატვირთეთ CV' }}</strong>
+                    <small>{{ cvFile() ? 'შესაცვლელად შეეხეთ' : 'PDF ან Word, მაქსიმუმ 5MB' }}</small>
+                  </span>
+                  <input type="file" [attr.aria-invalid]="invalid().cv || null" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFile($event)" />
+                </label>
+                <label class="consent" [class.invalid]="invalid().consent">
+                  <input type="checkbox" [attr.aria-invalid]="invalid().consent || null" [checked]="consent()" (change)="consent.set($any($event.target).checked)" />
+                  <span>ვეთანხმები, რომ ჩემი CV და საკონტაქტო მონაცემები შეინახება Job Up-ზე და გაეგზავნება {{ host() }}-ს.</span>
+                </label>
+              </fieldset>
+            }
+
+            @switch (action()) {
+              @case ('confirm') {
+                @if (iv.alternatives.length) {
+                  <p class="label">აირჩიეთ თქვენთვის მოსახერხებელი დრო</p>
+                  <div class="slots" role="radiogroup" aria-label="დრო">
+                    <label class="slot" [class.active]="slot() === -1">
+                      <input type="radio" name="slot" [checked]="slot() === -1" (change)="slot.set(-1)" />
+                      <span class="slot-text">{{ short(iv.startsAt) }}<small>შემოთავაზებული დრო</small></span>
+                      <span class="material-symbols-outlined tick" aria-hidden="true">check_circle</span>
+                    </label>
+                    @for (alt of iv.alternatives; track alt.slot) {
+                      <label class="slot" [class.active]="slot() === alt.slot">
+                        <input type="radio" name="slot" [checked]="slot() === alt.slot" (change)="slot.set(alt.slot)" />
+                        <span class="slot-text">{{ short(alt.startsAt) }}<small>ალტერნატივა</small></span>
+                        <span class="material-symbols-outlined tick" aria-hidden="true">check_circle</span>
+                      </label>
+                    }
+                  </div>
+                }
+              }
+              @case ('decline') {
+                <p class="label">მიზეზი <small>(არასავალდებულო)</small></p>
+                <div class="reasons">
+                  @for (r of declineReasons; track r) {
+                    <button type="button" class="reason" [class.active]="note() === r" [attr.aria-pressed]="note() === r" (click)="pickReason(r)">{{ r }}</button>
+                  }
+                </div>
+                <textarea rows="3" maxlength="500" placeholder="ან დაწერეთ თქვენი სიტყვებით…" aria-label="მიზეზი"
+                  [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+              }
+              @case ('reschedule') {
+                <p class="label">რომელი დრო მოგიხერხდებათ? <small>(1–3 ვარიანტი)</small></p>
+                <div class="proposals" [class.invalid]="invalid().times">
+                  @for (p of proposals(); track $index; let i = $index) {
+                    <span class="proposal" [class.editing]="editingProposal() === i">
+                      <button type="button" class="p-label" (click)="editingProposal.set(editingProposal() === i ? null : i)">
+                        <span class="material-symbols-outlined">schedule</span>{{ short(p) }}
+                      </button>
+                      @if (proposals().length > 1) {
+                        <button type="button" class="p-remove" aria-label="წაშლა" (click)="removeProposal(i)">
+                          <span class="material-symbols-outlined">close</span>
+                        </button>
+                      }
+                    </span>
+                  }
+                  @if (editingProposal() === null && proposals().length < maxProposals) {
+                    <button type="button" class="add" (click)="addProposal()">
+                      <span class="material-symbols-outlined">add</span>ვარიანტი
+                    </button>
+                  }
+                </div>
+                @if (editingProposal() !== null) {
+                  <app-date-time-picker
+                    accent="#7c3aed"
+                    [value]="proposals()[editingProposal()!]"
+                    (valueChange)="setProposal(editingProposal()!, $event)"
+                  />
+                  <button type="button" class="done" (click)="editingProposal.set(null)">
+                    <span class="material-symbols-outlined">check</span>მზადაა
+                  </button>
+                }
+                <textarea rows="2" maxlength="500" placeholder="კომენტარი (არასავალდებულო)" aria-label="კომენტარი"
+                  [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+              }
+            }
+
+            @if (errorText()) {
+              <p class="error" role="alert">{{ errorText() }}</p>
+            }
+
+            <div class="submit">
+              @switch (action()) {
+                @case ('confirm') {
+                  <button type="button" class="btn primary ok" [disabled]="sending()" (click)="send()">
+                    @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">check</span> }
+                    {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'დადასტურება' }}
+                  </button>
+                }
+                @case ('decline') {
+                  <button type="button" class="btn primary no" [disabled]="sending()" (click)="send()">
+                    @if (sending()) { <span class="spinner light"></span> }
+                    უარის გაგზავნა
+                  </button>
+                }
+                @case ('reschedule') {
+                  <button type="button" class="btn primary re" [disabled]="sending()" (click)="send()">
+                    @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">send</span> }
+                    {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'შეთავაზების გაგზავნა' }}
+                  </button>
+                }
+              }
+            </div>
+          </section>
+        }
+
+        @case ('result') {
+          <!-- The answer given -->
+          <section class="result" [attr.data-status]="iv.status" role="status">
+            @switch (iv.status) {
+              @case ('CONFIRMED') {
+                <span class="result-icon"><span class="material-symbols-outlined">event_available</span></span>
+                <h2>გელოდებით!</h2>
+                <p>გასაუბრება დადასტურებულია. შეხსენებას ელ-ფოსტით მიიღებთ.</p>
+                <div class="result-actions">
+                  @if (iv.format === 'ONLINE' && isLink()) {
+                    <a class="btn primary ok" [href]="iv.location" target="_blank" rel="noopener">
+                      <span class="material-symbols-outlined">videocam</span>შეხვედრაზე შესვლა
+                    </a>
+                  }
+                  @if (calendarUrl(); as url) {
+                    <a class="btn ghost" [href]="url" target="_blank" rel="noopener">
+                      <span class="material-symbols-outlined">calendar_add_on</span>Google Calendar-ში დამატება
+                    </a>
+                  }
+                </div>
+              }
+              @case ('DECLINED') {
+                <span class="result-icon"><span class="material-symbols-outlined">event_busy</span></span>
+                <h2>პასუხი გაიგზავნა</h2>
+                <p>{{ host() }}-ს ეცნობა, რომ გასაუბრებაზე ვერ მოხვალთ.</p>
+              }
+              @case ('RESCHEDULE_REQUESTED') {
+                <span class="result-icon"><span class="material-symbols-outlined">update</span></span>
+                <h2>შეთავაზება გაიგზავნა</h2>
+                <p>HR აირჩევს ერთ-ერთ დროს და დადასტურებას ელ-ფოსტით მიიღებთ.</p>
+                <div class="times">
+                  @for (t of iv.proposedTimes; track t) {
+                    <span class="time-chip"><span class="material-symbols-outlined">schedule</span>{{ short(t) }}</span>
+                  }
+                </div>
+              }
+            }
+            <button type="button" class="text-btn" (click)="change()">
+              <span class="material-symbols-outlined">edit</span>პასუხის შეცვლა
+            </button>
+          </section>
+        }
+
+        @case ('closed') {
+          <!-- Nothing to answer anymore -->
+          <section class="result" [attr.data-status]="iv.status === 'CANCELLED' ? 'CANCELLED' : 'PAST'" role="status">
+            @if (iv.status === 'CANCELLED') {
+              <span class="result-icon"><span class="material-symbols-outlined">block</span></span>
+              <h2>გასაუბრება გაუქმდა</h2>
+              <p>კითხვების შემთხვევაში დაუკავშირდით {{ host() }}-ს.</p>
+            } @else {
+              <span class="result-icon"><span class="material-symbols-outlined">history</span></span>
+              <h2>გასაუბრების დრო გავიდა</h2>
+              <p>პასუხის შეცვლა აღარ არის შესაძლებელი.</p>
+            }
+          </section>
+        }
+      }
+    </article>
+
+    <p class="foot"><span class="material-symbols-outlined">lock</span>პირადი ბმული, მხოლოდ თქვენთვის</p>
   }
 </section>

@@ -484,7 +484,9 @@ body.modal-open {
 
 // The mobile bottom nav (z-index 1040) sits above the dialog layer (1000) and would cover the
 // bottom of any sheet; Material marks the page with this class while a dialog is open.
-.cdk-global-scrollblock .mobile-bottom-nav {
+// Pages opened from a personal link (interview invitation) don't need it either.
+.cdk-global-scrollblock .mobile-bottom-nav,
+.standalone-page .mobile-bottom-nav {
   display: none !important;
 }
 

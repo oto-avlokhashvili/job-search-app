@@ -84,7 +84,8 @@ export const routes: Routes = [
   {
     path: 'interview/:token',
     loadComponent: () => import('./Components/public/interview-answer/interview-answer').then((m) => m.InterviewAnswer),
-    data: { hideFooter: true },
+    // standalone: no chat widget or bottom nav covering the answer buttons
+    data: { hideFooter: true, standalone: true },
   },
   // Google's consent page returns here (in a popup) when an HR connects their calendar for Meet links
   {

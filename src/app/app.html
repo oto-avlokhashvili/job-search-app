@@ -18,7 +18,7 @@
   <app-auth />
 }
 
-@if (isBrowser && !hideLayout()) {
+@if (isBrowser && !hideLayout() && !standalonePage()) {
   @defer (on idle) {
     <app-chat-widget />
   }
