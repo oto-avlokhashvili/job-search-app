@@ -76,11 +76,11 @@
         <!-- Hero Information Card -->
         <header class="vacancy-hero-card glass-card">
           <div class="hero-top-section">
-            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j) || logos.show(j.companyLogo)">
+            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j) || logos.show(j.companyLogo)" [class.wide-logo]="!isJobUp(j) && logos.isWide(j.companyLogo)">
               @if (isJobUp(j)) {
                 <img [src]="jobUpLogo" alt="Job Up">
               } @else if (logos.show(j.companyLogo)) {
-                <img [src]="j.companyLogo" [alt]="j.company" width="60" height="60" decoding="async" (error)="logos.broken(j.companyLogo)">
+                <img [src]="j.companyLogo" [alt]="j.company" width="60" height="60" decoding="async" (load)="logos.loaded($event, j.companyLogo)" (error)="logos.broken(j.companyLogo)">
               } @else {
                 {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
               }

@@ -234,6 +234,17 @@
           object-fit: contain;
         }
       }
+
+      // Wordmark logos (e.g. 3:1) get a wide tile instead of shrinking inside the square
+      &.wide-logo {
+        width: 110px;
+        padding: 6px 10px;
+
+        @media (max-width: 576px) {
+          width: 72px;
+          padding: 4px 6px;
+        }
+      }
     }
 
     .hero-main-info {

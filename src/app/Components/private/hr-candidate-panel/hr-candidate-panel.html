@@ -108,7 +108,7 @@
     <section class="block interview-block">
       <h3>გასაუბრება</h3>
       @if (interview(); as iv) {
-        @let st = interviewStatus[iv.status];
+        @let st = interviewStatus(iv);
         <div class="iv-card" [style.--iv-color]="st.color">
           <div class="iv-top">
             <span class="iv-status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
@@ -121,6 +121,10 @@
             </span>
           </div>
           <p class="iv-when">{{ day(iv.startsAt) }}, {{ time(iv.startsAt) }}–{{ endTime(iv) }}</p>
+          <!-- Other times on offer, while the candidate picks -->
+          @if (iv.status === 'PENDING' && iv.alternatives.length) {
+            <p class="iv-variants">ან: {{ iv.alternatives.map(short).join(', ') }}</p>
+          }
           <p class="iv-where">
             <span class="material-symbols-outlined">{{ iv.format === 'ONLINE' ? 'videocam' : 'location_on' }}</span>
             @if (iv.format === 'ONLINE' && isUrl(iv.location)) {
@@ -133,6 +137,16 @@
           @if (iv.candidateNote) {
             <p class="iv-note">„{{ iv.candidateNote }}“</p>
           }
+          @if (iv.status === 'DECLINED' && iv.timeConflict) {
+            <!-- None of the times suited: new ones go out as a fresh invitation -->
+            <div class="iv-proposed">
+              <span>შემოთავაზებული დრო არ მოერგო</span>
+              <button type="button" class="proposed" (click)="editInterview.emit(iv)">
+                <span class="material-symbols-outlined">edit_calendar</span>სხვა დროის შეთავაზება
+              </button>
+            </div>
+          }
+          <!-- Older answers: the candidate proposed times themselves -->
           @if (iv.status === 'RESCHEDULE_REQUESTED' && iv.proposedTimes.length) {
             <div class="iv-proposed">
               <span>კანდიდატის შემოთავაზება:</span>

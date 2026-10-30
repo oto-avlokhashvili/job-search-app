@@ -14,6 +14,15 @@ export const INTERVIEW_STATUS: Record<InterviewStatus, InterviewStatusMeta> = {
   CANCELLED: { label: 'გაუქმებული', icon: 'block', color: '#64748b' },
 };
 
+// Declined only because none of the offered times suits: the HR can offer others
+const TIME_CONFLICT: InterviewStatusMeta = { label: 'დრო არ მოერგო', icon: 'schedule', color: '#8b5cf6' };
+
+export const interviewStatusOf = (iv: HrInterview): InterviewStatusMeta =>
+  iv.status === 'DECLINED' && iv.timeConflict ? TIME_CONFLICT : INTERVIEW_STATUS[iv.status];
+
+/** The HR's move: none of the offered times suited (or, on older answers, other times were asked for) */
+export const needsNewTime = (iv: HrInterview) => iv.status === 'RESCHEDULE_REQUESTED' || (iv.status === 'DECLINED' && iv.timeConflict);
+
 export const DURATIONS = [30, 45, 60, 90];
 export const MAX_ALTERNATIVES = 3;
 

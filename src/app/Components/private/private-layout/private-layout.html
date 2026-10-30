@@ -87,7 +87,7 @@
           <span class="material-symbols-outlined">event</span>
           <span class="nav-title">გასაუბრებები</span>
           @if (interviewsNeedingAnswer()) {
-            <span class="nav-count alert" title="კანდიდატმა სხვა დრო ითხოვა">{{ interviewsNeedingAnswer() }}</span>
+            <span class="nav-count alert" title="კანდიდატს დრო არ მოერგო: შესთავაზეთ სხვა">{{ interviewsNeedingAnswer() }}</span>
           } @else if (upcomingInterviews()) {
             <span class="nav-count">{{ upcomingInterviews() }}</span>
           }

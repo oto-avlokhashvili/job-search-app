@@ -77,9 +77,16 @@
         </label>
       }
 
+      @if (timeConflict()) {
+        <p class="invite-note">
+          <span class="material-symbols-outlined">schedule</span>
+          კანდიდატს შემოთავაზებული დრო არ მოერგო. შესთავაზეთ სხვა ვარიანტები: ის ახალ მოწვევას მიიღებს და აირჩევს მისთვის მოსახერხებელს.
+        </p>
+      }
+
       <div class="field">
         <span class="field-head">
-          თარიღი და დრო
+          {{ alternatives().length ? 'ვარიანტი 1' : 'თარიღი და დრო' }}
           @if (preview()) {
             <span class="when"><span class="material-symbols-outlined">event</span>{{ preview() }}</span>
           }
@@ -157,13 +164,13 @@
       </label>
 
       <div class="field">
-        <span>ალტერნატიული დრო <small>(კანდიდატი ერთი დაჭერით აირჩევს მეილიდან)</small></span>
+        <span>სხვა დროის ვარიანტები <small>(კანდიდატი აირჩევს მისთვის მოსახერხებელს)</small></span>
         @if (alternatives().length) {
           <div class="alts">
             @for (alt of alternatives(); track $index; let i = $index) {
               <span class="alt" [class.editing]="editingAlt() === i">
                 <button type="button" class="alt-label" (click)="editingAlt.set(editingAlt() === i ? null : i)">
-                  <span class="material-symbols-outlined">schedule</span>{{ short(alt) }}
+                  <span class="material-symbols-outlined">schedule</span><span>{{ i + 2 }}.</span>{{ short(alt) }}
                 </button>
                 <button type="button" class="alt-remove" aria-label="წაშლა" (click)="removeAlternative(i)">
                   <span class="material-symbols-outlined">close</span>
@@ -179,7 +186,7 @@
           </button>
         } @else if (alternatives().length < maxAlternatives) {
           <button type="button" class="add-alt" (click)="addAlternative()">
-            <span class="material-symbols-outlined">add</span>ალტერნატიული დროის დამატება
+            <span class="material-symbols-outlined">add</span>დროის ვარიანტის დამატება
           </button>
         }
       </div>

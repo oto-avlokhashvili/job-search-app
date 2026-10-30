@@ -442,11 +442,6 @@
     box-shadow: 0 10px 24px rgba(220, 38, 38, 0.25);
   }
 
-  &.re {
-    background: #7c3aed;
-    box-shadow: 0 10px 24px rgba(124, 58, 237, 0.3);
-  }
-
   &.ghost {
     min-height: 48px;
     border: 1px solid var(--border-color);
@@ -492,7 +487,7 @@
   }
 }
 
-// ─── The three answers ───────────────────────────────────────
+// ─── The answers ─────────────────────────────────────────────
 .actions {
   display: flex;
   flex-direction: column;
@@ -506,12 +501,6 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
-}
-
-.secondary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
 }
 
 // ─── One answer's step ───────────────────────────────────────
@@ -539,10 +528,6 @@
 
 .step[data-action='decline'] {
   --a: #ef4444;
-}
-
-.step[data-action='reschedule'] {
-  --a: #8b5cf6;
 }
 
 .step.folded {
@@ -747,86 +732,51 @@ textarea {
   resize: vertical;
 }
 
-// Suggested times: chips; the one being edited opens the picker below
-.proposals {
+// Declining: "the time doesn't suit me", a checkable card
+.conflict {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.proposal {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  border: 1px solid rgba(124, 58, 237, 0.35);
-  background: rgba(124, 58, 237, 0.08);
-  overflow: hidden;
-
-  &.editing {
-    border-color: #7c3aed;
-    background: rgba(124, 58, 237, 0.16);
-  }
-
-  button {
-    display: inline-flex;
-    align-items: center;
-    border: none;
-    background: transparent;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .p-label {
-    gap: 0.3rem;
-    padding: 0.5rem 0.45rem 0.5rem 0.75rem;
-    color: #8b5cf6;
-    font-size: 0.88rem;
-    font-weight: 700;
-
-    .material-symbols-outlined {
-      font-size: 17px;
-    }
-  }
-
-  .p-remove {
-    padding: 0.5rem 0.6rem 0.5rem 0.2rem;
-    color: var(--text-muted);
-
-    .material-symbols-outlined {
-      font-size: 17px;
-    }
-  }
-}
-
-.add,
-.done {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-color);
   cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
 
-  .material-symbols-outlined {
-    font-size: 17px;
+  input {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin: 0.1rem 0 0;
+    accent-color: #f59e0b;
   }
-}
 
-.add {
-  border: 1px dashed rgba(124, 58, 237, 0.5);
-  background: transparent;
-  color: #8b5cf6;
-}
+  .conflict-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
 
-.done {
-  align-self: flex-end;
-  border: none;
-  border-radius: 10px;
-  background: #7c3aed;
-  color: #fff;
+    strong {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--on-surface);
+    }
+
+    small {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+  }
+
+  &.active {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
 }
 
 // ─── New candidate's details ─────────────────────────────────
@@ -1393,10 +1343,4 @@ textarea {
     outline: 2px solid #ef4444;
     outline-offset: 1px;
   }
-}
-
-.proposals.invalid {
-  padding: 0.5rem;
-  border-radius: 14px;
-  border: 1.5px dashed #ef4444;
 }

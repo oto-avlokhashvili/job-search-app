@@ -97,6 +97,8 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     const iso = this.startsAt();
     return iso ? `${formatDay(iso)}, ${formatTime(iso)}` : '';
   });
+  // The candidate declined because none of the times suited: this edit offers new ones
+  timeConflict = computed(() => this.interview()?.status === 'DECLINED' && !!this.interview()?.timeConflict);
   // A changed time needs the candidate's confirmation again
   timeChanged = computed(() => {
     const iv = this.interview();

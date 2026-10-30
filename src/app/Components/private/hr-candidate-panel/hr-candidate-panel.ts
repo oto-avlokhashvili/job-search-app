@@ -14,7 +14,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { CandidateActivity, HrCandidate, HrInterview, PipelineStage } from '../../../Core/Interfaces/hr';
-import { formatDay, formatShort, formatTime, INTERVIEW_STATUS } from '../../../Core/Utils/interview';
+import { formatDay, formatShort, formatTime, interviewStatusOf } from '../../../Core/Utils/interview';
 
 // History lines for interview events; the candidate's own answers are signed with their name
 const INTERVIEW_EVENTS: Record<string, { label: string; icon: string; color: string; byCandidate?: boolean }> = {
@@ -70,7 +70,7 @@ export class HrCandidatePanel {
   cancelInterview = output<HrInterview>();
   acceptProposed = output<{ interview: HrInterview; index: number }>();
 
-  interviewStatus = INTERVIEW_STATUS;
+  interviewStatus = interviewStatusOf;
   day = formatDay;
   time = formatTime;
   short = (iso: string) => formatShort(iso);

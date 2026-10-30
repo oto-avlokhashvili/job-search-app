@@ -7,6 +7,7 @@ import { ThemeService } from '../../../Core/Services/theme.service';
 import { HrStore } from '../../../Store/hr.store';
 import { StateStore } from '../../../Store/state.store';
 import { HrVacancy } from '../../../Core/Interfaces/hr';
+import { needsNewTime } from '../../../Core/Utils/interview';
 import { HrVacancyDialog } from '../hr-vacancy-dialog/hr-vacancy-dialog';
 
 // Shell for the HR area: its own sidebar instead of the public header/footer (route data hideLayout).
@@ -45,7 +46,7 @@ export class PrivateLayout {
   showClosed = signal(false);
   // Interviews: answers waiting for the HR (badge in amber), otherwise how many are coming up
   private aheadInterviews = computed(() => this.hrStore.interviews().filter((i) => new Date(i.startsAt).getTime() > Date.now()));
-  interviewsNeedingAnswer = computed(() => this.aheadInterviews().filter((i) => i.status === 'RESCHEDULE_REQUESTED').length);
+  interviewsNeedingAnswer = computed(() => this.aheadInterviews().filter(needsNewTime).length);
   upcomingInterviews = computed(() => this.aheadInterviews().filter((i) => i.status === 'PENDING' || i.status === 'CONFIRMED').length);
   creatingVacancy = signal(false);
   // Live counts from the board once it's loaded (moves and adds update them); the server's until then

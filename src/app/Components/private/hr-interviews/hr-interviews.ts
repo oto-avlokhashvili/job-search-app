@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BoardCard, HrInterview } from '../../../Core/Interfaces/hr';
-import { formatDay, formatShort, formatTime, INTERVIEW_STATUS } from '../../../Core/Utils/interview';
+import { formatDay, formatShort, formatTime, interviewStatusOf, needsNewTime } from '../../../Core/Utils/interview';
 import { HrStore } from '../../../Store/hr.store';
 import { GoogleCalendar } from '../../../Core/Services/google-calendar';
 
@@ -45,14 +45,12 @@ export class HrInterviews implements OnInit {
     }));
   });
 
-  // The candidate asked for another time: the HR has to pick one
-  needsAnswer = computed(() =>
-    this.rows().filter((r) => r.interview.status === 'RESCHEDULE_REQUESTED' && this.isAhead(r.interview)),
-  );
+  // None of the offered times suited the candidate: the HR has to offer others
+  needsAnswer = computed(() => this.rows().filter((r) => needsNewTime(r.interview) && this.isAhead(r.interview)));
   upcomingDays = computed(() => {
     const days = new Map<string, Row[]>();
     for (const row of this.rows()) {
-      if (!this.isAhead(row.interview) || row.interview.status === 'RESCHEDULE_REQUESTED') continue;
+      if (!this.isAhead(row.interview) || needsNewTime(row.interview)) continue;
       const day = formatDay(row.interview.startsAt);
       days.set(day, [...(days.get(day) ?? []), row]);
     }
@@ -89,7 +87,7 @@ export class HrInterviews implements OnInit {
   }
 
   statusOf(row: Row) {
-    return INTERVIEW_STATUS[row.interview.status];
+    return interviewStatusOf(row.interview);
   }
 
   name(row: Row) {

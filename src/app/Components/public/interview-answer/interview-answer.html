@@ -73,7 +73,7 @@
                 <span class="status-pill">
                   @switch (iv.status) {
                     @case ('CONFIRMED') { <span class="material-symbols-outlined">check_circle</span>დადასტურებული }
-                    @case ('DECLINED') { <span class="material-symbols-outlined">cancel</span>უარყოფილი }
+                    @case ('DECLINED') { <span class="material-symbols-outlined">cancel</span>{{ iv.timeConflict ? 'დრო არ მერგება' : 'უარყოფილი' }} }
                     @case ('RESCHEDULE_REQUESTED') { <span class="material-symbols-outlined">update</span>ახალი დრო }
                     @case ('CANCELLED') { <span class="material-symbols-outlined">block</span>გაუქმებული }
                   }
@@ -121,6 +121,19 @@
         </section>
       }
 
+      <!-- The HR's time variants: the candidate picks one (the ticket above follows the pick) -->
+      <ng-template #slotsBlock>
+        <div class="slots" role="radiogroup" aria-label="დრო">
+          @for (v of variants(); track v.slot; let i = $index) {
+            <label class="slot" [class.active]="slot() === v.slot">
+              <input type="radio" name="slot" [checked]="slot() === v.slot" (change)="slot.set(v.slot)" />
+              <span class="slot-text">{{ short(v.startsAt) }}<small>ვარიანტი {{ i + 1 }}</small></span>
+              <span class="material-symbols-outlined tick" aria-hidden="true">check_circle</span>
+            </label>
+          }
+        </div>
+      </ng-template>
+
       @switch (view()) {
         @case ('choose') {
           <!-- The confirm accordion, folded: what confirming takes; the big button (or this) opens it -->
@@ -130,15 +143,20 @@
                 <span class="step-icon" aria-hidden="true"><span class="material-symbols-outlined">check_circle</span></span>
                 <span class="step-title">
                   <h2>დადასტურება</h2>
-                  <small>{{ confirmNeeds() }}</small>
+                  <small>შეავსეთ მონაცემები და CV</small>
                 </span>
                 <span class="material-symbols-outlined chevron" aria-hidden="true">expand_more</span>
               </button>
             </section>
           }
-          <!-- The three answers -->
+          <!-- The answers: confirm (the picked time), or decline -->
           <div class="actions">
-            <p class="ask">მოგიხერხდებათ ამ დროს?</p>
+            @if (variants().length) {
+              <p class="ask">რომელი დრო მოგიხერხდებათ?</p>
+              <ng-container *ngTemplateOutlet="slotsBlock" />
+            } @else {
+              <p class="ask">მოგიხერხდებათ ამ დროს?</p>
+            }
             <button type="button" class="btn primary ok" [disabled]="sending()" (click)="confirm()">
               @if (sending()) {
                 <span class="spinner light"></span>
@@ -147,14 +165,9 @@
               }
               დადასტურება
             </button>
-            <div class="secondary">
-              <button type="button" class="btn ghost" (click)="choose('reschedule')">
-                <span class="material-symbols-outlined">event_repeat</span>სხვა დრო
-              </button>
-              <button type="button" class="btn ghost danger" (click)="choose('decline')">
-                <span class="material-symbols-outlined">close</span>უარი
-              </button>
-            </div>
+            <button type="button" class="btn ghost danger" (click)="choose('decline')">
+              <span class="material-symbols-outlined">close</span>უარი
+            </button>
             @if (changing()) {
               <button type="button" class="text-btn" (click)="changing.set(false)">დატოვება როგორც არის</button>
             }
@@ -171,20 +184,10 @@
             <button type="button" class="step-head" aria-expanded="true" (click)="back()">
               <span class="step-icon" aria-hidden="true">
                 <span class="material-symbols-outlined">
-                  @switch (action()) {
-                    @case ('confirm') { check_circle }
-                    @case ('decline') { cancel }
-                    @case ('reschedule') { event_repeat }
-                  }
+                  {{ action() === 'confirm' ? 'check_circle' : 'cancel' }}
                 </span>
               </span>
-              <h2>
-                @switch (action()) {
-                  @case ('confirm') { დადასტურება }
-                  @case ('decline') { უარის თქმა }
-                  @case ('reschedule') { სხვა დროის შეთავაზება }
-                }
-              </h2>
+              <h2>{{ action() === 'confirm' ? 'დადასტურება' : 'უარის თქმა' }}</h2>
               <span class="material-symbols-outlined chevron up" aria-hidden="true">expand_more</span>
               <span class="sr-only">დაკეცვა</span>
             </button>
@@ -227,67 +230,34 @@
 
             @switch (action()) {
               @case ('confirm') {
-                @if (iv.alternatives.length) {
+                @if (variants().length) {
                   <p class="label">აირჩიეთ თქვენთვის მოსახერხებელი დრო</p>
-                  <div class="slots" role="radiogroup" aria-label="დრო">
-                    <label class="slot" [class.active]="slot() === -1">
-                      <input type="radio" name="slot" [checked]="slot() === -1" (change)="slot.set(-1)" />
-                      <span class="slot-text">{{ short(iv.startsAt) }}<small>შემოთავაზებული დრო</small></span>
-                      <span class="material-symbols-outlined tick" aria-hidden="true">check_circle</span>
-                    </label>
-                    @for (alt of iv.alternatives; track alt.slot) {
-                      <label class="slot" [class.active]="slot() === alt.slot">
-                        <input type="radio" name="slot" [checked]="slot() === alt.slot" (change)="slot.set(alt.slot)" />
-                        <span class="slot-text">{{ short(alt.startsAt) }}<small>ალტერნატივა</small></span>
-                        <span class="material-symbols-outlined tick" aria-hidden="true">check_circle</span>
-                      </label>
-                    }
-                  </div>
+                  <ng-container *ngTemplateOutlet="slotsBlock" />
                 }
               }
               @case ('decline') {
-                <p class="label">მიზეზი <small>(არასავალდებულო)</small></p>
-                <div class="reasons">
-                  @for (r of declineReasons; track r) {
-                    <button type="button" class="reason" [class.active]="note() === r" [attr.aria-pressed]="note() === r" (click)="pickReason(r)">{{ r }}</button>
-                  }
-                </div>
-                <textarea rows="3" maxlength="500" placeholder="ან დაწერეთ თქვენი სიტყვებით…" aria-label="მიზეზი"
-                  [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
-              }
-              @case ('reschedule') {
-                <p class="label">რომელი დრო მოგიხერხდებათ? <small>(1–3 ვარიანტი)</small></p>
-                <div class="proposals" [class.invalid]="invalid().times">
-                  @for (p of proposals(); track $index; let i = $index) {
-                    <span class="proposal" [class.editing]="editingProposal() === i">
-                      <button type="button" class="p-label" (click)="editingProposal.set(editingProposal() === i ? null : i)">
-                        <span class="material-symbols-outlined">schedule</span>{{ short(p) }}
-                      </button>
-                      @if (proposals().length > 1) {
-                        <button type="button" class="p-remove" aria-label="წაშლა" (click)="removeProposal(i)">
-                          <span class="material-symbols-outlined">close</span>
-                        </button>
-                      }
-                    </span>
-                  }
-                  @if (editingProposal() === null && proposals().length < maxProposals) {
-                    <button type="button" class="add" (click)="addProposal()">
-                      <span class="material-symbols-outlined">add</span>ვარიანტი
-                    </button>
-                  }
-                </div>
-                @if (editingProposal() !== null) {
-                  <app-date-time-picker
-                    accent="#7c3aed"
-                    [value]="proposals()[editingProposal()!]"
-                    (valueChange)="setProposal(editingProposal()!, $event)"
-                  />
-                  <button type="button" class="done" (click)="editingProposal.set(null)">
-                    <span class="material-symbols-outlined">check</span>მზადაა
-                  </button>
+                <!-- Only the time is the problem: the HR can offer other times -->
+                <label class="conflict" [class.active]="timeConflict()">
+                  <input type="checkbox" [checked]="timeConflict()" (change)="timeConflict.set($any($event.target).checked)" />
+                  <span class="conflict-text">
+                    <strong>{{ variants().length ? 'შემოთავაზებული დროებიდან არცერთი არ მერგება' : 'შემოთავაზებული დრო არ მერგება' }}</strong>
+                    <small>{{ host() }} შეძლებს სხვა დროის შემოთავაზებას</small>
+                  </span>
+                </label>
+                @if (timeConflict()) {
+                  <p class="label">როდის მოგიხერხდებათ? <small>(არასავალდებულო)</small></p>
+                  <textarea rows="2" maxlength="500" placeholder="მაგ: სამუშაო დღეებში 18:00-ის შემდეგ" aria-label="როდის მოგიხერხდებათ"
+                    [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+                } @else {
+                  <p class="label">მიზეზი <small>(არასავალდებულო)</small></p>
+                  <div class="reasons">
+                    @for (r of declineReasons; track r) {
+                      <button type="button" class="reason" [class.active]="note() === r" [attr.aria-pressed]="note() === r" (click)="pickReason(r)">{{ r }}</button>
+                    }
+                  </div>
+                  <textarea rows="3" maxlength="500" placeholder="ან დაწერეთ თქვენი სიტყვებით…" aria-label="მიზეზი"
+                    [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
                 }
-                <textarea rows="2" maxlength="500" placeholder="კომენტარი (არასავალდებულო)" aria-label="კომენტარი"
-                  [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
               }
             }
 
@@ -296,25 +266,16 @@
             }
 
             <div class="submit">
-              @switch (action()) {
-                @case ('confirm') {
-                  <button type="button" class="btn primary ok" [disabled]="sending()" (click)="send()">
-                    @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">check</span> }
-                    {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'დადასტურება' }}
-                  </button>
-                }
-                @case ('decline') {
-                  <button type="button" class="btn primary no" [disabled]="sending()" (click)="send()">
-                    @if (sending()) { <span class="spinner light"></span> }
-                    უარის გაგზავნა
-                  </button>
-                }
-                @case ('reschedule') {
-                  <button type="button" class="btn primary re" [disabled]="sending()" (click)="send()">
-                    @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">send</span> }
-                    {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'შეთავაზების გაგზავნა' }}
-                  </button>
-                }
+              @if (action() === 'confirm') {
+                <button type="button" class="btn primary ok" [disabled]="sending()" (click)="send()">
+                  @if (sending()) { <span class="spinner light"></span> } @else { <span class="material-symbols-outlined">check</span> }
+                  {{ sending() && needsProfile() ? 'CV-ს ვაანალიზებთ…' : 'დადასტურება' }}
+                </button>
+              } @else {
+                <button type="button" class="btn primary no" [disabled]="sending()" (click)="send()">
+                  @if (sending()) { <span class="spinner light"></span> }
+                  {{ timeConflict() ? 'პასუხის გაგზავნა' : 'უარის გაგზავნა' }}
+                </button>
               }
             </div>
           </section>
@@ -344,8 +305,13 @@
               @case ('DECLINED') {
                 <span class="result-icon"><span class="material-symbols-outlined">event_busy</span></span>
                 <h2>პასუხი გაიგზავნა</h2>
-                <p>{{ host() }}-ს ეცნობა, რომ გასაუბრებაზე ვერ მოხვალთ.</p>
+                @if (iv.timeConflict) {
+                  <p>{{ host() }}-ს ეცნობა, რომ დრო არ გერგებათ. თუ სხვა დროს შემოგთავაზებენ, მას ამავე ბმულზე ნახავთ.</p>
+                } @else {
+                  <p>{{ host() }}-ს ეცნობა, რომ გასაუბრებაზე ვერ მოხვალთ.</p>
+                }
               }
+              <!-- Answers from before candidates stopped proposing times -->
               @case ('RESCHEDULE_REQUESTED') {
                 <span class="result-icon"><span class="material-symbols-outlined">update</span></span>
                 <h2>შეთავაზება გაიგზავნა</h2>

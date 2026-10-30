@@ -126,6 +126,9 @@ export interface HrInterview {
   alternatives: string[];
   status: InterviewStatus;
   candidateNote: string | null;
+  /** Declined because none of the offered times suits them: worth offering others */
+  timeConflict: boolean;
+  /** Older answers only: times the candidate proposed */
   proposedTimes: string[];
   /** Null when saved without emailing the candidate */
   sentTo: string | null;
@@ -165,6 +168,7 @@ export interface PublicInterview {
   alternatives: { slot: number; startsAt: string }[];
   proposedTimes: string[];
   candidateNote: string | null;
+  timeConflict: boolean;
   position: string;
   company: string;
   hrName: string;
@@ -193,22 +197,22 @@ export interface ManualCandidateDraft {
   vacancyId?: number;
 }
 
-/** An invitee's details sent with their answer (with the CV file). */
+/** An invitee's details sent with their acceptance (with the CV file). */
 export interface InterviewJoin {
-  action: 'confirm' | 'reschedule';
+  action: 'confirm';
   slot?: number;
-  note?: string;
-  proposedTimes?: string[];
   fullName: string;
   email: string;
   phoneNumber: string;
 }
 
 export interface InterviewAnswer {
-  action: 'confirm' | 'decline' | 'reschedule';
+  action: 'confirm' | 'decline';
+  /** confirm: one of the HR's alternative times instead of the main one */
   slot?: number;
   note?: string;
-  proposedTimes?: string[];
+  /** decline: none of the offered times suits */
+  timeConflict?: boolean;
 }
 
 export interface HrCvSearchParams {

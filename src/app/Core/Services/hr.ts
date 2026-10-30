@@ -117,13 +117,11 @@ export class HrService {
     return this.http.get<PublicInterview>(`${this.url}/interview/${encodeURIComponent(token)}`, { context: this.context() });
   }
 
-  /** Invitee's answer with their details and CV (the CV is analysed on the server, which takes a few seconds). */
+  /** Invitee's acceptance with their details and CV (the CV is analysed on the server, which takes a few seconds). */
   joinInterview(token: string, data: InterviewJoin, file: File): Observable<PublicInterview> {
     const form = new FormData();
     form.append('action', data.action);
     if (data.slot !== undefined) form.append('slot', String(data.slot));
-    if (data.note) form.append('note', data.note);
-    if (data.proposedTimes?.length) form.append('proposedTimes', JSON.stringify(data.proposedTimes));
     form.append('fullName', data.fullName);
     form.append('email', data.email);
     form.append('phoneNumber', data.phoneNumber);
