@@ -97,6 +97,22 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   // render already hints that the row scrolls.
   chipsCanScrollLeft = signal(false);
   chipsCanScrollRight = signal(true);
+
+  // One-tap company searches under the filters; `query` is what goes into the search box.
+  readonly popularSearches: { label: string; query: string; logo?: string }[] = [
+    { label: 'TBC ბანკი', query: 'თიბისი', logo: '/icons/tbc.jpg' },
+    { label: 'საქართველოს ბანკი', query: 'საქართველოს ბანკი', logo: '/icons/bog.png' },
+
+  ];
+  @ViewChild('popularTrack') popularTrackRef?: ElementRef<HTMLElement>;
+  popularCanScrollLeft = signal(false);
+  popularCanScrollRight = signal(false);
+  // The popular row is hidden in CV mode and moves into the mobile filter modal; re-measure on any size change.
+  private popularResizeObserver?: ResizeObserver;
+
+  private favicon(domain: string) {
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  }
   isFilterModalOpen = signal<boolean>(false);
   uploadedCv = signal<SavedCvSubmission | null>(null);
   // Signed-in users can search with the CV saved on their account (uploaded on the profile page).
@@ -249,6 +265,11 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.loadUploadedCv();
       if (this.authService.isLoggedIn()) this.stateStore.getCv();
       this.updateChipsArrows();
+      const track = this.popularTrackRef?.nativeElement;
+      if (track && typeof ResizeObserver !== 'undefined') {
+        this.popularResizeObserver = new ResizeObserver(() => this.updatePopularArrows());
+        this.popularResizeObserver.observe(track);
+      }
       this.ngZone.runOutsideAngular(() => this.initParticles());
     }, { injector: this.injector });
   }
@@ -261,6 +282,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.searchSub.unsubscribe();
     }
     this.liveSearchSub?.unsubscribe();
+    this.popularResizeObserver?.disconnect();
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }
@@ -713,6 +735,18 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.setSource(source);
     }
+  }
+
+  updatePopularArrows() {
+    const el = this.popularTrackRef?.nativeElement;
+    if (!el) return;
+    this.popularCanScrollLeft.set(el.scrollLeft > 2);
+    this.popularCanScrollRight.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+
+  scrollPopular(direction: 1 | -1) {
+    const el = this.popularTrackRef?.nativeElement;
+    el?.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' });
   }
 
   setPopularSearch(keyword: string) {

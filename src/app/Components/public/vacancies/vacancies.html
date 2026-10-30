@@ -454,25 +454,34 @@
               <!-- Popular Searches -->
               <div class="popular-searches" [class.is-hidden]="cvMode()">
                 <span class="popular-searches-label">პოპულარული:</span>
-                <div class="popular-tags">
-                  <button 
-                    type="button" 
-                    class="popular-tag" 
-                    [class.active]="searchFilter.value === 'თიბისი ბანკი'" 
-                    (click)="setPopularSearch('თიბისი ბანკი'); closeFilterModal()"
-                  >
-                    <img src="/icons/tbc.jpg" alt="TBC" class="tag-icon">
-                    TBC ბანკი
-                  </button>
-                  <button 
-                    type="button" 
-                    class="popular-tag" 
-                    [class.active]="searchFilter.value === 'საქართველოს ბანკი'" 
-                    (click)="setPopularSearch('საქართველოს ბანკი'); closeFilterModal()"
-                  >
-                    <img src="/icons/bog.png" alt="BOG" class="tag-icon">
-                    საქართველოს ბანკი
-                  </button>
+                <div class="popular-scroller" [class.fade-left]="popularCanScrollLeft()" [class.fade-right]="popularCanScrollRight()">
+                  @if (popularCanScrollLeft()) {
+                    <button type="button" class="popular-arrow left" aria-label="წინა" (click)="scrollPopular(-1)">
+                      <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                  }
+                  <div #popularTrack class="popular-tags" (scroll)="updatePopularArrows()">
+                    @for (item of popularSearches; track item.query) {
+                      <button
+                        type="button"
+                        class="popular-tag"
+                        [class.active]="searchFilter.value === item.query"
+                        (click)="setPopularSearch(item.query); closeFilterModal()"
+                      >
+                        @if (logos.show(item.logo)) {
+                          <img [src]="item.logo" [alt]="item.label" class="tag-icon" loading="lazy" (error)="logos.broken(item.logo)">
+                        } @else {
+                          <span class="tag-icon tag-letter">{{ item.label.charAt(0) }}</span>
+                        }
+                        {{ item.label }}
+                      </button>
+                    }
+                  </div>
+                  @if (popularCanScrollRight()) {
+                    <button type="button" class="popular-arrow right" aria-label="შემდეგი" (click)="scrollPopular(1)">
+                      <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                  }
                 </div>
               </div>
 
