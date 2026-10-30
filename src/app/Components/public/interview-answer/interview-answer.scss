@@ -442,6 +442,11 @@
     box-shadow: 0 10px 24px rgba(220, 38, 38, 0.25);
   }
 
+  &.primary.later {
+    background: #7c3aed;
+    box-shadow: 0 10px 24px rgba(124, 58, 237, 0.25);
+  }
+
   &.ghost {
     min-height: 48px;
     border: 1px solid var(--border-color);
@@ -458,6 +463,14 @@
 
       &:hover {
         border-color: rgba(239, 68, 68, 0.5);
+      }
+    }
+
+    &.later {
+      color: #8b5cf6;
+
+      &:hover {
+        border-color: rgba(139, 92, 246, 0.5);
       }
     }
   }
@@ -524,6 +537,10 @@
 // The answer accordion: its header both folded (first screen) and open (the step)
 .step[data-action='confirm'] {
   --a: #16a34a;
+}
+
+.step[data-action='reschedule'] {
+  --a: #8b5cf6;
 }
 
 .step[data-action='decline'] {
@@ -732,51 +749,15 @@ textarea {
   resize: vertical;
 }
 
-// Declining: "the time doesn't suit me", a checkable card
-.conflict {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  padding: 0.8rem 0.95rem;
-  border-radius: 14px;
-  border: 1.5px solid var(--border-color);
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-
-  input {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    margin: 0.1rem 0 0;
-    accent-color: #f59e0b;
-  }
-
-  .conflict-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-
-    strong {
-      font-size: 0.92rem;
-      font-weight: 800;
-      color: var(--on-surface);
-    }
-
-    small {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-  }
-
-  &.active {
-    border-color: #f59e0b;
-    background: rgba(245, 158, 11, 0.08);
-  }
-
-  &:focus-within {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
+// Another time: what happens next, above the optional note
+.hint {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(139, 92, 246, 0.08);
+  color: var(--on-surface-variant);
+  font-size: 0.86rem;
+  line-height: 1.5;
 }
 
 // ─── New candidate's details ─────────────────────────────────
@@ -814,6 +795,11 @@ textarea {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.7rem;
+
+  // Asking for another time: no phone next to the email
+  &.single {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .pf {

@@ -2,7 +2,7 @@ import { AfterViewInit, Component, computed, effect, ElementRef, inject, input, 
 import { BoardCard, HrInterview, InterviewDraft, InterviewFormat } from '../../../Core/Interfaces/hr';
 import { HrService } from '../../../Core/Services/hr';
 import { GoogleCalendar } from '../../../Core/Services/google-calendar';
-import { defaultInterviewStart, DURATIONS, formatDay, formatShort, formatTime, MAX_ALTERNATIVES } from '../../../Core/Utils/interview';
+import { defaultInterviewStart, DURATIONS, formatDay, formatShort, formatTime, MAX_ALTERNATIVES, needsNewTime } from '../../../Core/Utils/interview';
 import { HrStore } from '../../../Store/hr.store';
 import { DateTimePicker } from '../../shared/date-time-picker/date-time-picker';
 import { SelectMenu, SelectOption } from '../../shared/select-menu/select-menu';
@@ -97,8 +97,8 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     const iso = this.startsAt();
     return iso ? `${formatDay(iso)}, ${formatTime(iso)}` : '';
   });
-  // The candidate declined because none of the times suited: this edit offers new ones
-  timeConflict = computed(() => this.interview()?.status === 'DECLINED' && !!this.interview()?.timeConflict);
+  // The candidate needs another time (older answers: declined over it): this edit offers new ones
+  timeConflict = computed(() => !!this.interview() && needsNewTime(this.interview()!));
   // A changed time needs the candidate's confirmation again
   timeChanged = computed(() => {
     const iv = this.interview();

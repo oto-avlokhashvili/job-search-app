@@ -178,6 +178,8 @@ export interface PublicInterview {
   needsProfile: boolean;
   /** The invitation link's day ran out before anyone joined */
   inviteExpired: boolean;
+  /** Prefill: who asked for other times, and where the invitation went */
+  inviteeName: string | null;
   inviteeEmail: string | null;
 }
 
@@ -207,12 +209,16 @@ export interface InterviewJoin {
 }
 
 export interface InterviewAnswer {
-  action: 'confirm' | 'decline';
+  action: 'confirm' | 'reschedule' | 'decline';
   /** confirm: one of the HR's alternative times instead of the main one */
   slot?: number;
+  /** decline: the reason; reschedule: when it would suit */
   note?: string;
-  /** decline: none of the offered times suits */
+  /** decline (older answers): none of the offered times suits; now that's "reschedule" */
   timeConflict?: boolean;
+  /** reschedule, invitee not on the platform yet: where the new times are emailed */
+  fullName?: string;
+  email?: string;
 }
 
 export interface HrCvSearchParams {

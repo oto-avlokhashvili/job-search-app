@@ -136,6 +136,7 @@ export const routes: Routes = [
       {
         path: 'interviews',
         loadComponent: () => import('./Components/private/hr-interviews/hr-interviews').then((m) => m.HrInterviews),
+        data: { wideContent: true },
       },
       // One vacancy's board: same page, filtered
       {

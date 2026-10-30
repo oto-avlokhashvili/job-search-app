@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,16 +12,18 @@ type Action = Answer['action'];
 /** What the page shows: the invitation with its answers, one answer's step, or the answer given */
 type View = 'choose' | 'step' | 'result' | 'closed';
 
-// "The time doesn't suit me" is its own checkbox above these
+// "The time doesn't suit me" is its own answer ("another time"), not a decline reason
 const DECLINE_REASONS = ['სხვა შეთავაზება მივიღე', 'პოზიცია აღარ მაინტერესებს'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Google Calendar's template link wants UTC like 20261030T070000Z
 const calendarStamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
 /**
  * Where the buttons of an interview email lead (and an HR's invitation link). The HR may offer a few
- * times: the candidate picks one and confirms, or declines (ticking that none of the times suits them).
- * The email button only picks the answer; it's sent from here with one more tap, so link scanners
- * opening the email can't answer for the candidate. Without details to give, "confirm" is that one tap.
+ * times: the candidate picks one and confirms, asks for another time (the HR's new times come to the
+ * same link), or declines. The email button only picks the answer; it's sent from here with one more
+ * tap, so link scanners opening the email can't answer for the candidate. Without details to give,
+ * "confirm" is that one tap.
  */
 @Component({
   selector: 'app-interview-answer',
@@ -42,8 +44,6 @@ export class InterviewAnswer implements OnInit {
   // The picked time: -1 = the main one, otherwise one of the offered alternatives
   slot = signal(-1);
   note = signal('');
-  // decline: none of the offered times suits
-  timeConflict = signal(false);
   sending = signal(false);
   sendError = signal('');
   // "Change my answer" pressed: the answers again, though one was given
@@ -55,23 +55,27 @@ export class InterviewAnswer implements OnInit {
   phone = signal('');
   cvFile = signal<File | null>(null);
   consent = signal(false);
-  needsProfile = computed(() => !!this.interview()?.needsProfile && this.action() !== 'decline');
+  needsProfile = computed(() => !!this.interview()?.needsProfile && this.action() === 'confirm');
+  // Asking for another time: only who they are and where the new times go (the CV comes on confirming)
+  needsContact = computed(() => !!this.interview()?.needsProfile && this.action() === 'reschedule');
+  private needsDetails = computed(() => this.needsProfile() || this.needsContact());
 
   // Send was pressed with something missing: from then on, invalid fields are outlined red
   attempted = signal(false);
   invalid = computed(() => {
-    const show = this.attempted() && this.needsProfile();
+    const show = this.attempted() && this.needsDetails();
+    const full = show && this.needsProfile();
     const file = this.cvFile();
     return {
       name: show && !this.fullName().trim(),
-      email: show && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email().trim()),
-      phone: show && this.phone().replace(/\D/g, '').length < 6,
-      cv: show && (!file || !/\.(pdf|docx?)$/i.test(file.name) || file.size > 5 * 1024 * 1024),
-      consent: show && !this.consent(),
+      email: show && !EMAIL_RE.test(this.email().trim()),
+      phone: full && this.phone().replace(/\D/g, '').length < 6,
+      cv: full && (!file || !/\.(pdf|docx?)$/i.test(file.name) || file.size > 5 * 1024 * 1024),
+      consent: full && !this.consent(),
     };
   });
   /** Under the step: the first thing still missing (updates as it's fixed), else the server's error */
-  errorText = computed(() => (this.attempted() && this.needsProfile() && this.checkProfile()) || this.sendError());
+  errorText = computed(() => (this.attempted() && this.needsDetails() && this.checkDetails()) || this.sendError());
 
   declineReasons = DECLINE_REASONS;
   day = formatDay;
@@ -132,9 +136,31 @@ export class InterviewAnswer implements OnInit {
     return `https://calendar.google.com/calendar/render?${params}`;
   });
 
+  // The details typed are kept on this device for this link, so coming back (e.g. to book the new time) finds them filled
+  private draftKey = `interview-answer:${this.token}`;
+  private draftLoaded = signal(false);
+
   constructor() {
     // A private link: keep it out of search engines
     inject(Meta).updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    effect(() => {
+      const draft = { fullName: this.fullName(), email: this.email(), phone: this.phone() };
+      if (!this.draftLoaded()) return;
+      try {
+        localStorage.setItem(this.draftKey, JSON.stringify(draft));
+      } catch {
+        // No storage (private mode, SSR): the form just starts empty next time
+      }
+    });
+  }
+
+  private loadDraft(): Partial<Record<'fullName' | 'email' | 'phone', string>> {
+    try {
+      const draft = JSON.parse(localStorage.getItem(this.draftKey) ?? '{}');
+      return draft && typeof draft === 'object' ? draft : {};
+    } catch {
+      return {};
+    }
   }
 
   async ngOnInit() {
@@ -147,20 +173,19 @@ export class InterviewAnswer implements OnInit {
     try {
       const iv = await firstValueFrom(this.hrService.getPublicInterview(this.token));
       this.interview.set(iv);
-      if (iv.inviteeEmail) this.email.set(iv.inviteeEmail);
+      // Typed here before (this device), else what they sent asking for another time (any device)
+      const draft = this.loadDraft();
+      const pick = (local: unknown, sent: string | null) => (typeof local === 'string' && local.trim() ? local : (sent ?? ''));
+      this.fullName.set(pick(draft.fullName, iv.inviteeName));
+      this.email.set(pick(draft.email, iv.inviteeEmail));
+      this.phone.set(pick(draft.phone, null));
+      this.draftLoaded.set(true);
       // An offered time that is no longer available falls back to the main time
       if (!iv.alternatives.some((alt) => alt.slot === this.slot())) this.slot.set(-1);
-      if (iv.status === 'DECLINED') {
-        this.timeConflict.set(iv.timeConflict);
-        this.note.set(iv.candidateNote ?? '');
-      }
-      // Older emails had "suggest another time": now that's declining over the time
-      const answer = a === 'reschedule' ? 'decline' : a;
-      if (iv.canRespond && (answer === 'confirm' || answer === 'decline')) {
+      if (iv.canRespond && (a === 'confirm' || a === 'reschedule' || a === 'decline')) {
         // Answered already: the email button means "change it"
         if (iv.status !== 'PENDING') this.changing.set(true);
-        if (a === 'reschedule') this.timeConflict.set(true);
-        this.choose(answer);
+        this.choose(a);
       }
     } catch (err) {
       this.loadError.set(this.message(err, 'ბმული არასწორია ან ვადაგასულია'));
@@ -171,6 +196,10 @@ export class InterviewAnswer implements OnInit {
 
   choose(action: Action) {
     this.action.set(action);
+    // Changing the answer given: its note comes back; another answer starts empty
+    const status = this.interview()?.status;
+    const given = status === 'DECLINED' ? 'decline' : status === 'RESCHEDULE_REQUESTED' ? 'reschedule' : null;
+    this.note.set(action === given ? (this.interview()?.candidateNote ?? '') : '');
     this.sendError.set('');
     this.attempted.set(false);
     this.detailsOpen.set(false);
@@ -209,12 +238,13 @@ export class InterviewAnswer implements OnInit {
     if (!action || this.sending()) return;
     const answer: Answer = { action };
     if (action === 'confirm' && this.slot() >= 0) answer.slot = this.slot();
-    if (action === 'decline') {
-      if (this.note().trim()) answer.note = this.note().trim();
-      if (this.timeConflict()) answer.timeConflict = true;
+    if (action !== 'confirm' && this.note().trim()) answer.note = this.note().trim();
+    if (this.needsContact()) {
+      answer.fullName = this.fullName().trim();
+      answer.email = this.email().trim();
     }
 
-    if (this.needsProfile() && this.checkProfile()) {
+    if (this.needsDetails() && this.checkDetails()) {
       this.showInvalid();
       return;
     }
@@ -252,10 +282,11 @@ export class InterviewAnswer implements OnInit {
     this.sendError.set('');
   }
 
-  /** The new candidate's details: '' when complete, otherwise what's missing. */
-  private checkProfile(): string {
+  /** The new candidate's details (just name and email for another time): '' when complete, otherwise what's missing. */
+  private checkDetails(): string {
     if (!this.fullName().trim()) return 'მიუთითეთ სახელი და გვარი';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email().trim())) return 'მიუთითეთ სწორი ელ-ფოსტა';
+    if (!EMAIL_RE.test(this.email().trim())) return 'მიუთითეთ სწორი ელ-ფოსტა';
+    if (!this.needsProfile()) return '';
     if (this.phone().replace(/\D/g, '').length < 6) return 'მიუთითეთ ტელეფონის ნომერი';
     const file = this.cvFile();
     if (!file) return 'ატვირთეთ CV (PDF ან Word)';

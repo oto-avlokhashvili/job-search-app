@@ -4,68 +4,154 @@
     <p>დაგეგმილი გასაუბრებები და კანდიდატების პასუხები</p>
   </header>
 
-  @if (google(); as g) {
-    <div class="google" [class.on]="g.connected">
-      <span class="material-symbols-outlined" aria-hidden="true">{{ g.connected ? 'videocam' : 'videocam_off' }}</span>
-      <div class="google-text">
-        @if (g.connected) {
-          <strong>Google Meet დაკავშირებულია</strong>
-          <small>{{ g.email }} · ონლაინ გასაუბრებებს ლინკი ავტომატურად შეექმნება</small>
+  <div class="layout">
+    <div class="main-col">
+      @if (google(); as g) {
+        <div class="google" [class.on]="g.connected">
+          <span class="material-symbols-outlined" aria-hidden="true">{{ g.connected ? 'videocam' : 'videocam_off' }}</span>
+          <div class="google-text">
+            @if (g.connected) {
+              <strong>Google Meet დაკავშირებულია</strong>
+              <small>{{ g.email }} · ონლაინ გასაუბრებებს ლინკი ავტომატურად შეექმნება</small>
+            } @else {
+              <strong>Google Meet</strong>
+              <small>დააკავშირეთ Google Calendar და თითოეულ ონლაინ გასაუბრებას ცალკე ლინკი შეექმნება</small>
+            }
+            @if (googleError()) {
+              <small class="google-error" role="alert">{{ googleError() }}</small>
+            }
+          </div>
+          @if (g.connected) {
+            <button type="button" class="google-btn ghost" (click)="disconnectGoogle()">გათიშვა</button>
+          } @else {
+            <button type="button" class="google-btn" [disabled]="connectingGoogle()" (click)="connectGoogle()">
+              {{ connectingGoogle() ? 'დაელოდეთ…' : 'დაკავშირება' }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="empty"><span class="spinner"></span></div>
+      } @else if (selectedCell(); as sel) {
+        <div class="day-filter-head">
+          <h2 class="group">
+            <span class="material-symbols-outlined">event</span>
+            {{ sel.label }}
+            @if (sel.rows.length) {
+              <span class="day-count">{{ sel.rows.length }}</span>
+            }
+          </h2>
+          <button type="button" class="clear-filter" (click)="clearDay()">
+            <span class="material-symbols-outlined">close</span>ყველას ნახვა
+          </button>
+        </div>
+
+        @if (sel.rows.length) {
+          <ul class="list" [class.past]="sel.isPast">
+            @for (row of sel.rows; track row.interview.id) {
+              <ng-container *ngTemplateOutlet="item; context: { $implicit: row, past: false }" />
+            }
+          </ul>
         } @else {
-          <strong>Google Meet</strong>
-          <small>დააკავშირეთ Google Calendar და თითოეულ ონლაინ გასაუბრებას ცალკე ლინკი შეექმნება</small>
+          <p class="day-empty">ამ დღეს გასაუბრება არ არის დაგეგმილი</p>
         }
-        @if (googleError()) {
-          <small class="google-error" role="alert">{{ googleError() }}</small>
-        }
-      </div>
-      @if (g.connected) {
-        <button type="button" class="google-btn ghost" (click)="disconnectGoogle()">გათიშვა</button>
+      } @else if (empty()) {
+        <div class="empty">
+          <span class="material-symbols-outlined">event</span>
+          <p>ჯერ გასაუბრება არ დაგიგეგმავთ. გადაიტანეთ კანდიდატი „გასაუბრების“ ეტაპზე ან გახსენით მისი ბარათი.</p>
+          <a routerLink="/hr/candidates" class="btn-link">ჩემი კანდიდატები</a>
+        </div>
       } @else {
-        <button type="button" class="google-btn" [disabled]="connectingGoogle()" (click)="connectGoogle()">
-          {{ connectingGoogle() ? 'დაელოდეთ…' : 'დაკავშირება' }}
-        </button>
+        @if (needsAnswer().length) {
+          <h2 class="group alert"><span class="material-symbols-outlined">update</span>პასუხს საჭიროებს</h2>
+          <ul class="list">
+            @for (row of needsAnswer(); track row.interview.id) {
+              <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
+            }
+          </ul>
+        }
+
+        @for (group of upcomingDays(); track group.day) {
+          <h2 class="group">{{ group.day }}</h2>
+          <ul class="list">
+            @for (row of group.rows; track row.interview.id) {
+              <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
+            }
+          </ul>
+        }
+
+        @if (past().length) {
+          <h2 class="group muted">გასული</h2>
+          <ul class="list past">
+            @for (row of past(); track row.interview.id) {
+              <ng-container *ngTemplateOutlet="item; context: { $implicit: row, past: true }" />
+            }
+          </ul>
+        }
       }
     </div>
-  }
 
-  @if (loading()) {
-    <div class="empty"><span class="spinner"></span></div>
-  } @else if (empty()) {
-    <div class="empty">
-      <span class="material-symbols-outlined">event</span>
-      <p>ჯერ გასაუბრება არ დაგიგეგმავთ. გადაიტანეთ კანდიდატი „გასაუბრების“ ეტაპზე ან გახსენით მისი ბარათი.</p>
-      <a routerLink="/hr/candidates" class="btn-link">ჩემი კანდიდატები</a>
-    </div>
-  } @else {
-    @if (needsAnswer().length) {
-      <h2 class="group alert"><span class="material-symbols-outlined">update</span>პასუხს საჭიროებს</h2>
-      <ul class="list">
-        @for (row of needsAnswer(); track row.interview.id) {
-          <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
-        }
-      </ul>
-    }
+    <aside class="cal-aside" aria-label="კალენდარი">
+      <div class="calendar-card">
+        <div class="cal-head">
+          <span class="cal-month">{{ monthLabel() }}</span>
+          <div class="cal-nav">
+            <button type="button" class="cal-today" (click)="goToday()">დღეს</button>
+            <button type="button" class="cal-arrow" aria-label="წინა თვე" (click)="stepMonth(-1)">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button type="button" class="cal-arrow" aria-label="შემდეგი თვე" (click)="stepMonth(1)">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
 
-    @for (group of upcomingDays(); track group.day) {
-      <h2 class="group">{{ group.day }}</h2>
-      <ul class="list">
-        @for (row of group.rows; track row.interview.id) {
-          <ng-container *ngTemplateOutlet="item; context: { $implicit: row }" />
-        }
-      </ul>
-    }
+        <div class="cal-weekdays" aria-hidden="true">
+          @for (wd of weekdays; track wd) {
+            <span>{{ wd }}</span>
+          }
+        </div>
 
-    @if (past().length) {
-      <h2 class="group muted">გასული</h2>
-      <ul class="list past">
-        @for (row of past(); track row.interview.id) {
-          <ng-container *ngTemplateOutlet="item; context: { $implicit: row, past: true }" />
-        }
-      </ul>
-    }
-  }
+        <div class="cal-grid" role="grid" [attr.aria-label]="monthLabel()">
+          @for (cell of calendarCells(); track cell.key) {
+            <button
+              type="button"
+              class="cal-cell"
+              [class.outside]="!cell.inMonth"
+              [class.today]="cell.isToday"
+              [class.weekend]="cell.weekend"
+              [class.selected]="selectedDay() === cell.key"
+              [class.has-events]="cell.rows.length > 0"
+              [attr.aria-pressed]="selectedDay() === cell.key"
+              (click)="selectCell(cell)"
+            >
+              <span class="cal-day-num">{{ cell.day }}</span>
+              @if (cell.rows.length) {
+                <span class="cal-dots" aria-hidden="true">
+                  @for (r of cell.rows.slice(0, 4); track r.interview.id) {
+                    <span class="cal-dot" [style.background]="statusOf(r).color"></span>
+                  }
+                </span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    </aside>
+  </div>
 </section>
+
+@if (proposing(); as row) {
+  <app-hr-interview-dialog [card]="row.card ?? null" [interview]="row.interview" (saved)="onProposed($event)" (cancel)="proposing.set(null)" />
+}
+
+<!-- The candidate needs another time: one click from the list, for anyone -->
+<ng-template #proposeBtn let-row>
+  <button type="button" class="propose" (click)="proposing.set(row)">
+    <span class="material-symbols-outlined">edit_calendar</span>ახალი დრო
+  </button>
+</ng-template>
 
 <ng-template #item let-row let-past="past">
   @let st = statusOf(row);
@@ -81,11 +167,19 @@
           <strong>{{ name(row) }} <span class="invited-tag">მოწვეული</span></strong>
           <small>
             {{ row.interview.position || row.vacancy || 'ვაკანსიის გარეშე' }}
-            · {{ isExpired(row) ? 'ბმულს ვადა გაუვიდა' : 'ბმული მოქმედებს ' + inviteValidUntil(row) }}
+            @if (wantsNewTime(row) && row.interview.candidateNote) {
+              · „{{ row.interview.candidateNote }}“
+            } @else if (inviteState(row)) {
+              · {{ inviteState(row) }}
+            }
           </small>
         </span>
         <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
-        @if (isExpired(row)) {
+        @if (wantsNewTime(row)) {
+          <ng-container *ngTemplateOutlet="proposeBtn; context: { $implicit: row }" />
+        }
+        <!-- Never a new link while the candidate waits for times: they'd lose the one they have -->
+        @if (isExpired(row) && !wantsNewTime(row)) {
           <button
             type="button"
             class="copy-link renew"
@@ -101,6 +195,28 @@
             <span class="material-symbols-outlined">{{ copiedId() === row.interview.id ? 'check' : 'link' }}</span>
           </button>
         }
+      </div>
+    } @else if (wantsNewTime(row)) {
+      <!-- On the board, but the new times are offered from here; the arrow still opens the card -->
+      <div class="iv-row" [style.--iv-color]="st.color">
+        <span class="when">
+          <strong>{{ time(row.interview.startsAt) }}</strong>
+          <small>{{ row.interview.durationMin }} წთ</small>
+        </span>
+        <span class="who">
+          <strong>{{ name(row) }}</strong>
+          <small>
+            {{ row.vacancy || row.card?.detectedRole || '' }}
+            @if (row.interview.candidateNote) {
+              · „{{ row.interview.candidateNote }}“
+            }
+          </small>
+        </span>
+        <span class="status"><span class="material-symbols-outlined">{{ st.icon }}</span>{{ st.label }}</span>
+        <ng-container *ngTemplateOutlet="proposeBtn; context: { $implicit: row }" />
+        <a class="copy-link" [routerLink]="boardLink(row)" [queryParams]="{ open: row.interview.entryId }" title="ბარათის გახსნა" aria-label="კანდიდატის ბარათის გახსნა">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </a>
       </div>
     } @else {
       <a class="iv-row" [routerLink]="boardLink(row)" [queryParams]="{ open: row.interview.entryId }" [style.--iv-color]="st.color">

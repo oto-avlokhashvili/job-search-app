@@ -14,7 +14,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { CandidateActivity, HrCandidate, HrInterview, PipelineStage } from '../../../Core/Interfaces/hr';
-import { formatDay, formatShort, formatTime, interviewStatusOf } from '../../../Core/Utils/interview';
+import { formatDay, formatShort, formatTime, interviewStatusOf, needsNewTime } from '../../../Core/Utils/interview';
 
 // History lines for interview events; the candidate's own answers are signed with their name
 const INTERVIEW_EVENTS: Record<string, { label: string; icon: string; color: string; byCandidate?: boolean }> = {
@@ -71,6 +71,8 @@ export class HrCandidatePanel {
   acceptProposed = output<{ interview: HrInterview; index: number }>();
 
   interviewStatus = interviewStatusOf;
+  /** The candidate needs another time (not older answers with their own proposals): the HR offers new ones */
+  wantsNewTime = (iv: HrInterview) => needsNewTime(iv) && !iv.proposedTimes.length;
   day = formatDay;
   time = formatTime;
   short = (iso: string) => formatShort(iso);

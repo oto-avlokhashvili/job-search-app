@@ -137,10 +137,10 @@
           @if (iv.candidateNote) {
             <p class="iv-note">„{{ iv.candidateNote }}“</p>
           }
-          @if (iv.status === 'DECLINED' && iv.timeConflict) {
-            <!-- None of the times suited: new ones go out as a fresh invitation -->
+          @if (wantsNewTime(iv)) {
+            <!-- None of the times suited: new ones are emailed, answered on the same link -->
             <div class="iv-proposed">
-              <span>შემოთავაზებული დრო არ მოერგო</span>
+              <span>კანდიდატს სხვა დრო სჭირდება</span>
               <button type="button" class="proposed" (click)="editInterview.emit(iv)">
                 <span class="material-symbols-outlined">edit_calendar</span>სხვა დროის შეთავაზება
               </button>
