@@ -4,9 +4,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { HrCandidate, SeniorityLevel } from '../../../Core/Interfaces/hr';
+import { HrCandidate, LinkedinProfile, SeniorityLevel } from '../../../Core/Interfaces/hr';
 import { HrStore, HrSearchTab } from '../../../Store/hr.store';
 import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
+import { HrInterviewDialog } from '../hr-interview-dialog/hr-interview-dialog';
 
 interface SeniorityOption {
   value: SeniorityLevel | '';
@@ -19,7 +20,7 @@ interface SeniorityOption {
 // Query, tab and results live in HrStore, so coming back to the page shows them again.
 @Component({
   selector: 'app-hr-search',
-  imports: [ReactiveFormsModule, RouterLink, HrCandidateCard],
+  imports: [ReactiveFormsModule, RouterLink, HrCandidateCard, HrInterviewDialog],
   templateUrl: './hr-search.html',
   styleUrl: './hr-search.scss',
 })
@@ -84,6 +85,8 @@ export class HrSearch {
   linkedinLoading = this.hrStore.linkedinLoading;
   linkedinSearched = this.hrStore.linkedinSearched;
   linkedinError = this.hrStore.linkedinError;
+  // A LinkedIn profile's "book a meeting": an invitation link for the HR to send them (they join with their CV)
+  inviting = signal<{ vacancyId: number | null; inviteeName: string; position?: string } | null>(null);
 
   constructor() {
     // Keep what was typed (even if not searched yet) for the next visit.
@@ -170,6 +173,21 @@ export class HrSearch {
     } finally {
       this.busyId.set(null);
     }
+  }
+
+  /** For the vacancy being searched for if there is one, else the search itself as the position */
+  bookMeeting(profile: LinkedinProfile) {
+    const vacancy = this.targetVacancy();
+    this.inviting.set({
+      vacancyId: vacancy?.id ?? null,
+      inviteeName: profile.name,
+      position: vacancy ? undefined : this.query()?.keyword,
+    });
+  }
+
+  onInvited() {
+    this.inviting.set(null);
+    this.alertify.success('ბმული შეიქმნა: კანდიდატი დაფაზე CV-ის ატვირთვისას გამოჩნდება');
   }
 
   clearTargetVacancy() {

@@ -27,8 +27,11 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
   card = input<BoardCard | null>(null);
   /** Edit this interview instead of creating one */
   interview = input<HrInterview | null>(null);
-  /** Invite a new candidate (no card) to this vacancy's board; null vacancy = pick one or none */
-  invite = input<{ vacancyId: number | null } | null>(null);
+  /**
+   * Invite a new candidate (no card) to this vacancy's board; null vacancy = pick one or none.
+   * From a LinkedIn profile: their name, and a position to start from (the search)
+   */
+  invite = input<{ vacancyId: number | null; inviteeName?: string; position?: string } | null>(null);
   /** Opened by a stage move: offers moving without an interview */
   fromMove = input(false);
 
@@ -86,7 +89,7 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
 
   email = computed(() => (this.inviting() ? null : (this.card()?.contact?.email ?? this.interview()?.inviteeEmail ?? null)));
   name = computed(() => {
-    if (this.inviting()) return 'ბმული ერთი კანდიდატისთვის';
+    if (this.inviting()) return this.invite()?.inviteeName || 'ბმული ერთი კანდიდატისთვის';
     const card = this.card();
     return card?.contact?.fullName || card?.detectedRole || this.interview()?.inviteeName || 'კანდიდატი';
   });
@@ -136,6 +139,8 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
     }
     this.send.set(!!this.email());
     this.inviteVacancyId.set(this.invite()?.vacancyId ?? null);
+    const position = this.invite()?.position?.trim();
+    if (position) this.typePosition(position);
     if (this.inviting()) this.hrStore.loadVacancies();
     this.googleCalendar.load();
   }
@@ -205,7 +210,12 @@ export class HrInterviewDialog implements OnInit, AfterViewInit {
       if (!iv && (this.inviting() || !card)) {
         // Stay open on the link: the HR shares it themselves
         this.createdInvite.set(
-          await this.hrStore.inviteToInterview({ ...draft, position: this.finalPosition(), ...(vacancyId !== null && { vacancyId }) }),
+          await this.hrStore.inviteToInterview({
+            ...draft,
+            position: this.finalPosition(),
+            ...(vacancyId !== null && { vacancyId }),
+            ...(this.invite()?.inviteeName && { inviteeName: this.invite()!.inviteeName }),
+          }),
         );
         return;
       }

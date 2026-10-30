@@ -182,10 +182,129 @@
     </div>
     </div>
   } @else {
-    <div class="results">
-      @for (candidate of listCandidates(); track candidate.id) {
-        <app-hr-candidate-card [candidate]="candidate" [busy]="busyId() === candidate.id" (download)="download($event)" />
-      }
+    <!-- The same cards as a table: a row opens the candidate, the stage changes in place -->
+    <ng-template #sortHead let-key let-label="label">
+      <button type="button" class="th-sort" [class.active]="sort()?.key === key" (click)="sortBy(key)">
+        {{ label }}
+        <span class="material-symbols-outlined" aria-hidden="true">
+          {{ sort()?.key !== key ? 'unfold_more' : sort()!.dir === 1 ? 'arrow_upward' : 'arrow_downward' }}
+        </span>
+      </button>
+    </ng-template>
+
+    <div class="table-wrap">
+      <table class="cand-table">
+        <thead>
+          <tr>
+            <th scope="col" [attr.aria-sort]="ariaSort('name')">
+              <ng-container *ngTemplateOutlet="sortHead; context: { $implicit: 'name', label: 'კანდიდატი' }" />
+            </th>
+            @if (vacancyId() === null) {
+              <th scope="col" class="col-vacancy">ვაკანსია</th>
+            }
+            <th scope="col" [attr.aria-sort]="ariaSort('stage')">
+              <ng-container *ngTemplateOutlet="sortHead; context: { $implicit: 'stage', label: 'ეტაპი' }" />
+            </th>
+            <th scope="col" class="col-interview" [attr.aria-sort]="ariaSort('interview')">
+              <ng-container *ngTemplateOutlet="sortHead; context: { $implicit: 'interview', label: 'გასაუბრება' }" />
+            </th>
+            <th scope="col" class="col-rating" [attr.aria-sort]="ariaSort('rating')">
+              <ng-container *ngTemplateOutlet="sortHead; context: { $implicit: 'rating', label: 'შეფასება' }" />
+            </th>
+            <th scope="col" class="col-tags">თეგები</th>
+            <th scope="col" class="col-contact">კონტაქტი</th>
+            <th scope="col" class="col-actions"><span class="sr-only">მოქმედებები</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.card.pipeline.id) {
+            @let c = row.card;
+            @let st = stageById[c.pipeline.stage];
+            <tr tabindex="0" [style.--stage-color]="st.color" (click)="open(c)" (keydown.enter)="open(c)" [attr.aria-label]="row.name">
+              <td>
+                <div class="who">
+                  <span class="avatar" aria-hidden="true">{{ initialsOf(c) }}</span>
+                  <span class="who-text">
+                    <strong>{{ row.name }}</strong>
+                    <small>
+                      {{ c.contact?.fullName ? c.detectedRole : '' }}
+                      @if (c.seniorityLevel) {
+                        <span class="level">{{ c.seniorityLevel }}</span>
+                      }
+                    </small>
+                  </span>
+                </div>
+              </td>
+              @if (vacancyId() === null) {
+                <td class="col-vacancy">
+                  @if (labelFor(c); as label) {
+                    <span class="vacancy" [attr.title]="label">{{ label }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+              }
+              <td (click)="$event.stopPropagation()">
+                <app-hr-stage-menu [stage]="c.pipeline.stage" (stageChange)="moveTo(c, $event)" />
+              </td>
+              <td class="col-interview">
+                @if (row.interviewBadge; as b) {
+                  <span class="iv" [style.--iv-color]="b.color" [attr.title]="b.label">
+                    <span class="material-symbols-outlined">{{ b.icon }}</span>
+                    <span class="iv-text">
+                      <strong>{{ b.when }}</strong>
+                      <small>{{ b.label }}</small>
+                    </span>
+                  </span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td class="col-rating">
+                @if (c.pipeline.rating) {
+                  <span class="rating" [attr.aria-label]="'შეფასება ' + c.pipeline.rating + '/5'">
+                    <span class="material-symbols-outlined">star</span>{{ c.pipeline.rating }}
+                  </span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td class="col-tags">
+                <span class="tags">
+                  @for (tag of c.pipeline.tags.slice(0, 2); track tag) {
+                    <span class="tag">#{{ tag }}</span>
+                  }
+                  @if (c.pipeline.tags.length > 2) {
+                    <span class="tag more">+{{ c.pipeline.tags.length - 2 }}</span>
+                  }
+                </span>
+              </td>
+              <td class="col-contact" (click)="$event.stopPropagation()">
+                @if (c.contact?.phoneNumber) {
+                  <a class="contact" [href]="'tel:' + c.contact!.phoneNumber">
+                    <span class="material-symbols-outlined">call</span>{{ c.contact!.phoneNumber }}
+                  </a>
+                }
+                @if (c.contact?.email) {
+                  <a class="contact" [href]="'mailto:' + c.contact!.email" [attr.title]="c.contact!.email">
+                    <span class="material-symbols-outlined">mail</span>{{ c.contact!.email }}
+                  </a>
+                }
+              </td>
+              <td class="col-actions" (click)="$event.stopPropagation()">
+                @if (!c.manual) {
+                  <button type="button" class="icon-btn" [disabled]="busyId() === c.id" (click)="download(c)" title="CV-ის ჩამოტვირთვა" aria-label="CV-ის ჩამოტვირთვა">
+                    <span class="material-symbols-outlined">download</span>
+                  </button>
+                }
+                <button type="button" class="icon-btn" (click)="open(c)" title="გახსნა" aria-label="კანდიდატის გახსნა">
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   }
 </section>

@@ -240,22 +240,30 @@
     } @else if (profiles().length) {
       <div class="results">
         @for (profile of profiles(); track profile.url) {
-          <a class="profile" [href]="profile.url" target="_blank" rel="noopener noreferrer">
-            <div class="profile-head">
-              <span class="profile-avatar">{{ profile.name.charAt(0) }}</span>
-              <div class="profile-title">
-                <h3>{{ profile.name }}</h3>
-                @if (profile.headline) {
-                  <p class="headline">{{ profile.headline }}</p>
-                }
+          <article class="profile">
+            <a class="profile-main" [href]="profile.url" target="_blank" rel="noopener noreferrer">
+              <div class="profile-head">
+                <span class="profile-avatar">{{ profile.name.charAt(0) }}</span>
+                <div class="profile-title">
+                  <h3>{{ profile.name }}</h3>
+                  @if (profile.headline) {
+                    <p class="headline">{{ profile.headline }}</p>
+                  }
+                </div>
               </div>
+              <p class="snippet">{{ profile.snippet }}</p>
+            </a>
+            <div class="profile-actions">
+              <a class="profile-link" [href]="profile.url" target="_blank" rel="noopener noreferrer">
+                LinkedIn-ზე ნახვა
+                <span class="material-symbols-outlined">open_in_new</span>
+              </a>
+              <!-- Not on Job Up: a link to send them on LinkedIn; they join the board with their CV -->
+              <button type="button" class="profile-book" (click)="bookMeeting(profile)">
+                <span class="material-symbols-outlined">event</span>შეხვედრის ჩანიშვნა
+              </button>
             </div>
-            <p class="snippet">{{ profile.snippet }}</p>
-            <span class="profile-link">
-              LinkedIn-ზე ნახვა
-              <span class="material-symbols-outlined">open_in_new</span>
-            </span>
-          </a>
+          </article>
         }
       </div>
       @if (linkedinHasMore()) {
@@ -270,3 +278,7 @@
     }
   }
 </section>
+
+@if (inviting(); as target) {
+  <app-hr-interview-dialog [invite]="target" (saved)="onInvited()" (cancel)="inviting.set(null)" />
+}

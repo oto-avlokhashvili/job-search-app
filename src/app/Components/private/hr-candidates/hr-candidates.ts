@@ -4,15 +4,16 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { CdkScrollable } from '@angular/cdk/scrolling';
+import { NgTemplateOutlet } from '@angular/common';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { BoardCard, HrCandidate, HrInterview, HrVacancy, PipelineChange, PipelineStage } from '../../../Core/Interfaces/hr';
 import { OUTCOME_STAGES, PIPELINE_STAGES, STAGE_BY_ID } from '../../../Core/Utils/pipeline';
-import { formatShort, interviewsByEntry, isUpcoming } from '../../../Core/Utils/interview';
+import { formatShort, interviewsByEntry, interviewStatusOf, isUpcoming } from '../../../Core/Utils/interview';
 import { HrInterviewDialog } from '../hr-interview-dialog/hr-interview-dialog';
 import { HrStore } from '../../../Store/hr.store';
-import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
 import { HrPipelineCard } from '../hr-pipeline-card/hr-pipeline-card';
+import { HrStageMenu } from '../hr-stage-menu/hr-stage-menu';
 import { HrCandidatePanel } from '../hr-candidate-panel/hr-candidate-panel';
 import { HrRejectDialog } from '../hr-reject-dialog/hr-reject-dialog';
 import { HrVacancyDialog } from '../hr-vacancy-dialog/hr-vacancy-dialog';
@@ -20,6 +21,8 @@ import { HrManualCandidateDialog } from '../hr-manual-candidate-dialog/hr-manual
 
 type View = 'board' | 'list';
 type Scope = 'all' | 'none';
+type SortKey = 'name' | 'stage' | 'rating' | 'interview';
+const STAGE_ORDER = Object.fromEntries(PIPELINE_STAGES.map((s, i) => [s.id, i])) as Record<PipelineStage, number>;
 const VIEW_KEY = 'hr-candidates-view';
 
 interface PendingReject {
@@ -45,13 +48,14 @@ interface PendingInterview {
   selector: 'app-hr-candidates',
   imports: [
     RouterLink,
+    NgTemplateOutlet,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
     // Lets a drag near the board's edge scroll it sideways to the off-screen columns
     CdkScrollable,
-    HrCandidateCard,
     HrPipelineCard,
+    HrStageMenu,
     HrCandidatePanel,
     HrRejectDialog,
     HrVacancyDialog,
@@ -96,10 +100,35 @@ export class HrCandidates implements OnInit {
     if (id !== null) return board.filter((c) => c.pipeline.vacancyId === id);
     return this.scope() === 'none' ? board.filter((c) => c.pipeline.vacancyId === null) : board;
   });
-  // The list view shows each CV once, even when it's in several vacancies
-  listCandidates = computed(() => {
-    const seen = new Set<number>();
-    return this.candidates().filter((c) => !seen.has(c.id) && seen.add(c.id));
+  // The list view is a table of the same cards (a CV in two vacancies is two rows, each with its vacancy),
+  // in board order unless a column header sorts it
+  sort = signal<{ key: SortKey; dir: 1 | -1 } | null>(null);
+  rows = computed(() => {
+    const ivs = this.interviewByEntry();
+    const rows = this.candidates().map((card) => {
+      const interview = ivs.get(card.pipeline.id) ?? null;
+      return { card, name: this.nameOf(card), interview, interviewBadge: interview ? { ...interviewStatusOf(interview), when: formatShort(interview.startsAt) } : null };
+    });
+    const sort = this.sort();
+    if (!sort) return rows;
+    const value = (r: (typeof rows)[number]): string | number => {
+      switch (sort.key) {
+        case 'name':
+          return r.name.toLowerCase();
+        case 'stage':
+          return STAGE_ORDER[r.card.pipeline.stage];
+        case 'rating':
+          return r.card.pipeline.rating ?? 0;
+        case 'interview':
+          // No interview last either way
+          return r.interview ? new Date(r.interview.startsAt).getTime() : sort.dir * Infinity;
+      }
+    };
+    return [...rows].sort((a, b) => {
+      const x = value(a);
+      const y = value(b);
+      return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
+    });
   });
   // Spinner only for the very first load; later visits show the stored list right away.
   loading = computed(() => !this.hrStore.boardLoaded() && !this.hrStore.boardError());
@@ -239,6 +268,33 @@ export class HrCandidates implements OnInit {
     } catch {
       // Private mode / blocked storage: the choice just isn't remembered
     }
+  }
+
+  /** A column header: sort by it, again to reverse, a third time back to board order */
+  sortBy(key: SortKey) {
+    const cur = this.sort();
+    if (cur?.key !== key) this.sort.set({ key, dir: 1 });
+    else if (cur.dir === 1) this.sort.set({ key, dir: -1 });
+    else this.sort.set(null);
+  }
+
+  ariaSort(key: SortKey) {
+    const cur = this.sort();
+    return cur?.key !== key ? 'none' : cur.dir === 1 ? 'ascending' : 'descending';
+  }
+
+  nameOf(card: BoardCard) {
+    return card.contact?.fullName || card.detectedRole || 'კანდიდატი';
+  }
+
+  initialsOf(card: BoardCard) {
+    return this.nameOf(card)
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase();
   }
 
   /** Main board: the vacancy label on a card, unless the card has none. */

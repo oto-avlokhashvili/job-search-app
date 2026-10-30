@@ -188,6 +188,8 @@ export interface InviteDraft extends InterviewDraft {
   vacancyId?: number;
   /** Required without a vacancy; with one it defaults to the vacancy's title */
   position?: string;
+  /** Who it's for, when known (e.g. a LinkedIn profile): names the row and prefills their form */
+  inviteeName?: string;
 }
 
 /** A candidate the HR adds by hand: no CV, only on their boards. */
