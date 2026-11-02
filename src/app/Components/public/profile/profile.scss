@@ -18,8 +18,13 @@
     gap: 1.25rem;
   }
 
+  // minmax(0, …) so a long nowrap child (e.g. the CV file name) can't stretch the column past the viewport
   @media (max-width: 860px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  > * {
+    min-width: 0;
   }
 }
 
