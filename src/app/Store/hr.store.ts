@@ -4,8 +4,10 @@ import { firstValueFrom } from 'rxjs';
 import { HrService } from '../Core/Services/hr';
 import { AuthService } from '../Core/Services/auth-service';
 import {
+    AiLinkedinStatus,
     BoardCard,
     HrAccount,
+    HrAiResult,
     HrCandidate,
     HrUsage,
     HrVacancy,
@@ -20,7 +22,7 @@ import {
 } from '../Core/Interfaces/hr';
 import { applyChange } from '../Core/Utils/pipeline';
 
-export type HrSearchTab = 'cvs' | 'linkedin';
+export type HrSearchTab = 'cvs' | 'ai' | 'linkedin';
 export interface HrSearchQuery {
     keyword: string;
     location: string;
@@ -28,6 +30,11 @@ export interface HrSearchQuery {
 }
 
 const CV_PAGE_SIZE = 20;
+// The server ranks at most 30, so the AI tab pages in tens
+const AI_PAGE_SIZE = 10;
+/** The form as one plain-language request: the AI reads level and location from the text too. */
+const aiRequest = (q: HrSearchQuery) =>
+    [q.keyword, q.seniority && `${q.seniority} level`, q.location && `location: ${q.location}`].filter(Boolean).join(', ');
 const sortInterviews = (list: HrInterview[]) => [...list].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 const LINKEDIN_MAX_PAGE = 10;
 
@@ -44,6 +51,17 @@ interface HrState {
     cvLoading: boolean;
     cvSearched: boolean;
     cvError: string;
+
+    // AI tab: our CVs and LinkedIn profiles in one list, ranked by the AI against the request
+    aiResults: HrAiResult[];
+    aiTotal: number;
+    aiPage: number;
+    aiLoading: boolean;
+    aiSearched: boolean;
+    aiError: string;
+    aiKeywords: string[];
+    aiRanked: boolean;
+    aiLinkedin: AiLinkedinStatus;
 
     profiles: LinkedinProfile[];
     linkedinPage: number;
@@ -93,6 +111,16 @@ const initialState: HrState = {
     cvSearched: false,
     cvError: '',
 
+    aiResults: [],
+    aiTotal: 0,
+    aiPage: 1,
+    aiLoading: false,
+    aiSearched: false,
+    aiError: '',
+    aiKeywords: [],
+    aiRanked: true,
+    aiLinkedin: 'ok',
+
     profiles: [],
     linkedinPage: 1,
     linkedinHasMore: false,
@@ -131,13 +159,19 @@ export const HrStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
     withMethods((store, hrService = inject(HrService)) => {
+        // A CV can be in both result lists (keyword and AI); a change to it shows in both.
+        const mapResults = (fn: (c: HrCandidate) => HrCandidate) => ({
+            cvs: store.cvs().map(fn),
+            aiResults: store.aiResults().map((r): HrAiResult => (r.source === 'cv' ? { ...fn(r), source: 'cv' } : r)),
+        });
+
         const methods = {
             saveSearchForm(form: HrSearchQuery) {
                 patchState(store, { searchForm: form });
             },
 
             /**
-             * New query from the form: results of both tabs are stale, the active one reloads.
+             * New query from the form: results of every tab are stale, the active one reloads.
              * Requests still running for the old query are ignored when they land.
              */
             search(query: HrSearchQuery) {
@@ -147,6 +181,9 @@ export const HrStore = signalStore(
                     cvSearched: false,
                     cvLoading: false,
                     cvError: '',
+                    aiSearched: false,
+                    aiLoading: false,
+                    aiError: '',
                     linkedinSearched: false,
                     linkedinLoading: false,
                     linkedinError: '',
@@ -162,6 +199,7 @@ export const HrStore = signalStore(
             runActiveTab() {
                 if (!store.searchQuery()) return;
                 if (store.searchTab() === 'cvs' && !store.cvSearched() && !store.cvLoading()) methods.searchCvs(1);
+                if (store.searchTab() === 'ai' && !store.aiSearched() && !store.aiLoading()) methods.searchCvsWithAi(1);
                 if (store.searchTab() === 'linkedin' && !store.linkedinSearched() && !store.linkedinLoading()) {
                     methods.searchLinkedin(1);
                 }
@@ -187,6 +225,35 @@ export const HrStore = signalStore(
                     }
                 } finally {
                     if (store.searchQuery() === q) patchState(store, { cvLoading: false });
+                }
+            },
+
+            async searchCvsWithAi(page: number) {
+                const q = store.searchQuery();
+                if (!q) return;
+                patchState(store, { aiLoading: true, aiError: '' });
+                try {
+                    const res = await firstValueFrom(
+                        hrService.searchCvsWithAi({ query: aiRequest(q), page, limit: AI_PAGE_SIZE }),
+                    );
+                    if (store.searchQuery() !== q) return;
+                    patchState(store, {
+                        aiResults: page === 1 ? res.candidates : [...store.aiResults(), ...res.candidates],
+                        aiTotal: res.total,
+                        aiPage: page,
+                        aiSearched: true,
+                        aiKeywords: res.understood.keywords,
+                        aiRanked: res.aiRanked,
+                        aiLinkedin: res.linkedin,
+                    });
+                } catch (err) {
+                    if (store.searchQuery() === q) {
+                        patchState(store, { aiError: hrService.errorMessage(err, 'AI ძიება ვერ მოხერხდა, სცადეთ თავიდან') });
+                    }
+                } finally {
+                    if (store.searchQuery() === q) patchState(store, { aiLoading: false });
+                    // A new AI search may have spent one of today's LinkedIn searches
+                    if (page === 1) methods.loadUsage(true);
                 }
             },
 
@@ -220,8 +287,8 @@ export const HrStore = signalStore(
             /** Opens a CV's contacts without adding it to a vacancy. Throws so the page can show the server's message. */
             async unlock(candidate: HrCandidate) {
                 const unlocked = await firstValueFrom(hrService.unlock(candidate.id));
-                // Keep the search-specific fields (match, matchedKeywords) from the original card.
-                patchState(store, { cvs: store.cvs().map((c) => (c.id === unlocked.id ? { ...c, ...unlocked } : c)) });
+                // Keep the search-specific fields (match, matchedKeywords, reason) from the original card.
+                patchState(store, mapResults((c) => (c.id === unlocked.id ? { ...c, ...unlocked } : c)));
                 // The server put it on the main board without a vacancy; pick that card up.
                 if (store.boardLoaded()) methods.loadBoard(true);
                 methods.loadUsage(true);
@@ -236,7 +303,7 @@ export const HrStore = signalStore(
                 }
                 const now = new Date().toISOString();
                 patchState(store, {
-                    cvs: store.cvs().map((c) => {
+                    ...mapResults((c) => {
                         if (c.id !== card.id) return c;
                         const { pipeline, ...fields } = card;
                         return { ...c, ...fields };
@@ -303,7 +370,7 @@ export const HrStore = signalStore(
 
             /** Search results show which vacancies a CV is in; keep that in step with the board. */
             syncSearchMemberships() {
-                if (!store.boardLoaded() || !store.cvs().length) return;
+                if (!store.boardLoaded() || (!store.cvs().length && !store.aiResults().length)) return;
                 const byCv = new Map<number, VacancyMembership[]>();
                 for (const c of store.board()) {
                     if (c.pipeline.vacancyId === null) continue;
@@ -311,9 +378,7 @@ export const HrStore = signalStore(
                     list.push({ entryId: c.pipeline.id, vacancyId: c.pipeline.vacancyId, stage: c.pipeline.stage });
                     byCv.set(c.id, list);
                 }
-                patchState(store, {
-                    cvs: store.cvs().map((c) => (c.unlocked ? { ...c, vacancies: byCv.get(c.id) ?? [] } : c)),
-                });
+                patchState(store, mapResults((c) => (c.unlocked ? { ...c, vacancies: byCv.get(c.id) ?? [] } : c)));
             },
 
             async loadVacancies(force = false) {

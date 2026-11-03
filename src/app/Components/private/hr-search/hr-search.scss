@@ -651,6 +651,71 @@
     background: #0a66c2;
   }
 
+  // AI results: where the profile comes from, and the AI's score (same look as the CV card's)
+  .source-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #0a66c2;
+    color: #fff;
+  }
+
+  .match {
+    flex-shrink: 0;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    background: var(--surface-container);
+    color: var(--primary);
+
+    &.high {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+  }
+
+  .ai-reason {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: var(--surface-container-low);
+
+    p {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--on-surface);
+    }
+
+    .material-symbols-outlined {
+      font-size: 17px;
+      margin-top: 1px;
+      color: var(--primary);
+    }
+
+    .missing,
+    .unverified {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+
+      .material-symbols-outlined {
+        color: var(--text-muted);
+      }
+    }
+
+    .unverified .material-symbols-outlined {
+      color: #ca8a04;
+    }
+  }
+
   .profile-title {
     min-width: 0;
 
@@ -807,7 +872,8 @@
   }
 }
 
-.notice.error {
+.notice.error,
+.notice.info {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -819,6 +885,11 @@
   .material-symbols-outlined {
     font-size: 20px;
   }
+}
+
+.notice.info {
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
 }
 
 .btn-more {

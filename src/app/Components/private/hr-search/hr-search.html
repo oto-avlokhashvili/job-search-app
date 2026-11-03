@@ -20,7 +20,7 @@
         <span>პოზიცია ან უნარები</span>
         <div class="input-wrap" [class.invalid]="form.controls.keyword.invalid && form.controls.keyword.touched">
           <span class="material-symbols-outlined">work</span>
-          <input formControlName="keyword" type="text" placeholder="მაგ: Accountant, Excel" autocomplete="off">
+          <input formControlName="keyword" type="text" [placeholder]="keywordPlaceholder()" autocomplete="off">
         </div>
       </label>
       <label class="field">
@@ -69,7 +69,11 @@
     <div class="search-foot">
       <span class="hint">
         <span class="material-symbols-outlined">info</span>
-        რამდენიმე უნარი გამოყავით მძიმით
+        @if (tab() === 'ai') {
+          აღწერეთ კანდიდატი თავისუფალი ტექსტით
+        } @else {
+          რამდენიმე უნარი გამოყავით მძიმით
+        }
       </span>
       <div class="quick">
         <span class="quick-label">პოპულარული:</span>
@@ -100,6 +104,13 @@
       CV ბაზა
       @if (cvSearched()) {
         <span class="count">{{ cvTotal() }}</span>
+      }
+    </button>
+    <button type="button" role="tab" [class.active]="tab() === 'ai'" [attr.aria-selected]="tab() === 'ai'" (click)="selectTab('ai')">
+      <span class="material-symbols-outlined">auto_awesome</span>
+      AI შერჩევა
+      @if (aiSearched()) {
+        <span class="count">{{ aiTotal() }}</span>
       }
     </button>
     <button type="button" role="tab" [class.active]="tab() === 'linkedin'" [attr.aria-selected]="tab() === 'linkedin'" (click)="selectTab('linkedin')">
@@ -137,6 +148,33 @@
             <span class="material-symbols-outlined">lock_open</span>
             <strong>3. კონტაქტის გახსნა</strong>
             <small>ნახეთ სახელი, ტელეფონი და CV ერთი დაჭერით</small>
+          </div>
+        </div>
+      </div>
+    } @else if (tab() === 'ai') {
+      <div class="intro">
+        <div class="intro-head">
+          <span class="intro-icon material-symbols-outlined">auto_awesome</span>
+          <div>
+            <h2>AI შერჩევა</h2>
+            <p>აღწერეთ, ვის ეძებთ, და AI შეარჩევს ყველაზე შესაფერის კანდიდატებს CV ბაზიდან და LinkedIn-იდან</p>
+          </div>
+        </div>
+        <div class="intro-grid">
+          <div class="intro-item">
+            <span class="material-symbols-outlined">edit_note</span>
+            <strong>1. აღწერა</strong>
+            <small>როლი, უნარები, ინდუსტრია, გამოცდილება — თქვენი სიტყვებით</small>
+          </div>
+          <div class="intro-item">
+            <span class="material-symbols-outlined">psychology</span>
+            <strong>2. AI შეფასება</strong>
+            <small>AI კითხულობს CV-ებს და LinkedIn პროფილებს და ალაგებს ერთ სიად (იყენებს 1 LinkedIn ძიებას)</small>
+          </div>
+          <div class="intro-item">
+            <span class="material-symbols-outlined">fact_check</span>
+            <strong>3. რატომ ეს კანდიდატი</strong>
+            <small>თითოეულს ახლავს მიზეზი და რა აკლია მოთხოვნიდან</small>
           </div>
         </div>
       </div>
@@ -219,6 +257,78 @@
         </button>
       }
     }
+  } @else if (tab() === 'ai') {
+    @if (aiError()) {
+      <div class="notice error">
+        <span class="material-symbols-outlined">error</span>
+        {{ aiError() }}
+      </div>
+    }
+    @if (aiLoading() && aiResults().length === 0) {
+      <div class="loading">
+        <span class="spinner"></span>
+        <p>AI ეძებს CV ბაზაში და LinkedIn-ზე და არჩევს საუკეთესოებს... ამას შეიძლება ნახევარი წუთი დასჭირდეს</p>
+      </div>
+    } @else if (aiSearched() && aiResults().length === 0) {
+      <div class="empty">
+        <span class="empty-icon material-symbols-outlined">search_off</span>
+        <h3>შესაფერისი კანდიდატი ვერ მოიძებნა</h3>
+        <p>სცადეთ აღწერა შეცვალოთ ან შეამსუბუქოთ მოთხოვნები.</p>
+        <button type="button" class="btn-ghost" (click)="selectTab('linkedin')">
+          <span class="material-symbols-outlined">travel_explore</span>
+          LinkedIn-ზე ძიება
+        </button>
+      </div>
+    } @else if (aiResults().length) {
+      <p class="results-meta">
+        AI-მ შეარჩია <strong>{{ aiTotal() }}</strong> კანდიდატი · ნაჩვენებია {{ aiResults().length }}
+        (CV ბაზა: {{ aiShown().cv }}, LinkedIn: {{ aiShown().linkedin }})
+        @if (aiKeywords().length) {
+          · ეძებდა: {{ aiKeywords().join(', ') }}
+        }
+      </p>
+      @if (!aiRanked()) {
+        <div class="notice info">
+          <span class="material-symbols-outlined">info</span>
+          AI დროებით მიუწვდომელია: CV-ები დალაგებულია საკვანძო სიტყვებით, მიზეზების გარეშე.
+        </div>
+      }
+      @if (aiLinkedin() === 'quota') {
+        <div class="notice info">
+          <span class="material-symbols-outlined">info</span>
+          დღევანდელი LinkedIn ძიებები ამოიწურა: ნაჩვენებია მხოლოდ CV ბაზა.
+        </div>
+      } @else if (aiLinkedin() === 'failed') {
+        <div class="notice info">
+          <span class="material-symbols-outlined">info</span>
+          LinkedIn დროებით მიუწვდომელია: ნაჩვენებია მხოლოდ CV ბაზა.
+        </div>
+      }
+      <div class="results">
+        @for (result of aiResults(); track aiTrack(result)) {
+          @if (result.source === 'cv') {
+            <app-hr-candidate-card
+              [candidate]="result"
+              [busy]="busyId() === result.id"
+              [addable]="true"
+              (unlock)="unlock($event)"
+              (addToVacancy)="addToVacancy(result, $event)"
+              (download)="download($event)" />
+          } @else {
+            <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: result.profile, verdict: result }" />
+          }
+        }
+      </div>
+      @if (aiResults().length < aiTotal()) {
+        <button class="btn-more" type="button" [disabled]="aiLoading()" (click)="searchCvsWithAi(aiPage() + 1)">
+          @if (aiLoading()) {
+            <span class="spinner small"></span> იტვირთება...
+          } @else {
+            <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+          }
+        </button>
+      }
+    }
   } @else {
     @if (linkedinError()) {
       <div class="notice error">
@@ -240,30 +350,7 @@
     } @else if (profiles().length) {
       <div class="results">
         @for (profile of profiles(); track profile.url) {
-          <article class="profile">
-            <a class="profile-main" [href]="profile.url" target="_blank" rel="noopener noreferrer">
-              <div class="profile-head">
-                <span class="profile-avatar">{{ profile.name.charAt(0) }}</span>
-                <div class="profile-title">
-                  <h3>{{ profile.name }}</h3>
-                  @if (profile.headline) {
-                    <p class="headline">{{ profile.headline }}</p>
-                  }
-                </div>
-              </div>
-              <p class="snippet">{{ profile.snippet }}</p>
-            </a>
-            <div class="profile-actions">
-              <a class="profile-link" [href]="profile.url" target="_blank" rel="noopener noreferrer">
-                LinkedIn-ზე ნახვა
-                <span class="material-symbols-outlined">open_in_new</span>
-              </a>
-              <!-- Not on Job Up: a link to send them on LinkedIn; they join the board with their CV -->
-              <button type="button" class="profile-book" (click)="bookMeeting(profile)">
-                <span class="material-symbols-outlined">event</span>შეხვედრის ჩანიშვნა
-              </button>
-            </div>
-          </article>
+          <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: profile }" />
         }
       </div>
       @if (linkedinHasMore()) {
@@ -278,6 +365,54 @@
     }
   }
 </section>
+
+<!-- A LinkedIn profile, in the LinkedIn tab and among AI results (there with the AI's score and reason) -->
+<ng-template #linkedinCard let-profile let-verdict="verdict">
+  <article class="profile">
+    <a class="profile-main" [href]="profile.url" target="_blank" rel="noopener noreferrer">
+      <div class="profile-head">
+        <span class="profile-avatar">{{ profile.name.charAt(0) }}</span>
+        <div class="profile-title">
+          <h3>{{ profile.name }}</h3>
+          @if (profile.headline) {
+            <p class="headline">{{ profile.headline }}</p>
+          }
+        </div>
+        @if (verdict) {
+          <span class="source-badge">LinkedIn</span>
+          @if (verdict.match !== null) {
+            <span class="match" [class.high]="verdict.match >= 75">{{ verdict.match }}%</span>
+          }
+        }
+      </div>
+      @if (verdict?.reason) {
+        <div class="ai-reason">
+          <p><span class="material-symbols-outlined">auto_awesome</span>{{ verdict.reason }}</p>
+          @if (verdict.missing?.length) {
+            <p class="missing"><span class="material-symbols-outlined">remove_circle_outline</span>არ ემთხვევა: {{ verdict.missing.join(', ') }}</p>
+          }
+          <!-- LinkedIn shows only a short snippet: what it doesn't mention isn't missing, just unchecked -->
+          @if (verdict.unverified?.length) {
+            <p class="unverified" title="LinkedIn-ის მოკლე აღწერაში ეს არ ჩანს — გადაამოწმეთ სრულ პროფილზე">
+              <span class="material-symbols-outlined">fact_check</span>გადაამოწმეთ პროფილზე: {{ verdict.unverified.join(', ') }}
+            </p>
+          }
+        </div>
+      }
+      <p class="snippet">{{ profile.snippet }}</p>
+    </a>
+    <div class="profile-actions">
+      <a class="profile-link" [href]="profile.url" target="_blank" rel="noopener noreferrer">
+        LinkedIn-ზე ნახვა
+        <span class="material-symbols-outlined">open_in_new</span>
+      </a>
+      <!-- Not on Job Up: a link to send them on LinkedIn; they join the board with their CV -->
+      <button type="button" class="profile-book" (click)="bookMeeting(profile)">
+        <span class="material-symbols-outlined">event</span>შეხვედრის ჩანიშვნა
+      </button>
+    </div>
+  </article>
+</ng-template>
 
 @if (inviting(); as target) {
   <app-hr-interview-dialog [invite]="target" (saved)="onInvited()" (cancel)="inviting.set(null)" />

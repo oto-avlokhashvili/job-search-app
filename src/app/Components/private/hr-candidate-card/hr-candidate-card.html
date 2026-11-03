@@ -22,6 +22,16 @@
     }
   </header>
 
+  <!-- AI search: why this CV fits, and what the request asks for that it doesn't show -->
+  @if (c.reason) {
+    <div class="ai-reason">
+      <p><span class="material-symbols-outlined">auto_awesome</span>{{ c.reason }}</p>
+      @if (c.missing?.length) {
+        <p class="missing"><span class="material-symbols-outlined">remove_circle_outline</span>აკლია: {{ c.missing!.join(', ') }}</p>
+      }
+    </div>
+  }
+
   @if (c.careerDirection && c.careerDirection !== c.detectedRole) {
     <p class="direction">
       <span class="material-symbols-outlined">trending_up</span>{{ c.careerDirection }}

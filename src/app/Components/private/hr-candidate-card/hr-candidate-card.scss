@@ -78,6 +78,39 @@
   color: var(--on-surface-variant);
 }
 
+.ai-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: var(--surface-container-low);
+
+  p {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--on-surface);
+  }
+
+  .material-symbols-outlined {
+    font-size: 17px;
+    margin-top: 1px;
+    color: var(--primary);
+  }
+
+  .missing {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+
+    .material-symbols-outlined {
+      color: var(--text-muted);
+    }
+  }
+}
+
 .skills {
   display: flex;
   flex-wrap: wrap;

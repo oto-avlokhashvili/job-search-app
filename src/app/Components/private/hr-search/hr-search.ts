@@ -4,7 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HrService } from '../../../Core/Services/hr';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
-import { HrCandidate, LinkedinProfile, SeniorityLevel } from '../../../Core/Interfaces/hr';
+import { NgTemplateOutlet } from '@angular/common';
+import { HrAiResult, HrCandidate, LinkedinProfile, SeniorityLevel } from '../../../Core/Interfaces/hr';
 import { HrStore, HrSearchTab } from '../../../Store/hr.store';
 import { HrCandidateCard } from '../hr-candidate-card/hr-candidate-card';
 import { HrInterviewDialog } from '../hr-interview-dialog/hr-interview-dialog';
@@ -16,11 +17,12 @@ interface SeniorityOption {
   icon: string;
 }
 
-// One form, two sources: our CV base (ranked, anonymized until unlocked) and LinkedIn via Google.
+// One form, three tabs: our CV base (ranked, anonymized until unlocked), AI selection (our CVs and
+// LinkedIn ranked together by the AI) and LinkedIn via Google.
 // Query, tab and results live in HrStore, so coming back to the page shows them again.
 @Component({
   selector: 'app-hr-search',
-  imports: [ReactiveFormsModule, RouterLink, HrCandidateCard, HrInterviewDialog],
+  imports: [ReactiveFormsModule, RouterLink, NgTemplateOutlet, HrCandidateCard, HrInterviewDialog],
   templateUrl: './hr-search.html',
   styleUrl: './hr-search.scss',
 })
@@ -78,6 +80,25 @@ export class HrSearch {
   cvSearched = this.hrStore.cvSearched;
   cvError = this.hrStore.cvError;
   busyId = signal<number | null>(null);
+
+  aiResults = this.hrStore.aiResults;
+  aiTotal = this.hrStore.aiTotal;
+  aiPage = this.hrStore.aiPage;
+  aiLoading = this.hrStore.aiLoading;
+  aiSearched = this.hrStore.aiSearched;
+  aiError = this.hrStore.aiError;
+  aiKeywords = this.hrStore.aiKeywords;
+  aiRanked = this.hrStore.aiRanked;
+  aiLinkedin = this.hrStore.aiLinkedin;
+  aiShown = computed(() => {
+    const results = this.aiResults();
+    const cv = results.filter((r) => r.source === 'cv').length;
+    return { cv, linkedin: results.length - cv };
+  });
+  // The AI tab takes a sentence, the others keywords
+  keywordPlaceholder = computed(() =>
+    this.tab() === 'ai' ? 'მაგ: Senior React დეველოპერი ფინტექის გამოცდილებით' : 'მაგ: Accountant, Excel',
+  );
 
   profiles = this.hrStore.profiles;
   linkedinPage = this.hrStore.linkedinPage;
@@ -147,6 +168,10 @@ export class HrSearch {
     this.hrStore.searchCvs(page);
   }
 
+  searchCvsWithAi(page: number) {
+    this.hrStore.searchCvsWithAi(page);
+  }
+
   searchLinkedin(page: number) {
     this.hrStore.searchLinkedin(page);
   }
@@ -176,6 +201,10 @@ export class HrSearch {
   }
 
   /** For the vacancy being searched for if there is one, else the search itself as the position */
+  aiTrack(result: HrAiResult): string {
+    return result.source === 'cv' ? `cv:${result.id}` : result.profile.url;
+  }
+
   bookMeeting(profile: LinkedinProfile) {
     const vacancy = this.targetVacancy();
     this.inviting.set({

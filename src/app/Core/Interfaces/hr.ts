@@ -21,6 +21,9 @@ export interface HrCandidate {
   updatedAt: string;
   match?: number;
   matchedKeywords?: string[];
+  /** AI search only: why the CV fits the request, and what it doesn't show */
+  reason?: string;
+  missing?: string[];
   unlocked: boolean;
   contact: CandidateContact | null;
   /** This HR's vacancies the CV is in (unlocked CVs only). */
@@ -236,6 +239,35 @@ export interface HrCvSearchResult {
   page: number;
   limit: number;
   candidates: HrCandidate[];
+}
+
+/** One AI search result: a CV from our base, or a LinkedIn profile (match null only without the AI). */
+export type HrAiResult =
+  | (HrCandidate & { source: 'cv' })
+  | {
+      source: 'linkedin';
+      profile: LinkedinProfile;
+      match: number | null;
+      reason: string;
+      /** What the headline/snippet contradicts */
+      missing: string[];
+      /** What the snippet doesn't mention: to check on the profile (absent in searches cached before it existed) */
+      unverified?: string[];
+    };
+
+/** How the LinkedIn half of an AI search went: `quota` = today's LinkedIn searches are used up. */
+export type AiLinkedinStatus = 'ok' | 'quota' | 'failed';
+
+export interface HrAiSearchResult {
+  total: number;
+  page: number;
+  limit: number;
+  candidates: HrAiResult[];
+  /** The search terms the AI read from the request */
+  understood: { keywords: string[]; titles: string[]; seniority?: SeniorityLevel; location?: string };
+  /** False when the AI was unavailable: CVs keyword-ranked, LinkedIn unscored, no reasons */
+  aiRanked: boolean;
+  linkedin: AiLinkedinStatus;
 }
 
 export interface LinkedinProfile {
