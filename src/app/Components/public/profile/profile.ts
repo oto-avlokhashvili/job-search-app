@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { StateStore } from '../../../Store/state.store';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { SwalService } from '../../../Core/Services/swal.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { NotificationChannel, openNotificationChannelsModal } from '../notification-channels-modal/notification-channels-modal';
@@ -27,6 +28,7 @@ export class Profile {
   stateStore = inject(StateStore);
   authService = inject(AuthService);
   private alertify = inject(AlertifyService);
+  private swal = inject(SwalService);
   dialog = inject(MatDialog);
   private router = inject(Router);
   keywordInputValue = signal<string>('');
@@ -251,7 +253,13 @@ export class Profile {
   }
 
   async disconnectTelegram() {
-    if (!confirm('ნამდვილად გსურთ Telegram-ის გათიშვა? ვაკანსიებს Telegram-ზე აღარ მიიღებთ.')) return;
+    const confirmed = await this.swal.confirm({
+      title: 'Telegram-ის გათიშვა',
+      text: 'ვაკანსიებს Telegram-ზე აღარ მიიღებთ. ხელახლა დაკავშირება ნებისმიერ დროს შეგიძლიათ.',
+      confirmText: 'გათიშვა',
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       await this.authService.disconnectTelegram();
       this.stateStore.updateLocalProfile({ telegramChatId: '' });

@@ -820,3 +820,102 @@ body.modal-open {
 }
 
 
+
+// ─── SweetAlert2 (SwalService) ────────────────────────────────
+.swal2-container.swal2-backdrop-show {
+  background: rgba(10, 20, 40, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.swal2-popup.app-swal {
+  width: min(420px, calc(100vw - 32px));
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 22px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  color: var(--on-surface);
+  font-family: $font-family;
+
+  .swal2-title {
+    padding: 0.5rem 0 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--on-surface);
+  }
+
+  .swal2-html-container {
+    margin: 0.6rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--on-surface-variant);
+  }
+
+  .swal2-icon {
+    margin: 0.25rem auto 0.5rem;
+    transform: scale(0.8);
+  }
+
+  .swal2-icon.swal2-warning {
+    border-color: rgba(179, 27, 37, 0.35);
+    color: #b31b25;
+  }
+
+  .swal2-actions {
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .app-swal-btn {
+    flex: 1;
+    min-height: 46px;
+    margin: 0;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: filter 0.2s, background 0.2s, transform 0.2s;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    &.danger {
+      background: #b31b25;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(179, 27, 37, 0.25);
+    }
+
+    &.primary,
+    &.danger {
+      &:hover {
+        filter: brightness(1.08);
+      }
+    }
+
+    &.secondary {
+      background: var(--surface-container-low);
+      border-color: var(--border-color);
+      color: var(--on-surface);
+
+      &:hover {
+        background: var(--surface-container);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+}
