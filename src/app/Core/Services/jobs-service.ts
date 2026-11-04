@@ -48,6 +48,12 @@ export class JobsService {
     return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context: new HttpContext().set(skipLoading, true) });
   }
 
+  /** One company's vacancies, matched exactly on its normalized name. */
+  getCompanyJobs(companyKey: string, page: number = 1, limit: number = 30): Observable<JobsResponse> {
+    const params = new HttpParams().set('companyKey', companyKey).set('page', page).set('limit', limit);
+    return this.http.get<JobsResponse>(`${this.url}/job/all`, { params, context: new HttpContext().set(skipLoading, true) });
+  }
+
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {
     return this.http.get<SentJobsResponse>(`${this.url}/sent-jobs?page=${page}&limit=${limit}`);
   }

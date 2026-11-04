@@ -30,6 +30,7 @@ export interface VacancyItem {
   matchScore: number;
   link: string;
   companyLogo?: string | null;
+  companyKey?: string | null;
 }
 
 /**
@@ -947,6 +948,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
           matchScore: job.match,
           link: job.link,
           companyLogo: job.companyLogo ?? null,
+          companyKey: job.companyKey ?? null,
         })),
       );
       this.burstParticles();

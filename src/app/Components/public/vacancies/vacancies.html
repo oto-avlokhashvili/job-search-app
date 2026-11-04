@@ -671,7 +671,11 @@
                             <span class="job-vacancy">{{ job.vacancy }}</span>
                           </a>
                           <span class="job-company" [title]="job.company">
-                            {{ job.company }}
+                            @if (job.companyKey) {
+                              <a class="job-company-link" [routerLink]="['/companies', job.companyKey]">{{ job.company }}</a>
+                            } @else {
+                              {{ job.company }}
+                            }
                             @if (cvMode()) {
                               <span class="cv-match-badge">{{ job.matchScore }}% შესაბამისობა</span>
                             }

@@ -33,6 +33,8 @@ export interface Job {
   category?: string;
   /** Company logo (128px WebP on logos.jobup.ge), when the company has one */
   companyLogo?: string | null;
+  /** Normalized company name shared by all its vacancies; links to /companies/:key */
+  companyKey?: string | null;
 }
 
 export interface AiMatchedJobsResponse {
@@ -72,5 +74,6 @@ export interface VacancyItem {
   matchScore: number;
   link: string;
   companyLogo?: string | null;
+  companyKey?: string | null;
 }
 

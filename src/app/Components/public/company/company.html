@@ -1,0 +1,76 @@
+<main class="company-page">
+  <div class="company-container">
+    <nav class="breadcrumbs">
+      <a routerLink="/vacancies">ვაკანსიები</a>
+      <span>/</span>
+      <span class="current">{{ name() || 'კომპანია' }}</span>
+    </nav>
+
+    @if (loading()) {
+      <header class="company-hero skeleton">
+        <div class="company-logo skeleton-block"></div>
+        <div class="hero-text">
+          <span class="skeleton-line" style="width: 220px; height: 22px"></span>
+          <span class="skeleton-line" style="width: 120px"></span>
+        </div>
+      </header>
+      <div class="job-list">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="row-skeleton skeleton">
+            <div class="company-logo small skeleton-block"></div>
+            <div class="hero-text">
+              <span class="skeleton-line" style="width: 55%"></span>
+              <span class="skeleton-line" style="width: 35%"></span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (error()) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined empty-icon">error</span>
+        <h3>{{ error() }}</h3>
+      </div>
+    } @else if (jobs().length === 0) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined empty-icon">domain_disabled</span>
+        <h3>ამ კომპანიას ამჟამად აქტიური ვაკანსია არ აქვს</h3>
+        <p>ახალი ვაკანსიები ყოველდღე ემატება. სცადეთ მოგვიანებით ან ნახეთ სხვა ვაკანსიები.</p>
+        <a routerLink="/vacancies" class="btn-primary">ყველა ვაკანსია</a>
+      </div>
+    } @else {
+      <header class="company-hero">
+        <div class="company-logo" [class.has-logo]="logos.show(logo())">
+          @if (logos.show(logo())) {
+            <img [src]="logo()" [alt]="name()" width="72" height="72" decoding="async" (error)="logos.broken(logo())">
+          } @else {
+            {{ name().charAt(0) }}
+          }
+        </div>
+        <div class="hero-text">
+          <h1>{{ name() }}</h1>
+          <p>
+            <span class="material-symbols-outlined">work</span>
+            {{ total() }} აქტიური ვაკანსია
+          </p>
+        </div>
+      </header>
+
+      <div class="job-list">
+        @for (job of jobs(); track job.id) {
+          <app-job-list-card [job]="job" [logos]="logos" [showCompany]="false" />
+        }
+      </div>
+
+      @if (canLoadMore()) {
+        <button type="button" class="btn-ghost load-more" [disabled]="loadingMore()" (click)="loadMore()">
+          {{ loadingMore() ? 'იტვირთება...' : 'მეტის ჩატვირთვა' }}
+        </button>
+      } @else if (jobs().length < total()) {
+        <p class="login-hint">
+          ყველა ვაკანსიის სანახავად
+          <button type="button" class="link-btn" (click)="authService.openAuthModal('login')">შედით ანგარიშში</button>
+        </p>
+      }
+    }
+  </div>
+</main>

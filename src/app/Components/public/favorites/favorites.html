@@ -51,37 +51,7 @@
     } @else {
       <div class="saved-list">
         @for (job of visible(); track job.id) {
-          <a class="saved-card" [routerLink]="['/vacancies', job.slug]">
-            <div class="logo-avatar" [class.has-logo]="job.source === jobUpSource || logos.show(job.companyLogo)">
-              @if (job.source === jobUpSource) {
-                <img [src]="jobUpLogo" alt="Job Up">
-              } @else if (logos.show(job.companyLogo)) {
-                <img [src]="job.companyLogo" alt="" width="44" height="44" loading="lazy" decoding="async" (error)="logos.broken(job.companyLogo)">
-              } @else {
-                {{ job.company.charAt(0) }}
-              }
-            </div>
-            <div class="saved-info">
-              <h4 class="saved-title" [title]="job.vacancy">{{ job.vacancy }}</h4>
-              <div class="saved-meta">
-                <span class="company">{{ job.company }}</span>
-                <span class="meta-item">
-                  <span class="material-symbols-outlined">location_on</span>{{ job.location }}
-                </span>
-                @if (job.salaryRange) {
-                  <span class="meta-item">
-                    <span class="material-symbols-outlined">payments</span>{{ job.salaryRange }}
-                  </span>
-                }
-                @if (job.deadline) {
-                  <span class="meta-item">
-                    <span class="material-symbols-outlined">event</span>{{ job.deadline }}
-                  </span>
-                }
-              </div>
-            </div>
-            <app-favorite-button [jobId]="job.id" />
-          </a>
+          <app-job-list-card [job]="job" [logos]="logos" />
         }
       </div>
     }

@@ -1,0 +1,34 @@
+@let j = job();
+<a class="job-row" [routerLink]="['/vacancies', j.slug]">
+  <div class="logo-avatar" [class.has-logo]="j.source === jobUpSource || logos().show(j.companyLogo)">
+    @if (j.source === jobUpSource) {
+      <img [src]="jobUpLogo" alt="Job Up">
+    } @else if (logos().show(j.companyLogo)) {
+      <img [src]="j.companyLogo" alt="" width="44" height="44" loading="lazy" decoding="async" (error)="logos().broken(j.companyLogo)">
+    } @else {
+      {{ j.company.charAt(0) }}
+    }
+  </div>
+  <div class="row-info">
+    <h4 class="row-title" [title]="j.vacancy">{{ j.vacancy }}</h4>
+    <div class="row-meta">
+      @if (showCompany()) {
+        <span class="company">{{ j.company }}</span>
+      }
+      <span class="meta-item">
+        <span class="material-symbols-outlined">location_on</span>{{ j.location }}
+      </span>
+      @if (j.salaryRange) {
+        <span class="meta-item">
+          <span class="material-symbols-outlined">payments</span>{{ j.salaryRange }}
+        </span>
+      }
+      @if (j.deadline) {
+        <span class="meta-item">
+          <span class="material-symbols-outlined">event</span>{{ j.deadline }}
+        </span>
+      }
+    </div>
+  </div>
+  <app-favorite-button [jobId]="j.id" />
+</a>

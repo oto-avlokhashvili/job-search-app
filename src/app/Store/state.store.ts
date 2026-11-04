@@ -797,6 +797,7 @@ export const StateStore = signalStore(
                         matchScore: job.match || Math.floor(Math.random() * 10) + 90,
                         link: job.link || '/jobs',
                         companyLogo: job.companyLogo ?? null,
+                        companyKey: job.companyKey ?? null,
                     }));
 
                     const total = res.counts?.filteredRecords || 0;

@@ -402,6 +402,30 @@
             span.material-symbols-outlined { font-size: 14px; }
           }
         }
+
+        // Company name linking to the company's page
+        .company-link {
+          text-decoration: none;
+          border-radius: 8px;
+          transition: color 0.2s;
+
+          .company-link-arrow {
+            margin-left: -2px;
+            opacity: 0.6;
+            transition: transform 0.2s, opacity 0.2s;
+          }
+
+          &:hover {
+            .company-name {
+              text-decoration: underline;
+            }
+
+            .company-link-arrow {
+              opacity: 1;
+              transform: translateX(2px);
+            }
+          }
+        }
       }
     }
   }

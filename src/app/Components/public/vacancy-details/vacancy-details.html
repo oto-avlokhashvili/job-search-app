@@ -17,7 +17,11 @@
               <a [routerLink]="['/vacancies', city.slug]" class="breadcrumb-link">{{ city.label }}</a>
               <span class="breadcrumb-separator">/</span>
             }
-            <span class="breadcrumb-item company-item">{{ j.company }}</span>
+            @if (j.companyKey) {
+              <a [routerLink]="['/companies', j.companyKey]" class="breadcrumb-link company-item">{{ j.company }}</a>
+            } @else {
+              <span class="breadcrumb-item company-item">{{ j.company }}</span>
+            }
             <span class="breadcrumb-separator">/</span>
             <span class="breadcrumb-item current-item">{{ j.vacancy }}</span>
           </div>
@@ -115,10 +119,18 @@
               <h1 class="vacancy-page-title">{{ j.vacancy }}</h1>
 
               <div class="company-details-row">
-                <div class="company-name-block">
-                  <span class="material-symbols-outlined">domain</span>
-                  <span class="company-name">{{ j.company }}</span>
-                </div>
+                @if (j.companyKey) {
+                  <a class="company-name-block company-link" [routerLink]="['/companies', j.companyKey]" title="კომპანიის ყველა ვაკანსია">
+                    <span class="material-symbols-outlined">domain</span>
+                    <span class="company-name">{{ j.company }}</span>
+                    <span class="material-symbols-outlined company-link-arrow">chevron_right</span>
+                  </a>
+                } @else {
+                  <div class="company-name-block">
+                    <span class="material-symbols-outlined">domain</span>
+                    <span class="company-name">{{ j.company }}</span>
+                  </div>
+                }
               </div>
             </div>
 

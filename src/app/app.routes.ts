@@ -81,6 +81,10 @@ export const routes: Routes = [
     loadComponent: () => import('./Components/public/favorites/favorites').then((m) => m.Favorites),
   },
   {
+    path: 'companies/:key',
+    loadComponent: () => import('./Components/public/company/company').then((m) => m.Company),
+  },
+  {
     path: 'contact',
     loadComponent: () => import('./Components/public/contact/contact').then((m) => m.Contact),
   },
