@@ -142,6 +142,11 @@ export class AuthService {
     return res.token;
   }
 
+  async disconnectTelegram(): Promise<void> {
+    const res$ = this.http.delete(this.url + "/telegram/disconnect", { context: new HttpContext().set(skipLoading, true) });
+    await firstValueFrom(res$);
+  }
+
   async verifyEmail(email: string, code: string): Promise<any> {
     const res$ = this.http.post(this.url + "/user/verify", { email, code }, { context: new HttpContext().set(skipLoading, true) });
     return firstValueFrom(res$);

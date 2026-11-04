@@ -1315,6 +1315,18 @@
         transform: translateY(-1.5px);
       }
     }
+
+    &.disconnect {
+      background: transparent;
+      color: var(--on-surface-variant);
+      border: 1.5px solid var(--border-color);
+
+      &:hover {
+        color: #b31b25;
+        border-color: rgba(179, 27, 37, 0.4);
+        background: rgba(179, 27, 37, 0.06);
+      }
+    }
   }
 
   .email-verify-alert {

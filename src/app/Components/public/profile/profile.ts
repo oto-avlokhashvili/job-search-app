@@ -250,6 +250,17 @@ export class Profile {
     openNotificationChannelsModal(this.dialog, channel);
   }
 
+  async disconnectTelegram() {
+    if (!confirm('ნამდვილად გსურთ Telegram-ის გათიშვა? ვაკანსიებს Telegram-ზე აღარ მიიღებთ.')) return;
+    try {
+      await this.authService.disconnectTelegram();
+      this.stateStore.updateLocalProfile({ telegramChatId: '' });
+      this.alertify.success('Telegram გათიშულია');
+    } catch {
+      this.alertify.error('Telegram-ის გათიშვა ვერ მოხერხდა');
+    }
+  }
+
   loadSentJobs() {
     this.stateStore.loadSentJobs(this.sentJobsPage(), this.sentJobsLimit, false);
   }
