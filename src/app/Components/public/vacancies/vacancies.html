@@ -723,9 +723,12 @@
                       </span>
                     </td>
                     <td class="col-action">
-                      <a class="btn-fluid btn-sm primary apply-btn" [routerLink]="['/vacancies', getJobSlug(job)]" tabindex="-1" aria-hidden="true">
-                        ნახვა
-                      </a>
+                      <div class="row-actions">
+                        <app-favorite-button [jobId]="job.id" />
+                        <a class="btn-fluid btn-sm primary apply-btn" [routerLink]="['/vacancies', getJobSlug(job)]" tabindex="-1" aria-hidden="true">
+                          ნახვა
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -777,6 +780,7 @@
                       </span>
                     </div>
                   </div>
+                  <app-favorite-button class="card-fav" [jobId]="job.id" />
                   <div class="card-chevron-wrap">
                     <span class="material-symbols-outlined">chevron_right</span>
                   </div>

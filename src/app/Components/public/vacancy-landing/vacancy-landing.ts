@@ -13,6 +13,7 @@ import { getLandingPage, LANDING_PAGES, LandingPage } from '../../../Core/Utils/
 import { detectJobSource, formatJobDate } from '../../../Store/state.store';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { AiAgentBanner } from '../ai-agent-banner/ai-agent-banner';
+import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
 
 interface Faq {
   q: string;
@@ -26,7 +27,7 @@ const MAX_PUBLIC_PAGE = 5;
 @Component({
   selector: 'app-vacancy-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule, AiAgentBanner],
+  imports: [CommonModule, RouterModule, AiAgentBanner, FavoriteButton],
   templateUrl: './vacancy-landing.html',
   styleUrl: './vacancy-landing.scss',
 })

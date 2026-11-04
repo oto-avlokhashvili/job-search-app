@@ -1846,6 +1846,12 @@ button.btn-search {
     font-size: 12.5px;
   }
 
+  .row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .apply-btn {
     display: inline-block;
     text-decoration: none;
@@ -2031,6 +2037,11 @@ button.btn-search {
     .card-chevron-wrap {
       color: var(--on-surface-variant);
       opacity: 0.6;
+    }
+
+    .card-fav {
+      flex-shrink: 0;
+      align-self: center;
     }
   }
 

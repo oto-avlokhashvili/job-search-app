@@ -16,6 +16,7 @@ import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SeoService } from '../../../Core/Services/seo.service';
+import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
 
 export interface VacancyItem {
   id: number;
@@ -40,7 +41,7 @@ let lastOpenedJob: { url: string; jobId: number; viewportTop: number; scrollY: n
 @Component({
   selector: 'app-vacancies',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule, FavoriteButton],
   templateUrl: './vacancies.html',
   styleUrl: './vacancies.scss',
 })

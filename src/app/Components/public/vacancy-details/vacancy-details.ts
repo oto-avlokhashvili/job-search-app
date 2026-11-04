@@ -13,11 +13,12 @@ import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { SeoService, SITE_URL } from '../../../Core/Services/seo.service';
 import { buildJobBreadcrumbSchema, buildJobPostingSchema } from '../../../Core/Utils/job-schema';
 import { findCityLanding } from '../../../Core/Utils/landing-pages';
+import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
 
 @Component({
   selector: 'app-vacancy-details',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FavoriteButton],
   templateUrl: './vacancy-details.html',
   styleUrl: './vacancy-details.scss'
 })

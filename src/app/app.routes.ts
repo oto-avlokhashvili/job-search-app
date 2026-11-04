@@ -77,6 +77,10 @@ export const routes: Routes = [
     loadComponent: () => import('./Components/public/about/about').then((m) => m.About),
   },
   {
+    path: 'favorites',
+    loadComponent: () => import('./Components/public/favorites/favorites').then((m) => m.Favorites),
+  },
+  {
     path: 'contact',
     loadComponent: () => import('./Components/public/contact/contact').then((m) => m.Contact),
   },

@@ -5,6 +5,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'profile', renderMode: RenderMode.Client },
   { path: 'notifications', renderMode: RenderMode.Client },
   { path: 'analytics', renderMode: RenderMode.Client },
+  // Saved vacancies come from the account or this browser's storage
+  { path: 'favorites', renderMode: RenderMode.Client },
   { path: 'hr', renderMode: RenderMode.Client },
   { path: 'hr/**', renderMode: RenderMode.Client },
   // Private link: nothing to index, and the answer must come from the candidate's browser

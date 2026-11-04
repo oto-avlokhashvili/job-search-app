@@ -75,7 +75,10 @@
                   <span class="card-source-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'">
                     {{ job.source }}
                   </span>
-                  <span class="card-date">{{ job.publishDate }}</span>
+                  <span class="card-top-end">
+                    <span class="card-date">{{ job.publishDate }}</span>
+                    <app-favorite-button [jobId]="job.id" />
+                  </span>
                 </div>
                 <h3 class="card-title" [title]="job.vacancy">{{ job.vacancy }}</h3>
                 <div class="card-company">

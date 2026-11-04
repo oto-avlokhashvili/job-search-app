@@ -17,6 +17,12 @@
     </div>
 
     <div class="action-group">
+      <a class="icon-btn fav-link" routerLink="/favorites" [class.active]="router.url.startsWith('/favorites')" title="შენახული ვაკანსიები" aria-label="შენახული ვაკანსიები">
+        <span class="material-symbols-outlined">favorite</span>
+        @if (favorites.count() > 0) {
+          <span class="fav-count">{{ favorites.count() > 99 ? '99+' : favorites.count() }}</span>
+        }
+      </a>
       <button class="icon-btn material-symbols-outlined" (click)="themeService.toggle()">
         {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
       </button>
@@ -124,7 +130,20 @@
       <span class="nav-label">ვაკანსიები</span>
     </a>
 
-    <!-- 3. პროფილი, or sign in for visitors -->
+    <!-- 3. შენახული -->
+    <a class="bottom-nav-item"
+       [routerLink]="'/favorites'"
+       [class.active]="router.url.startsWith('/favorites')">
+      <div class="nav-icon-wrap">
+        <span class="material-symbols-outlined nav-icon">favorite</span>
+        @if (favorites.count() > 0) {
+          <span class="fav-count">{{ favorites.count() > 99 ? '99+' : favorites.count() }}</span>
+        }
+      </div>
+      <span class="nav-label">შენახული</span>
+    </a>
+
+    <!-- 4. პროფილი, or sign in for visitors -->
     @if (authService.isLoggedIn()) {
       <a class="bottom-nav-item"
          [routerLink]="'/profile'"

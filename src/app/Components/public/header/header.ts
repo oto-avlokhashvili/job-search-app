@@ -7,6 +7,7 @@ import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
+import { FavoritesService } from '../../../Core/Services/favorites.service';
 
 @Component({
   selector: 'app-header',
@@ -19,6 +20,7 @@ export class Header {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
   stateStore = inject(StateStore);
+  favorites = inject(FavoritesService);
   router = inject(Router);
   dialog = inject(MatDialog);
   private alertify = inject(AlertifyService);

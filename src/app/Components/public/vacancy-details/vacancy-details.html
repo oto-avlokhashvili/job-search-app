@@ -124,6 +124,7 @@
 
             <!-- Quick Action Buttons -->
             <div class="hero-actions-bar">
+              <app-favorite-button variant="action" [jobId]="j.id" />
               <button type="button" class="btn-action-copy" (click)="copyLink()" title="ბმულის გაზიარება" aria-label="გაზიარება">
                 <span class="material-symbols-outlined">share</span>
                 <span>გაზიარება</span>
@@ -326,7 +327,10 @@
                             <span class="card-source-badge" [class.jobs-ge]="item.source === 'jobs.ge'" [class.hr-ge]="item.source === 'hr.ge'" [class.awork-ge]="item.source === 'awork.ge'" [class.myjobs-ge]="item.source === 'myjobs.ge'" [class.linkedin]="item.source === 'linkedin'">
                               {{ item.source }}
                             </span>
-                            <span class="card-date">{{ item.publishDate }}</span>
+                            <span class="card-top-end">
+                              <span class="card-date">{{ item.publishDate }}</span>
+                              <app-favorite-button [jobId]="item.id" />
+                            </span>
                           </div>
                           <h4 class="card-vacancy-title" [title]="item.vacancy">{{ item.vacancy }}</h4>
                           <div class="card-company-row">
