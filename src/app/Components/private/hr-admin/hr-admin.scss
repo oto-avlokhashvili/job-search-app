@@ -149,3 +149,21 @@ h2 {
     align-items: flex-start;
   }
 }
+
+// Company HR / outsource recruiter, next to the name
+.who strong .type-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+
+  &.outsource {
+    background: rgba(230, 126, 34, 0.14);
+    color: #c0631a;
+  }
+}

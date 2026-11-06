@@ -16,7 +16,12 @@
           @for (account of group.list; track account.id) {
             <div class="account-row">
               <div class="who">
-                <strong>{{ account.companyName || '—' }}</strong>
+                <strong>
+                  {{ account.companyName || (account.hrType === 'OUTSOURCE' ? 'ფრილანს რეკრუტერი' : '—') }}
+                  <span class="type-badge" [class.outsource]="account.hrType === 'OUTSOURCE'">
+                    {{ account.hrType === 'OUTSOURCE' ? 'აუთსორს HR' : 'კომპანიის HR' }}
+                  </span>
+                </strong>
                 <span>{{ account.firstName }} {{ account.lastName }} · {{ account.email }}</span>
               </div>
               <div class="info">

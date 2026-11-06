@@ -129,10 +129,31 @@
                     </button>
                 </div>
                 @if (isEmployer()) {
+                    <div class="hr-type" role="radiogroup" aria-label="HR-ის ტიპი">
+                        <button type="button" role="radio" [attr.aria-checked]="hrType() === 'COMPANY'" [class.active]="hrType() === 'COMPANY'" (click)="setHrType('COMPANY')">
+                            <span class="material-symbols-outlined">apartment</span>
+                            <span class="hr-type-text">
+                                <strong>კომპანიის HR</strong>
+                                <small>ვარჩევ კადრებს ჩემი კომპანიისთვის</small>
+                            </span>
+                        </button>
+                        <button type="button" role="radio" [attr.aria-checked]="hrType() === 'OUTSOURCE'" [class.active]="hrType() === 'OUTSOURCE'" (click)="setHrType('OUTSOURCE')">
+                            <span class="material-symbols-outlined">handshake</span>
+                            <span class="hr-type-text">
+                                <strong>აუთსორს HR</strong>
+                                <small>სააგენტო ან ფრილანს რეკრუტერი</small>
+                            </span>
+                        </button>
+                    </div>
                     <div class="mb-3">
-                        <label for="companyName" class="form-label">კომპანია</label>
+                        @if (hrType() === 'COMPANY') {
+                            <label for="companyName" class="form-label">კომპანია</label>
+                        } @else {
+                            <label for="companyName" class="form-label">სააგენტო <span class="optional">(არასავალდებულო)</span></label>
+                        }
                         <input formControlName="companyName" type="text" class="form-control" id="companyName"
-                            placeholder="კომპანიის დასახელება" [class.is-invalid]="isInvalid('companyName')">
+                            [placeholder]="hrType() === 'COMPANY' ? 'კომპანიის დასახელება' : 'სააგენტოს დასახელება'"
+                            [class.is-invalid]="isInvalid('companyName')">
                     </div>
                 }
                 <div class="form-row">

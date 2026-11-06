@@ -1,6 +1,8 @@
 import { User } from './user';
 
 export type SeniorityLevel = 'Junior' | 'Mid' | 'Senior' | 'Lead' | 'Principal';
+/** The search's experience filter: a level, or Entry = no work experience yet */
+export type ExperienceFilter = SeniorityLevel | 'Entry';
 
 export interface CandidateContact {
   fullName: string | null;
@@ -226,10 +228,18 @@ export interface InterviewAnswer {
   email?: string;
 }
 
-export interface HrCvSearchParams {
+/** The search's list filters, comma-separated: company and university match any, skills and languages all */
+export interface HrListFilters {
+  company?: string;
+  university?: string;
+  skills?: string;
+  languages?: string;
+}
+
+export interface HrCvSearchParams extends HrListFilters {
   keyword: string;
   location?: string;
-  seniority?: SeniorityLevel | '';
+  seniority?: ExperienceFilter | '';
   page?: number;
   limit?: number;
 }
@@ -299,4 +309,4 @@ export interface HrRegistration {
   companyName: string;
 }
 
-export type HrAccount = Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'companyName' | 'hrApproved' | 'isEmailVerified' | 'createdAt'>;
+export type HrAccount = Pick<User, 'id' | 'firstName' | 'lastName' | 'email' | 'companyName' | 'hrType' | 'hrApproved' | 'isEmailVerified' | 'createdAt'>;

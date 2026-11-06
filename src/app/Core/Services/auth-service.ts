@@ -2,7 +2,7 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { firstValueFrom, Observable, shareReplay, tap } from 'rxjs';
-import { User, UserRegistration } from '../Interfaces/user';
+import { HrType, User, UserRegistration } from '../Interfaces/user';
 import { environment } from '../../../environments/environment';
 import { skipLoading } from '../loading/skip-loading.component';
 
@@ -90,7 +90,7 @@ export class AuthService {
     return this.http.post<User>(this.url + "/user", obj, { withCredentials: true })
   }
   // Employer account: same email verification, then waits for admin approval.
-  hrRegistration(obj: UserRegistration & { companyName: string }): Observable<User> {
+  hrRegistration(obj: UserRegistration & { hrType: HrType; companyName?: string }): Observable<User> {
     return this.http.post<User>(this.url + "/user/hr", obj, { withCredentials: true })
   }
   async refreshToken() {

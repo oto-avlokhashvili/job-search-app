@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, HostListener } from '@angular/core
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { Router } from '@angular/router';
-import { UserRegistration } from '../../../Core/Interfaces/user';
+import { HrType, UserRegistration } from '../../../Core/Interfaces/user';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { ThemeService } from '../../../Core/Services/theme.service';
 import { environment } from '../../../../environments/environment';
@@ -44,12 +44,24 @@ export class Auth {
   registrationSuccess = signal(false);
   registeredEmail = signal('');
   isEmployer = signal(false);
+  // Employer sign-up: company HR (company name required) or outsource recruiter (agency name optional)
+  hrType = signal<HrType>('COMPANY');
   registeredAsEmployer = signal(false);
 
   toggleEmployer(checked: boolean) {
     this.isEmployer.set(checked);
+    this.updateCompanyValidators();
+  }
+
+  setHrType(type: HrType) {
+    this.hrType.set(type);
+    this.updateCompanyValidators();
+  }
+
+  private updateCompanyValidators() {
     const company = this.registerForm.controls.companyName;
-    company.setValidators(checked ? [Validators.required, Validators.maxLength(150)] : []);
+    const required = this.isEmployer() && this.hrType() === 'COMPANY';
+    company.setValidators(this.isEmployer() ? [...(required ? [Validators.required] : []), Validators.maxLength(150)] : []);
     company.updateValueAndValidity();
   }
 
@@ -111,7 +123,7 @@ export class Auth {
     this.isRegistering.set(true);
 
     const request$ = asEmployer
-      ? this.authService.hrRegistration({ ...user, companyName: companyName!.trim() })
+      ? this.authService.hrRegistration({ ...user, hrType: this.hrType(), companyName: companyName?.trim() || undefined })
       : this.authService.userRegistration(user);
 
     request$.subscribe({
@@ -124,6 +136,7 @@ export class Auth {
         this.registerForm.reset();
         this.loginForm.reset();
         this.toggleEmployer(false);
+        this.setHrType('COMPANY');
       },
       error: (err) => {
         this.isRegistering.set(false);

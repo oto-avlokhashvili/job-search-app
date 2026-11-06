@@ -17,6 +17,7 @@ import {
     ManualCandidateDraft,
     LinkedinProfile,
     PipelineChange,
+    ExperienceFilter,
     SeniorityLevel,
     VacancyMembership,
 } from '../Core/Interfaces/hr';
@@ -26,7 +27,17 @@ export type HrSearchTab = 'cvs' | 'ai' | 'linkedin';
 export interface HrSearchQuery {
     keyword: string;
     location: string;
-    seniority: SeniorityLevel | '';
+    seniority: ExperienceFilter | '';
+    /** Current or past employers, comma-separated, any of them (all tabs) */
+    company: string;
+    /** Universities, comma-separated, any of them */
+    university: string;
+    /** Skills, comma-separated, all of them */
+    skills: string;
+    /** Spoken languages, comma-separated, all of them */
+    languages: string;
+    /** LinkedIn (and the AI tab's LinkedIn half): only profiles that say they are open to work */
+    openToWork: boolean;
 }
 
 const CV_PAGE_SIZE = 20;
@@ -34,9 +45,22 @@ const CV_PAGE_SIZE = 20;
 const AI_PAGE_SIZE = 10;
 /** The form as one plain-language request: the AI reads level and location from the text too. */
 const aiRequest = (q: HrSearchQuery) =>
-    [q.keyword, q.seniority && `${q.seniority} level`, q.location && `location: ${q.location}`].filter(Boolean).join(', ');
+    [
+        q.keyword,
+        q.seniority === 'Entry' ? 'no work experience yet (student, graduate or intern)' : q.seniority && `${q.seniority} level`,
+        q.location && `location: ${q.location}`,
+    ]
+        .filter(Boolean)
+        .join(', ');
 const sortInterviews = (list: HrInterview[]) => [...list].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 const LINKEDIN_MAX_PAGE = 10;
+/** The list filters every source takes; empty ones are left out of the request */
+const listFilters = (q: HrSearchQuery) => ({
+    company: q.company || undefined,
+    university: q.university || undefined,
+    skills: q.skills || undefined,
+    languages: q.languages || undefined,
+});
 
 interface HrState {
     // Search page: what was typed, the active tab and both result lists survive leaving the page.
@@ -100,8 +124,9 @@ interface HrState {
 }
 
 const initialState: HrState = {
-    searchForm: { keyword: '', location: 'Tbilisi', seniority: '' },
-    searchTab: 'cvs',
+    searchForm: { keyword: '', location: 'Tbilisi', seniority: '', company: '', university: '', skills: '', languages: '', openToWork: false },
+    // AI selection first: it searches our CVs and LinkedIn together
+    searchTab: 'ai',
     searchQuery: null,
 
     cvs: [],
@@ -210,7 +235,11 @@ export const HrStore = signalStore(
                 if (!q) return;
                 patchState(store, { cvLoading: true, cvError: '' });
                 try {
-                    const res = await firstValueFrom(hrService.searchCvs({ ...q, page, limit: CV_PAGE_SIZE }));
+                    const { keyword, location, seniority } = q;
+                    const res = await firstValueFrom(
+                        // No company filter on the CV base (the pill is hidden there, its value kept for the other tabs)
+                        hrService.searchCvs({ keyword, location, seniority, ...listFilters(q), company: undefined, page, limit: CV_PAGE_SIZE }),
+                    );
                     // A newer search replaced the query while this one ran: drop the stale results.
                     if (store.searchQuery() !== q) return;
                     patchState(store, {
@@ -231,10 +260,21 @@ export const HrStore = signalStore(
             async searchCvsWithAi(page: number) {
                 const q = store.searchQuery();
                 if (!q) return;
+                // A filters-only search from the CV base: there is no description to give the AI
+                if (!q.keyword) {
+                    patchState(store, { aiError: 'AI შერჩევისთვის აღწერეთ, როგორ კანდიდატს ეძებთ', aiLoading: false });
+                    return;
+                }
                 patchState(store, { aiLoading: true, aiError: '' });
                 try {
                     const res = await firstValueFrom(
-                        hrService.searchCvsWithAi({ query: aiRequest(q), page, limit: AI_PAGE_SIZE }),
+                        hrService.searchCvsWithAi({
+                            query: aiRequest(q),
+                            ...listFilters(q),
+                            openToWork: q.openToWork,
+                            page,
+                            limit: AI_PAGE_SIZE,
+                        }),
                     );
                     if (store.searchQuery() !== q) return;
                     patchState(store, {
@@ -260,10 +300,20 @@ export const HrStore = signalStore(
             async searchLinkedin(page: number) {
                 const q = store.searchQuery();
                 if (!q) return;
+                if (!q.keyword) {
+                    patchState(store, { linkedinError: 'LinkedIn-ზე ძიებისთვის შეიყვანეთ პოზიცია', linkedinLoading: false });
+                    return;
+                }
                 patchState(store, { linkedinLoading: true, linkedinError: '' });
                 try {
                     const res = await firstValueFrom(
-                        hrService.searchLinkedin({ keyword: q.keyword, location: q.location, page }),
+                        hrService.searchLinkedin({
+                            keyword: q.keyword,
+                            location: q.location,
+                            ...listFilters(q),
+                            openToWork: q.openToWork,
+                            page,
+                        }),
                     );
                     if (store.searchQuery() !== q) return;
                     patchState(store, {

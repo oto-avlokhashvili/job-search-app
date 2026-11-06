@@ -14,67 +14,218 @@
     </div>
   }
 
+  <!-- Search card: where to search -> what -> refine. Filters come from `filters` in the component. -->
   <form class="search" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="search-fields">
-      <label class="field grow">
-        <span>პოზიცია ან უნარები</span>
-        <div class="input-wrap" [class.invalid]="form.controls.keyword.invalid && form.controls.keyword.touched">
-          <span class="material-symbols-outlined">work</span>
-          <input formControlName="keyword" type="text" [placeholder]="keywordPlaceholder()" autocomplete="off">
-        </div>
-      </label>
-      <label class="field">
-        <span>ლოკაცია</span>
-        <div class="input-wrap">
-          <span class="material-symbols-outlined">location_on</span>
-          <input formControlName="location" type="text" placeholder="მაგ: Tbilisi">
-        </div>
-      </label>
-      <div class="field">
-        <span id="seniority-label">გამოცდილება</span>
-        <div class="select" [class.open]="seniorityOpen()" [class.disabled]="tab() === 'linkedin'"
-          [attr.title]="tab() === 'linkedin' ? 'LinkedIn-ზე გამოცდილების ფილტრი არ მოქმედებს' : null">
-          <button type="button" class="select-trigger" aria-haspopup="listbox" aria-labelledby="seniority-label"
-            [attr.aria-expanded]="seniorityOpen()" [disabled]="tab() === 'linkedin'" (click)="toggleSeniority()">
-            <span class="material-symbols-outlined lead-icon">{{ selectedSeniority().icon }}</span>
-            <span class="select-value">{{ selectedSeniority().label }}</span>
-            <span class="material-symbols-outlined chevron">expand_more</span>
-          </button>
-
-          @if (seniorityOpen()) {
-            <ul class="select-panel" role="listbox" aria-labelledby="seniority-label">
-              @for (option of seniorityOptions; track option.value) {
-                <li>
-                  <button type="button" role="option" [attr.aria-selected]="option.value === form.controls.seniority.value"
-                    [class.selected]="option.value === form.controls.seniority.value" (click)="chooseSeniority(option.value)">
-                    <span class="material-symbols-outlined option-icon">{{ option.icon }}</span>
-                    <span class="option-text">
-                      <strong>{{ option.label }}</strong>
-                      <small>{{ option.hint }}</small>
-                    </span>
-                    <span class="material-symbols-outlined check">check</span>
-                  </button>
-                </li>
-              }
-            </ul>
+    <div class="search-top">
+      <div class="tabs" role="tablist" aria-label="სად ვეძებთ">
+        <button type="button" role="tab" [class.active]="tab() === 'ai'" [attr.aria-selected]="tab() === 'ai'" (click)="selectTab('ai')">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          AI შერჩევა
+          @if (aiSearched()) {
+            <span class="count">{{ aiTotal() }}</span>
           }
-        </div>
+        </button>
+        <button type="button" role="tab" [class.active]="tab() === 'cvs'" [attr.aria-selected]="tab() === 'cvs'" (click)="selectTab('cvs')">
+          <span class="material-symbols-outlined">description</span>
+          CV ბაზა
+          @if (cvSearched()) {
+            <span class="count">{{ cvTotal() }}</span>
+          }
+        </button>
+        <button type="button" role="tab" [class.active]="tab() === 'linkedin'" [attr.aria-selected]="tab() === 'linkedin'" (click)="selectTab('linkedin')">
+          <span class="material-symbols-outlined">travel_explore</span>
+          LinkedIn
+          @if (linkedinSearched()) {
+            <span class="count">{{ profiles().length }}</span>
+          }
+        </button>
       </div>
+      <span class="source-hint">
+        <span class="material-symbols-outlined">info</span>
+        {{ sourceHint() }}
+      </span>
+    </div>
+
+    <div class="search-bar" [class.ai]="tab() === 'ai'" [class.invalid]="form.controls.keyword.invalid && form.controls.keyword.touched">
+      <span class="material-symbols-outlined bar-icon">{{ tab() === 'ai' ? 'auto_awesome' : 'search' }}</span>
+      @if (tab() === 'ai') {
+        <!-- A description: grows with the text; Enter searches, Shift+Enter starts a new line -->
+        <textarea #aiQuery formControlName="keyword" rows="2" maxlength="400" [placeholder]="keywordPlaceholder()"
+          aria-label="აღწერე როგორ კანდიდატს ეძებ" (input)="autoGrow()" (keydown.enter)="onAiEnter($event)"></textarea>
+      } @else {
+        <input formControlName="keyword" type="text" maxlength="200" [placeholder]="keywordPlaceholder()" autocomplete="off" aria-label="პოზიცია ან უნარები">
+      }
+      @if (formValue().keyword) {
+        <button type="button" class="bar-clear" aria-label="გასუფთავება" (click)="clearKeyword()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      }
       <button class="btn-search" type="submit">
         <span class="material-symbols-outlined">search</span>
-        ძიება
+        <span class="btn-label">ძიება</span>
       </button>
     </div>
 
-    <div class="search-foot">
-      <span class="hint">
-        <span class="material-symbols-outlined">info</span>
-        @if (tab() === 'ai') {
-          აღწერეთ კანდიდატი თავისუფალი ტექსტით
-        } @else {
-          რამდენიმე უნარი გამოყავით მძიმით
+    <div class="filter-bar" role="group" aria-label="ფილტრები">
+      <span class="filter-label">
+        <span class="material-symbols-outlined">tune</span>
+        ფილტრები
+        @if (activeCount()) {
+          <span class="badge">{{ activeCount() }}</span>
         }
       </span>
+
+      <div class="filter-track">
+        @for (f of visibleFilters(); track f.key) {
+          <div class="pill-group" [class.active]="isActive(f)" [class.open]="openFilter() === f.key">
+            @if (f.kind === 'toggle') {
+              <button type="button" class="pill-main" [attr.aria-pressed]="isActive(f)" [attr.title]="f.hint" (click)="toggleFilter(f)">
+                <span class="material-symbols-outlined">{{ isActive(f) ? 'check_circle' : f.icon }}</span>
+                <span class="pill-text">{{ f.label }}</span>
+              </button>
+            } @else {
+              <button type="button" class="pill-main" aria-haspopup="dialog" [attr.aria-expanded]="openFilter() === f.key" (click)="togglePanel(f)">
+                <span class="material-symbols-outlined">{{ pillIcon(f) }}</span>
+                <span class="pill-text">
+                  @if (isActive(f)) {
+                    {{ f.label }}: <strong>{{ displayValue(f) }}</strong>
+                  } @else {
+                    {{ f.label }}
+                  }
+                </span>
+                @if (!isActive(f)) {
+                  <span class="material-symbols-outlined chevron">expand_more</span>
+                }
+              </button>
+              @if (isActive(f)) {
+                <button type="button" class="pill-x" [attr.aria-label]="f.label + ': მოხსნა'" (click)="clearFilter(f)">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              }
+
+              @if (openFilter() === f.key) {
+                <div class="filter-panel" role="dialog" [attr.aria-label]="f.label">
+                  <div class="panel-head">
+                    <strong>{{ f.label }}</strong>
+                    @if (f.hint) {
+                      <small>{{ f.hint }}</small>
+                    }
+                  </div>
+
+                  @if (f.kind === 'text') {
+                    <div class="input-wrap">
+                      <span class="material-symbols-outlined">{{ f.icon }}</span>
+                      <input #panelInput type="text" autocomplete="off" [placeholder]="f.placeholder ?? ''" [value]="draft()"
+                        (input)="draft.set($any($event.target).value)" (keydown.enter)="$event.preventDefault(); applyText(f)">
+                    </div>
+                    @if (f.suggestions?.length) {
+                      <div class="panel-suggestions">
+                        @for (s of f.suggestions; track s) {
+                          <button type="button" class="quick-chip" [class.selected]="draft() === s" (click)="pickSuggestion(f, s)">{{ s }}</button>
+                        }
+                      </div>
+                    }
+                    <div class="panel-actions">
+                      <button type="button" class="btn-text" (click)="clearFilter(f)">გასუფთავება</button>
+                      <button type="button" class="btn-apply" (click)="applyText(f)">გამოყენება</button>
+                    </div>
+                  } @else if (f.kind === 'multi') {
+                    @if (draftList().length) {
+                      <div class="panel-selected">
+                        @for (v of draftList(); track v) {
+                          <span class="sel-chip">
+                            <span class="sel-text">{{ v }}</span>
+                            <button type="button" [attr.aria-label]="v + ': მოხსნა'" (click)="toggleOption(v)">
+                              <span class="material-symbols-outlined">close</span>
+                            </button>
+                          </span>
+                        }
+                      </div>
+                    }
+                    <div class="input-wrap">
+                      <span class="material-symbols-outlined">search</span>
+                      <input #panelInput type="text" autocomplete="off" [placeholder]="f.placeholder ?? ''" [value]="search()"
+                        [disabled]="multiFull()" (input)="search.set($any($event.target).value)"
+                        (keydown.enter)="$event.preventDefault(); addSearch()">
+                    </div>
+                    @if (multiFull()) {
+                      <small class="multi-note">მაქსიმუმ 5 მნიშვნელობა</small>
+                    }
+                    @if (customCandidate(); as c) {
+                      @if (!multiFull()) {
+                        <button type="button" class="multi-add" (click)="addCustom()">
+                          <span class="material-symbols-outlined">add</span>
+                          დამატება: <strong>{{ c }}</strong>
+                        </button>
+                      }
+                    }
+                    @if (f.options) {
+                      <ul class="multi-list" role="listbox" [attr.aria-label]="f.label" aria-multiselectable="true">
+                        @for (o of filteredOptions(); track o.value) {
+                          <li>
+                            <button type="button" role="option" [attr.aria-selected]="isPicked(o.value)" [class.selected]="isPicked(o.value)"
+                              [disabled]="multiFull() && !isPicked(o.value)" (click)="toggleOption(o.value)">
+                              <span class="multi-check"><span class="material-symbols-outlined">check</span></span>
+                              <span class="option-text">
+                                <strong>{{ o.value }}</strong>
+                                @if (o.ka) {
+                                  <small>{{ o.ka }}</small>
+                                }
+                                @if (o.hint || o.abbr?.length) {
+                                  <small>{{ o.abbr?.length ? o.abbr!.join(' / ') + (o.hint ? ' · ' : '') : '' }}{{ o.hint }}</small>
+                                }
+                              </span>
+                            </button>
+                          </li>
+                        } @empty {
+                          <li class="multi-empty">სიაში ვერ მოიძებნა</li>
+                        }
+                      </ul>
+                    }
+                    <div class="panel-actions">
+                      <button type="button" class="btn-text" (click)="clearFilter(f)">გასუფთავება</button>
+                      <button type="button" class="btn-apply" (click)="applyMulti(f)">
+                        გამოყენება
+                        @if (draftList().length) {
+                          ({{ draftList().length }})
+                        }
+                      </button>
+                    </div>
+                  } @else {
+                    <ul class="option-list" role="listbox" [attr.aria-label]="f.label">
+                      @for (option of seniorityOptions; track option.value) {
+                        <li>
+                          <button type="button" role="option" [attr.aria-selected]="option.value === formValue().seniority"
+                            [class.selected]="option.value === formValue().seniority" (click)="chooseOption(f, option.value)">
+                            <span class="material-symbols-outlined option-icon">{{ option.icon }}</span>
+                            <span class="option-text">
+                              <strong>{{ option.label }}</strong>
+                              <small>{{ option.hint }}</small>
+                            </span>
+                            <span class="material-symbols-outlined check">check</span>
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      @if (activeCount()) {
+        <button type="button" class="clear-all" (click)="clearAll()">ყველას მოხსნა</button>
+      }
+    </div>
+
+    @if (openFilter()) {
+      <!-- Phones: the panel is a bottom sheet over this backdrop -->
+      <div class="sheet-backdrop" (click)="closePanel()"></div>
+    }
+
+    <div class="search-foot">
       <div class="quick">
         <span class="quick-label">პოპულარული:</span>
         <div class="quick-scroller" [class.fade-left]="canScrollLeft()" [class.fade-right]="canScrollRight()">
@@ -97,31 +248,6 @@
       </div>
     </div>
   </form>
-
-  <div class="tabs" role="tablist">
-    <button type="button" role="tab" [class.active]="tab() === 'cvs'" [attr.aria-selected]="tab() === 'cvs'" (click)="selectTab('cvs')">
-      <span class="material-symbols-outlined">description</span>
-      CV ბაზა
-      @if (cvSearched()) {
-        <span class="count">{{ cvTotal() }}</span>
-      }
-    </button>
-    <button type="button" role="tab" [class.active]="tab() === 'ai'" [attr.aria-selected]="tab() === 'ai'" (click)="selectTab('ai')">
-      <span class="material-symbols-outlined">auto_awesome</span>
-      AI შერჩევა
-      @if (aiSearched()) {
-        <span class="count">{{ aiTotal() }}</span>
-      }
-    </button>
-    <button type="button" role="tab" [class.active]="tab() === 'linkedin'" [attr.aria-selected]="tab() === 'linkedin'" (click)="selectTab('linkedin')">
-      <span class="material-symbols-outlined">travel_explore</span>
-      LinkedIn
-      @if (linkedinSearched()) {
-        <span class="count">{{ profiles().length }}</span>
-      }
-    </button>
-  </div>
-
   @if (!query()) {
     <!-- Before the first search: explains the selected source, so switching tabs visibly changes the page -->
     @if (tab() === 'cvs') {

@@ -1,3 +1,6 @@
+/** Company HR (hires for their own company) or outsource recruiter (agency / freelance) */
+export type HrType = 'COMPANY' | 'OUTSOURCE';
+
 export type UserRole = 'USER' | 'HR' | 'ADMIN';
 
 export type SubscriptionPlan = 'BASIC' | 'PRO';
@@ -25,6 +28,8 @@ export interface User {
   email: string;
   role?: UserRole;
   companyName?: string | null;
+  /** HR only: company HR or outsource recruiter (null on older accounts = company) */
+  hrType?: HrType | null;
   hrApproved?: boolean;
   subscriptionDetails?: SubscriptionDetails | null;
   subscription?: string | null;

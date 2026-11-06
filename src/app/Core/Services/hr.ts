@@ -24,6 +24,7 @@ import {
   HrAiSearchResult,
   HrUsage,
   LinkedinSearchResult,
+  HrListFilters,
 } from '../Interfaces/hr';
 
 /**
@@ -46,11 +47,11 @@ export class HrService {
   }
 
   /** The candidate described in plain language; the AI ranks matching CVs with a reason each */
-  searchCvsWithAi(body: { query: string; page?: number; limit?: number }): Observable<HrAiSearchResult> {
+  searchCvsWithAi(body: { query: string; openToWork?: boolean; page?: number; limit?: number } & HrListFilters): Observable<HrAiSearchResult> {
     return this.http.post<HrAiSearchResult>(`${this.url}/hr/candidates/ai-search`, body, { context: this.context() });
   }
 
-  searchLinkedin(params: { keyword: string; location?: string; page?: number }): Observable<LinkedinSearchResult> {
+  searchLinkedin(params: { keyword: string; location?: string; openToWork?: boolean; page?: number } & HrListFilters): Observable<LinkedinSearchResult> {
     return this.http.get<LinkedinSearchResult>(`${this.url}/hr/candidates/linkedin`, {
       params: this.toParams(params),
       context: this.context(),

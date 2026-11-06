@@ -18,35 +18,441 @@
   }
 }
 
-// ─── Search form ─────────────────────────────────────────────
+// ─── Search card: source → query → filters ───────────────────
 .search {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 1rem;
   padding: 1.25rem;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
 }
 
-.search-fields {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 0.75rem;
+.search-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
 }
 
-.field {
+.source-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+}
+
+// The one big input: icon, query, clear, search button
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 56px;
+  padding: 0 6px 0 1rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--outline-variant);
+  background: var(--input-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  .bar-icon {
+    font-size: 22px;
+    color: var(--text-muted);
+    transition: color 0.15s ease;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--on-surface);
+    font: inherit;
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+  }
+
+  &:hover {
+    border-color: rgba(var(--primary-rgb), 0.5);
+  }
+
+  &:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.14);
+
+    .bar-icon {
+      color: var(--primary);
+    }
+  }
+
+  // AI tab: a growing textarea; icon and buttons stay at the top line
+  &.ai {
+    height: auto;
+    min-height: 56px;
+    align-items: flex-start;
+    padding-top: 6px;
+    padding-bottom: 6px;
+
+    .bar-icon {
+      margin-top: 11px;
+      color: var(--primary);
+    }
+
+    .bar-clear {
+      margin-top: 6px;
+    }
+  }
+
+  textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    max-height: 168px;
+    padding: 11px 0;
+    border: none;
+    background: transparent;
+    color: var(--on-surface);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.4;
+    resize: none;
+    overflow-y: auto;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+  }
+
+  &.invalid {
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+  }
+}
+
+.bar-clear {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: var(--surface-container-low);
+    color: var(--on-surface);
+  }
+}
+
+.btn-search {
+  flex-shrink: 0;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 1.4rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(var(--primary-rgb), 0.3);
+  }
+}
+
+// ─── Filter bar ──────────────────────────────────────────────
+.filter-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.filter-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 36px;
+  padding-right: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.7rem;
+  }
+}
+
+.filter-track {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+// A pill: the main button, plus an × once it has a value
+.pill-group {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--outline-variant);
+  background: var(--card-bg);
+  color: var(--on-surface-variant);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: rgba(var(--primary-rgb), 0.5);
+    color: var(--on-surface);
+  }
+
+  &.active {
+    border-color: rgba(var(--primary-rgb), 0.45);
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary);
+  }
+
+  &.open {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.14);
+
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.pill-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 280px;
+  height: 100%;
+  padding: 0 0.85rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .chevron {
+    margin-right: -0.25rem;
+    transition: transform 0.2s ease;
+  }
+
+  .pill-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    strong {
+      font-weight: 800;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.pill-group.active .pill-main:not(:last-child) {
+  padding-right: 0.3rem;
+}
+
+.pill-x {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: rgba(var(--primary-rgb), 0.18);
+  }
+}
+
+.clear-all {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 0.35rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary);
+  }
+}
+
+// ─── Filter panel (popover; a bottom sheet on phones) ────────
+.filter-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  min-width: 0;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--on-surface);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  cursor: default;
+  animation: panel-in 0.16s ease-out;
 
-  > span {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--on-surface-variant);
+  .panel-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    strong {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    small {
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--text-muted);
+    }
+  }
+
+  .panel-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .panel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+.btn-text {
+  padding: 0.45rem 0.3rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--on-surface);
+  }
+}
+
+.btn-apply {
+  height: 38px;
+  padding: 0 1.1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.08);
   }
 }
 
@@ -82,10 +488,6 @@
     }
   }
 
-  &:hover {
-    border-color: rgba(var(--primary-rgb), 0.5);
-  }
-
   &:focus-within {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
@@ -94,168 +496,269 @@
       color: var(--primary);
     }
   }
-
-  &.invalid {
-    border-color: #d32f2f;
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12);
-  }
 }
 
-// ─── Experience dropdown ─────────────────────────────────────
-.select {
-  position: relative;
+// ─── List filter (multi) ─────────────────────────────────────
+.panel-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
 
-  // LinkedIn tab: the experience filter only applies to the CV base
-  &.disabled .select-trigger {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
+.sel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 0.2rem 0 0.65rem;
+  border-radius: 999px;
+  background: rgba(var(--primary-rgb), 0.12);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
 
-  .select-trigger {
-    width: 100%;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0 0.6rem 0 0.75rem;
-    border-radius: 10px;
-    border: 1px solid var(--outline-variant);
-    background: var(--input-bg);
-    color: var(--on-surface);
-    font: inherit;
-    font-size: 0.95rem;
-    text-align: left;
-    cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-    &:hover {
-      border-color: rgba(var(--primary-rgb), 0.5);
-    }
-
-    &:focus-visible {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
-    }
-  }
-
-  .lead-icon {
-    font-size: 19px;
-    color: var(--primary);
-  }
-
-  .select-value {
-    flex: 1;
+  .sel-text {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
   }
 
-  .chevron {
-    font-size: 20px;
-    color: var(--text-muted);
-    transition: transform 0.2s ease;
-  }
+  button {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
 
-  &.open {
-    .select-trigger {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+    .material-symbols-outlined {
+      font-size: 15px;
     }
 
-    .chevron {
-      transform: rotate(180deg);
+    &:hover {
+      background: rgba(var(--primary-rgb), 0.2);
     }
   }
+}
 
-  .select-panel {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    min-width: 230px;
-    margin: 0;
-    padding: 6px;
-    list-style: none;
-    border-radius: 14px;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
-    z-index: 50;
-    animation: panel-in 0.16s ease-out;
+.multi-note {
+  margin-top: -0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
 
-    button {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0.5rem 0.6rem;
-      border: none;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--on-surface);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
+.multi-add {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 1px dashed rgba(var(--primary-rgb), 0.45);
+  border-radius: 10px;
+  background: rgba(var(--primary-rgb), 0.05);
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
 
-      &:hover,
-      &:focus-visible {
-        outline: none;
-        background: var(--surface-container-low);
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary);
+  }
+
+  strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--primary);
+  }
+
+  &:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+  }
+}
+
+// The searchable list: scrolls inside the panel
+.multi-list {
+  max-height: 264px;
+  margin: 0 -0.35rem;
+  padding: 0 0.1rem;
+  overflow-y: auto;
+  list-style: none;
+  overscroll-behavior: contain;
+
+  button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.55rem;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--on-surface);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      outline: none;
+      background: var(--surface-container-low);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    &.selected {
+      strong {
+        color: var(--primary);
       }
 
-      &.selected {
-        background: rgba(var(--primary-rgb), 0.1);
+      .multi-check {
+        border-color: var(--primary);
+        background: var(--primary);
 
-        .option-icon,
-        strong {
-          color: var(--primary);
-        }
-
-        .check {
+        .material-symbols-outlined {
           opacity: 1;
         }
       }
     }
+  }
 
-    .option-icon {
-      width: 32px;
-      height: 32px;
-      flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      font-size: 18px;
-      color: var(--on-surface-variant);
-      background: var(--input-bg);
-    }
+  .multi-check {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--outline-variant);
+    transition: background 0.15s ease, border-color 0.15s ease;
 
-    .option-text {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      line-height: 1.25;
-
-      strong {
-        font-size: 0.9rem;
-        font-weight: 700;
-      }
-
-      small {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-      }
-    }
-
-    .check {
-      font-size: 18px;
-      color: var(--primary);
+    .material-symbols-outlined {
+      font-size: 14px;
+      color: #fff;
       opacity: 0;
     }
   }
+
+  .option-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+
+    strong {
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    small {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .multi-empty {
+    padding: 0.75rem 0.6rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+// Options of a select filter (experience)
+.option-list {
+  margin: 0 -0.35rem;
+  padding: 0;
+  list-style: none;
+
+  button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.6rem;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--on-surface);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      outline: none;
+      background: var(--surface-container-low);
+    }
+
+    &.selected {
+      background: rgba(var(--primary-rgb), 0.1);
+
+      .option-icon,
+      strong {
+        color: var(--primary);
+      }
+
+      .check {
+        opacity: 1;
+      }
+    }
+  }
+
+  .option-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: 18px;
+    color: var(--on-surface-variant);
+    background: var(--input-bg);
+  }
+
+  .option-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+
+    strong {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .check {
+    font-size: 18px;
+    color: var(--primary);
+    opacity: 0;
+  }
+}
+
+// Only shown on phones (see the media query)
+.sheet-backdrop {
+  display: none;
 }
 
 @keyframes panel-in {
@@ -269,54 +772,19 @@
   }
 }
 
-.btn-search {
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0 1.5rem;
-  border: none;
-  border-radius: 10px;
-  background: var(--primary);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-  .material-symbols-outlined {
-    font-size: 20px;
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
   }
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(var(--primary-rgb), 0.3);
+  to {
+    transform: none;
   }
 }
 
-// Hint + popular searches under the fields
+// Popular searches under the filters
 .search-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1.25rem;
-  flex-wrap: wrap;
-  padding-top: 0.85rem;
+  padding-top: 0.9rem;
   border-top: 1px solid var(--border-color);
-
-  .hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-
-    .material-symbols-outlined {
-      font-size: 16px;
-    }
-  }
 }
 
 .quick {
@@ -324,8 +792,6 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-  flex: 1 1 320px;
-  justify-content: flex-end;
 
   .quick-label {
     flex-shrink: 0;
@@ -420,7 +886,8 @@
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 
-  &:hover {
+  &:hover,
+  &.selected {
     border-color: var(--primary);
     color: var(--primary);
     background: rgba(var(--primary-rgb), 0.08);
@@ -434,7 +901,8 @@
   gap: 4px;
   padding: 4px;
   border-radius: 14px;
-  background: var(--card-bg);
+  // Sits inside the search card: a sunken track with a raised active segment
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
 
   button {
@@ -461,8 +929,9 @@
     }
 
     &.active {
-      background: rgba(var(--primary-rgb), 0.12);
+      background: var(--card-bg);
       color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(var(--primary-rgb), 0.18);
 
       .count {
         background: var(--primary);
@@ -943,16 +1412,10 @@
 
 // ─── Tablet ──────────────────────────────────────────────────
 @media (max-width: 991px) {
-  .search-fields {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-
-    .grow {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .btn-search {
-    grid-column: 1 / -1;
+  // Tabs on their own line, the hint under them
+  .search-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .intro-grid {
@@ -993,20 +1456,81 @@
     border-radius: 16px;
   }
 
-  .search-fields {
-    grid-template-columns: minmax(0, 1fr);
+  .search-top {
+    align-items: stretch;
   }
 
-  .search-foot {
-    flex-direction: column;
-    align-items: stretch;
-    // A wrapping column sizes to its widest child, which would let the chip row overflow
+  // Icon-only search button keeps the input wide
+  .search-bar {
+    height: 52px;
+    padding-left: 0.85rem;
+
+    input {
+      font-size: 0.95rem;
+    }
+  }
+
+  .btn-search {
+    width: 44px;
+    padding: 0;
+
+    .btn-label {
+      display: none;
+    }
+  }
+
+  // Pills in one sideways-scrolling row, edge to edge
+  .filter-label {
+    display: none;
+  }
+
+  .filter-bar {
+    align-items: center;
+  }
+
+  .filter-track {
     flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-left: -1rem;
+    padding: 2px 0 2px 1rem;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  // Panels become a bottom sheet: fixed, so the scrolling row can't clip them
+  .filter-panel {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1001;
+    width: auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    animation: sheet-in 0.22s ease-out;
+
+    .btn-apply {
+      flex: 1;
+      height: 44px;
+    }
+  }
+
+  .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4);
   }
 
   // Label on its own line so the chip row gets the full card width
   .quick {
-    flex: none;
     flex-direction: column;
     align-items: stretch;
     gap: 0.45rem;
