@@ -65,6 +65,9 @@ export class FavoritesService {
         ? this.http.delete(`${this.url}/favorites/${jobId}`, { context: this.context() })
         : this.http.put(`${this.url}/favorites/${jobId}`, null, { context: this.context() });
       await firstValueFrom(req$);
+      // The browser copy follows the account, so the list is still there after signing out
+      const guest = this.readGuest().filter((id) => id !== jobId);
+      this.writeGuest((wasFavorite ? guest : [jobId, ...guest]).slice(0, GUEST_LIMIT));
     } catch (err: any) {
       this.setLocal(jobId, wasFavorite);
       this.alertify.error(err?.error?.message || 'ვაკანსიის შენახვა ვერ მოხერხდა');
@@ -105,14 +108,24 @@ export class FavoritesService {
           ? this.http.post<number[]>(`${this.url}/favorites/merge`, { jobIds: guest }, { context: this.context() })
           : this.http.get<number[]>(`${this.url}/favorites/ids`, { context: this.context() }),
       );
-      // The browser list now lives on the account
-      if (guest.length) this.writeGuest([]);
+      // Kept in the browser too, mirroring the account, so signing out doesn't empty the list.
+      // Mirroring (rather than leaving the old copy) stops jobs removed while signed in from
+      // being merged back on the next sign-in.
+      this.writeGuest(this.mirrorOrder(guest, ids).slice(0, GUEST_LIMIT));
       this.ids.set(new Set(ids));
     } catch {
       // Keep the guest list for the next attempt; the hearts just start empty
       this.ids.set(new Set());
     }
     this.version.update((v) => v + 1);
+  }
+
+  /** The account's ids, keeping the browser's newest-first order for the ones it already had. */
+  private mirrorOrder(guest: number[], accountIds: number[]): number[] {
+    const account = new Set(accountIds);
+    const known = guest.filter((id) => account.has(id));
+    const knownSet = new Set(known);
+    return [...accountIds.filter((id) => !knownSet.has(id)), ...known];
   }
 
   private setLocal(jobId: number, favorite: boolean) {

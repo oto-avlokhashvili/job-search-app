@@ -128,7 +128,7 @@ export class Auth {
       error: (err) => {
         this.isRegistering.set(false);
         this.authService.authModalMode.set('register');
-        this.alertify.error(err);
+        this.alertify.error(err?.error?.message || 'რეგისტრაცია ვერ მოხერხდა, სცადეთ თავიდან');
       }
     });
   }

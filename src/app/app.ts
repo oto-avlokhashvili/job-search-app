@@ -13,6 +13,7 @@ import { ThemeService } from './Core/Services/theme.service';
 import { Auth } from './Components/public/auth/auth';
 import { StateStore } from './Store/state.store';
 import { ChatWidget } from './Components/public/chat-widget/chat-widget';
+import { AlertifyService } from './Core/Services/alertify.service';
 
 declare let gtag: Function;
 
@@ -30,6 +31,7 @@ export class App {
   stateStore = inject(StateStore);
   themeService = inject(ThemeService);
   private dialog = inject(MatDialog);
+  private alertify = inject(AlertifyService);
   private authModalOpen$ = toObservable(this.authService.isAuthModalOpen);
   hideLayout = signal(false);
   // Account pages render client-side only; hide the footer from the first paint, as their route data does.
@@ -67,6 +69,12 @@ export class App {
         hideLayout ||= !!r.snapshot.data['hideLayout'];
       }
       this.hideLayout.set(hideLayout);
+      // The API sends a failed Google sign-in back here (?authError=google)
+      if (this.isBrowser && r?.snapshot.queryParamMap.get('authError') === 'google') {
+        this.alertify.error('Google-ით შესვლა ვერ მოხერხდა. სცადეთ თავიდან ან შედით ელ-ფოსტით.');
+        this.authService.openAuthModal('login');
+        void this.router.navigate([], { queryParams: { authError: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      }
       this.hideFooter.set(r?.snapshot.data['hideFooter'] ?? false);
       this.showHeroSection.set(r?.snapshot.data['showHeroSection'] ?? false);
       this.standalonePage.set(!!r?.snapshot.data['standalone']);
