@@ -13,6 +13,9 @@
         @if (authService.isLoggedIn()) {
           <a class="nav-link" [routerLink]="'/profile'" [class.active]="router.url.startsWith('/profile')">პროფილი</a>
         }
+        @if (isAdmin()) {
+          <a class="nav-link" [routerLink]="'/hr'">HR პანელი</a>
+        }
       </div>
     </div>
 
@@ -96,6 +99,9 @@
     <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
+    @if (isAdmin()) {
+      <a [routerLink]="'/hr'" (click)="menuOpen = false">HR პანელი</a>
+    }
     @if (authService.isLoggedIn()) {
       <div class="mobile-divider"></div>
       <a class="mobile-logout-link" (click)="logout(); menuOpen = false">
@@ -142,6 +148,16 @@
       </div>
       <span class="nav-label">შენახული</span>
     </a>
+
+    <!-- HR area shortcut, admins only -->
+    @if (isAdmin()) {
+      <a class="bottom-nav-item" [routerLink]="'/hr'">
+        <div class="nav-icon-wrap">
+          <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
+        </div>
+        <span class="nav-label">HR</span>
+      </a>
+    }
 
     <!-- 4. პროფილი, or sign in for visitors -->
     @if (authService.isLoggedIn()) {

@@ -26,6 +26,8 @@ export class Header {
   private alertify = inject(AlertifyService);
   activeSection = signal('features');
   profileMenuOpen = signal(false);
+  // Admins also get a shortcut to the HR area
+  isAdmin = computed(() => this.authService.isLoggedIn() && this.stateStore.profile()?.role === 'ADMIN');
 
   async toggleReceiveMessages(event: any) {
     event.stopPropagation();

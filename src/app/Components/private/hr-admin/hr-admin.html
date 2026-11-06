@@ -12,9 +12,9 @@
       @if (group.list.length === 0) {
         <p class="none">სია ცარიელია</p>
       } @else {
-        <div class="table">
+        <div class="account-list">
           @for (account of group.list; track account.id) {
-            <div class="row">
+            <div class="account-row">
               <div class="who">
                 <strong>{{ account.companyName || '—' }}</strong>
                 <span>{{ account.firstName }} {{ account.lastName }} · {{ account.email }}</span>
@@ -26,9 +26,9 @@
                 <span class="date">{{ account.createdAt | date: 'dd.MM.yyyy' }}</span>
               </div>
               @if (group.approved) {
-                <button type="button" class="btn" [disabled]="busyId() === account.id" (click)="setApproval(account, false)">გაუქმება</button>
+                <button type="button" class="action-btn" [disabled]="busyId() === account.id" (click)="setApproval(account, false)">გაუქმება</button>
               } @else {
-                <button type="button" class="btn primary" [disabled]="busyId() === account.id" (click)="setApproval(account, true)">დადასტურება</button>
+                <button type="button" class="action-btn primary" [disabled]="busyId() === account.id" (click)="setApproval(account, true)">დადასტურება</button>
               }
             </div>
           }

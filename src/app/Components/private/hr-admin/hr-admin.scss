@@ -42,7 +42,7 @@ h2 {
   color: var(--text-muted);
 }
 
-.table {
+.account-list {
   display: flex;
   flex-direction: column;
   background: var(--card-bg);
@@ -51,14 +51,14 @@ h2 {
   overflow: hidden;
 }
 
-.row {
+.account-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
 
-  & + .row {
+  & + .account-row {
     border-top: 1px solid var(--border-color);
   }
 }
@@ -99,7 +99,7 @@ h2 {
   }
 }
 
-.btn {
+.action-btn {
   padding: 0.5rem 1rem;
   border-radius: 10px;
   border: 1px solid var(--outline-variant);
@@ -141,7 +141,7 @@ h2 {
 }
 
 @media (max-width: 576px) {
-  .row {
+  .account-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
