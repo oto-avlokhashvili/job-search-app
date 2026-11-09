@@ -24,7 +24,9 @@ export class JobsService {
     location: string = 'all',
     company: string = '',
     publishDate: string = 'all',
-    limit: number = 10
+    limit: number = 10,
+    salaryOnly: boolean = false,
+    category: string = 'all',
   ): Observable<JobsResponse> {
     let params = new HttpParams();
 
@@ -43,9 +45,22 @@ export class JobsService {
     if (publishDate && publishDate !== 'all') {
       params = params.set('publishDate', publishDate);
     }
+    if (salaryOnly) {
+      params = params.set('salary', 'true');
+    }
+    if (category && category !== 'all') {
+      params = params.set('category', category);
+    }
     params = params.set('limit', limit.toString());
 
     return this.http.get<JobsResponse>(this.url + `/job/all?page=${page}`, { params, context: new HttpContext().set(skipLoading, true) });
+  }
+
+  /** Active jobs per category, for the counts in the category filter. */
+  getCategoryCounts(): Observable<{ category: string; count: number }[]> {
+    return this.http.get<{ category: string; count: number }[]>(`${this.url}/job/categories`, {
+      context: new HttpContext().set(skipLoading, true),
+    });
   }
 
   /** One company's vacancies, matched exactly on its normalized name. */

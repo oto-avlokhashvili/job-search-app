@@ -13,7 +13,7 @@
               <span class="total-vacancies-badge">{{ dbTotalRecords() | number }}</span>
             }
           </h1>
-          <p class="body-lg text-on-surface-variant">გაეცანით ბოლო პერიოდის საუკეთესო პოზიციებს წამყვან ქართულ კომპანიებში</p>
+          <p class="body-lg text-on-surface-variant">ყველა ვაკანსია jobs.ge, hr.ge, myjobs.ge-დან და სხვა საიტებიდან — ერთ სივრცეში</p>
         </div>
       </div>
     </div>
@@ -51,32 +51,34 @@
             </div>
             <button type="button" class="mobile-filters-btn" (click)="openFilterModal()" aria-label="ფილტრები">
               <span class="material-symbols-outlined">tune</span>
-              @if (locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
+              @if (locationFilter.value !== 'all' || sourceFilter.value !== 'all' || categoryFilter.value !== 'all' || dateRangeFilter.value !== 'all' || salaryOnly()) {
                 <span class="active-filters-dot"></span>
               }
             </button>
           </div>
 
-          <!-- Mobile source chips (replace the provider cards on small screens) -->
+          <!-- Mobile quick chips: salary + categories (the full filters open in the sheet) -->
           <div class="mobile-source-chips-wrap" [class.is-hidden]="cvMode()">
           <button type="button" class="chips-arrow" [disabled]="!chipsCanScrollLeft()" (click)="scrollChips(-1)" aria-label="წინა">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
-          <div #sourceChips class="mobile-source-chips" role="group" aria-label="პორტალის ფილტრი" (scroll)="updateChipsArrows()">
-            @for (option of sourceOptions(); track option.value) {
+          <div #sourceChips class="mobile-source-chips" role="group" aria-label="კატეგორიის ფილტრი" (scroll)="updateChipsArrows()">
+            <button type="button" class="source-chip salary-chip" [class.active]="salaryOnly()" [attr.aria-pressed]="salaryOnly()" (click)="toggleSalaryOnly()">
+              <span class="material-symbols-outlined">payments</span>
+              <span>ხელფასით</span>
+            </button>
+            @for (cat of categoryOptions(); track cat.key) {
               <button
                 type="button"
-                class="source-chip"
-                [class.active]="sourceFilter.value === option.value"
-                [attr.aria-pressed]="sourceFilter.value === option.value"
-                (click)="setSource(option.value)"
+                class="source-chip category-chip"
+                [class.active]="categoryFilter.value === cat.key"
+                [attr.aria-pressed]="categoryFilter.value === cat.key"
+                (click)="setCategory(cat.key)"
               >
-                @if (option.logo) {
-                  <img [src]="option.logo" alt="" class="source-chip-logo" [class.circular]="option.isCircular">
-                }
-                <span>{{ option.value === 'all' ? 'ყველა' : option.label }}</span>
-                @if (option.count > 0) {
-                  <span class="source-chip-count">{{ option.count | number }}</span>
+                <span class="material-symbols-outlined">{{ cat.icon }}</span>
+                <span>{{ cat.short }}</span>
+                @if (cat.count > 0) {
+                  <span class="source-chip-count">{{ cat.count | number }}</span>
                 }
               </button>
             }
@@ -133,41 +135,43 @@
                   <input type="text" [formControl]="searchFilter" placeholder="მოძებნე პოზიცია/კომპანია" class="filter-search-input" (keyup.enter)="applyFilters(); closeFilterModal()">
                 </div>
                 
-                <!-- Source Selector Dropdown -->
+                <!-- Category Selector Dropdown -->
                 <div class="custom-select-wrapper" (click)="$event.stopPropagation()">
-                  <button type="button" class="custom-select-trigger" [class.open]="isSourceOpen()" (click)="toggleSourceDropdown($event)">
-                    @if (getSelectedSourceLogo(); as logo) {
-                      <img [src]="logo" class="select-icon-img" [class.circular]="sourceFilter.value === 'myjobs.ge'" alt="Source">
-                    } @else {
-                      <span class="material-symbols-outlined select-icon">language</span>
-                    }
-                    <span class="selected-value">{{ getSelectedSourceLabel() }}</span>
-                    <span class="material-symbols-outlined select-arrow" [class.rotated]="isSourceOpen()">expand_more</span>
+                  <button type="button" class="custom-select-trigger" [class.open]="isCategoryOpen()" (click)="toggleCategoryDropdown($event)">
+                    <span class="material-symbols-outlined select-icon">{{ getSelectedCategory()?.icon ?? 'category' }}</span>
+                    <span class="selected-value">{{ getSelectedCategory()?.label ?? 'ყველა კატეგორია' }}</span>
+                    <span class="material-symbols-outlined select-arrow" [class.rotated]="isCategoryOpen()">expand_more</span>
                   </button>
-                  
-                  @if (isSourceOpen()) {
+
+                  @if (isCategoryOpen()) {
                     <div class="custom-select-dropdown glass-card animated-fade-in">
                       <div class="options-list">
-                        @for (option of sourceOptions(); track option.value) {
-                          <div 
-                            class="custom-select-option source-option" 
-                            [class.selected]="option.value === sourceFilter.value"
-                            (click)="selectSource(option.value)"
+                        <div class="custom-select-option source-option" [class.selected]="categoryFilter.value === 'all'" (click)="selectCategory('all')">
+                          <div class="option-left-content">
+                            <span class="material-symbols-outlined option-icon">apps</span>
+                            <span class="option-label">ყველა კატეგორია</span>
+                          </div>
+                          <div class="option-right-content">
+                            @if (categoryFilter.value === 'all') {
+                              <span class="material-symbols-outlined check-icon">check</span>
+                            }
+                          </div>
+                        </div>
+                        @for (cat of categoryOptions(); track cat.key) {
+                          <div
+                            class="custom-select-option source-option"
+                            [class.selected]="cat.key === categoryFilter.value"
+                            (click)="selectCategory(cat.key)"
                           >
                             <div class="option-left-content">
-                              @if (option.logo) {
-                                <img [src]="option.logo" [alt]="option.label" class="option-logo" [class.circular]="option.isCircular">
-                              } @else {
-                                <span class="material-symbols-outlined option-icon">apps</span>
-                              }
-                              <span class="option-label">{{ option.label }}</span>
+                              <span class="material-symbols-outlined option-icon">{{ cat.icon }}</span>
+                              <span class="option-label">{{ cat.label }}</span>
                             </div>
-                            
                             <div class="option-right-content">
-                              @if (option.count > 0) {
-                                <span class="option-count-badge">{{ option.count | number }}</span>
+                              @if (cat.count > 0) {
+                                <span class="option-count-badge">{{ cat.count | number }}</span>
                               }
-                              @if (option.value === sourceFilter.value) {
+                              @if (cat.key === categoryFilter.value) {
                                 <span class="material-symbols-outlined check-icon">check</span>
                               }
                             </div>
@@ -250,6 +254,11 @@
 
               <!-- Popular Searches -->
               <div class="popular-searches" [class.is-hidden]="cvMode()">
+                <button type="button" class="salary-toggle" [class.active]="salaryOnly()" [attr.aria-pressed]="salaryOnly()" (click)="toggleSalaryOnly(); closeFilterModal()">
+                  <span class="salary-toggle-switch"><span></span></span>
+                  <span class="material-symbols-outlined">payments</span>
+                  მხოლოდ ხელფასით
+                </button>
                 <span class="popular-searches-label">პოპულარული:</span>
                 <div class="popular-scroller" [class.fade-left]="popularCanScrollLeft()" [class.fade-right]="popularCanScrollRight()">
                   @if (popularCanScrollLeft()) {
@@ -258,20 +267,29 @@
                     </button>
                   }
                   <div #popularTrack class="popular-tags" (scroll)="updatePopularArrows()">
-                    @for (item of popularSearches; track item.query) {
+                    <!-- Categories filter the list in place -->
+                    @for (cat of popularCategories; track cat.key) {
                       <button
                         type="button"
-                        class="popular-tag"
-                        [class.active]="searchFilter.value === item.query"
-                        (click)="setPopularSearch(item.query); closeFilterModal()"
+                        class="popular-tag category-tag"
+                        [class.active]="categoryFilter.value === cat.key"
+                        [attr.aria-pressed]="categoryFilter.value === cat.key"
+                        (click)="setCategory(cat.key); closeFilterModal()"
                       >
-                        @if (logos.show(item.logo)) {
-                          <img [src]="item.logo" [alt]="item.label" class="tag-icon" loading="lazy" (error)="logos.broken(item.logo)">
-                        } @else {
-                          <span class="tag-icon tag-letter">{{ item.label.charAt(0) }}</span>
-                        }
-                        {{ item.label }}
+                        <span class="material-symbols-outlined tag-symbol">{{ cat.icon }}</span>
+                        {{ cat.short }}
                       </button>
+                    }
+                    <!-- Companies open the company's own page with all its vacancies -->
+                    @for (company of popularCompanies; track company.key) {
+                      <a class="popular-tag company-tag" [routerLink]="['/companies', company.key]" (click)="closeFilterModal()">
+                        @if (logos.show(company.logo)) {
+                          <img [src]="company.logo" [alt]="company.label" class="tag-icon" loading="lazy" (error)="logos.broken(company.logo)">
+                        } @else {
+                          <span class="tag-icon tag-letter">{{ company.label.charAt(0) }}</span>
+                        }
+                        {{ company.label }}
+                      </a>
                     }
                   </div>
                   @if (popularCanScrollRight()) {
@@ -351,18 +369,17 @@
             </div>
           }
         } @else if (!isLoading() && filteredJobs().length > 0) {
-          <div class="results-meta" [class.unfiltered]="!(searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all')">
+          <div class="results-meta" [class.unfiltered]="!(searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || categoryFilter.value !== 'all' || dateRangeFilter.value !== 'all' || salaryOnly())">
             <span class="results-count">
-              @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || dateRangeFilter.value !== 'all') {
-                ნაპოვნია <strong>{{ totalRecords() | number }}</strong> ფილტრის შესაბამისი ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
-                @if (sourceFilter.value !== 'all') {
-                  <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
-                    <span>ყველა პორტალზე დაბრუნება</span>
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                }
-              } @else {
-                სულ ბაზაშია: <strong>{{ totalRecords() | number }}</strong> აქტიური ვაკანსია (ნაჩვენებია <strong>{{ filteredJobs().length | number }}</strong>)
+              <strong>{{ totalRecords() | number }}</strong> ვაკანსია
+              @if (sourceFilter.value !== 'all') {
+                <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
+                  <span>ყველა პორტალზე დაბრუნება</span>
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              }
+              @if (searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || categoryFilter.value !== 'all' || dateRangeFilter.value !== 'all' || salaryOnly()) {
+                <button type="button" class="btn-clear-filters" (click)="clearFilters()">ფილტრების გასუფთავება</button>
               }
             </span>
           </div>
@@ -376,9 +393,7 @@
               <thead>
                 <tr>
                   <th class="col-vacancy">ვაკანსია</th>
-                  <th class="col-provider">პროვაიდერი</th>
                   <th class="col-location">ლოკაცია</th>
-                  <th class="col-salary">ხელფასი</th>
                   <th class="col-published">გამოქვეყნდა</th>
                   <th class="col-deadline">ბოლო ვადა</th>
                   <th class="col-action"></th>
@@ -396,9 +411,7 @@
                         </div>
                       </div>
                     </td>
-                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
                     <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
-                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
                     <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
                     <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
                     <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
@@ -433,9 +446,7 @@
               <thead>
                 <tr>
                   <th class="col-vacancy">ვაკანსია</th>
-                  <th class="col-provider">პროვაიდერი</th>
                   <th class="col-location">ლოკაცია</th>
-                  <th class="col-salary">ხელფასი</th>
                   <th class="col-published">გამოქვეყნდა</th>
                   <th class="col-deadline">ბოლო ვადა</th>
                   <th class="col-action"></th>
@@ -456,22 +467,38 @@
                           }
                         </div>
                         <div class="job-titles">
-                          <a
-                            class="job-vacancy-link"
-                            [routerLink]="['/vacancies', getJobSlug(job)]"
-                            [matTooltip]="job.vacancy"
-                            matTooltipPosition="above"
-                            [matTooltipShowDelay]="150"
-                            matTooltipClass="custom-vacancy-tooltip"
-                            [title]="job.vacancy"
-                          >
-                            <span class="job-vacancy">{{ job.vacancy }}</span>
-                          </a>
+                          <!-- Title, with the salary next to it only when the vacancy states one -->
+                          <div class="job-title-line">
+                            <a
+                              class="job-vacancy-link"
+                              [routerLink]="['/vacancies', getJobSlug(job)]"
+                              [matTooltip]="job.vacancy"
+                              matTooltipPosition="above"
+                              [matTooltipShowDelay]="150"
+                              matTooltipClass="custom-vacancy-tooltip"
+                              [title]="job.vacancy"
+                            >
+                              <span class="job-vacancy">{{ job.vacancy }}</span>
+                            </a>
+                            @if (hasSalary(job.salaryRange)) {
+                              <span class="salary-pill">
+                                <span class="material-symbols-outlined">payments</span>
+                                {{ job.salaryRange }}
+                              </span>
+                            }
+                          </div>
                           <span class="job-company" [title]="job.company">
                             @if (job.companyKey) {
                               <a class="job-company-link" [routerLink]="['/companies', job.companyKey]">{{ job.company }}</a>
                             } @else {
                               {{ job.company }}
+                            }
+                            @if (sourceIcons[job.source]) {
+                              <span class="job-source">
+                                <span class="meta-dot">·</span>
+                                <img [src]="sourceIcons[job.source]" alt="" class="job-source-icon" [class.circular]="job.source === 'myjobs.ge'">
+                                {{ sourceLabel(job.source) }}
+                              </span>
                             }
                             @if (cvMode()) {
                               <span class="cv-match-badge">{{ job.matchScore }}% შესაბამისობა</span>
@@ -480,36 +507,11 @@
                         </div>
                       </div>
                     </td>
-                    <td class="col-provider">
-                      <div class="provider-cell">
-                        <span class="provider-badge" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'" [class.jobup-ge]="job.source === jobUpSource">
-                          @if (job.source === jobUpSource) {
-                            <img [src]="jobUpLogo" alt="Job Up" class="provider-logo">
-                          } @else if (job.source === 'jobs.ge') {
-                            <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-logo">
-                          } @else if (job.source === 'hr.ge') {
-                            <img src="/icons/hr.png" alt="HR.ge" class="provider-logo">
-                          } @else if (job.source === 'awork.ge') {
-                            <img src="/icons/awork.png" alt="Awork.ge" class="provider-logo">
-                          } @else if (job.source === 'myjobs.ge') {
-                            <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-logo circular">
-                          } @else if (job.source === 'linkedin') {
-                            <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-logo">
-                          } @else {
-                            <span class="material-symbols-outlined provider-icon">language</span>
-                          }
-                          <span>{{ job.source }}</span>
-                        </span>
-                      </div>
-                    </td>
                     <td class="col-location">
                       <div class="location-cell">
                         <span class="material-symbols-outlined">location_on</span>
                         <span>{{ job.location }}</span>
                       </div>
-                    </td>
-                    <td class="col-salary">
-                      <span class="salary-text">{{ job.salaryRange }}</span>
                     </td>
                     <td class="col-published">
                       <span class="date-text">{{ job.publishDate }}</span>
@@ -544,9 +546,7 @@
                         </div>
                       </div>
                     </td>
-                    <td class="col-provider"><div class="provider-cell"><span class="skeleton-text" style="width: 75px; height: 24px; border-radius: 20px;"></span></div></td>
                     <td class="col-location"><div class="location-cell"><span class="skeleton-text" style="width: 80px; height: 14px;"></span></div></td>
-                    <td class="col-salary"><span class="salary-text skeleton-text" style="width: 85px; height: 16px;"></span></td>
                     <td class="col-published"><span class="date-text skeleton-text" style="width: 70px; height: 14px;"></span></td>
                     <td class="col-deadline"><span class="date-text skeleton-text" style="width: 75px; height: 14px;"></span></td>
                     <td class="col-action"><div class="skeleton-block" style="width: 70px; height: 32px; border-radius: 8px;"></div></td>
@@ -591,27 +591,17 @@
                   @if (cvMode()) {
                     <span class="cv-match-badge">{{ job.matchScore }}%</span>
                   }
-                  <span class="provider-badge-mini" [class.jobs-ge]="job.source === 'jobs.ge'" [class.hr-ge]="job.source === 'hr.ge'" [class.awork-ge]="job.source === 'awork.ge'" [class.myjobs-ge]="job.source === 'myjobs.ge'" [class.linkedin]="job.source === 'linkedin'" [class.jobup-ge]="job.source === jobUpSource">
-                    @if (job.source === jobUpSource) {
-                      <img [src]="jobUpLogo" alt="Job Up" class="provider-mini-icon">
-                    } @else if (job.source === 'jobs.ge') {
-                      <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'hr.ge') {
-                      <img src="/icons/hr.png" alt="HR.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'awork.ge') {
-                      <img src="/icons/awork.png" alt="Awork.ge" class="provider-mini-icon">
-                    } @else if (job.source === 'myjobs.ge') {
-                      <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-mini-icon circular">
-                    } @else if (job.source === 'linkedin') {
-                      <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-mini-icon">
-                    }
-                    <span>{{ job.source }}</span>
-                  </span>
-
-                  @if (job.salaryRange && job.salaryRange !== 'შეთანხმებით' && job.salaryRange !== 'N/A') {
-                    <span class="salary-pill-mini">
-                      <span class="material-symbols-outlined mini-icon">payments</span>
+                  @if (hasSalary(job.salaryRange)) {
+                    <span class="salary-pill">
+                      <span class="material-symbols-outlined">payments</span>
                       {{ job.salaryRange }}
+                    </span>
+                  }
+
+                  @if (sourceIcons[job.source]) {
+                    <span class="job-source">
+                      <img [src]="sourceIcons[job.source]" alt="" class="job-source-icon" [class.circular]="job.source === 'myjobs.ge'">
+                      {{ sourceLabel(job.source) }}
                     </span>
                   }
 
@@ -645,7 +635,10 @@
           </div>
 
           @if (!cvMode() && hasMoreJobs() && !isLoading()) {
+            <!-- Infinite scroll: the next page loads as this comes into view (see setupInfiniteScroll) -->
+            <div #loadMoreSentinel class="load-more-sentinel" aria-hidden="true"></div>
             <div class="load-more-wrapper text-center">
+              <span class="load-more-progress">ნაჩვენებია {{ filteredJobs().length | number }} / {{ totalRecords() | number }}</span>
               <button class="btn-fluid secondary load-more-btn" (click)="loadMore()" [disabled]="isAppending()">
                 @if (isAppending()) {
                   <span class="btn-spinner" style="border-top-color: var(--primary); margin-right: 8px;"></span>

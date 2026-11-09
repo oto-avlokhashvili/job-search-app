@@ -13,10 +13,11 @@ import { PUBLIC_CV_STORAGE_KEY } from '../../../Core/Utils/public-cv-storage';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs';
 import { Cv, PublicCvSearchResult } from '../../../Core/Services/cv';
 import { JobsService } from '../../../Core/Services/jobs-service';
-import { extractSalary } from '../../../Core/Utils/salary-extractor';
+import { extractSalary, hasSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SeoService } from '../../../Core/Services/seo.service';
 import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
+import { findJobCategory, JOB_CATEGORIES } from '../../../Core/Utils/job-categories';
 
 export interface VacancyItem {
   id: number;
@@ -76,11 +77,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
   totalRecords = this.stateStore.publicJobsTotal;
   dbTotalRecords = this.stateStore.publicDbTotal;
-  jobsGeCount = this.stateStore.publicJobsGeCount;
-  hrGeCount = this.stateStore.publicHrGeCount;
-  aworkGeCount = this.stateStore.publicAworkGeCount;
-  myjobsGeCount = this.stateStore.publicMyjobsGeCount;
-  linkedinCount = this.stateStore.publicLinkedinCount;
   hasMoreJobs = this.stateStore.publicHasMore;
 
   // Filter Form Controls
@@ -88,10 +84,23 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   locationFilter = new FormControl<string>('all', { nonNullable: true });
   locationSearchInput = new FormControl<string>('', { nonNullable: true });
   locationSearch = signal<string>('');
+  // The portal filter left the search row (category replaced it); old links like ?source=hr.ge still work
   sourceFilter = new FormControl<string>('all', { nonNullable: true });
+  categoryFilter = new FormControl<string>('all', { nonNullable: true });
   dateRangeFilter = new FormControl<string>('all', { nonNullable: true });
+  // Only vacancies that state an amount (?salary=1)
+  salaryOnly = signal(false);
+  readonly hasSalary = hasSalary;
 
-  isSourceOpen = signal<boolean>(false);
+  readonly categories = JOB_CATEGORIES;
+  /** Jobs per category, for the dropdown; empty until loaded (the filter works without it) */
+  private categoryCounts = signal<Record<string, number>>({});
+  categoryOptions = computed(() => {
+    const counts = this.categoryCounts();
+    return this.categories.map((c) => ({ ...c, count: counts[c.key] ?? 0 }));
+  });
+
+  isCategoryOpen = signal<boolean>(false);
   isLocationOpen = signal<boolean>(false);
   isDateRangeOpen = signal<boolean>(false);
   showScrollToFilters = signal<boolean>(false);
@@ -100,12 +109,40 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   chipsCanScrollLeft = signal(false);
   chipsCanScrollRight = signal(true);
 
-  // One-tap company searches under the filters; `query` is what goes into the search box.
-  readonly popularSearches: { label: string; query: string; logo?: string }[] = [
-    { label: 'TBC ბანკი', query: 'თიბისი', logo: '/icons/tbc.jpg' },
-    { label: 'საქართველოს ბანკი', query: 'საქართველოს ბანკი', logo: '/icons/bog.png' },
+  // "Popular" row under the filters. Categories filter the list in place; companies open the
+  // company's page (/companies/:key, like the company names in the list).
+  readonly popularCategories = ['it', 'sales', 'finance', 'medicine', 'hospitality']
+    .map((key) => findJobCategory(key)!)
+    .filter(Boolean);
 
+  /**
+   * The biggest employers on the site (live data, Nov 2026), busiest first. `key` is the company's
+   * companyKey (the page shows that one key's vacancies); `logo` is its logo on logos.jobup.ge.
+   */
+  readonly popularCompanies: { label: string; key: string; logo?: string }[] = [
+    { label: 'კრედო ბანკი', key: 'კრედობანკი', logo: 'https://logos.jobup.ge/logos/6-851a1ee7bd15-128.webp' },
+    { label: 'ლიბერთი', key: 'ლიბერთიბაზისბანკჯგუფი', logo: 'https://logos.jobup.ge/logos/97-ed480a47cd29-128.webp' },
+    { label: 'TBC ბანკი', key: 'თიბისი', logo: 'https://logos.jobup.ge/logos/7-e68930ec0260-128.webp' },
+    { label: 'საქართველოს ბანკი', key: 'საქართველოსბანკი', logo: 'https://logos.jobup.ge/logos/26-a38ceca855ca-128.webp' },
+    { label: 'აჭარა ჯგუფი', key: 'აჭარაჯგუფი', logo: 'https://logos.jobup.ge/logos/371-3c9e3a49800e-128.webp' },
+    { label: 'მზიური', key: 'მზიური', logo: 'https://logos.jobup.ge/logos/19-6e80d63d8194-128.webp' },
+    { label: 'ლაზიკა კაპიტალი', key: 'ლაზიკაკაპიტალი', logo: 'https://logos.jobup.ge/logos/280-16f2c1d6adf5-128.webp' },
+    { label: 'ავერსის კლინიკა', key: 'ავერსისკლინიკა', logo: 'https://logos.jobup.ge/logos/1109-fb315f54ccd6-128.webp' },
+    { label: 'ელიტი', key: 'ელიტი', logo: 'https://logos.jobup.ge/logos/1081-7ca1298eec25-128.webp' },
+    { label: 'Domino', key: 'ჰიპერმარკეტიdomino', logo: 'https://logos.jobup.ge/logos/158-8ecabc54c5e1-128.webp' },
+    { label: 'Concentrix', key: 'concentrix', logo: 'https://logos.jobup.ge/logos/1000-b66ab90e8e43-128.webp' },
+    { label: 'ზუმერი', key: 'ზუმერი', logo: 'https://logos.jobup.ge/logos/253-bb0965bc38c5-128.webp' },
+    { label: 'ევექსი', key: 'ევექსი', logo: 'https://logos.jobup.ge/logos/22-9348c9f52291-128.webp' },
+    { label: 'იბერია სტარ გრუპი', key: 'იბერიასტარგრუპი', logo: 'https://logos.jobup.ge/logos/311-f38ea57ebaef-128.webp' },
   ];
+
+  /** Bottom of the list: scrolling near it loads the next page (see setupInfiniteScroll). */
+  @ViewChild('loadMoreSentinel') set loadMoreSentinel(ref: ElementRef<HTMLElement> | undefined) {
+    this.sentinelEl = ref?.nativeElement;
+    this.observeSentinel();
+  }
+  private sentinelEl?: HTMLElement;
+  private infiniteObserver?: IntersectionObserver;
   @ViewChild('popularTrack') popularTrackRef?: ElementRef<HTMLElement>;
   popularCanScrollLeft = signal(false);
   popularCanScrollRight = signal(false);
@@ -130,15 +167,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   cvError = signal('');
   displayedJobs = computed(() => (this.cvMode() ? this.cvJobs() : this.filteredJobs()));
   listLoading = computed(() => (this.cvMode() ? this.cvLoading() : this.isLoading()));
-
-  sourceOptions = computed(() => [
-    { value: 'all', label: 'ყველა პორტალი', icon: 'apps', count: this.dbTotalRecords(), isCircular: false, logo: '' },
-    { value: 'jobs.ge', label: 'Jobs.ge', icon: '', count: this.jobsGeCount(), isCircular: false, logo: '/icons/jobs.png' },
-    { value: 'hr.ge', label: 'HR.ge', icon: '', count: this.hrGeCount(), isCircular: false, logo: '/icons/hr.png' },
-    { value: 'awork.ge', label: 'Awork.ge', icon: '', count: this.aworkGeCount(), isCircular: false, logo: '/icons/awork.png' },
-    { value: 'myjobs.ge', label: 'Myjobs.ge', icon: '', count: this.myjobsGeCount(), isCircular: true, logo: '/icons/myjobsge.png' },
-    { value: 'linkedin', label: 'LinkedIn', icon: '', count: this.linkedinCount(), isCircular: false, logo: '/icons/linkedin.png' }
-  ]);
 
   defaultLocationOptions = [
     { value: 'all', label: 'ყველა ლოკაცია' },
@@ -226,8 +254,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       // emitEvent: false, so restoring the box from the URL doesn't trigger a live search.
       this.searchFilter.setValue(params.get('search') ?? '', { emitEvent: false });
       this.sourceFilter.setValue(params.get('source') ?? 'all');
+      this.categoryFilter.setValue(findJobCategory(params.get('category')) ? params.get('category')! : 'all');
       this.locationFilter.setValue(params.get('location') ?? 'all');
       this.dateRangeFilter.setValue(this.dateRangeOptions.some(o => o.value === date) ? date! : 'all');
+      this.salaryOnly.set(params.get('salary') === '1');
 
       // loadJobs is a no-op when the same filters are already loaded.
       this.loadJobs();
@@ -247,8 +277,10 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       queryParams: {
         search: search || null,
         source: this.sourceFilter.value !== 'all' ? this.sourceFilter.value : null,
+        category: this.categoryFilter.value !== 'all' ? this.categoryFilter.value : null,
         location: this.locationFilter.value !== 'all' ? this.locationFilter.value : null,
         date: this.dateRangeFilter.value !== 'all' ? this.dateRangeFilter.value : null,
+        salary: this.salaryOnly() ? '1' : null,
       },
     });
 
@@ -265,6 +297,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     afterNextRender(() => {
       this.loadUploadedCv();
+      this.loadCategoryCounts();
+      this.setupInfiniteScroll();
       if (this.authService.isLoggedIn()) this.stateStore.getCv();
       this.updateChipsArrows();
       const track = this.popularTrackRef?.nativeElement;
@@ -285,6 +319,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     }
     this.liveSearchSub?.unsubscribe();
     this.popularResizeObserver?.disconnect();
+    this.infiniteObserver?.disconnect();
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }
@@ -583,7 +618,9 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.stateStore.publicJobsQuery() === q &&
       this.stateStore.publicJobsSource() === source &&
       this.stateStore.publicJobsLocation() === location &&
-      this.stateStore.publicJobsDateRange() === dateRange;
+      this.stateStore.publicJobsDateRange() === dateRange &&
+      this.stateStore.publicJobsSalaryOnly() === this.salaryOnly() &&
+      this.stateStore.publicJobsCategory() === this.categoryFilter.value;
 
     if (isAlreadyLoaded) {
       if (this.isInitialLoad) {
@@ -602,9 +639,14 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
         source,
         location,
         dateRange,
+        salaryOnly: this.salaryOnly(),
+        category: this.categoryFilter.value,
         append,
         force
       });
+
+      // A short page can leave the sentinel on screen, and an observer only reports changes
+      if (append) setTimeout(() => this.observeSentinel());
 
       if (!append) {
         this.burstParticles();
@@ -644,6 +686,31 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.loadJobs(this.searchFilter.value, true);
+  }
+
+  /** Pages that load by themselves while scrolling; after that the button takes over, so the footer stays reachable. */
+  private readonly autoLoadPages = 5;
+
+  /** Infinite scroll: loads the next page when the end of the list comes within 600px. */
+  private setupInfiniteScroll() {
+    if (typeof IntersectionObserver === 'undefined') return; // the button still works
+    this.infiniteObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        if (this.cvMode() || !this.hasMoreJobs() || this.isLoading() || this.isAppending()) return;
+        if (this.currentPage >= this.autoLoadPages) return;
+        this.ngZone.run(() => this.loadMore());
+      },
+      { rootMargin: '0px 0px 600px 0px' },
+    );
+    // The sentinel may already be on the page: its ViewChild setter ran before the observer existed
+    this.observeSentinel();
+  }
+
+  /** (Re)watches the sentinel; re-observing also re-checks it when it is still on screen. */
+  private observeSentinel() {
+    this.infiniteObserver?.disconnect();
+    if (this.sentinelEl) this.infiniteObserver?.observe(this.sentinelEl);
   }
 
   readonly jobUpLogo = JOBUP_LOGO;
@@ -743,31 +810,34 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     el?.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: 'smooth' });
   }
 
-  setPopularSearch(keyword: string) {
-    this.searchFilter.setValue(this.searchFilter.value === keyword ? '' : keyword);
-    this.applyFilters();
-  }
-
   clearFilters() {
     this.searchFilter.setValue('');
     this.locationFilter.setValue('all');
     this.locationSearchInput.setValue('');
     this.sourceFilter.setValue('all');
     this.dateRangeFilter.setValue('all');
+    this.salaryOnly.set(false);
+    this.categoryFilter.setValue('all');
     this.closeAllDropdowns();
     this.applyFilters();
   }
 
-  getSelectedSourceLabel(): string {
-    const val = this.sourceFilter.value;
-    const found = this.sourceOptions().find(o => o.value === val);
-    return found ? found.label : 'ყველა პორტალი';
+  toggleSalaryOnly() {
+    this.salaryOnly.update((v) => !v);
+    this.applyFilters();
   }
 
-  getSelectedSourceLogo(): string | null {
-    const val = this.sourceFilter.value;
-    const found = this.sourceOptions().find(o => o.value === val);
-    return found?.logo || null;
+  /** Small attribution under the title; nothing for Job Up's own postings. */
+  readonly sourceIcons: Record<string, string> = {
+    'jobs.ge': '/icons/jobs.png',
+    'hr.ge': '/icons/hr.png',
+    'awork.ge': '/icons/awork.png',
+    'myjobs.ge': '/icons/myjobsge.png',
+    linkedin: '/icons/linkedin.png',
+  };
+
+  sourceLabel(source: string): string {
+    return source === 'linkedin' ? 'LinkedIn' : source;
   }
 
   getSelectedLocationLabel(): string {
@@ -784,10 +854,30 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     return option ? option.label : 'ყველა დროის';
   }
 
-  selectSource(value: string) {
-    this.sourceFilter.setValue(value);
-    this.isSourceOpen.set(false);
+  getSelectedCategory() {
+    return findJobCategory(this.categoryFilter.value);
+  }
+
+  /** Category dropdown option */
+  selectCategory(key: string) {
+    this.categoryFilter.setValue(key);
+    this.isCategoryOpen.set(false);
     this.applyFilters();
+  }
+
+  /** Mobile category chip: tapping the active one clears it */
+  setCategory(key: string) {
+    this.categoryFilter.setValue(this.categoryFilter.value === key ? 'all' : key);
+    this.applyFilters();
+  }
+
+  private async loadCategoryCounts() {
+    try {
+      const rows = await firstValueFrom(this.jobsService.getCategoryCounts());
+      this.categoryCounts.set(Object.fromEntries(rows.map((r) => [r.category, r.count])));
+    } catch {
+      // Counts are decoration; an API without /job/categories just shows none
+    }
   }
 
   selectLocation(value: string) {
@@ -802,9 +892,9 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  toggleSourceDropdown(event: Event) {
+  toggleCategoryDropdown(event: Event) {
     event.stopPropagation();
-    this.isSourceOpen.update(v => !v);
+    this.isCategoryOpen.update(v => !v);
     this.isLocationOpen.set(false);
     this.isDateRangeOpen.set(false);
   }
@@ -812,19 +902,19 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   toggleLocationDropdown(event: Event) {
     event.stopPropagation();
     this.isLocationOpen.update(v => !v);
-    this.isSourceOpen.set(false);
+    this.isCategoryOpen.set(false);
     this.isDateRangeOpen.set(false);
   }
 
   toggleDateRangeDropdown(event: Event) {
     event.stopPropagation();
     this.isDateRangeOpen.update(v => !v);
-    this.isSourceOpen.set(false);
+    this.isCategoryOpen.set(false);
     this.isLocationOpen.set(false);
   }
 
   closeAllDropdowns() {
-    this.isSourceOpen.set(false);
+    this.isCategoryOpen.set(false);
     this.isLocationOpen.set(false);
     this.isDateRangeOpen.set(false);
     this.locationSearchInput.setValue('');

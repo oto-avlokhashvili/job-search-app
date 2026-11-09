@@ -1586,58 +1586,6 @@ button.btn-search {
     }
   }
 
-  .provider-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 11.5px;
-    font-weight: 600;
-    background: var(--surface-container);
-    color: var(--on-surface);
-
-    .provider-logo {
-      width: 16px;
-      height: 16px;
-      object-fit: contain;
-
-      &.circular {
-        border-radius: 50%;
-      }
-    }
-
-    &.jobs-ge {
-      background: rgba(34, 197, 94, 0.12);
-      color: #16a34a;
-    }
-
-    &.hr-ge {
-      background: rgba(168, 85, 247, 0.12);
-      color: #9333ea;
-    }
-
-    &.awork-ge {
-      background: rgba(255, 122, 0, 0.12);
-      color: #e65100;
-    }
-
-    &.myjobs-ge {
-      background: rgba(14, 165, 233, 0.12);
-      color: #0284c7;
-    }
-
-    &.linkedin {
-      background: rgba(10, 102, 194, 0.12);
-      color: #0a66c2;
-    }
-
-    &.jobup-ge {
-      background: rgba(11, 96, 150, 0.12);
-      color: var(--primary);
-    }
-  }
-
   .location-cell {
     display: flex;
     align-items: center;
@@ -1649,12 +1597,6 @@ button.btn-search {
       font-size: 16px;
       color: var(--primary);
     }
-  }
-
-  .salary-text {
-    font-weight: 700;
-    color: var(--primary);
-    font-size: 13.5px;
   }
 
   .date-text {
@@ -1866,53 +1808,6 @@ button.btn-search {
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-
-    .provider-badge-mini {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 11px;
-      line-height: 1.4;
-      font-weight: 600;
-      background: var(--surface-container);
-      color: var(--on-surface);
-
-      .provider-mini-icon {
-        width: 13px;
-        height: 13px;
-        object-fit: contain;
-
-        &.circular {
-          border-radius: 50%;
-        }
-      }
-
-      &.jobs-ge { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
-      &.hr-ge { background: rgba(168, 85, 247, 0.12); color: #9333ea; }
-      &.awork-ge { background: rgba(255, 122, 0, 0.12); color: #e65100; }
-      &.myjobs-ge { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
-      &.linkedin { background: rgba(10, 102, 194, 0.12); color: #0a66c2; }
-      &.jobup-ge { background: rgba(11, 96, 150, 0.12); color: var(--primary); }
-    }
-
-    .salary-pill-mini {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 11px;
-      line-height: 1.4;
-      font-weight: 700;
-      background: rgba(11, 96, 150, 0.1);
-      color: var(--primary);
-
-      .mini-icon {
-        font-size: 12px;
-      }
-    }
 
     .deadline-tag.mini {
       font-size: 11px;
@@ -2133,10 +2028,78 @@ button.btn-search {
 // ─── Mobile: jobs first ────────────────────────────────────────
 // Kept at the end of the file so it overrides the base `display` of these blocks.
 @media (max-width: 991px) {
-  .section-header p.body-lg,
-  .results-meta.unfiltered {
-    display: none;
+  // The value line stays on phones (it's what sets the site apart), just smaller
+  .section-header p.body-lg {
+    font-size: 0.85rem;
+    max-width: 340px;
+    margin: 0 auto;
   }
+}
+
+// ─── Popular: category chips and company links ────────────────
+a.popular-tag {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.popular-tag .tag-symbol {
+  font-size: 16px;
+  color: var(--primary);
+}
+
+.popular-tag.active .tag-symbol {
+  color: #ffffff;
+}
+
+// A thin divider between the category chips and the companies
+.popular-tag.category-tag + .popular-tag.company-tag {
+  margin-left: 10px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -11px;
+    top: 20%;
+    height: 60%;
+    border-left: 1px solid var(--border-color);
+  }
+}
+
+// ─── Result count + clear filters ──────────────────────────────
+.results-meta .results-count {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.btn-clear-filters {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+// ─── Infinite scroll ───────────────────────────────────────────
+.load-more-sentinel {
+  height: 1px;
+}
+
+.load-more-wrapper {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.load-more-progress {
+  font-size: 12.5px;
+  color: var(--on-surface-variant);
 }
 
 // The row/card of the job the user just came back from
@@ -2155,4 +2118,163 @@ tr.just-visited {
 
 @keyframes justVisitedCard {
   0%, 40% { box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.45); }
+}
+
+// ─── Salary + source in the vacancy cell ───────────────────────
+// The salary shows only when the vacancy states an amount; money is green across the list.
+.job-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  .job-vacancy-link {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+.salary-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 7px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .material-symbols-outlined {
+    font-size: 14px;
+  }
+}
+
+// Which portal the vacancy came from: a quiet hint, not a column
+.job-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  opacity: 0.7;
+  white-space: nowrap;
+
+  .meta-dot {
+    margin-right: 2px;
+  }
+
+  .job-source-icon {
+    width: 11px;
+    height: 11px;
+    object-fit: contain;
+    border-radius: 2px;
+
+    &.circular {
+      border-radius: 50%;
+    }
+  }
+}
+
+.job-card-bottom-pills .job-source {
+  margin-left: 0;
+}
+
+// ─── "Salary shown" filter ─────────────────────────────────────
+.salary-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px 0 7px;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  > .material-symbols-outlined {
+    font-size: 17px;
+    color: var(--success-text);
+  }
+
+  .salary-toggle-switch {
+    position: relative;
+    width: 28px;
+    height: 16px;
+    border-radius: 100px;
+    background: var(--surface-container-highest);
+    transition: background 0.2s ease;
+
+    span {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease;
+    }
+  }
+
+  &:hover {
+    border-color: var(--success-text);
+  }
+
+  &.active {
+    background: var(--success-bg);
+    border-color: var(--success-text);
+    color: var(--success-text);
+
+    .salary-toggle-switch {
+      background: var(--success-text);
+
+      span {
+        transform: translateX(12px);
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    align-self: flex-start;
+  }
+}
+
+// Mobile quick chip, before the portal chips
+.source-chip.salary-chip {
+  .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--success-text);
+  }
+
+  &.active {
+    background: var(--success-bg);
+    border-color: var(--success-text);
+    color: var(--success-text);
+  }
+}
+
+// Mobile category chips: icon in brand colour, white on the active chip
+.source-chip.category-chip {
+  .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--primary);
+  }
+
+  &.active .material-symbols-outlined {
+    color: inherit;
+  }
 }

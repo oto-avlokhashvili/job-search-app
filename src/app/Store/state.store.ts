@@ -107,6 +107,8 @@ type State = {
     publicJobsSource: string;
     publicJobsLocation: string;
     publicJobsDateRange: string;
+    publicJobsSalaryOnly: boolean;
+    publicJobsCategory: string;
 
     stats: SystemStats | null;
     statsLoaded: boolean;
@@ -164,6 +166,8 @@ const initialState: State = {
     publicJobsSource: 'all',
     publicJobsLocation: 'all',
     publicJobsDateRange: 'all',
+    publicJobsSalaryOnly: false,
+    publicJobsCategory: 'all',
 
     stats: null,
     statsLoaded: false,
@@ -665,6 +669,8 @@ export const StateStore = signalStore(
             source?: string;
             location?: string;
             dateRange?: string;
+            salaryOnly?: boolean;
+            category?: string;
             append?: boolean;
             force?: boolean;
         }): Promise<void> {
@@ -672,6 +678,8 @@ export const StateStore = signalStore(
             const source = params?.source ?? 'all';
             const location = params?.location ?? 'all';
             const dateRange = params?.dateRange ?? 'all';
+            const salaryOnly = params?.salaryOnly ?? false;
+            const category = params?.category ?? 'all';
             const append = params?.append ?? false;
             const force = params?.force ?? false;
 
@@ -684,14 +692,16 @@ export const StateStore = signalStore(
                 store.publicJobsQuery() === query &&
                 store.publicJobsSource() === source &&
                 store.publicJobsLocation() === location &&
-                store.publicJobsDateRange() === dateRange
+                store.publicJobsDateRange() === dateRange &&
+                store.publicJobsSalaryOnly() === salaryOnly &&
+                store.publicJobsCategory() === category
             ) {
                 return;
             }
 
             // Reuse a request that is already running for the same filters, so callers
             // never fire it twice. Only the newest filter request is kept here.
-            const key = [query, source, location, dateRange].join('|');
+            const key = [query, source, location, dateRange, salaryOnly, category].join('|');
             const running = inFlightPublicJobs.get(store);
             if (!append && !force && running?.key === key) {
                 return running.promise;
@@ -761,7 +771,7 @@ export const StateStore = signalStore(
                         res = await new Promise((resolve, reject) => {
                             // Unsubscribing aborts the underlying fetch.
                             const sub = jobsService
-                                .getJobs(query, page, source, location, '', publishDateParam, limit)
+                                .getJobs(query, page, source, location, '', publishDateParam, limit, salaryOnly, category)
                                 .subscribe({ next: resolve, error: reject });
                             abort = () => {
                                 sub.unsubscribe();
@@ -816,6 +826,8 @@ export const StateStore = signalStore(
                         publicJobsSource: source,
                         publicJobsLocation: location,
                         publicJobsDateRange: dateRange,
+                        publicJobsSalaryOnly: salaryOnly,
+                        publicJobsCategory: category,
                     });
                 } catch (err) {
                     if (isStale()) {

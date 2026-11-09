@@ -1,6 +1,11 @@
 export function extractSalary(job: any): string {
   if (!job) return 'შეთანხმებით';
 
+  // The API works out each job's salary once and stores it; the "salary shown" filter uses the same
+  // value, so use it whenever it's there ('' = none stated). The parsing below is only a fallback for
+  // jobs the API hasn't processed yet.
+  if (typeof job.salary === 'string') return job.salary || 'შეთანხმებით';
+
   const existingSalary = job.salaryRange?.trim();
   if (existingSalary && existingSalary !== 'შეთანხმებით' && existingSalary !== 'არ არის მითითებული' && existingSalary.toLowerCase() !== 'n/a') {
     return ensureCurrency(existingSalary);
@@ -114,4 +119,11 @@ function ensureCurrency(salaryStr: string | undefined): string {
     return `${trimmed} ლარი`;
   }
   return trimmed;
+}
+
+const SALARY_PLACEHOLDERS = new Set(['', 'შეთანხმებით', 'არ არის მითითებული', 'n/a']);
+
+/** True when the vacancy states an actual amount (not "by agreement"). */
+export function hasSalary(salaryRange?: string | null): boolean {
+  return !SALARY_PLACEHOLDERS.has((salaryRange || '').trim().toLowerCase());
 }
