@@ -731,14 +731,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  toggleSourceCard(source: string) {
-    if (this.sourceFilter.value === source) {
-      this.setSource('all');
-    } else {
-      this.setSource(source);
-    }
-  }
-
   updatePopularArrows() {
     const el = this.popularTrackRef?.nativeElement;
     if (!el) return;

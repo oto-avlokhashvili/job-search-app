@@ -1074,13 +1074,6 @@ button.btn-search {
   display: none !important;
 }
 
-// The portal cards stay visible in CV mode but are inert (no clicks, no focus); dim them to match
-.cv-locked {
-  opacity: 0.4;
-  filter: grayscale(0.4);
-  transition: opacity 0.2s ease, filter 0.2s ease;
-}
-
 .search-mode-switch {
   position: relative;
   display: grid;
@@ -1334,7 +1327,7 @@ button.btn-search {
   }
 }
 
-// ─── Vacancies Container & Provider Cards ──────────────────────
+// ─── Vacancies Container ──────────────────────
 .vacancies-container {
   position: relative; // paints above the particle canvas (no z-index so the mobile sheet can overlay everything)
   padding: 0 48px 60px;
@@ -1347,194 +1340,6 @@ button.btn-search {
 
   @media (max-width: 576px) {
     padding: 0 12px 36px;
-  }
-}
-
-.provider-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  @media (max-width: 576px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-}
-
-.provider-status-card {
-  padding: 16px 18px;
-  border-radius: 16px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--surface-container-lowest);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-  transition: all 0.25s ease;
-
-  @media (max-width: 576px) {
-    padding: 12px 14px;
-    gap: 8px;
-    border-radius: 14px;
-  }
-
-  .card-header-line {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .provider-logo-container {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--surface-container-low);
-
-      @media (max-width: 576px) {
-        width: 32px;
-        height: 32px;
-      }
-
-      .provider-card-logo {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-
-        &.circular {
-          border-radius: 50%;
-        }
-
-        @media (max-width: 576px) {
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
-
-    .live-status-pill {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.25);
-
-      .live-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #22c55e;
-        box-shadow: 0 0 8px #22c55e;
-      }
-
-      .live-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #22c55e;
-      }
-    }
-  }
-
-  .card-info {
-    .provider-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--on-surface);
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .provider-stats {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-
-      .provider-count {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: var(--primary);
-        line-height: 1.1;
-
-        @media (max-width: 576px) {
-          font-size: 1.15rem;
-        }
-      }
-
-      .provider-unit {
-        font-size: 12px;
-        color: var(--on-surface-variant);
-        font-weight: 500;
-      }
-    }
-  }
-
-  .card-footer-action {
-    display: flex;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 600;
-
-    .card-browse-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--on-surface-variant);
-      opacity: 0.8;
-      transition: color 0.2s ease, transform 0.2s ease;
-
-      span.material-symbols-outlined {
-        font-size: 14px;
-        transition: transform 0.2s ease;
-      }
-    }
-
-    .card-selected-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--primary);
-      font-weight: 800;
-
-      span.material-symbols-outlined {
-        font-size: 16px;
-      }
-    }
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: var(--primary);
-
-    .card-footer-action .card-browse-tag {
-      color: var(--primary);
-      opacity: 1;
-
-      span.material-symbols-outlined {
-        transform: translateX(3px);
-      }
-    }
-  }
-
-  &.active {
-    border-color: var(--primary);
-    background: rgba(11, 96, 150, 0.05);
-    box-shadow: 0 4px 18px rgba(11, 96, 150, 0.12);
   }
 }
 
@@ -2329,7 +2134,6 @@ button.btn-search {
 // Kept at the end of the file so it overrides the base `display` of these blocks.
 @media (max-width: 991px) {
   .section-header p.body-lg,
-  .provider-cards-grid,
   .results-meta.unfiltered {
     display: none;
   }
