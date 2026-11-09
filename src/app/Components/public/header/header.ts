@@ -22,6 +22,12 @@ export class Header {
   stateStore = inject(StateStore);
   favorites = inject(FavoritesService);
   router = inject(Router);
+
+  /** The landing page, whatever its query or fragment ("/home?for=employer" is still home) */
+  isHome(): boolean {
+    const path = this.router.url.split(/[?#]/)[0];
+    return path === '/home' || path === '/';
+  }
   dialog = inject(MatDialog);
   private alertify = inject(AlertifyService);
   activeSection = signal('features');
@@ -93,7 +99,7 @@ export class Header {
   private scrollTimeout: any;
 
   scroll(target: string) {
-    if (this.router.url !== '/home' && this.router.url !== '/') {
+    if (!this.isHome()) {
       this.router.navigate(['/home']).then(() => {
         setTimeout(() => {
           this.scrollToElement(target);

@@ -6,10 +6,10 @@
         <span class="logo-text">Job Up</span>
       </div>
       <div class="nav-links-desktop">
-        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
+        <a class="nav-link" [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
         <a class="nav-link" [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')">ვაკანსიები</a>
-        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
-        <a class="nav-link" [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
+        <a class="nav-link" [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
+        <a class="nav-link" [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
           <a class="nav-link" [routerLink]="'/profile'" [class.active]="router.url.startsWith('/profile')">პროფილი</a>
         }
@@ -95,10 +95,10 @@
   </div>
 
   <div class="mobile-menu" [class.active]="menuOpen">
-    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
+    <a [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
     <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
-    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
-    <a [class.active]="(router.url === '/home' || router.url === '/') && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
+    <a [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
+    <a [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     @if (isAdmin()) {
       <a [routerLink]="'/hr'" (click)="menuOpen = false">HR პანელი</a>
     }
@@ -118,7 +118,7 @@
 <div class="mobile-bottom-nav">
     <!-- 1. მთავარი -->
     <a class="bottom-nav-item"
-       [class.active]="router.url === '/home' || router.url === '/'"
+       [class.active]="isHome()"
        (click)="scroll('features')">
       <div class="nav-icon-wrap">
         <span class="material-symbols-outlined nav-icon">home</span>

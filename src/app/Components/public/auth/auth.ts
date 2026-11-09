@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, effect, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { Router } from '@angular/router';
@@ -47,6 +47,19 @@ export class Auth {
   // Employer sign-up: company HR (company name required) or outsource recruiter (agency name optional)
   hrType = signal<HrType>('COMPANY');
   registeredAsEmployer = signal(false);
+
+  constructor() {
+    // Opened as "employer sign-up" (e.g. the home page's დაასაქმე card): tick the employer option
+    effect(() => {
+      if (this.authService.isAuthModalOpen() && this.authService.employerSignup()) {
+        untracked(() => {
+          this.registrationSuccess.set(false);
+          this.toggleEmployer(true);
+          this.authService.employerSignup.set(false);
+        });
+      }
+    });
+  }
 
   toggleEmployer(checked: boolean) {
     this.isEmployer.set(checked);

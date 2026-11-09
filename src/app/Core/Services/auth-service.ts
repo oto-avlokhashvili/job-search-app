@@ -21,10 +21,13 @@ export class AuthService {
   isAuthModalOpen = signal(false);
   authModalMode = signal<'login' | 'register'>('login');
   returnUrl = signal<string | null>(null);
+  /** Open sign-up with the employer (HR) option already ticked; the auth modal reads and resets it */
+  employerSignup = signal(false);
 
-  openAuthModal(mode: 'login' | 'register' = 'login', returnUrl: string | null = null) {
+  openAuthModal(mode: 'login' | 'register' = 'login', returnUrl: string | null = null, asEmployer = false) {
     this.authModalMode.set(mode);
     this.returnUrl.set(returnUrl);
+    this.employerSignup.set(asEmployer);
     this.isAuthModalOpen.set(true);
   }
 

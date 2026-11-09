@@ -1,132 +1,229 @@
 <main class="home-main">
-  <!-- Hero Section — Command Center stats design -->
-  <section class="hero-section" id="features">
-    <div class="hero-grid-container">
-      <!-- Left Column: Copy & CTAs -->
-      <div class="hero-content-left">
-        <div class="hero-badge">
-          <span class="material-symbols-outlined">bolt</span>
-          <span>AI ანალიზზე დაფუძნებული კარიერული აგენტი</span>
-        </div>
-        
-        <h1 class="display-lg">
-          <span class="hero-title-main">შექმენი საკუთარი <span class="text-gradient">AI აგენტი</span></span>
-          <span class="hero-title-sub">და მოაძებნინე სამსახური მარტივად</span>
-        </h1>
-        
-        <p class="body-lg subtitle">
-          შემოუერთდი ათასობით პროფესიონალს, რომლებმაც ჩართეს პერსონალური AI აგენტები პორტალების მუდმივი სკანირების, პროფილების ოპტიმიზაციისა და გასაუბრებების დასანიშნად — სრულიად ავტომატურად.
-        </p>
-
-        <div class="cta-group">
-          <div class="cta-primary-row">
-            <button class="btn-fluid primary" (click)="handleHeroClick()">
-              <span class="material-symbols-outlined">rocket_launch</span>
-              დაიწყე AI აგენტის შექმნა
-            </button>
-            <a routerLink="/vacancies" class="btn-fluid secondary">
-              <span class="material-symbols-outlined">search</span>
-              მოძებნე მარტივად
-            </a>
-          </div>
-
-          <button type="button" class="btn-fluid candidate-pool-btn" (click)="openPublicCvModal()">
-            <span class="pulse-dot"></span>
-            <span class="material-symbols-outlined">person_search</span>
-            <span>ატვირთე CV და რეკრუტერი თავად გიპოვის</span>
+  <!-- Hero: one page, two audiences. The switch picks the side; the accent colour follows it. -->
+  <section class="hero-section" id="features" [attr.data-audience]="audience()">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="audience-switch" [class.employer]="audience() === 'employer'" role="tablist" aria-label="ვისთვის">
+          <span class="thumb" aria-hidden="true"></span>
+          <button type="button" role="tab" [class.active]="audience() === 'seeker'" [attr.aria-selected]="audience() === 'seeker'" (click)="setAudience('seeker')">
+            <span class="material-symbols-outlined">work</span>
+            დასაქმდი
+          </button>
+          <button type="button" role="tab" [class.active]="audience() === 'employer'" [attr.aria-selected]="audience() === 'employer'" (click)="setAudience('employer')">
+            <span class="material-symbols-outlined">group_add</span>
+            დაასაქმე
           </button>
         </div>
+
+        @if (audience() === 'seeker') {
+          <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ყველა პორტალზე ერთად</span></h1>
+          <p class="hero-lede">
+            @if (vacancyCount() > 0) {
+              <strong>{{ vacancyCount() | number }} აქტიური ვაკანსია</strong>
+            } @else {
+              <strong>ყველა აქტიური ვაკანსია</strong>
+            }
+            <span class="lede-long">jobs.ge, hr.ge, myjobs.ge, awork.ge და LinkedIn-დან, ყოველდღე განახლებული.</span>
+            <span class="lede-short">5 პორტალიდან</span>
+          </p>
+
+          <!-- Same search as the vacancies page: keyword in, results there (city etc. are filtered there) -->
+          <form class="hero-search" role="search" (submit)="search($event)">
+            <label class="search-input-wrapper">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input type="search" enterkeyhint="search" class="filter-search-input" [formControl]="searchQuery" placeholder="მოძებნე პოზიცია/კომპანია" aria-label="ვაკანსიის ძებნა">
+            </label>
+            <button type="submit" class="btn-search" aria-label="ძიება">
+              <span class="material-symbols-outlined">search</span>
+              <span class="btn-search-label">ძიება</span>
+            </button>
+          </form>
+
+          <!-- Categories: one scrollable row, arrows scroll it smoothly (hidden when it all fits) -->
+          <div class="hero-quick" [class.scrollable]="quickCanScrollLeft() || quickCanScrollRight()">
+            <span class="quick-label">პოპულარული:</span>
+            <button type="button" class="quick-arrow left" [disabled]="!quickCanScrollLeft()" (click)="scrollQuick(-1)" aria-label="წინა კატეგორიები">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <div #quickTrack class="quick-track" [class.fade-left]="quickCanScrollLeft()" [class.fade-right]="quickCanScrollRight()" (scroll)="updateQuickArrows()">
+              @for (cat of heroCategories; track cat.key) {
+                <a class="quick-chip" routerLink="/vacancies" [queryParams]="{ category: cat.key }">
+                  <span class="material-symbols-outlined">{{ cat.icon }}</span>
+                  {{ cat.short }}
+                </a>
+              }
+            </div>
+            <button type="button" class="quick-arrow right" [disabled]="!quickCanScrollRight()" (click)="scrollQuick(1)" aria-label="შემდეგი კატეგორიები">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+
+          <div class="hero-trust">
+            <span class="portal-logos" aria-hidden="true">
+              <img src="/icons/jobs.png" alt="">
+              <img src="/icons/hr.png" alt="">
+              <img src="/icons/myjobsge.png" alt="">
+              <img src="/icons/awork.png" alt="">
+              <img src="/icons/linkedin.png" alt="">
+            </span>
+            <span><strong>5 პორტალი</strong> ერთ სივრცეში</span>
+          </div>
+
+          <!-- CV into the candidate pool: a quiet one-line alert in the hero's accent -->
+          <button type="button" class="cv-promo" (click)="openPublicCvModal()">
+            <span class="cv-promo-icon"><span class="material-symbols-outlined">upload_file</span></span>
+            <span class="cv-promo-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</span>
+            <span class="material-symbols-outlined cv-promo-arrow">arrow_forward</span>
+          </button>
+        } @else {
+          <h1 class="hero-title">იპოვე სწორი კანდიდატი,<br><span class="accent">არა უბრალოდ CV</span></h1>
+          <p class="hero-lede">
+            <span class="lede-long">
+              აღწერე, ვის ეძებ — AI
+              @if (stats()?.uploadedCvs; as cvs) {
+                <strong>{{ cvs | number }} CV-დან</strong>
+              } @else {
+                <strong>ატვირთული CV-ებიდან</strong>
+              }
+              შეგირჩევს შესაფერისებს და შერჩევასაც ერთ სივრცეში მართავ.
+            </span>
+            <span class="lede-short">AI შეგირჩევს სწორ კანდიდატს</span>
+          </p>
+
+          <ul class="hero-benefits">
+            <li>
+              <span class="benefit-icon"><span class="material-symbols-outlined">auto_awesome</span></span>
+              <span>AI ძიება<small>„ბუღალტერი 1C-ის ცოდნით, თბილისი" — და მზად არის</small></span>
+            </li>
+            <li>
+              <span class="benefit-icon"><span class="material-symbols-outlined">view_kanban</span></span>
+              <span>კანდიდატების შერჩევა ეტაპებად<small>ახალი → გასაუბრება → შეთავაზება, მთელი გუნდისთვის</small></span>
+            </li>
+            <li>
+              <span class="benefit-icon"><span class="material-symbols-outlined">videocam</span></span>
+              <span>გასაუბრება Google Meet-ით<small>მოსაწვევი და ბმული კანდიდატს ავტომატურად მიდის</small></span>
+            </li>
+          </ul>
+
+          <div class="hero-cta-row">
+            @if (isEmployerAccount()) {
+              <a class="hero-btn primary" routerLink="/hr">
+                <span class="material-symbols-outlined">dashboard</span>
+                HR პანელი
+              </a>
+            } @else {
+              <button type="button" class="hero-btn primary" (click)="openEmployerPath()">
+                <span class="material-symbols-outlined">person_add</span>
+                დამსაქმებლად რეგისტრაცია
+              </button>
+              @if (!authService.isLoggedIn()) {
+                <button type="button" class="hero-btn ghost" (click)="authService.openAuthModal('login', '/hr')">შესვლა</button>
+              }
+            }
+          </div>
+        }
       </div>
 
-      <!-- Right Column: Live Logistics Tracker -->
-      <div class="hero-visual-right">
-        <div class="dashboard-card">
-          <!-- Header -->
-          <div class="card-header">
-            <div class="pulse-dot"></div>
-            <h3 class="card-title">ოპერაციების მართვის ცენტრი</h3>
-          </div>
-          
-          <!-- Stats Grid -->
-          <div class="stats-grid">
-            <div class="stat-box">
-              <div class="stat-label">აქტიური აგენტები</div>
-              <div class="stat-value text-primary">
-                @if (stats(); as s) {
-                  {{ s.activeAgents | number }}
-                } @else {
-                  <span class="btn-spinner" style="border-top-color: var(--primary); width: 14px; height: 14px;"></span>
-                }
-              </div>
+      <!-- Product previews: what each side actually gets -->
+      <div class="hero-visual" [class.employer]="audience() === 'employer'">
+        @if (audience() === 'seeker') {
+          <div class="preview-panel">
+            <div class="preview-head">
+              <span class="preview-title"><span class="material-symbols-outlined">local_fire_department</span>ცხელ-ცხელი ვაკანსიები</span>
+              <span class="live-pill"><i></i>Live</span>
             </div>
-            <div class="stat-box">
-              <div class="stat-label">აქტიური მომხმარებლები</div>
-              <div class="stat-value text-accent">
-                @if (stats(); as s) {
-                  {{ s.activeUsers | number }}
-                } @else {
-                  <span class="btn-spinner" style="border-top-color: var(--primary-container); width: 14px; height: 14px;"></span>
-                }
-              </div>
-            </div>
-            <div class="stat-box aggregators-box">
-              <div class="stat-label">აქტიური აგრეგატორები</div>
-              <div class="stat-value-with-logos">
-                <span class="stat-value">{{ stats()?.activeAggregators ?? 5 }}</span>
-                <div class="aggregator-mini-avatars">
-                  @for (agg of (stats()?.aggregators || defaultAggregators); track agg.id) {
-                    <div class="mini-avatar" [class.jobs-ge]="agg.id === 'jobs-ge'" [class.hr-ge]="agg.id === 'hr-ge'" [class.awork-ge]="agg.id === 'awork-ge'" [class.myjobs-ge]="agg.id === 'myjobs-ge'" [class.linkedin]="agg.id === 'linkedin'" [title]="agg.name">
-                      <img [src]="getAggregatorLogo(agg.id)" [alt]="agg.name" [class.circular]="agg.id === 'myjobs-ge'">
-                    </div>
-                  }
+            @if (latestLoading()) {
+              <div class="preview-loading-bar"></div>
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="preview-row skeleton">
+                  <span class="row-logo skeleton-pulse"></span>
+                  <span class="row-text">
+                    <span class="skeleton-line skeleton-pulse" [style.width]="i % 2 === 0 ? '62%' : '75%'"></span>
+                    <span class="skeleton-line short skeleton-pulse" [style.width]="i % 2 === 0 ? '40%' : '48%'"></span>
+                  </span>
+                  <span class="skeleton-line tiny skeleton-pulse"></span>
                 </div>
-              </div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">აქტიური ვაკანსიები</div>
-              <div class="stat-value text-accent">
-                @if (stats()?.activeVacancies || dbTotalRecords() > 0) {
-                  {{ (stats()?.activeVacancies || dbTotalRecords()) | number }}
-                } @else {
-                  <span class="btn-spinner" style="border-top-color: var(--primary-container); width: 14px; height: 14px;"></span>
-                }
-              </div>
-            </div>
-            <div class="stat-box full-width">
-              <div class="stat-box-left">
-                <div class="stat-label">ატვირთული CV-ები</div>
-                <div class="stat-value text-gradient">
-                  @if (stats(); as s) {
-                    {{ s.uploadedCvs | number }}
+              }
+            }
+            @for (job of latestJobs(); track job.id) {
+              <a class="preview-row" [routerLink]="['/vacancies', job.slug]">
+                <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
+                  @if (logos.show(job.logo)) {
+                    <img [src]="job.logo" alt="" loading="lazy" (error)="logos.broken(job.logo)">
                   } @else {
-                    <span class="btn-spinner" style="border-top-color: var(--primary); width: 14px; height: 14px;"></span>
+                    {{ job.company.charAt(0) }}
                   }
-                </div>
-              </div>
-              <div class="stat-box-right">
-                <div class="system-status-label">სისტემის სტატუსი</div>
-                <div class="system-status-value">
-                  <span class="pulse-dot-green"></span>
-                  <span>{{ stats()?.systemStatus || 'ოპტიმალური' }}</span>
-                </div>
-              </div>
+                </span>
+                <span class="row-text">
+                  <span class="row-title">{{ job.title }}</span>
+                  <span class="row-meta">{{ job.company }} · {{ job.location }}</span>
+                </span>
+                <span class="row-side">
+                  @if (job.salary) {
+                    <span class="salary-pill">{{ job.salary }}</span>
+                  }
+                  <span class="row-age">{{ job.age }}</span>
+                </span>
+              </a>
+            }
+            <div class="preview-foot">
+              <a routerLink="/vacancies">ყველას ნახვა <span class="material-symbols-outlined">arrow_forward</span></a>
             </div>
           </div>
-
-          <!-- Decorative Footer Info -->
-          <div class="card-footer">
-            <div class="portal-sync-status">
-              <span class="pulse-dot-green"></span>
-              <span class="sync-text">{{ stats()?.syncedPortals ?? 5 }} პორტალი სინქრონიზებულია</span>
+        } @else {
+          <!-- An illustration of the HR search, not real candidates (hidden from screen readers) -->
+          <div class="preview-panel" aria-hidden="true">
+            <div class="preview-head">
+              <span class="preview-title"><span class="material-symbols-outlined">person_search</span>AI კანდიდატების ძიება</span>
+              @if (stats()?.uploadedCvs; as cvs) {
+                <span class="live-pill"><i></i>{{ cvs | number }} CV</span>
+              }
             </div>
-            <div class="match-time">
-              გათვლის საშუალო დრო: <span class="highlight">{{ stats()?.avgCalculationTimeSeconds ?? 1.09 }} წამი</span>
+            <div class="ai-query">
+              <span class="material-symbols-outlined">auto_awesome</span>
+              ბუღალტერი 1C-ის ცოდნით, თბილისი
+              <span class="caret"></span>
             </div>
+            @if (candidatesLoading()) {
+              <div class="preview-loading-bar"></div>
+              @for (i of [1, 2, 3]; track i) {
+                <div class="preview-row skeleton">
+                  <span class="row-avatar skeleton-pulse"></span>
+                  <span class="row-text">
+                    <span class="skeleton-line skeleton-pulse" [style.width]="i % 2 === 0 ? '45%' : '55%'"></span>
+                    <span class="skeleton-line short skeleton-pulse" [style.width]="i % 2 === 0 ? '60%' : '70%'"></span>
+                  </span>
+                  <span class="skeleton-line tiny skeleton-pulse"></span>
+                </div>
+              }
+            } @else {
+            @for (c of sampleCandidates; track c.initials) {
+              <div class="preview-row">
+                <span class="row-avatar" [style.background]="c.color">{{ c.initials }}</span>
+                <span class="row-text">
+                  <span class="row-title">
+                    {{ c.name }}
+                    @if (c.stage) {
+                      <span class="stage-pill">{{ c.stage }}</span>
+                    }
+                  </span>
+                  <span class="row-meta">{{ c.role }}</span>
+                </span>
+                <span class="match">
+                  <b>{{ c.match }}%</b>
+                  <span class="bar" style="display: block"><span [style.width.%]="c.match"></span></span>
+                </span>
+              </div>
+            }
+            }
           </div>
-        </div>
+          <div class="preview-float bottom-right" aria-hidden="true">
+            <span class="float-icon green"><span class="material-symbols-outlined">event_available</span></span>
+            <span><b>გასაუბრება დაინიშნა</b><small>ხვალ 11:00 · Google Meet</small></span>
+          </div>
+        }
       </div>
     </div>
-
     <!-- Integrated Portals Cards directly under Hero Grid -->
     <div class="hero-portals-container" id="portals">
       <div class="portals-header-line">
