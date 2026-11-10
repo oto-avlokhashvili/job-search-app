@@ -1,109 +1,182 @@
 @let c = candidate();
-<article class="card" [class.unlocked]="c.unlocked">
-  <header class="head">
-    <div class="title">
-      <h3>{{ c.detectedRole || 'სპეციალისტი' }}</h3>
-      <div class="meta">
-        @if (c.seniorityLevel) {
-          <span class="chip level">{{ c.seniorityLevel }}</span>
+<article class="card" [class]="tier()" [class.unlocked]="c.unlocked">
+  <div class="body">
+    <!-- Who, at a glance: avatar (locked / unlocked), role, level · experience · city, match -->
+    <header class="head">
+      @if (c.unlocked && initials()) {
+        <div class="avatar" [style.background]="avatarColor()">
+          {{ initials() }}
+          <span class="badge ok" title="კონტაქტი გახსნილია"><span class="material-symbols-outlined">check</span></span>
+        </div>
+      } @else {
+        <div class="avatar locked">
+          <span class="material-symbols-outlined">person</span>
+          @if (!c.unlocked) {
+            <span class="badge" title="კონტაქტი დაფარულია"><span class="material-symbols-outlined">lock</span></span>
+          }
+        </div>
+      }
+
+      <div class="who">
+        <h3 class="role" [title]="c.detectedRole">{{ c.detectedRole || 'სპეციალისტი' }}</h3>
+        @if (name()) {
+          <div class="name-line">{{ name() }}</div>
         }
-        @if (location()) {
-          <span class="meta-item">
-            <span class="material-symbols-outlined">location_on</span>{{ location() }}
-          </span>
-        }
-        <span class="meta-item">
-          <span class="material-symbols-outlined">update</span>{{ c.updatedAt | date: 'dd.MM.yyyy' }}
-        </span>
+        <div class="sub">
+          @if (c.seniorityLevel) {
+            <span class="level">{{ c.seniorityLevel }}</span>
+          }
+          @if (experience()) {
+            <span class="exp">{{ experience() }}</span>
+          }
+          @if (location()) {
+            <!-- dot + city wrap together -->
+            <span class="city">
+              @if (experience() || c.seniorityLevel) {
+                <span class="dot">·</span>
+              }
+              {{ location() }}
+            </span>
+          }
+        </div>
       </div>
-    </div>
-    @if (c.match !== undefined) {
-      <span class="match" [class.high]="c.match >= 75">{{ c.match }}%</span>
-    }
-  </header>
 
-  <!-- AI search: why this CV fits, and what the request asks for that it doesn't show -->
-  @if (c.reason) {
-    <div class="ai-reason">
-      <p><span class="material-symbols-outlined">auto_awesome</span>{{ c.reason }}</p>
-      @if (c.missing?.length) {
-        <p class="missing"><span class="material-symbols-outlined">remove_circle_outline</span>აკლია: {{ c.missing!.join(', ') }}</p>
+      @if (c.match !== undefined && c.match !== null) {
+        <div class="ring" [style.--p]="c.match" [title]="'შესაბამისობა ' + c.match + '%'">
+          <span>{{ c.match }}%</span>
+        </div>
       }
-    </div>
-  }
+    </header>
 
-  @if (c.careerDirection && c.careerDirection !== c.detectedRole) {
-    <p class="direction">
-      <span class="material-symbols-outlined">trending_up</span>{{ c.careerDirection }}
-    </p>
-  }
-
-  @if (skills().length) {
-    <div class="skills">
-      @for (skill of skills(); track skill) {
-        <span class="chip" [class.hit]="isMatched(skill)">{{ skill }}</span>
-      }
-    </div>
-  }
-
-  @if (c.domains.length) {
-    <p class="domains">{{ c.domains.join(' · ') }}</p>
-  }
-
-  @if (addable() && memberships().length) {
-    <div class="in-vacancies">
-      @for (m of memberships(); track m.entryId) {
-        <a class="vacancy-chip" [routerLink]="['/hr/candidates/v', m.vacancyId]" [style.--stage-color]="m.stage.color">
-          <span class="material-symbols-outlined">work</span>
-          <span class="vacancy-title">{{ m.title }}</span>
-          <span class="vacancy-stage">{{ m.stage.label }}</span>
-        </a>
-      }
-    </div>
-  }
-
-  <footer class="foot">
-    @if (c.unlocked && c.contact) {
-      <div class="contact">
-        @if (c.contact.fullName) {
-          <span class="contact-item name">
-            <span class="material-symbols-outlined">person</span>{{ c.contact.fullName }}
-          </span>
+    <!-- AI search: why this CV fits, and what the request asks for that it doesn't show -->
+    @if (c.reason) {
+      <div class="ai">
+        <p class="why"><span class="material-symbols-outlined">auto_awesome</span><span>{{ c.reason }}</span></p>
+        @if (c.missing?.length) {
+          <p class="missing">
+            <span class="material-symbols-outlined">error</span>
+            <span>აკლია: <b>{{ c.missing!.join(', ') }}</b></span>
+          </p>
         }
+      </div>
+    }
+
+    <!-- The facts recruiters scan for -->
+    @if (hasFacts() || (c.careerDirection && c.careerDirection !== c.detectedRole)) {
+      <div class="facts">
+        @if (c.companies?.length) {
+          <div class="fact" title="სამუშაო ადგილები">
+            <span class="material-symbols-outlined">work_history</span>
+            <span class="v" [title]="c.companies!.join(', ')">
+              {{ c.companies![0] }}
+              @if (c.companies!.length > 1) {
+                <small>· {{ c.companies!.slice(1).join(' · ') }}</small>
+              }
+            </span>
+          </div>
+        }
+        @if (c.universities?.length) {
+          <div class="fact" title="განათლება">
+            <span class="material-symbols-outlined">school</span>
+            <span class="v" [title]="c.universities!.join(', ')">{{ c.universities!.join(' · ') }}</span>
+          </div>
+        }
+        @if (languages().length) {
+          <div class="fact" title="ენები">
+            <span class="material-symbols-outlined">translate</span>
+            <span class="langs">
+              @for (lang of languages(); track lang) {
+                <span class="lang">{{ lang }}</span>
+              }
+            </span>
+          </div>
+        }
+        @if (c.domains.length) {
+          <div class="fact" title="სფერო">
+            <span class="material-symbols-outlined">category</span>
+            <span class="v" [title]="c.domains.join(', ')">{{ c.domains.slice(0, 2).join(' · ') }}</span>
+          </div>
+        }
+        @if (c.careerDirection && c.careerDirection !== c.detectedRole) {
+          <div class="fact wide" title="კარიერული მიმართულება">
+            <span class="material-symbols-outlined">trending_up</span>
+            <span class="v" [title]="c.careerDirection">{{ c.careerDirection }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Skills: the ones the search asked for first, marked -->
+    @if (skills().length) {
+      <div class="skills">
+        @for (skill of skills(); track skill) {
+          @if (isMatched(skill)) {
+            <span class="skill hit"><span class="material-symbols-outlined">check</span>{{ skill }}</span>
+          } @else {
+            <span class="skill">{{ skill }}</span>
+          }
+        }
+        @if (hiddenSkills()) {
+          <span class="skill more">+{{ hiddenSkills() }}</span>
+        }
+      </div>
+    }
+
+    @if (addable() && memberships().length) {
+      <div class="in-vacancies">
+        @for (m of memberships(); track m.entryId) {
+          <a class="vacancy-chip" [routerLink]="['/hr/candidates/v', m.vacancyId]" [style.--stage-color]="m.stage.color">
+            <i></i>
+            <span class="vacancy-title">{{ m.title }}</span>
+            <span class="vacancy-stage">· {{ m.stage.label }}</span>
+          </a>
+        }
+      </div>
+    }
+
+    <!-- Unlocked: contacts as tap targets -->
+    @if (c.unlocked && c.contact && (c.contact.email || c.contact.phoneNumber)) {
+      <div class="contact">
         @if (c.contact.email) {
-          <a class="contact-item" [href]="'mailto:' + c.contact.email">
-            <span class="material-symbols-outlined">mail</span>{{ c.contact.email }}
+          <a class="contact-item" [href]="'mailto:' + c.contact.email" [title]="c.contact.email">
+            <span class="material-symbols-outlined">mail</span><span class="txt">{{ c.contact.email }}</span>
           </a>
         }
         @if (c.contact.phoneNumber) {
           <a class="contact-item" [href]="'tel:' + c.contact.phoneNumber">
-            <span class="material-symbols-outlined">call</span>{{ c.contact.phoneNumber }}
+            <span class="material-symbols-outlined">call</span><span class="txt">{{ c.contact.phoneNumber }}</span>
           </a>
         }
       </div>
-      <div class="actions">
+    }
+  </div>
+
+  <!-- The next step -->
+  <footer class="foot">
+    <div class="foot-info">
+      @if (c.unlocked) {
         @if (c.manual) {
-          <!-- Added by hand: there's no CV file -->
-          <span class="locked">
-            <span class="material-symbols-outlined">edit_note</span>
-            ხელით დამატებული, CV-ის გარეშე
-          </span>
-        } @else {
+          <span class="status"><span class="material-symbols-outlined">edit_note</span>ხელით დამატებული, CV-ის გარეშე</span>
+        }
+        <span class="date"><span class="material-symbols-outlined">update</span>განახლდა {{ updated() || (c.updatedAt | date: 'dd.MM.yyyy') }}</span>
+      } @else {
+        <span class="status"><span class="material-symbols-outlined">lock</span>კონტაქტი დაფარულია</span>
+        <span class="date">განახლდა {{ updated() || (c.updatedAt | date: 'dd.MM.yyyy') }}</span>
+      }
+    </div>
+
+    <div class="actions">
+      @if (c.unlocked) {
+        @if (!c.manual) {
           <button class="btn-action" type="button" [disabled]="busy()" (click)="download.emit(c)">
             <span class="material-symbols-outlined">download</span>
-            CV-ის ჩამოტვირთვა
+            CV
           </button>
         }
         @if (addable()) {
           <app-hr-vacancy-picker variant="ghost" [candidate]="c" [busy]="busy()" (add)="addToVacancy.emit($event)" />
         }
-      </div>
-    } @else {
-      <span class="locked">
-        <span class="material-symbols-outlined">lock</span>
-        საკონტაქტო მონაცემები დაფარულია
-      </span>
-      @if (addable()) {
+      } @else if (addable()) {
         <app-hr-vacancy-picker [candidate]="c" [busy]="busy()" (add)="addToVacancy.emit($event)" (unlockOnly)="unlock.emit(c)" />
       } @else {
         <button class="btn-action primary" type="button" [disabled]="busy()" (click)="unlock.emit(c)">
@@ -115,6 +188,6 @@
           კონტაქტის გახსნა
         </button>
       }
-    }
+    </div>
   </footer>
 </article>

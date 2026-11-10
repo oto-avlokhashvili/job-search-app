@@ -337,3 +337,15 @@
     animation: none;
   }
 }
+
+// Inside a candidate card's actions on phones: the button fills its share of the row
+@media (max-width: 576px) {
+  :host-context(.actions) {
+    width: 100%;
+
+    .trigger {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

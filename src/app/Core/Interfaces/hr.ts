@@ -20,6 +20,13 @@ export interface HrCandidate {
   secondarySkills: string[];
   domains: string[];
   locationPreference: string;
+  /** Total paid work experience in years (0 = none yet); null/absent on CVs not re-analyzed yet */
+  yearsOfExperience?: number | null;
+  /** Employers, most recent first */
+  companies?: string[];
+  universities?: string[];
+  /** Spoken languages, in English ("English", "Russian") */
+  languages?: string[];
   updatedAt: string;
   match?: number;
   matchedKeywords?: string[];

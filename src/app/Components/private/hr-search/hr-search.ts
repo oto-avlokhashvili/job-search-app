@@ -269,6 +269,33 @@ export class HrSearch {
   linkedinLoading = this.hrStore.linkedinLoading;
   linkedinSearched = this.hrStore.linkedinSearched;
   linkedinError = this.hrStore.linkedinError;
+
+  /**
+   * A new search runs on the active tab (the first one, or after changed filters / keyword): the
+   * list gives way to placeholder cards under a progress bar with a loader in the middle, until the
+   * results land. "Show more" (page 2+) keeps the list and its own button spinner instead.
+   */
+  searching = computed(() => {
+    switch (this.tab()) {
+      case 'cvs':
+        return this.cvLoading() && !this.hrStore.cvLoadingMore();
+      case 'ai':
+        return this.aiLoading() && !this.hrStore.aiLoadingMore();
+      default:
+        return this.linkedinLoading() && !this.hrStore.linkedinLoadingMore();
+    }
+  });
+  /** What the loader in the middle says, per source (the AI and LinkedIn take longer) */
+  searchingText = computed(() => {
+    switch (this.tab()) {
+      case 'cvs':
+        return { title: 'ვეძებთ კანდიდატებს CV ბაზაში', hint: 'ფილტრებს ვამოწმებთ...' };
+      case 'ai':
+        return { title: 'AI არჩევს საუკეთესო კანდიდატებს', hint: 'კითხულობს CV-ებს და LinkedIn პროფილებს — შეიძლება ნახევარი წუთი დასჭირდეს' };
+      default:
+        return { title: 'ვეძებთ LinkedIn-ზე', hint: 'ძიებას რამდენიმე წამი სჭირდება' };
+    }
+  });
   // A LinkedIn profile's "book a meeting": an invitation link for the HR to send them (they join with their CV)
   inviting = signal<{ vacancyId: number | null; inviteeName: string; position?: string } | null>(null);
 
@@ -421,7 +448,7 @@ export class HrSearch {
     this.submit();
   }
 
-  /** A changed filter applies at once when there are results to refine; otherwise on the next search. */
+  /** A changed filter applies at once, the first one too: no separate click on "search" needed. */
   private setFilter(f: FilterDef, value: string | boolean) {
     const changed = this.control(f.key).value !== value;
     this.control(f.key).setValue(value);
@@ -429,8 +456,17 @@ export class HrSearch {
     if (changed) this.rerun();
   }
 
+  /**
+   * Searches again after a filter change: refines the shown results, or starts the first search
+   * when the form has enough for one (the CV base: a keyword or any filter; LinkedIn and AI: a
+   * keyword). Otherwise it waits, so picking a filter never pops a "fill in the keyword" error.
+   */
   private rerun() {
-    if (this.query() && this.form.controls.keyword.valid) this.submit();
+    const keyword = this.form.controls.keyword;
+    if (!keyword.valid) return;
+    const hasKeyword = !!keyword.value.trim();
+    const searchable = this.tab() === 'cvs' ? hasKeyword || this.activeCount() > 0 : hasKeyword;
+    if (this.query() || searchable) this.submit();
   }
 
   // Close the open panel on a click outside its pill, or on Escape.

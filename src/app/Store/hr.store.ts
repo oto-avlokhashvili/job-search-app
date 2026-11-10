@@ -73,6 +73,8 @@ interface HrState {
     cvTotal: number;
     cvPage: number;
     cvLoading: boolean;
+    /** The running request is "show more" (page 2+), not a new search */
+    cvLoadingMore: boolean;
     cvSearched: boolean;
     cvError: string;
 
@@ -81,6 +83,8 @@ interface HrState {
     aiTotal: number;
     aiPage: number;
     aiLoading: boolean;
+    /** The running request is "show more" (page 2+), not a new search */
+    aiLoadingMore: boolean;
     aiSearched: boolean;
     aiError: string;
     aiKeywords: string[];
@@ -91,6 +95,8 @@ interface HrState {
     linkedinPage: number;
     linkedinHasMore: boolean;
     linkedinLoading: boolean;
+    /** The running request is "show more" (page 2+), not a new search */
+    linkedinLoadingMore: boolean;
     linkedinSearched: boolean;
     linkedinError: string;
 
@@ -126,13 +132,14 @@ interface HrState {
 const initialState: HrState = {
     searchForm: { keyword: '', location: 'Tbilisi', seniority: '', company: '', university: '', skills: '', languages: '', openToWork: false },
     // AI selection first: it searches our CVs and LinkedIn together
-    searchTab: 'ai',
+    searchTab: 'cvs',
     searchQuery: null,
 
     cvs: [],
     cvTotal: 0,
     cvPage: 1,
     cvLoading: false,
+    cvLoadingMore: false,
     cvSearched: false,
     cvError: '',
 
@@ -140,6 +147,7 @@ const initialState: HrState = {
     aiTotal: 0,
     aiPage: 1,
     aiLoading: false,
+    aiLoadingMore: false,
     aiSearched: false,
     aiError: '',
     aiKeywords: [],
@@ -150,6 +158,7 @@ const initialState: HrState = {
     linkedinPage: 1,
     linkedinHasMore: false,
     linkedinLoading: false,
+    linkedinLoadingMore: false,
     linkedinSearched: false,
     linkedinError: '',
 
@@ -233,7 +242,7 @@ export const HrStore = signalStore(
             async searchCvs(page: number) {
                 const q = store.searchQuery();
                 if (!q) return;
-                patchState(store, { cvLoading: true, cvError: '' });
+                patchState(store, { cvLoading: true, cvLoadingMore: page > 1, cvError: '' });
                 try {
                     const { keyword, location, seniority } = q;
                     const res = await firstValueFrom(
@@ -265,7 +274,7 @@ export const HrStore = signalStore(
                     patchState(store, { aiError: 'AI შერჩევისთვის აღწერეთ, როგორ კანდიდატს ეძებთ', aiLoading: false });
                     return;
                 }
-                patchState(store, { aiLoading: true, aiError: '' });
+                patchState(store, { aiLoading: true, aiLoadingMore: page > 1, aiError: '' });
                 try {
                     const res = await firstValueFrom(
                         hrService.searchCvsWithAi({
@@ -304,7 +313,7 @@ export const HrStore = signalStore(
                     patchState(store, { linkedinError: 'LinkedIn-ზე ძიებისთვის შეიყვანეთ პოზიცია', linkedinLoading: false });
                     return;
                 }
-                patchState(store, { linkedinLoading: true, linkedinError: '' });
+                patchState(store, { linkedinLoading: true, linkedinLoadingMore: page > 1, linkedinError: '' });
                 try {
                     const res = await firstValueFrom(
                         hrService.searchLinkedin({

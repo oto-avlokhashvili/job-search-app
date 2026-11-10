@@ -18,13 +18,6 @@
   <form class="search" [formGroup]="form" (ngSubmit)="submit()">
     <div class="search-top">
       <div class="tabs" role="tablist" aria-label="სად ვეძებთ">
-        <button type="button" role="tab" [class.active]="tab() === 'ai'" [attr.aria-selected]="tab() === 'ai'" (click)="selectTab('ai')">
-          <span class="material-symbols-outlined">auto_awesome</span>
-          AI შერჩევა
-          @if (aiSearched()) {
-            <span class="count">{{ aiTotal() }}</span>
-          }
-        </button>
         <button type="button" role="tab" [class.active]="tab() === 'cvs'" [attr.aria-selected]="tab() === 'cvs'" (click)="selectTab('cvs')">
           <span class="material-symbols-outlined">description</span>
           CV ბაზა
@@ -37,6 +30,13 @@
           LinkedIn
           @if (linkedinSearched()) {
             <span class="count">{{ profiles().length }}</span>
+          }
+        </button>
+        <button type="button" role="tab" [class.active]="tab() === 'ai'" [attr.aria-selected]="tab() === 'ai'" (click)="selectTab('ai')">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          AI შერჩევა
+          @if (aiSearched()) {
+            <span class="count">{{ aiTotal() }}</span>
           }
         </button>
       </div>
@@ -248,248 +248,271 @@
       </div>
     </div>
   </form>
-  @if (!query()) {
-    <!-- Before the first search: explains the selected source, so switching tabs visibly changes the page -->
-    @if (tab() === 'cvs') {
-      <div class="intro">
-        <div class="intro-head">
-          <span class="intro-icon material-symbols-outlined">description</span>
-          <div>
-            <h2>ძიება Job Up-ის CV ბაზაში</h2>
-            <p>შეიყვანეთ პოზიცია ან უნარები, ან აირჩიეთ პოპულარული ძიება ზემოთ</p>
-          </div>
-        </div>
-        <div class="intro-grid">
-          <div class="intro-item">
-            <span class="material-symbols-outlined">manage_search</span>
-            <strong>1. ძიება</strong>
-            <small>პოზიციით, უნარებით, ლოკაციით და გამოცდილებით</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">insights</span>
-            <strong>2. შესაბამისობა</strong>
-            <small>ანონიმური პროფილები AI შესაბამისობის ქულით</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">lock_open</span>
-            <strong>3. კონტაქტის გახსნა</strong>
-            <small>ნახეთ სახელი, ტელეფონი და CV ერთი დაჭერით</small>
-          </div>
-        </div>
-      </div>
-    } @else if (tab() === 'ai') {
-      <div class="intro">
-        <div class="intro-head">
-          <span class="intro-icon material-symbols-outlined">auto_awesome</span>
-          <div>
-            <h2>AI შერჩევა</h2>
-            <p>აღწერეთ, ვის ეძებთ, და AI შეარჩევს ყველაზე შესაფერის კანდიდატებს CV ბაზიდან და LinkedIn-იდან</p>
-          </div>
-        </div>
-        <div class="intro-grid">
-          <div class="intro-item">
-            <span class="material-symbols-outlined">edit_note</span>
-            <strong>1. აღწერა</strong>
-            <small>როლი, უნარები, ინდუსტრია, გამოცდილება — თქვენი სიტყვებით</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">psychology</span>
-            <strong>2. AI შეფასება</strong>
-            <small>AI კითხულობს CV-ებს და LinkedIn პროფილებს და ალაგებს ერთ სიად (იყენებს 1 LinkedIn ძიებას)</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">fact_check</span>
-            <strong>3. რატომ ეს კანდიდატი</strong>
-            <small>თითოეულს ახლავს მიზეზი და რა აკლია მოთხოვნიდან</small>
-          </div>
-        </div>
-      </div>
-    } @else {
-      <div class="intro">
-        <div class="intro-head">
-          <span class="intro-icon material-symbols-outlined">travel_explore</span>
-          <div>
-            <h2>ძიება LinkedIn-ზე</h2>
-            <p>შეიყვანეთ პოზიცია ან უნარები და მოძებნეთ „Open to work“ პროფილები</p>
-          </div>
-        </div>
-        <div class="intro-grid">
-          <div class="intro-item">
-            <span class="material-symbols-outlined">work_history</span>
-            <strong>Open to work</strong>
-            <small>მხოლოდ პროფილები, რომლებიც აქტიურად ეძებენ სამსახურს</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">open_in_new</span>
-            <strong>პირდაპირ LinkedIn-ზე</strong>
-            <small>პროფილი იხსნება LinkedIn-ზე, სადაც შეგიძლიათ მისწეროთ</small>
-          </div>
-          <div class="intro-item">
-            <span class="material-symbols-outlined">schedule</span>
-            <strong>დღიური ლიმიტი</strong>
-            <small>ძიებას რამდენიმე წამი სჭირდება; გამოცდილების ფილტრი აქ არ მოქმედებს</small>
-          </div>
-        </div>
-      </div>
-    }
-  } @else if (tab() === 'cvs') {
-    @if (cvError()) {
-      <div class="notice error">
-        <span class="material-symbols-outlined">error</span>
-        {{ cvError() }}
-      </div>
-    }
-    @if (cvLoading() && cvs().length === 0) {
-      <div class="results">
-        @for (i of skeletons; track i) {
-          <div class="skeleton-card">
-            <span class="sk sk-title"></span>
-            <span class="sk sk-line"></span>
-            <span class="sk-chips"><span class="sk"></span><span class="sk"></span><span class="sk"></span></span>
-            <span class="sk sk-line short"></span>
-          </div>
-        }
-      </div>
-    } @else if (cvSearched() && cvs().length === 0) {
-      <div class="empty">
-        <span class="empty-icon material-symbols-outlined">search_off</span>
-        <h3>კანდიდატი ვერ მოიძებნა</h3>
-        <p>სცადეთ სხვა სიტყვები, მოხსენით ფილტრები ან გადადით LinkedIn-ის ჩანართზე.</p>
-        <button type="button" class="btn-ghost" (click)="selectTab('linkedin')">
-          <span class="material-symbols-outlined">travel_explore</span>
-          LinkedIn-ზე ძიება
-        </button>
-      </div>
-    } @else if (cvs().length) {
-      <p class="results-meta">ნაპოვნია <strong>{{ cvTotal() }}</strong> კანდიდატი · ნაჩვენებია {{ cvs().length }}</p>
-      <div class="results">
-        @for (candidate of cvs(); track candidate.id) {
-          <app-hr-candidate-card
-            [candidate]="candidate"
-            [busy]="busyId() === candidate.id"
-            [addable]="true"
-            (unlock)="unlock($event)"
-            (addToVacancy)="addToVacancy(candidate, $event)"
-            (download)="download($event)" />
-        }
-      </div>
-      @if (cvs().length < cvTotal()) {
-        <button class="btn-more" type="button" [disabled]="cvLoading()" (click)="searchCvs(cvPage() + 1)">
-          @if (cvLoading()) {
-            <span class="spinner small"></span> იტვირთება...
-          } @else {
-            <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+  <!-- Results of the active tab. While a search runs (the first one, or after changed filters or
+       keyword) placeholder cards stand in, under a progress bar, with a loader in the middle. -->
+  <div class="results-area" [attr.aria-busy]="searching()">
+    @if (searching()) {
+      <div class="searching" role="status" aria-live="polite">
+        <div class="results" aria-hidden="true">
+          @for (i of skeletons; track i) {
+            <div class="skeleton-card" [style.--delay]="($index * 0.15) + 's'">
+              <span class="card-progress"><span></span></span>
+              <span class="sk sk-title"></span>
+              <span class="sk sk-line"></span>
+              <span class="sk-chips"><span class="sk"></span><span class="sk"></span><span class="sk"></span></span>
+              <span class="sk sk-line short"></span>
+            </div>
           }
-        </button>
-      }
-    }
-  } @else if (tab() === 'ai') {
-    @if (aiError()) {
-      <div class="notice error">
-        <span class="material-symbols-outlined">error</span>
-        {{ aiError() }}
+        </div>
+        <div class="searching-center">
+          <span class="searching-loader"><span class="material-symbols-outlined">{{ tab() === 'ai' ? 'auto_awesome' : 'person_search' }}</span></span>
+          <strong>{{ searchingText().title }}<span class="dots"><i>.</i><i>.</i><i>.</i></span></strong>
+          <small>{{ searchingText().hint }}</small>
+        </div>
       </div>
-    }
-    @if (aiLoading() && aiResults().length === 0) {
-      <div class="loading">
-        <span class="spinner"></span>
-        <p>AI ეძებს CV ბაზაში და LinkedIn-ზე და არჩევს საუკეთესოებს... ამას შეიძლება ნახევარი წუთი დასჭირდეს</p>
-      </div>
-    } @else if (aiSearched() && aiResults().length === 0) {
-      <div class="empty">
-        <span class="empty-icon material-symbols-outlined">search_off</span>
-        <h3>შესაფერისი კანდიდატი ვერ მოიძებნა</h3>
-        <p>სცადეთ აღწერა შეცვალოთ ან შეამსუბუქოთ მოთხოვნები.</p>
-        <button type="button" class="btn-ghost" (click)="selectTab('linkedin')">
-          <span class="material-symbols-outlined">travel_explore</span>
-          LinkedIn-ზე ძიება
-        </button>
-      </div>
-    } @else if (aiResults().length) {
-      <p class="results-meta">
-        AI-მ შეარჩია <strong>{{ aiTotal() }}</strong> კანდიდატი · ნაჩვენებია {{ aiResults().length }}
-        (CV ბაზა: {{ aiShown().cv }}, LinkedIn: {{ aiShown().linkedin }})
-        @if (aiKeywords().length) {
-          · ეძებდა: {{ aiKeywords().join(', ') }}
-        }
-      </p>
-      @if (!aiRanked()) {
-        <div class="notice info">
-          <span class="material-symbols-outlined">info</span>
-          AI დროებით მიუწვდომელია: CV-ები დალაგებულია საკვანძო სიტყვებით, მიზეზების გარეშე.
+    } @else if (!query()) {
+      <!-- Before the first search: explains the selected source, so switching tabs visibly changes the page -->
+      @if (tab() === 'cvs') {
+        <div class="intro">
+          <div class="intro-head">
+            <span class="intro-icon material-symbols-outlined">description</span>
+            <div>
+              <h2>ძიება Job Up-ის CV ბაზაში</h2>
+              <p>შეიყვანეთ პოზიცია ან უნარები, ან აირჩიეთ პოპულარული ძიება ზემოთ</p>
+            </div>
+          </div>
+          <div class="intro-grid">
+            <div class="intro-item">
+              <span class="material-symbols-outlined">manage_search</span>
+              <strong>1. ძიება</strong>
+              <small>პოზიციით, უნარებით, ლოკაციით და გამოცდილებით</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">insights</span>
+              <strong>2. შესაბამისობა</strong>
+              <small>ანონიმური პროფილები AI შესაბამისობის ქულით</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">lock_open</span>
+              <strong>3. კონტაქტის გახსნა</strong>
+              <small>ნახეთ სახელი, ტელეფონი და CV ერთი დაჭერით</small>
+            </div>
+          </div>
+        </div>
+      } @else if (tab() === 'ai') {
+        <div class="intro">
+          <div class="intro-head">
+            <span class="intro-icon material-symbols-outlined">auto_awesome</span>
+            <div>
+              <h2>AI შერჩევა</h2>
+              <p>აღწერეთ, ვის ეძებთ, და AI შეარჩევს ყველაზე შესაფერის კანდიდატებს CV ბაზიდან და LinkedIn-იდან</p>
+            </div>
+          </div>
+          <div class="intro-grid">
+            <div class="intro-item">
+              <span class="material-symbols-outlined">edit_note</span>
+              <strong>1. აღწერა</strong>
+              <small>როლი, უნარები, ინდუსტრია, გამოცდილება — თქვენი სიტყვებით</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">psychology</span>
+              <strong>2. AI შეფასება</strong>
+              <small>AI კითხულობს CV-ებს და LinkedIn პროფილებს და ალაგებს ერთ სიად (იყენებს 1 LinkedIn ძიებას)</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">fact_check</span>
+              <strong>3. რატომ ეს კანდიდატი</strong>
+              <small>თითოეულს ახლავს მიზეზი და რა აკლია მოთხოვნიდან</small>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="intro">
+          <div class="intro-head">
+            <span class="intro-icon material-symbols-outlined">travel_explore</span>
+            <div>
+              <h2>ძიება LinkedIn-ზე</h2>
+              <p>შეიყვანეთ პოზიცია ან უნარები და მოძებნეთ „Open to work“ პროფილები</p>
+            </div>
+          </div>
+          <div class="intro-grid">
+            <div class="intro-item">
+              <span class="material-symbols-outlined">work_history</span>
+              <strong>Open to work</strong>
+              <small>მხოლოდ პროფილები, რომლებიც აქტიურად ეძებენ სამსახურს</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">open_in_new</span>
+              <strong>პირდაპირ LinkedIn-ზე</strong>
+              <small>პროფილი იხსნება LinkedIn-ზე, სადაც შეგიძლიათ მისწეროთ</small>
+            </div>
+            <div class="intro-item">
+              <span class="material-symbols-outlined">schedule</span>
+              <strong>დღიური ლიმიტი</strong>
+              <small>ძიებას რამდენიმე წამი სჭირდება; გამოცდილების ფილტრი აქ არ მოქმედებს</small>
+            </div>
+          </div>
         </div>
       }
-      @if (aiLinkedin() === 'quota') {
-        <div class="notice info">
-          <span class="material-symbols-outlined">info</span>
-          დღევანდელი LinkedIn ძიებები ამოიწურა: ნაჩვენებია მხოლოდ CV ბაზა.
-        </div>
-      } @else if (aiLinkedin() === 'failed') {
-        <div class="notice info">
-          <span class="material-symbols-outlined">info</span>
-          LinkedIn დროებით მიუწვდომელია: ნაჩვენებია მხოლოდ CV ბაზა.
+    } @else if (tab() === 'cvs') {
+      @if (cvError()) {
+        <div class="notice error">
+          <span class="material-symbols-outlined">error</span>
+          {{ cvError() }}
         </div>
       }
-      <div class="results">
-        @for (result of aiResults(); track aiTrack(result)) {
-          @if (result.source === 'cv') {
+      @if (cvLoading() && cvs().length === 0) {
+        <div class="results">
+          @for (i of skeletons; track i) {
+            <div class="skeleton-card">
+              <span class="sk sk-title"></span>
+              <span class="sk sk-line"></span>
+              <span class="sk-chips"><span class="sk"></span><span class="sk"></span><span class="sk"></span></span>
+              <span class="sk sk-line short"></span>
+            </div>
+          }
+        </div>
+      } @else if (cvSearched() && cvs().length === 0) {
+        <div class="empty">
+          <span class="empty-icon material-symbols-outlined">search_off</span>
+          <h3>კანდიდატი ვერ მოიძებნა</h3>
+          <p>სცადეთ სხვა სიტყვები, მოხსენით ფილტრები ან გადადით LinkedIn-ის ჩანართზე.</p>
+          <button type="button" class="btn-ghost" (click)="selectTab('linkedin')">
+            <span class="material-symbols-outlined">travel_explore</span>
+            LinkedIn-ზე ძიება
+          </button>
+        </div>
+      } @else if (cvs().length) {
+        <p class="results-meta"><span class="results-count"><strong>{{ cvTotal() }}</strong> კანდიდატი</span><span class="results-shown">ნაჩვენებია {{ cvs().length }}</span></p>
+        <div class="results">
+          @for (candidate of cvs(); track candidate.id) {
             <app-hr-candidate-card
-              [candidate]="result"
-              [busy]="busyId() === result.id"
+              [candidate]="candidate"
+              [busy]="busyId() === candidate.id"
               [addable]="true"
               (unlock)="unlock($event)"
-              (addToVacancy)="addToVacancy(result, $event)"
+              (addToVacancy)="addToVacancy(candidate, $event)"
               (download)="download($event)" />
-          } @else {
-            <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: result.profile, verdict: result }" />
           }
+        </div>
+        @if (cvs().length < cvTotal()) {
+          <button class="btn-more" type="button" [disabled]="cvLoading()" (click)="searchCvs(cvPage() + 1)">
+            @if (cvLoading()) {
+              <span class="spinner small"></span> იტვირთება...
+            } @else {
+              <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+            }
+          </button>
         }
-      </div>
-      @if (aiResults().length < aiTotal()) {
-        <button class="btn-more" type="button" [disabled]="aiLoading()" (click)="searchCvsWithAi(aiPage() + 1)">
-          @if (aiLoading()) {
-            <span class="spinner small"></span> იტვირთება...
-          } @else {
-            <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+      }
+    } @else if (tab() === 'ai') {
+      @if (aiError()) {
+        <div class="notice error">
+          <span class="material-symbols-outlined">error</span>
+          {{ aiError() }}
+        </div>
+      }
+      @if (aiLoading() && aiResults().length === 0) {
+        <div class="loading">
+          <span class="spinner"></span>
+          <p>AI ეძებს CV ბაზაში და LinkedIn-ზე და არჩევს საუკეთესოებს... ამას შეიძლება ნახევარი წუთი დასჭირდეს</p>
+        </div>
+      } @else if (aiSearched() && aiResults().length === 0) {
+        <div class="empty">
+          <span class="empty-icon material-symbols-outlined">search_off</span>
+          <h3>შესაფერისი კანდიდატი ვერ მოიძებნა</h3>
+          <p>სცადეთ აღწერა შეცვალოთ ან შეამსუბუქოთ მოთხოვნები.</p>
+          <button type="button" class="btn-ghost" (click)="selectTab('linkedin')">
+            <span class="material-symbols-outlined">travel_explore</span>
+            LinkedIn-ზე ძიება
+          </button>
+        </div>
+      } @else if (aiResults().length) {
+        <p class="results-meta">
+          AI-მ შეარჩია <strong>{{ aiTotal() }}</strong> კანდიდატი · ნაჩვენებია {{ aiResults().length }}
+          (CV ბაზა: {{ aiShown().cv }}, LinkedIn: {{ aiShown().linkedin }})
+          @if (aiKeywords().length) {
+            · ეძებდა: {{ aiKeywords().join(', ') }}
           }
-        </button>
+        </p>
+        @if (!aiRanked()) {
+          <div class="notice info">
+            <span class="material-symbols-outlined">info</span>
+            AI დროებით მიუწვდომელია: CV-ები დალაგებულია საკვანძო სიტყვებით, მიზეზების გარეშე.
+          </div>
+        }
+        @if (aiLinkedin() === 'quota') {
+          <div class="notice info">
+            <span class="material-symbols-outlined">info</span>
+            დღევანდელი LinkedIn ძიებები ამოიწურა: ნაჩვენებია მხოლოდ CV ბაზა.
+          </div>
+        } @else if (aiLinkedin() === 'failed') {
+          <div class="notice info">
+            <span class="material-symbols-outlined">info</span>
+            LinkedIn დროებით მიუწვდომელია: ნაჩვენებია მხოლოდ CV ბაზა.
+          </div>
+        }
+        <div class="results">
+          @for (result of aiResults(); track aiTrack(result)) {
+            @if (result.source === 'cv') {
+              <app-hr-candidate-card
+                [candidate]="result"
+                [busy]="busyId() === result.id"
+                [addable]="true"
+                (unlock)="unlock($event)"
+                (addToVacancy)="addToVacancy(result, $event)"
+                (download)="download($event)" />
+            } @else {
+              <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: result.profile, verdict: result }" />
+            }
+          }
+        </div>
+        @if (aiResults().length < aiTotal()) {
+          <button class="btn-more" type="button" [disabled]="aiLoading()" (click)="searchCvsWithAi(aiPage() + 1)">
+            @if (aiLoading()) {
+              <span class="spinner small"></span> იტვირთება...
+            } @else {
+              <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+            }
+          </button>
+        }
+      }
+    } @else {
+      @if (linkedinError()) {
+        <div class="notice error">
+          <span class="material-symbols-outlined">error</span>
+          {{ linkedinError() }}
+        </div>
+      }
+      @if (linkedinLoading() && profiles().length === 0) {
+        <div class="loading">
+          <span class="spinner"></span>
+          <p>LinkedIn-ზე ძიებას რამდენიმე წამი სჭირდება...</p>
+        </div>
+      } @else if (linkedinSearched() && profiles().length === 0) {
+        <div class="empty">
+          <span class="empty-icon material-symbols-outlined">search_off</span>
+          <h3>პროფილი ვერ მოიძებნა</h3>
+          <p>LinkedIn-ზე „Open to work“ პროფილი ამ ძიებით ვერ მოიძებნა.</p>
+        </div>
+      } @else if (profiles().length) {
+        <div class="results">
+          @for (profile of profiles(); track profile.url) {
+            <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: profile }" />
+          }
+        </div>
+        @if (linkedinHasMore()) {
+          <button class="btn-more" type="button" [disabled]="linkedinLoading()" (click)="searchLinkedin(linkedinPage() + 1)">
+            @if (linkedinLoading()) {
+              <span class="spinner small"></span> იტვირთება...
+            } @else {
+              <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
+            }
+          </button>
+        }
       }
     }
-  } @else {
-    @if (linkedinError()) {
-      <div class="notice error">
-        <span class="material-symbols-outlined">error</span>
-        {{ linkedinError() }}
-      </div>
-    }
-    @if (linkedinLoading() && profiles().length === 0) {
-      <div class="loading">
-        <span class="spinner"></span>
-        <p>LinkedIn-ზე ძიებას რამდენიმე წამი სჭირდება...</p>
-      </div>
-    } @else if (linkedinSearched() && profiles().length === 0) {
-      <div class="empty">
-        <span class="empty-icon material-symbols-outlined">search_off</span>
-        <h3>პროფილი ვერ მოიძებნა</h3>
-        <p>LinkedIn-ზე „Open to work“ პროფილი ამ ძიებით ვერ მოიძებნა.</p>
-      </div>
-    } @else if (profiles().length) {
-      <div class="results">
-        @for (profile of profiles(); track profile.url) {
-          <ng-container *ngTemplateOutlet="linkedinCard; context: { $implicit: profile }" />
-        }
-      </div>
-      @if (linkedinHasMore()) {
-        <button class="btn-more" type="button" [disabled]="linkedinLoading()" (click)="searchLinkedin(linkedinPage() + 1)">
-          @if (linkedinLoading()) {
-            <span class="spinner small"></span> იტვირთება...
-          } @else {
-            <span class="material-symbols-outlined">expand_more</span> მეტის ჩვენება
-          }
-        </button>
-      }
-    }
-  }
+  </div>
 </section>
 
 <!-- A LinkedIn profile, in the LinkedIn tab and among AI results (there with the AI's score and reason) -->
