@@ -55,6 +55,52 @@
         }
       }
 
+      <!-- Quick suggestions: always visible under the header; swipe sideways on mobile -->
+      @if (isLoggedIn() && stateStore.alertsReady()) {
+        <div class="suggestions-section">
+        <div class="suggestions-header">
+          <span class="suggestions-title">პოპულარული შეტყობინებები</span>
+          <div class="suggestions-arrows">
+            <button
+              type="button"
+              class="suggestions-arrow"
+              [disabled]="!canScrollSuggestionsLeft()"
+              (click)="scrollSuggestions(-1)"
+              aria-label="წინა">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              class="suggestions-arrow"
+              [disabled]="!canScrollSuggestionsRight()"
+              (click)="scrollSuggestions(1)"
+              aria-label="შემდეგი">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        <div
+          class="suggestions-strip"
+          #suggestionsStrip
+          role="toolbar"
+          aria-label="პოპულარული შეტყობინებები"
+          (scroll)="updateSuggestionArrows()"
+          (window:resize)="updateSuggestionArrows()">
+          @for (s of suggestions; track s.label) {
+            <button
+              type="button"
+              class="suggestion-chip"
+              [title]="s.prompt"
+              [disabled]="isTyping() || (!stateStore.isPro() && chatQuota() !== null && chatQuota()!.remaining <= 0)"
+              (click)="sendSuggestion(s)">
+              <span class="material-symbols-outlined">{{ s.icon }}</span>
+              <span>{{ s.label }}</span>
+            </button>
+          }
+        </div>
+        </div>
+      }
+
       <!-- Chat Messages Body -->
       <div class="chat-body" #messagesScroll>
         @if (!isLoggedIn()) {
@@ -106,7 +152,7 @@
           <div class="empty-state">
             <span class="empty-icon">👋</span>
             <h4>გამარჯობა! მე ვარ შენი AI ასისტენტი.</h4>
-            <p>რით შემიძლია დაგეხმარო დღეს? მკითხე რამე კარიერის, CV-ს ან გასაუბრების შესახებ.</p>
+            <p>რით შემიძლია დაგეხმარო დღეს? აირჩიე თემა ზემოთ ან მომწერე შენი შეკითხვა.</p>
           </div>
         } @else {
           <div class="messages-list">

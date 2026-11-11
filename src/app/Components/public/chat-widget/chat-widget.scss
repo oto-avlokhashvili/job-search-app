@@ -429,6 +429,125 @@
   }
 }
 
+// One row of chips under the header. Labels are always shown as text (no hover-only
+// tooltips), and the row scrolls sideways when it doesn't fit — swipe on mobile.
+.suggestions-section {
+  flex-shrink: 0;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+}
+
+.suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+
+  .suggestions-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.02em;
+  }
+
+  .suggestions-arrows {
+    display: flex;
+    gap: 4px;
+  }
+
+  .suggestions-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--outline-variant);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--on-surface);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+}
+
+.suggestions-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  // Fades the right edge so it's clear there are more chips to swipe to.
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .suggestion-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 6px 11px;
+    border: 1px solid var(--outline-variant);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--on-surface);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: border-color 0.15s, background 0.15s;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--primary);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--surface-container-low);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .suggestion-chip:last-child {
+    margin-right: 16px;
+  }
+}
+
 @keyframes waveHand {
   0% { transform: rotate( 0.0deg) }
   10% { transform: rotate(14.0deg) }

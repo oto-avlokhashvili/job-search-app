@@ -45,6 +45,32 @@ const PROMO_MESSAGES: PromoMessage[] = [
   { id: 'ai', delayMs: 20_000, preview: '🤖 მიიღე ვაკანსიები შეტყობინებით ყოველ დღე' },
 ];
 
+export interface ChatSuggestion {
+  icon: string;
+  label: string;
+  /** What actually gets sent to the assistant when the chip is clicked. */
+  prompt: string;
+}
+
+/** Starter ideas shown in an empty chat so users know what the assistant can do. */
+const CHAT_SUGGESTIONS: ChatSuggestion[] = [
+  {
+    icon: 'search',
+    label: 'ვაკანსიების CV-ით მოძებნა',
+    prompt: 'მოძებნე ჩემი CV-ის მიხედვით შესაფერისი ვაკანსიები',
+  },
+  {
+    icon: 'description',
+    label: 'სივის ანალიზი',
+    prompt: 'გააანალიზე ჩემი CV და მითხარი, რა შეიძლება გავაუმჯობესო',
+  },
+  {
+    icon: 'record_voice_over',
+    label: 'გასაუბრებისთვის მომზადება',
+    prompt: 'დამეხმარე გასაუბრებისთვის მომზადებაში: რა კითხვები შეიძლება დამისვან და როგორ ვუპასუხო?',
+  },
+];
+
 const PREVIEW_MS = 3000;
 /** Gap between one preview closing and the next popping up, so the leave animation can finish. */
 const NEXT_PREVIEW_GAP_MS = 1000;
@@ -59,6 +85,15 @@ const PROMO_STATE_KEY = 'chat_widget_promos';
 })
 export class ChatWidget implements OnInit, AfterViewChecked {
   @ViewChild('messagesScroll') private messagesScroll!: ElementRef<HTMLDivElement>;
+
+  private suggestionsEl?: HTMLDivElement;
+  /** The strip is created and destroyed with the chat window; re-check the arrows each time it appears. */
+  @ViewChild('suggestionsStrip') set suggestionsStrip(ref: ElementRef<HTMLDivElement> | undefined) {
+    this.suggestionsEl = ref?.nativeElement;
+    if (this.suggestionsEl) setTimeout(() => this.updateSuggestionArrows());
+  }
+  canScrollSuggestionsLeft = signal(false);
+  canScrollSuggestionsRight = signal(false);
 
   aiService = inject(Ai);
   authService = inject(AuthService);
@@ -242,6 +277,27 @@ export class ChatWidget implements OnInit, AfterViewChecked {
     } catch (err) {
       console.warn('Failed to load chat quota:', err);
     }
+  }
+
+  readonly suggestions = CHAT_SUGGESTIONS;
+
+  scrollSuggestions(direction: -1 | 1) {
+    const el = this.suggestionsEl;
+    if (!el) return;
+    el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.7, 120), behavior: 'smooth' });
+  }
+
+  updateSuggestionArrows() {
+    const el = this.suggestionsEl;
+    if (!el) return;
+    this.canScrollSuggestionsLeft.set(el.scrollLeft > 2);
+    this.canScrollSuggestionsRight.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+
+  sendSuggestion(suggestion: ChatSuggestion) {
+    if (this.isTyping()) return;
+    this.chatInputText.set(suggestion.prompt);
+    return this.sendChatMessage();
   }
 
   async sendChatMessage() {
