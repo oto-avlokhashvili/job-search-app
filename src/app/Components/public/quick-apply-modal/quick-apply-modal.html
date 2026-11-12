@@ -1,0 +1,317 @@
+<div class="public-cv-modal-container quick-apply">
+  <button type="button" class="close-btn" (click)="close()" aria-label="დახურვა">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+
+  @switch (view()) {
+    <!-- ── Choose: send by hand or let us send it ── -->
+    @case ('choose') {
+      <!-- Which vacancy: left-aligned, like a mail header -->
+      <div class="qa-head">
+        <span class="qa-eyebrow">განაცხადის გაგზავნა</span>
+        <h2 class="qa-job-title">{{ data.job.vacancy }}</h2>
+        @if (data.job.company) {
+          <span class="qa-company">
+            <span class="material-symbols-outlined">domain</span>{{ data.job.company }}
+          </span>
+        }
+      </div>
+
+      <!-- Main path: we send it -->
+      <section class="qa-hero">
+        <div class="qa-hero-top">
+          <div class="qa-hero-icon">
+            <span class="material-symbols-outlined">bolt</span>
+          </div>
+          <div>
+            <h3>სწრაფი გაგზავნა</h3>
+            <p>CV-ს Job Up გაუგზავნის დამსაქმებელს თქვენი სახელით</p>
+          </div>
+        </div>
+
+        <ul class="qa-perks">
+          <li><span class="material-symbols-outlined">check</span>ელ-ფოსტის გახსნა და ფაილის მიმაგრება არ გჭირდებათ</li>
+          <li><span class="material-symbols-outlined">check</span>დამსაქმებლის პასუხი პირდაპირ თქვენს ელ-ფოსტაზე მოვა</li>
+          <li><span class="material-symbols-outlined">check</span>შემდეგ ვაკანსიაზე CV უკვე შენახული იქნება</li>
+        </ul>
+
+        <button type="button" class="qa-hero-btn" (click)="openForm()">
+          <span>გაგრძელება</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </section>
+
+      <div class="qa-divider"><span>ან გაგზავნეთ თავად</span></div>
+
+      <!-- Secondary path: their own mail app -->
+      <div class="qa-manual">
+        <span class="material-symbols-outlined qa-manual-icon">alternate_email</span>
+        <span class="qa-manual-email" [title]="data.email">{{ data.email }}</span>
+        <button type="button" class="qa-icon-btn" (click)="copyEmail()" [title]="copied() ? 'დაკოპირდა' : 'დაკოპირება'" [attr.aria-label]="copied() ? 'დაკოპირდა' : 'მისამართის დაკოპირება'">
+          <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
+        </button>
+      </div>
+    }
+
+    <!-- ── Quick apply form ── -->
+    @case ('form') {
+      <button type="button" class="qa-back" (click)="back()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>უკან</span>
+      </button>
+
+      <div class="modal-header">
+        <div class="icon-circle">
+          <span class="material-symbols-outlined">bolt</span>
+        </div>
+        <h2>სწრაფი გაგზავნა</h2>
+        <p class="subtitle">
+          CV გაეგზავნება <strong>{{ data.email }}</strong>-ს ვაკანსიაზე „{{ data.job.vacancy }}“
+        </p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="cv-upload-form" novalidate>
+        @if (isLoggedIn) {
+          <!-- Who it's sent as -->
+          @if (profileEmail) {
+            <div class="qa-sender">
+              <span class="material-symbols-outlined">account_circle</span>
+              <span>გაიგზავნება როგორც: <strong>{{ profileName || profileEmail }}</strong> · {{ profileEmail }}</span>
+            </div>
+          }
+
+          @if (myCvLoading()) {
+            <div class="qa-cv-loading"><span class="btn-spinner"></span><span>CV იტვირთება...</span></div>
+          } @else if (myCvName() && !replaceCv()) {
+            <div class="form-group">
+              <label><span>CV, რომელიც გაიგზავნება</span></label>
+              <div class="selected-file-card">
+                <div class="file-card-left">
+                  <div class="file-type-icon">
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="file-details">
+                    <span class="file-name" [title]="myCvName()!">{{ myCvName() }}</span>
+                    <span class="file-size">თქვენი პროფილის CV</span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="qa-link-btn" (click)="replaceCv.set(true)">სხვა ფაილის ატვირთვა</button>
+            </div>
+          }
+        }
+
+        @if (needsFile && !myCvLoading()) {
+          <div class="form-group">
+            <label>
+              <span>CV / რეზიუმე ფაილი</span>
+              <span class="required-star">*</span>
+            </label>
+
+            <input
+              #fileInput
+              type="file"
+              accept=".pdf,.docx,.doc,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              (change)="onFileSelected($event)"
+              style="display: none;"
+            />
+
+            @if (!selectedFile()) {
+              <div
+                class="file-dropzone"
+                [class.dragging]="isDragging()"
+                [class.error]="hasAttemptedSubmit() && !selectedFile()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                (click)="fileInput.click()"
+                (keydown.enter)="fileInput.click()"
+                role="button"
+                tabindex="0"
+              >
+                <div class="dropzone-icon">
+                  <span class="material-symbols-outlined">cloud_upload</span>
+                </div>
+                <div class="dropzone-text">
+                  <span class="main-drop-text drop-desktop">ჩააგდეთ ფაილი აქ ან <strong>აირჩიეთ კომპიუტერიდან</strong></span>
+                  <span class="main-drop-text drop-mobile"><strong>აირჩიეთ CV ფაილი</strong></span>
+                  <span class="sub-drop-text">ფორმატები: PDF, DOCX, DOC (მაქს. 5MB)</span>
+                </div>
+              </div>
+            } @else {
+              <div class="selected-file-card">
+                <div class="file-card-left">
+                  <div class="file-type-icon">
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="file-details">
+                    <span class="file-name" [title]="selectedFile()!.name">{{ selectedFile()!.name }}</span>
+                    <span class="file-size">{{ formatFileSize(selectedFile()!.size) }}</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-remove-file" (click)="removeFile($event)" title="ფაილის წაშლა">
+                  <span class="material-symbols-outlined">delete_outline</span>
+                </button>
+              </div>
+            }
+
+            @if (isLoggedIn && myCvName()) {
+              <button type="button" class="qa-link-btn" (click)="useAccountCv()">პროფილის CV-ის გამოყენება</button>
+              <span class="qa-hint">ახალი ფაილი შეცვლის თქვენი პროფილის CV-ს</span>
+            } @else if (isLoggedIn) {
+              <span class="qa-hint">ფაილი შეინახება თქვენს პროფილზე</span>
+            }
+          </div>
+        }
+
+        <!-- Name and phone, read from the chosen CV -->
+        @if (readingCv()) {
+          <div class="qa-cv-loading"><span class="btn-spinner"></span><span>CV-დან მონაცემებს ვკითხულობთ...</span></div>
+        } @else if (cvRead()) {
+          <div class="qa-details">
+            <div class="qa-details-head">
+              <span class="qa-details-title">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                CV-დან ამოღებული მონაცემები
+              </span>
+              @if (!editingDetails()) {
+                <button type="button" class="qa-link-btn" (click)="editingDetails.set(true)">შესწორება</button>
+              }
+            </div>
+
+            @if (!editingDetails()) {
+              @if (!isLoggedIn) {
+                <div class="qa-detail-row">
+                  <span class="material-symbols-outlined">person</span>
+                  <span>{{ form.value.fullName || 'სახელი ვერ მოიძებნა' }}</span>
+                </div>
+                @if (emailFromCv()) {
+                  <div class="qa-detail-row">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span>{{ form.value.email }}</span>
+                  </div>
+                }
+              }
+              <div class="qa-detail-row" [class.missing]="!form.value.phoneNumber">
+                <span class="material-symbols-outlined">call</span>
+                <span>{{ form.value.phoneNumber || 'ტელეფონი ვერ მოიძებნა' }}</span>
+              </div>
+            } @else {
+              @if (!isLoggedIn && !form.value.fullName) {
+                <span class="qa-hint">CV-ში სახელი ვერ ვიპოვეთ, მიუთითეთ რომ დამსაქმებელმა იცოდეს ვინ აგზავნის</span>
+              }
+              <div class="qa-detail-inputs form-group">
+                @if (!isLoggedIn) {
+                  <div class="input-wrap" [class.error]="invalid('fullName')">
+                    <span class="material-symbols-outlined input-icon">person</span>
+                    <input type="text" formControlName="fullName" placeholder="სახელი და გვარი" autocomplete="name" aria-label="სახელი და გვარი" />
+                  </div>
+                  @if (emailFromCv()) {
+                    <div class="input-wrap" [class.error]="invalid('email')">
+                      <span class="material-symbols-outlined input-icon">mail</span>
+                      <input type="email" formControlName="email" placeholder="ელ-ფოსტა" autocomplete="email" aria-label="ელ-ფოსტა" />
+                    </div>
+                  }
+                }
+                <div class="input-wrap" [class.error]="invalid('phoneNumber')">
+                  <span class="material-symbols-outlined input-icon">call</span>
+                  <input type="tel" formControlName="phoneNumber" placeholder="ტელეფონი (არასავალდებულო)" autocomplete="tel" aria-label="ტელეფონი" />
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Where the employer replies: asked only when the CV shows no email -->
+        @if (!isLoggedIn && cvRead() && !emailFromCv()) {
+          <div class="form-group">
+            <label for="qa-email">
+              <span>CV-ში ელ-ფოსტა ვერ ვიპოვეთ, მიუთითეთ თქვენი ელ-ფოსტა</span>
+              <span class="required-star">*</span>
+            </label>
+            <div class="input-wrap" [class.error]="invalid('email')">
+              <span class="material-symbols-outlined input-icon">mail</span>
+              <input id="qa-email" type="email" formControlName="email" placeholder="დამსაქმებლის პასუხი აქ მოვა" autocomplete="email" />
+            </div>
+            @if (invalid('email')) {
+              <span class="error-msg">მიუთითეთ ვალიდური ელ-ფოსტა</span>
+            }
+          </div>
+        }
+
+        <div class="consent-group" [class.error]="invalid('consent')">
+          <label class="consent-checkbox-label">
+            <input type="checkbox" formControlName="consent" class="custom-checkbox" />
+            <span class="consent-text">
+              ვეთანხმები, რომ ჩემი CV და საკონტაქტო მონაცემები შეინახოს Job Up-ზე, გაეგზავნოს ამ დამსაქმებელს და
+              ხელმისაწვდომი იყოს HR სპეციალისტებისთვის კანდიდატების ძიებისას,
+              <a href="/privacy" target="_blank" rel="noopener" class="consent-link">კონფიდენციალურობის პოლიტიკის</a> შესაბამისად.
+            </span>
+          </label>
+          @if (invalid('consent')) {
+            <span class="error-msg">თანხმობის დადასტურება სავალდებულოა</span>
+          }
+        </div>
+
+        @if (turnstileEnabled) {
+          <div #turnstileHost class="turnstile-host"></div>
+        }
+
+        @if (formError()) {
+          <div class="form-error-banner" role="alert">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ formError() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="submit-btn" [disabled]="loading() || myCvLoading()">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+            <span>იგზავნება...</span>
+          } @else {
+            <span class="material-symbols-outlined">send</span>
+            <span>CV-ის გაგზავნა</span>
+          }
+        </button>
+
+        <p class="privacy-notice">
+          🔒 წერილი გაიგზავნება Job Up-ის მისამართიდან თქვენი სახელით. დამსაქმებლის პასუხი პირდაპირ თქვენს ელ-ფოსტაზე მოვა.
+        </p>
+      </form>
+    }
+
+    <!-- ── Sent ── -->
+    @case ('success') {
+      <div class="success-container animate-pop">
+        <div class="success-icon-circle">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <h2>CV გაიგზავნა! 🎉</h2>
+        <p class="success-desc">
+          თქვენი CV გაეგზავნება <strong>{{ data.email }}</strong>-ს ვაკანსიაზე „{{ data.job.vacancy }}“.
+        </p>
+        <div class="success-card">
+          <span class="material-symbols-outlined info-icon">forward_to_inbox</span>
+          <span>დამსაქმებლის პასუხი პირდაპირ თქვენს ელ-ფოსტაზე მოვა. CV ასევე შეინახა Job Up-ის კანდიდატთა ბაზაში.</span>
+        </div>
+        <button type="button" class="submit-btn done-btn" (click)="close()">
+          <span>გასაგებია</span>
+        </button>
+      </div>
+    }
+
+    <!-- ── Already sent before ── -->
+    @case ('already') {
+      <div class="success-container animate-pop">
+        <div class="success-icon-circle">
+          <span class="material-symbols-outlined">mark_email_read</span>
+        </div>
+        <h2>CV უკვე გაგზავნილია</h2>
+        <p class="success-desc">ამ ვაკანსიაზე თქვენი CV უკვე გაიგზავნა, ხელახლა გაგზავნა საჭირო არ არის.</p>
+        <button type="button" class="submit-btn done-btn" (click)="close()">
+          <span>გასაგებია</span>
+        </button>
+      </div>
+    }
+  }
+</div>

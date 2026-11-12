@@ -6,7 +6,7 @@ import { AuthService } from '../../../Core/Services/auth-service';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { SeoService } from '../../../Core/Services/seo.service';
 import { Job } from '../../../Core/Interfaces/jobs';
-import { CompanyLogos } from '../../../Core/Utils/company-logos';
+import { brandIcon, CompanyLogos } from '../../../Core/Utils/company-logos';
 import { JobCardItem, JobListCard, toJobCardItem } from '../../shared/job-list-card/job-list-card';
 
 const PAGE_SIZE = 30;
@@ -73,7 +73,7 @@ export class Company {
       const res = await firstValueFrom(this.jobsService.getCompanyJobs(this.key, 1, PAGE_SIZE));
       const jobs = res.jobs || [];
       this.name.set(jobs[0]?.company ?? '');
-      this.logo.set(jobs.find((job) => job.companyLogo)?.companyLogo ?? null);
+      this.logo.set(brandIcon(this.key) ?? jobs.find((job) => job.companyLogo)?.companyLogo ?? null);
       this.jobs.set(jobs.map(toJobCardItem));
       this.total.set(res.counts?.filteredRecords ?? jobs.length);
       this.updateSeo(jobs);

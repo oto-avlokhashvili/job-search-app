@@ -457,11 +457,12 @@
                   <tr [attr.data-job-id]="job.id">
                     <td class="col-vacancy">
                       <div class="job-info-cell">
-                        <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource || logos.show(job.companyLogo)" [class.wide-logo]="job.source !== jobUpSource && logos.isWide(job.companyLogo)">
+                        @let logo = logos.of(job);
+                        <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource || logos.show(logo)" [class.wide-logo]="job.source !== jobUpSource && logos.isWide(logo)" [class.brand-logo]="job.source !== jobUpSource && logos.show(logo) && logos.isBrand(logo)">
                           @if (job.source === jobUpSource) {
                             <img [src]="jobUpLogo" alt="Job Up">
-                          } @else if (logos.show(job.companyLogo)) {
-                            <img [src]="job.companyLogo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos.loaded($event, job.companyLogo)" (error)="logos.broken(job.companyLogo)">
+                          } @else if (logos.show(logo)) {
+                            <img [src]="logo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos.loaded($event, logo)" (error)="logos.broken(logo)">
                           } @else {
                             {{ job.company.charAt(0) }}
                           }
@@ -561,11 +562,12 @@
             @for (job of displayedJobs(); track job.id) {
               <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]" [attr.data-job-id]="job.id">
                 <div class="job-card-top">
-                  <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource || logos.show(job.companyLogo)" [class.wide-logo]="job.source !== jobUpSource && logos.isWide(job.companyLogo)">
+                  @let logo = logos.of(job);
+                  <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource || logos.show(logo)" [class.wide-logo]="job.source !== jobUpSource && logos.isWide(logo)" [class.brand-logo]="job.source !== jobUpSource && logos.show(logo) && logos.isBrand(logo)">
                     @if (job.source === jobUpSource) {
                       <img [src]="jobUpLogo" alt="Job Up">
-                    } @else if (logos.show(job.companyLogo)) {
-                      <img [src]="job.companyLogo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos.loaded($event, job.companyLogo)" (error)="logos.broken(job.companyLogo)">
+                    } @else if (logos.show(logo)) {
+                      <img [src]="logo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos.loaded($event, logo)" (error)="logos.broken(logo)">
                     } @else {
                       {{ job.company.charAt(0) }}
                     }

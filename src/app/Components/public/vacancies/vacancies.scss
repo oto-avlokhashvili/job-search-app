@@ -1535,6 +1535,17 @@ button.btn-search {
         margin-right: 0;
         padding: 3px 5px;
       }
+
+      // A company's own icon (/public/icons): edge to edge, as on the home page's hot vacancies
+      &.brand-logo {
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        img { object-fit: cover; border-radius: inherit; }
+      }
     }
 
     .job-titles {
@@ -1745,6 +1756,17 @@ button.btn-search {
       &.wide-logo {
         width: 64px;
         padding: 3px 5px;
+      }
+
+      // A company's own icon (/public/icons): edge to edge, as on the home page's hot vacancies
+      &.brand-logo {
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        img { object-fit: cover; border-radius: inherit; }
       }
     }
 

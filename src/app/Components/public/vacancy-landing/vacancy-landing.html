@@ -82,8 +82,8 @@
                 </div>
                 <h3 class="card-title" [title]="job.vacancy">{{ job.vacancy }}</h3>
                 <div class="card-company">
-                  @if (logos.show(job.companyLogo)) {
-                    <img class="mini-logo" [src]="job.companyLogo" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(job.companyLogo)">
+                  @if (logos.show(logos.of(job))) {
+                    <img class="mini-logo" [src]="logos.of(job)" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(logos.of(job))">
                   } @else {
                     <span class="material-symbols-outlined">domain</span>
                   }

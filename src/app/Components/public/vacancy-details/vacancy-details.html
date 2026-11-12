@@ -89,11 +89,12 @@
         <!-- Hero Information Card -->
         <header class="vacancy-hero-card glass-card">
           <div class="hero-top-section">
-            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j) || logos.show(j.companyLogo)" [class.wide-logo]="!isJobUp(j) && logos.isWide(j.companyLogo)">
+            @let logo = logos.of(j);
+            <div class="company-logo-avatar" [class.jobup-logo]="isJobUp(j) || logos.show(logo)" [class.wide-logo]="!isJobUp(j) && logos.isWide(logo)" [class.brand-logo]="!isJobUp(j) && logos.show(logo) && logos.isBrand(logo)">
               @if (isJobUp(j)) {
                 <img [src]="jobUpLogo" alt="Job Up">
-              } @else if (logos.show(j.companyLogo)) {
-                <img [src]="j.companyLogo" [alt]="j.company" width="60" height="60" decoding="async" (load)="logos.loaded($event, j.companyLogo)" (error)="logos.broken(j.companyLogo)">
+              } @else if (logos.show(logo)) {
+                <img [src]="logo" [alt]="j.company" width="60" height="60" decoding="async" (load)="logos.loaded($event, logo)" (error)="logos.broken(logo)">
               } @else {
                 {{ j.company ? j.company.charAt(0).toUpperCase() : 'J' }}
               }
@@ -101,7 +102,7 @@
 
             <div class="hero-main-info">
               <!-- Meta Badges Row -->
-              <div class="meta-badges-row">
+              <div class="meta-badges-row" [class.has-apply]="applyEmail()">
                 <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link, j.company) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link, j.company) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link, j.company) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link, j.company) === 'myjobs.ge'" [class.linkedin]="detectSource(j.source, j.link, j.company) === 'linkedin'" [class.jobup-ge]="isJobUp(j)">
                   @if (isJobUp(j)) {
                     <img [src]="jobUpLogo" alt="Job Up" class="badge-logo">
@@ -145,6 +146,14 @@
 
             <!-- Quick Action Buttons -->
             <div class="hero-actions-bar">
+              @if (applyEmail()) {
+                <button type="button" class="btn-action-apply" [class.is-applied]="applied()" (click)="apply()"
+                  [title]="applied() ? 'CV ამ ვაკანსიაზე უკვე გაგზავნილია' : 'CV-ის გაგზავნა დამსაქმებლისთვის'"
+                  [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
+                  <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
+                  <span>{{ applied() ? 'გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
+                </button>
+              }
               <app-favorite-button variant="action" [jobId]="j.id" />
               <button type="button" class="btn-action-copy" (click)="copyLink()" title="ბმულის გაზიარება" aria-label="გაზიარება">
                 <span class="material-symbols-outlined">share</span>
@@ -191,7 +200,8 @@
             </div>
           </div>
 
-          <!-- კანდიდატთა ბაზა Hook Card (Job Header) -->
+          <!-- კანდიდატთა ბაზა Hook Card (Job Header): only without quick apply, which saves the CV to the base anyway -->
+          @if (!applyEmail()) {
           <div class="talent-pool-hook-card">
             <div class="pool-card-content">
               <div class="pool-icon-wrap">
@@ -216,6 +226,7 @@
               <span>CV-ის დატოვება ბაზაში</span>
             </button>
           </div>
+          }
         </header>
 
         <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (Between Hero & Description) -->
@@ -348,8 +359,8 @@
                           </div>
                           <h4 class="card-vacancy-title" [title]="item.vacancy">{{ item.vacancy }}</h4>
                           <div class="card-company-row">
-                            @if (logos.show(item.companyLogo)) {
-                              <img class="mini-logo" [src]="item.companyLogo" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(item.companyLogo)">
+                            @if (logos.show(logos.of(item))) {
+                              <img class="mini-logo" [src]="logos.of(item)" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(logos.of(item))">
                             } @else {
                               <span class="material-symbols-outlined">domain</span>
                             }
@@ -433,6 +444,14 @@
                 <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
               }
             </div>
+            @if (applyEmail()) {
+              <div class="footer-right">
+                <button type="button" class="btn-action-apply" [class.is-applied]="applied()" (click)="apply()">
+                  <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
+                  <span>{{ applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
+                </button>
+              </div>
+            }
           </footer>
         </section>
 

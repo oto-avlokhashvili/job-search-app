@@ -35,6 +35,11 @@ export interface Job {
   companyLogo?: string | null;
   /** Normalized company name shared by all its vacancies; links to /companies/:key */
   companyKey?: string | null;
+  /**
+   * The address the vacancy asks CVs to be sent to: quick apply is available.
+   * '' = no address (apply on `link`); null/missing = not worked out yet on the API.
+   */
+  applyEmail?: string | null;
 }
 
 export interface AiMatchedJobsResponse {

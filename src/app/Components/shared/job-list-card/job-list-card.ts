@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Job } from '../../../Core/Interfaces/jobs';
-import { CompanyLogos } from '../../../Core/Utils/company-logos';
+import { brandIcon, CompanyLogos } from '../../../Core/Utils/company-logos';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { detectJobSource, formatJobDate, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
@@ -29,7 +29,7 @@ export function toJobCardItem(job: Job): JobCardItem {
     salaryRange: extractSalary(job),
     deadline: job.deadline ? formatJobDate(job.deadline) : '',
     slug: generateJobSlug(job.vacancy, job.company, job.id),
-    companyLogo: job.companyLogo ?? null,
+    companyLogo: brandIcon(job.companyKey) || job.companyLogo || null,
   };
 }
 

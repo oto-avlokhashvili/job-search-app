@@ -293,6 +293,16 @@
           padding: 4px 6px;
         }
       }
+
+      // A company's own icon (/public/icons): edge to edge, as on the home page's hot vacancies
+      &.brand-logo {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        img { object-fit: cover; border-radius: inherit; }
+      }
     }
 
     .hero-main-info {
@@ -2125,3 +2135,18 @@
   }
 }
 
+
+// ── Quick apply ──
+// Phones: the corner action bar holds three buttons when there's an apply button
+@media (max-width: 640px) {
+  :host .meta-badges-row.has-apply {
+    padding-right: 138px;
+  }
+}
+
+// Already sent to this vacancy (the button still opens the modal, which says so)
+:host .btn-action-apply.is-applied {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+  color: #ffffff;
+}

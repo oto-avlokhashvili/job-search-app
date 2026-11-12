@@ -1,6 +1,6 @@
 import { CompanyLogos } from '../../../Core/Utils/company-logos';
-import { Component, inject, OnInit, computed, effect, signal, RESPONSE_INIT } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, inject, OnInit, computed, effect, signal, untracked, PLATFORM_ID, RESPONSE_INIT } from '@angular/core';
+import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
@@ -14,6 +14,9 @@ import { SeoService, SITE_URL } from '../../../Core/Services/seo.service';
 import { buildJobBreadcrumbSchema, buildJobPostingSchema } from '../../../Core/Utils/job-schema';
 import { findCityLanding } from '../../../Core/Utils/landing-pages';
 import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
+import { QuickApplyModal, QuickApplyModalData } from '../quick-apply-modal/quick-apply-modal';
+import { QuickApplyService } from '../../../Core/Services/quick-apply';
+import { hasQuickApplied, quickApplyEmail, rememberQuickApplied } from '../../../Core/Utils/quick-apply-storage';
 
 @Component({
   selector: 'app-vacancy-details',
@@ -33,6 +36,13 @@ export class VacancyDetails implements OnInit {
   // Only provided during SSR; lets us answer missing jobs with a real 404.
   private responseInit = inject(RESPONSE_INIT, { optional: true });
   private dialog = inject(MatDialog);
+  private quickApplyService = inject(QuickApplyService);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  /** Quick apply: the address the API found in the description (null = apply on the source site). */
+  applyEmail = computed(() => quickApplyEmail(this.stateStore.selectedJob()));
+  /** This visitor already sent their CV to this vacancy */
+  applied = signal(false);
 
   // Accordion & Discovery Hook State
   isAccordionOpen = signal<boolean>(false);
@@ -67,7 +77,10 @@ export class VacancyDetails implements OnInit {
   extractedEmail = computed(() => {
     const job = this.stateStore.selectedJob();
     if (!job) return null;
-    
+
+    // The API's pick: cut where the address really ends, without the job sites' own or data-protection ones
+    if (job.applyEmail != null) return job.applyEmail || null;
+
     if ((job as any).email && typeof (job as any).email === 'string') {
       return (job as any).email;
     }
@@ -306,6 +319,13 @@ export class VacancyDetails implements OnInit {
       }
     });
 
+    // "Sent" state: this browser's record first, then the account's
+    effect(() => {
+      const jobId = this.stateStore.selectedJob()?.id;
+      const loggedIn = this.authService.isLoggedIn();
+      untracked(() => this.loadAppliedState(jobId, loggedIn));
+    });
+
     effect(() => {
       if (this.stateStore.selectedJobError()) {
         // 404 only when the backend says the job doesn't exist; a timeout or backend
@@ -496,6 +516,46 @@ export class VacancyDetails implements OnInit {
     } else {
       this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
     }
+  }
+
+  private loadAppliedState(jobId: number | undefined, loggedIn: boolean) {
+    if (!this.isBrowser || !jobId) {
+      this.applied.set(false);
+      return;
+    }
+    this.applied.set(hasQuickApplied(jobId));
+    if (loggedIn && !this.applied()) {
+      this.quickApplyService.applied([jobId]).subscribe({
+        next: ({ jobIds }) => {
+          if (jobIds.includes(jobId) && this.stateStore.selectedJob()?.id === jobId) {
+            rememberQuickApplied(jobId);
+            this.applied.set(true);
+          }
+        },
+        error: () => undefined,
+      });
+    }
+  }
+
+  /**
+   * Quick apply. The buttons show only when the vacancy names an address; without one the page shows
+   * the talent-pool card instead (and the source site stays one click away in the top bar).
+   */
+  apply() {
+    const job = this.stateStore.selectedJob();
+    if (!job) return;
+    const email = this.applyEmail();
+    if (!email) {
+      this.openPublicCvModal();
+      return;
+    }
+    const data: QuickApplyModalData = { job: { id: job.id, vacancy: job.vacancy, company: job.company, link: job.link }, email };
+    this.dialog
+      .open(QuickApplyModal, { width: '600px', maxWidth: '95vw', panelClass: 'public-cv-dialog', autoFocus: false, data })
+      .afterClosed()
+      .subscribe((sent) => {
+        if (sent && this.stateStore.selectedJob()?.id === job.id) this.applied.set(true);
+      });
   }
 
   openPublicCvModal() {

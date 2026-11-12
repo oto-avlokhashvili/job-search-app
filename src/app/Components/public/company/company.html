@@ -39,7 +39,7 @@
       </div>
     } @else {
       <header class="company-hero">
-        <div class="company-logo" [class.has-logo]="logos.show(logo())">
+        <div class="company-logo" [class.has-logo]="logos.show(logo())" [class.brand-logo]="logos.show(logo()) && logos.isBrand(logo())">
           @if (logos.show(logo())) {
             <img [src]="logo()" [alt]="name()" width="72" height="72" decoding="async" (error)="logos.broken(logo())">
           } @else {

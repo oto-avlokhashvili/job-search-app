@@ -90,6 +90,15 @@
     border: 1px solid var(--border-color, rgba(151, 174, 213, 0.2));
   }
 
+  // A company's own icon (/public/icons): edge to edge, as on the home page's hot vacancies
+  &.brand-logo {
+    border: 0;
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    img { object-fit: cover; }
+  }
+
   &.small {
     width: 44px;
     height: 44px;

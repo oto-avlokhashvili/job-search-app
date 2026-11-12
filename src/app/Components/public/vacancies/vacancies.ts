@@ -122,8 +122,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   readonly popularCompanies: { label: string; key: string; logo?: string }[] = [
     { label: 'კრედო ბანკი', key: 'კრედობანკი', logo: 'https://logos.jobup.ge/logos/6-851a1ee7bd15-128.webp' },
     { label: 'ლიბერთი', key: 'ლიბერთიბაზისბანკჯგუფი', logo: 'https://logos.jobup.ge/logos/97-ed480a47cd29-128.webp' },
-    { label: 'TBC ბანკი', key: 'თიბისი', logo: 'https://logos.jobup.ge/logos/7-e68930ec0260-128.webp' },
-    { label: 'საქართველოს ბანკი', key: 'საქართველოსბანკი', logo: 'https://logos.jobup.ge/logos/26-a38ceca855ca-128.webp' },
+    { label: 'TBC ბანკი', key: 'თიბისი', logo: '/icons/tbc.jpg' },
+    { label: 'საქართველოს ბანკი', key: 'საქართველოსბანკი', logo: '/icons/bog.png' },
     { label: 'აჭარა ჯგუფი', key: 'აჭარაჯგუფი', logo: 'https://logos.jobup.ge/logos/371-3c9e3a49800e-128.webp' },
     { label: 'მზიური', key: 'მზიური', logo: 'https://logos.jobup.ge/logos/19-6e80d63d8194-128.webp' },
     { label: 'ლაზიკა კაპიტალი', key: 'ლაზიკაკაპიტალი', logo: 'https://logos.jobup.ge/logos/280-16f2c1d6adf5-128.webp' },
