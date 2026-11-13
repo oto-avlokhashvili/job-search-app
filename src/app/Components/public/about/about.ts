@@ -19,7 +19,7 @@ export class About implements OnInit {
   ngOnInit() {
     this.seo.update({
       title: 'ჩვენ შესახებ | Job Up',
-      description: 'Job Up აერთიანებს საქართველოში აქტიურ ვაკანსიებს ერთ სივრცეში და AI აგენტის დახმარებით გეხმარება შესაფერისი სამსახურის პოვნაში.',
+      description: 'Job Up აერთიანებს საქართველოს წამყვანი სამსახურის პორტალების ვაკანსიებს ერთ სივრცეში და AI აგენტის დახმარებით გეხმარება შესაფერისი სამსახურის პოვნაში.',
       path: '/about',
     });
     if (typeof window !== 'undefined') {

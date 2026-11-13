@@ -1,6 +1,6 @@
 # Job Up (jobup.ge)
 
-> Job Up is a Georgian-language job search platform for Georgia. It brings together active vacancies in Georgia in one place, updated daily, and offers an AI agent that matches a user's CV to new vacancies and notifies them via Telegram or email.
+> Job Up is a Georgian-language job search platform for Georgia. It aggregates active vacancies from Jobs.ge, HR.ge, Awork.ge, Myjobs.ge and LinkedIn in one place, updated daily, and offers an AI agent that matches a user's CV to new vacancies and notifies them via Telegram or email.
 
 Language: Georgian (ka). Coverage: Georgia (Tbilisi, Batumi, Kutaisi, Rustavi and other cities, plus remote and abroad roles).
 

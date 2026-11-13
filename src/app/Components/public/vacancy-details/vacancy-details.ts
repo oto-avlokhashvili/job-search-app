@@ -7,6 +7,7 @@ import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { extractApplyUrl } from '../../../Core/Utils/apply-url';
+import { descriptionExcerpt } from '../../../Core/Utils/description-excerpt';
 import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
@@ -49,8 +50,8 @@ export class VacancyDetails implements OnInit {
   applyEmail = computed(() => quickApplyEmail(this.stateStore.selectedJob()));
   /**
    * Where the vacancy takes applications by hand. A LinkedIn posting's own link; else the application
-   * link in the description (Helio, Google Forms, a careers page...); else the posting's own page when
-   * the API sends it (hr.ge vacancies without an email). null = none found.
+   * link in the description (Helio, Google Forms, a careers page...); else the original posting.
+   * null = none found.
    */
   applyUrl = computed(() => {
     const job = this.stateStore.selectedJob();
@@ -127,7 +128,23 @@ export class VacancyDetails implements OnInit {
 
     if (!raw) return null;
 
-    return this.formatDescriptionText(raw);
+    // Imported vacancies: an excerpt only, the full text is on the original posting (see the footer)
+    return this.formatDescriptionText(this.isJobUp(job) ? raw : descriptionExcerpt(raw));
+  });
+
+  /** The portal an imported vacancy came from, for the credit line ('jobs.ge', 'LinkedIn', ...) */
+  sourceName = computed(() => {
+    const job = this.stateStore.selectedJob();
+    if (!job || this.isJobUp(job)) return null;
+    const source = detectJobSource(job.source, job.link, job.company);
+    if (source === 'linkedin') return 'LinkedIn';
+    return source === 'other' ? null : source;
+  });
+
+  /** The original posting the vacancy was imported from */
+  originalLink = computed(() => {
+    const job = this.stateStore.selectedJob();
+    return job && !this.isJobUp(job) && this.hasOutsideLink(job) ? job.link : null;
   });
 
   private formatDescriptionText(text: string): string {
@@ -543,7 +560,7 @@ export class VacancyDetails implements OnInit {
     }
   }
 
-  /** Only LinkedIn (and Job Up) postings come with an outside link; the API hides the rest. */
+  /** The vacancy has a real link to its original posting ('/jobs' is the list's placeholder) */
   hasOutsideLink(job: { link?: string | null }): boolean {
     return !!job.link && job.link !== '/jobs';
   }

@@ -942,6 +942,35 @@
       }
     }
 
+    &.source-credit .footer-left span.material-symbols-outlined {
+      color: var(--primary, #0b6096);
+    }
+
+    .btn-original-posting {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--primary, #0b6096);
+      background: var(--surface-container-low, #ebf1ff);
+      border: 1px solid var(--border-color, rgba(11, 96, 150, 0.2));
+      transition: background 0.2s ease, color 0.2s ease;
+
+      span.material-symbols-outlined {
+        font-size: 16px;
+      }
+
+      &:hover {
+        background: var(--primary, #0b6096);
+        color: #ffffff;
+      }
+    }
   }
 }
 

@@ -218,7 +218,7 @@ export class Home implements OnInit {
   ngOnInit() {
     this.seo.update({
       title: 'Job Up — დასაქმდი ან დაასაქმე',
-      description: 'ყველა აქტიური ვაკანსია ერთ სივრცეში — დამსაქმებლებისთვის კი AI კანდიდატების ძიება და შერჩევა.',
+      description: 'ყველა ვაკანსია Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში — დამსაქმებლებისთვის კი AI კანდიდატების ძიება და შერჩევა.',
       path: '/home',
     });
     this.loadLatestJobs();

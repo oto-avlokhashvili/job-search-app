@@ -1,17 +1,22 @@
 import { Job } from '../Interfaces/jobs';
 import { SITE_NAME, SITE_URL } from '../Services/seo.service';
 import { toIsoDate } from './date-parse';
+import { descriptionExcerpt } from './description-excerpt';
 import { LandingPage } from './landing-pages';
 
 const REMOTE_PATTERN = /remote|დისტანციურ|online/i;
 
-/** Plain-text descriptions get line breaks as <br>; Google expects HTML here. */
-function toHtmlDescription(job: Job): string {
-  const raw = (job.description?.trim() || job.requirements?.trim() || '');
+/**
+ * Plain-text descriptions get line breaks as <br>; Google expects HTML here. Imported vacancies get
+ * the same excerpt the page shows (markup must match the visible content).
+ */
+function toHtmlDescription(job: Job, isJobUp: boolean): string {
+  let raw = (job.description?.trim() || job.requirements?.trim() || '');
   if (!raw) {
     return `${job.company} აცხადებს ვაკანსიას პოზიციაზე: ${job.vacancy}. ლოკაცია: ${job.location || 'საქართველო'}.`;
   }
-  if (/<\s*(p|br|div|ul|ol|li)\b/i.test(raw)) return raw;
+  if (!isJobUp) raw = descriptionExcerpt(raw);
+  else if (/<\s*(p|br|div|ul|ol|li)\b/i.test(raw)) return raw;
   return raw
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -36,7 +41,7 @@ export function buildJobPostingSchema(job: Job, pageUrl: string, isJobUp: boolea
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
     title: job.vacancy,
-    description: toHtmlDescription(job),
+    description: toHtmlDescription(job, isJobUp),
     datePosted,
     url: pageUrl,
     identifier: { '@type': 'PropertyValue', name: SITE_NAME, value: String(job.id) },

@@ -120,6 +120,11 @@
                     <img [src]="jobUpLogo" alt="Job Up" class="badge-logo">
                     <span>Job Up</span>
                   </span>
+                } @else if (sourceName(); as source) {
+                  <span class="source-badge" [class.jobs-ge]="source === 'jobs.ge'" [class.hr-ge]="source === 'hr.ge'" [class.awork-ge]="source === 'awork.ge'" [class.myjobs-ge]="source === 'myjobs.ge'" [class.linkedin]="source === 'LinkedIn'">
+                    <span class="material-symbols-outlined badge-icon">language</span>
+                    <span>{{ source }}</span>
+                  </span>
                 }
 
                 <span class="date-chip">
@@ -226,7 +231,7 @@
                   <span class="hook-highlight-badge">სულ {{ formattedTotalCount() }} ვაკანსია</span>
                 </div>
                 <p class="hook-subtitle">
-                  იხილეთ მსგავსი პოზიციები და სხვა აქტიური ვაკანსიები
+                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან
                 </p>
               </div>
             </div>
@@ -371,6 +376,26 @@
                 <span class="material-symbols-outlined">verified</span>
                 <span>ვაკანსია გამოქვეყნებულია Job Up-ზე</span>
               </div>
+            </footer>
+          } @else {
+            <!-- Imported vacancy: credit the portal and send readers to the full original posting -->
+            <footer class="vacancy-body-footer source-credit">
+              <div class="footer-left">
+                <span class="material-symbols-outlined">info</span>
+                <span>
+                  @if (sourceName(); as source) {
+                    წყარო: <strong>{{ source }}</strong>. ნაჩვენებია აღწერის ნაწილი.
+                  } @else {
+                    ნაჩვენებია აღწერის ნაწილი.
+                  }
+                </span>
+              </div>
+              @if (originalLink(); as link) {
+                <a class="btn-original-posting" [href]="link" target="_blank" rel="noopener nofollow">
+                  <span>სრული განცხადება{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}</span>
+                  <span class="material-symbols-outlined">open_in_new</span>
+                </a>
+              }
             </footer>
           }
         </section>
