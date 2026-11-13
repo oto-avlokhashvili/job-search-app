@@ -16,15 +16,15 @@
         </div>
 
         @if (audience() === 'seeker') {
-          <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ყველა პორტალზე ერთად</span></h1>
+          <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ერთ სივრცეში</span></h1>
           <p class="hero-lede">
             @if (vacancyCount() > 0) {
               <strong>{{ vacancyCount() | number }} აქტიური ვაკანსია</strong>
             } @else {
               <strong>ყველა აქტიური ვაკანსია</strong>
             }
-            <span class="lede-long">jobs.ge, hr.ge, myjobs.ge, awork.ge და LinkedIn-დან, ყოველდღე განახლებული.</span>
-            <span class="lede-short">5 პორტალიდან</span>
+            <span class="lede-long">ერთ სივრცეში, ყოველდღე განახლებული.</span>
+            <span class="lede-short">ყოველდღე განახლებული</span>
           </p>
 
           <!-- Same search as the vacancies page: keyword in, results there (city etc. are filtered there) -->
@@ -56,17 +56,6 @@
             <button type="button" class="quick-arrow right" [disabled]="!quickCanScrollRight()" (click)="scrollQuick(1)" aria-label="შემდეგი კატეგორიები">
               <span class="material-symbols-outlined">chevron_right</span>
             </button>
-          </div>
-
-          <div class="hero-trust">
-            <span class="portal-logos" aria-hidden="true">
-              <img src="/icons/jobs.png" alt="">
-              <img src="/icons/hr.png" alt="">
-              <img src="/icons/myjobsge.png" alt="">
-              <img src="/icons/awork.png" alt="">
-              <img src="/icons/linkedin.png" alt="">
-            </span>
-            <span><strong>5 პორტალი</strong> ერთ სივრცეში</span>
           </div>
 
           <!-- CV into the candidate pool: a quiet one-line alert in the hero's accent -->
@@ -222,206 +211,6 @@
             <span><b>გასაუბრება დაინიშნა</b><small>ხვალ 11:00 · Google Meet</small></span>
           </div>
         }
-      </div>
-    </div>
-    <!-- Integrated Portals Cards directly under Hero Grid -->
-    <div class="hero-portals-container" id="portals">
-      <div class="portals-header-line">
-        <div class="portals-title-group">
-          <span class="material-symbols-outlined portals-header-icon">hub</span>
-          <h2 class="portals-section-title">ინტეგრირებული პორტალები</h2>
-        </div>
-        <div class="portals-live-badge">
-          <span class="pulse-dot-green"></span>
-          <span>რეალურ დროში სინქრონიზებული</span>
-        </div>
-      </div>
-
-      <div class="provider-cards-grid">
-        <!-- Jobs.ge Card -->
-        <a 
-          class="provider-status-card glass-card" 
-          [routerLink]="['/vacancies']" 
-          [queryParams]="{ source: 'jobs.ge' }"
-          title="Jobs.ge ვაკანსიების ნახვა"
-        >
-          <div class="card-header-line">
-            <div class="provider-logo-container jobs-ge">
-              <img src="/icons/jobs.png" alt="Jobs.ge" class="provider-card-logo">
-            </div>
-            <div class="live-status-pill">
-              <span class="live-dot"></span>
-              <span class="live-label">Live</span>
-            </div>
-          </div>
-          <div class="card-info">
-            <span class="provider-title">Jobs.ge</span>
-            <div class="provider-stats">
-              <span class="provider-count">
-                @if (jobsGeCount() > 0) {
-                  {{ jobsGeCount() | number }}
-                } @else {
-                  <span class="count-loader"></span>
-                }
-              </span>
-              <span class="provider-unit">ვაკანსია</span>
-            </div>
-          </div>
-          <div class="card-footer-action">
-            <span class="card-browse-tag">
-              ვაკანსიების ნახვა
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </span>
-          </div>
-        </a>
-
-        <!-- HR.ge Card -->
-        <a 
-          class="provider-status-card glass-card" 
-          [routerLink]="['/vacancies']" 
-          [queryParams]="{ source: 'hr.ge' }"
-          title="HR.ge ვაკანსიების ნახვა"
-        >
-          <div class="card-header-line">
-            <div class="provider-logo-container hr-ge">
-              <img src="/icons/hr.png" alt="HR.ge" class="provider-card-logo">
-            </div>
-            <div class="live-status-pill">
-              <span class="live-dot"></span>
-              <span class="live-label">Live</span>
-            </div>
-          </div>
-          <div class="card-info">
-            <span class="provider-title">HR.ge</span>
-            <div class="provider-stats">
-              <span class="provider-count">
-                @if (hrGeCount() > 0) {
-                  {{ hrGeCount() | number }}
-                } @else {
-                  <span class="count-loader"></span>
-                }
-              </span>
-              <span class="provider-unit">ვაკანსია</span>
-            </div>
-          </div>
-          <div class="card-footer-action">
-            <span class="card-browse-tag">
-              ვაკანსიების ნახვა
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </span>
-          </div>
-        </a>
-
-        <!-- Awork.ge Card -->
-        <a 
-          class="provider-status-card glass-card" 
-          [routerLink]="['/vacancies']" 
-          [queryParams]="{ source: 'awork.ge' }"
-          title="Awork.ge ვაკანსიების ნახვა"
-        >
-          <div class="card-header-line">
-            <div class="provider-logo-container awork-ge">
-              <img src="/icons/awork.png" alt="Awork.ge" class="provider-card-logo">
-            </div>
-            <div class="live-status-pill">
-              <span class="live-dot"></span>
-              <span class="live-label">Live</span>
-            </div>
-          </div>
-          <div class="card-info">
-            <span class="provider-title">Awork.ge</span>
-            <div class="provider-stats">
-              <span class="provider-count">
-                @if (aworkGeCount() > 0) {
-                  {{ aworkGeCount() | number }}
-                } @else {
-                  <span class="count-loader"></span>
-                }
-              </span>
-              <span class="provider-unit">ვაკანსია</span>
-            </div>
-          </div>
-          <div class="card-footer-action">
-            <span class="card-browse-tag">
-              ვაკანსიების ნახვა
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </span>
-          </div>
-        </a>
-
-        <!-- Myjobs.ge Card -->
-        <a 
-          class="provider-status-card glass-card" 
-          [routerLink]="['/vacancies']" 
-          [queryParams]="{ source: 'myjobs.ge' }"
-          title="Myjobs.ge ვაკანსიების ნახვა"
-        >
-          <div class="card-header-line">
-            <div class="provider-logo-container myjobs-ge">
-              <img src="/icons/myjobsge.png" alt="Myjobs.ge" class="provider-card-logo circular">
-            </div>
-            <div class="live-status-pill">
-              <span class="live-dot"></span>
-              <span class="live-label">Live</span>
-            </div>
-          </div>
-          <div class="card-info">
-            <span class="provider-title">Myjobs.ge</span>
-            <div class="provider-stats">
-              <span class="provider-count">
-                @if (myjobsGeCount() > 0) {
-                  {{ myjobsGeCount() | number }}
-                } @else {
-                  <span class="count-loader"></span>
-                }
-              </span>
-              <span class="provider-unit">ვაკანსია</span>
-            </div>
-          </div>
-          <div class="card-footer-action">
-            <span class="card-browse-tag">
-              ვაკანსიების ნახვა
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </span>
-          </div>
-        </a>
-
-        <!-- LinkedIn Card -->
-        <a 
-          class="provider-status-card glass-card" 
-          [routerLink]="['/vacancies']" 
-          [queryParams]="{ source: 'linkedin' }"
-          title="LinkedIn ვაკანსიების ნახვა"
-        >
-          <div class="card-header-line">
-            <div class="provider-logo-container linkedin">
-              <img src="/icons/linkedin.png" alt="LinkedIn" class="provider-card-logo">
-            </div>
-            <div class="live-status-pill">
-              <span class="live-dot"></span>
-              <span class="live-label">Live</span>
-            </div>
-          </div>
-          <div class="card-info">
-            <span class="provider-title">LinkedIn</span>
-            <div class="provider-stats">
-              <span class="provider-count">
-                @if (linkedinCount() > 0) {
-                  {{ linkedinCount() | number }}
-                } @else {
-                  <span class="count-loader"></span>
-                }
-              </span>
-              <span class="provider-unit">ვაკანსია</span>
-            </div>
-          </div>
-          <div class="card-footer-action">
-            <span class="card-browse-tag">
-              ვაკანსიების ნახვა
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </span>
-          </div>
-        </a>
       </div>
     </div>
   </section>

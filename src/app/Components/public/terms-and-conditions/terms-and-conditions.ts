@@ -14,7 +14,7 @@ import { SeoService } from '../../../Core/Services/seo.service';
 export class TermsAndConditions implements OnInit {
   themeService = inject(ThemeService);
   private seo = inject(SeoService);
-  lastUpdated = '2026 წლის სექტემბერი';
+  lastUpdated = '2026 წლის ნოემბერი';
 
   ngOnInit() {
     this.seo.update({

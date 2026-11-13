@@ -60,11 +60,6 @@ export class Home implements OnInit {
   stats = this.stateStore.stats;
   statsLoading = this.stateStore.statsLoading;
   dbTotalRecords = this.stateStore.publicDbTotal;
-  jobsGeCount = this.stateStore.publicJobsGeCount;
-  hrGeCount = this.stateStore.publicHrGeCount;
-  aworkGeCount = this.stateStore.publicAworkGeCount;
-  myjobsGeCount = this.stateStore.publicMyjobsGeCount;
-  linkedinCount = this.stateStore.publicLinkedinCount;
 
   // ── Hero ──────────────────────────────────────────────────────
   /** Which side of the hero is open; ?for=employer opens the employer side (for links sent to employers) */
@@ -223,7 +218,7 @@ export class Home implements OnInit {
   ngOnInit() {
     this.seo.update({
       title: 'Job Up — დასაქმდი ან დაასაქმე',
-      description: 'ყველა ვაკანსია Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში — დამსაქმებლებისთვის კი AI კანდიდატების ძიება და შერჩევა.',
+      description: 'ყველა აქტიური ვაკანსია ერთ სივრცეში — დამსაქმებლებისთვის კი AI კანდიდატების ძიება და შერჩევა.',
       path: '/home',
     });
     this.loadLatestJobs();

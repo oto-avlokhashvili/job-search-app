@@ -16,11 +16,20 @@ import type { SavedCvSubmission } from '../public-cv-modal/public-cv-modal';
 
 export interface QuickApplyModalData {
   job: Pick<Job, 'id' | 'vacancy' | 'company' | 'link'>;
-  /** The address the vacancy names (Job.applyEmail) */
-  email: string;
+  /** The address the vacancy names (Job.applyEmail); null = no quick send, the CV goes to our pool instead */
+  email: string | null;
+  /** Where to apply by hand: the LinkedIn posting or the description's application link (Helio, a form...) */
+  applyUrl?: string | null;
 }
 
-/** Closes with true once the CV was sent (or had been sent before), so the page can show "sent". */
+/** true = the CV was sent (or had been); 'pool' = the visitor chose to leave the CV in our candidate pool */
+export type QuickApplyModalResult = boolean | 'pool';
+
+/**
+ * The vacancy's one apply button. With an email: quick send (we email the CV) or send it yourself.
+ * Without one: leave the CV in our candidate pool, or apply by hand on the vacancy's application page.
+ * Closes with a QuickApplyModalResult.
+ */
 @Component({
   selector: 'app-quick-apply-modal',
   standalone: true,
@@ -135,7 +144,38 @@ export class QuickApplyModal {
     this.view.set('choose');
   }
 
+  /** The pool upload is its own modal; the page opens it once this one closes */
+  chooseCvPool() {
+    this.dialogRef.close('pool');
+  }
+
+  /** The application page's site, without "www." ("careers.company.ge") */
+  get applyHost(): string {
+    try {
+      return new URL(this.data.applyUrl || '').hostname.replace(/^www\./, '');
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * Who takes the application when we know the service ("Helio", "LinkedIn"); null = the company's
+   * own site (a careers page or upload form), which the modal calls just that.
+   */
+  get applyProvider(): string | null {
+    const host = this.applyHost;
+    const known: [RegExp, string][] = [
+      [/(^|\.)(hel-ai\.com|helio\.ge)$/, 'Helio'],
+      [/(^|\.)linkedin\.com$/, 'LinkedIn'],
+      [/(^|\.)hr\.ge$/, 'HR.ge'],
+      [/^(forms\.gle|docs\.google\.com)$/, 'Google Forms'],
+      [/(^|\.)forms\.office\.com$/, 'Microsoft Forms'],
+    ];
+    return known.find(([re]) => re.test(host))?.[1] ?? null;
+  }
+
   copyEmail() {
+    if (!this.data.email) return;
     navigator.clipboard?.writeText(this.data.email).then(
       () => {
         this.copied.set(true);
@@ -347,7 +387,7 @@ export class QuickApplyModal {
       return;
     }
     if (code === 'NO_APPLY_EMAIL') {
-      this.formError.set('ამ ვაკანსიაზე განაცხადი წყარო საიტზე იგზავნება');
+      this.formError.set('ამ ვაკანსიაზე განაცხადი დამსაქმებლის საიტზე იგზავნება');
       return;
     }
     if (err?.status === 429) {

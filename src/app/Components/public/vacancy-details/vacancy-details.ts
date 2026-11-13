@@ -1,11 +1,12 @@
 import { CompanyLogos } from '../../../Core/Utils/company-logos';
-import { Component, inject, OnInit, computed, effect, signal, untracked, PLATFORM_ID, RESPONSE_INIT } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, inject, OnInit, computed, effect, signal, untracked, PLATFORM_ID, RESPONSE_INIT } from '@angular/core';
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
+import { extractApplyUrl } from '../../../Core/Utils/apply-url';
 import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
@@ -14,7 +15,7 @@ import { SeoService, SITE_URL } from '../../../Core/Services/seo.service';
 import { buildJobBreadcrumbSchema, buildJobPostingSchema } from '../../../Core/Utils/job-schema';
 import { findCityLanding } from '../../../Core/Utils/landing-pages';
 import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
-import { QuickApplyModal, QuickApplyModalData } from '../quick-apply-modal/quick-apply-modal';
+import { QuickApplyModal, QuickApplyModalData, QuickApplyModalResult } from '../quick-apply-modal/quick-apply-modal';
 import { QuickApplyService } from '../../../Core/Services/quick-apply';
 import { hasQuickApplied, quickApplyEmail, rememberQuickApplied } from '../../../Core/Utils/quick-apply-storage';
 
@@ -38,9 +39,31 @@ export class VacancyDetails implements OnInit {
   private dialog = inject(MatDialog);
   private quickApplyService = inject(QuickApplyService);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private destroyRef = inject(DestroyRef);
+
+  /** The description card has reached the top of the screen: the floating apply pill shows */
+  floatApplyVisible = signal(false);
 
   /** Quick apply: the address the API found in the description (null = apply on the source site). */
   applyEmail = computed(() => quickApplyEmail(this.stateStore.selectedJob()));
+  /**
+   * Where the vacancy takes applications by hand. A LinkedIn posting's own link; else the application
+   * link in the description (Helio, Google Forms, a careers page...); else the posting's own page when
+   * the API sends it (hr.ge vacancies without an email). null = none found.
+   */
+  applyUrl = computed(() => {
+    const job = this.stateStore.selectedJob();
+    if (!job) return null;
+    const outside = !this.isJobUp(job) && this.hasOutsideLink(job) ? job.link : null;
+    if (outside && /linkedin\.com/i.test(outside)) return outside;
+    return extractApplyUrl(`${job.description || ''} ${job.requirements || ''}`) ?? outside;
+  });
+  /** The one apply button: any imported vacancy, and Job Up's own when they name an address */
+  showApply = computed(() => {
+    const job = this.stateStore.selectedJob();
+    return !!job && (!!this.applyEmail() || !this.isJobUp(job));
+  });
   /** This visitor already sent their CV to this vacancy */
   applied = signal(false);
 
@@ -68,11 +91,6 @@ export class VacancyDetails implements OnInit {
     return total ? total.toLocaleString('en-US') : '4,850+';
   });
 
-  jobsGeCount = computed(() => this.stateStore.publicJobsGeCount() || 1450);
-  hrGeCount = computed(() => this.stateStore.publicHrGeCount() || 980);
-  aworkGeCount = computed(() => this.stateStore.publicAworkGeCount() || 620);
-  myjobsGeCount = computed(() => this.stateStore.publicMyjobsGeCount() || 410);
-  linkedinCount = computed(() => this.stateStore.publicLinkedinCount() || 400);
 
   extractedEmail = computed(() => {
     const job = this.stateStore.selectedJob();
@@ -311,6 +329,28 @@ export class VacancyDetails implements OnInit {
   }
 
   constructor() {
+    // Browser only: the pill shows once the description card's top has scrolled up to just under the
+    // fixed header (72px). The card renders after the job loads, so it's looked up on each check.
+    afterNextRender(() => {
+      let frame = 0;
+      const check = () => {
+        frame = 0;
+        const card = this.host.nativeElement.querySelector('.vacancy-body-section');
+        this.floatApplyVisible.set(!!card && card.getBoundingClientRect().top <= 72 + 24);
+      };
+      const onScroll = () => {
+        if (!frame) frame = requestAnimationFrame(check);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        if (frame) cancelAnimationFrame(frame);
+      });
+      check();
+    });
+
     effect(() => {
       const job = this.stateStore.selectedJob();
       if (job) {
@@ -458,10 +498,6 @@ export class VacancyDetails implements OnInit {
     }
   }
 
-  navigateToSource(source: string) {
-    this.router.navigate(['/vacancies'], { queryParams: { source } });
-  }
-
   navigateToAllVacancies(query?: string) {
     if (query) {
       this.router.navigate(['/vacancies'], { queryParams: { search: query } });
@@ -507,15 +543,9 @@ export class VacancyDetails implements OnInit {
     }
   }
 
-  openOriginalSource(link?: string) {
-    const targetLink = link || this.stateStore.selectedJob()?.link;
-    if (targetLink && targetLink !== '/jobs') {
-      if (typeof window !== 'undefined') {
-        window.open(targetLink, '_blank');
-      }
-    } else {
-      this.alertify.warning('ორიგინალი ბმული ხელმისაწვდომი არ არის');
-    }
+  /** Only LinkedIn (and Job Up) postings come with an outside link; the API hides the rest. */
+  hasOutsideLink(job: { link?: string | null }): boolean {
+    return !!job.link && job.link !== '/jobs';
   }
 
   private loadAppliedState(jobId: number | undefined, loggedIn: boolean) {
@@ -538,23 +568,23 @@ export class VacancyDetails implements OnInit {
   }
 
   /**
-   * Quick apply. The buttons show only when the vacancy names an address; without one the page shows
-   * the talent-pool card instead (and the source site stays one click away in the top bar).
+   * The one apply button opens the apply modal: quick send or send by hand when the vacancy names an
+   * address; otherwise leave the CV in the candidate pool or apply by hand on the application page.
    */
   apply() {
     const job = this.stateStore.selectedJob();
     if (!job) return;
-    const email = this.applyEmail();
-    if (!email) {
-      this.openPublicCvModal();
-      return;
-    }
-    const data: QuickApplyModalData = { job: { id: job.id, vacancy: job.vacancy, company: job.company, link: job.link }, email };
+    const data: QuickApplyModalData = {
+      job: { id: job.id, vacancy: job.vacancy, company: job.company, link: job.link },
+      email: this.applyEmail(),
+      applyUrl: this.applyUrl(),
+    };
     this.dialog
       .open(QuickApplyModal, { width: '600px', maxWidth: '95vw', panelClass: 'public-cv-dialog', autoFocus: false, data })
       .afterClosed()
-      .subscribe((sent) => {
-        if (sent && this.stateStore.selectedJob()?.id === job.id) this.applied.set(true);
+      .subscribe((result: QuickApplyModalResult) => {
+        if (result === 'pool') this.openPublicCvModal();
+        else if (result && this.stateStore.selectedJob()?.id === job.id) this.applied.set(true);
       });
   }
 
@@ -569,10 +599,6 @@ export class VacancyDetails implements OnInit {
 
   readonly jobUpLogo = JOBUP_LOGO;
   readonly logos = new CompanyLogos();
-
-  detectSource(sourceOrLink?: string, linkFallback?: string, company?: string): string {
-    return detectJobSource(sourceOrLink, linkFallback, company);
-  }
 
   isJobUp(job: { source?: string; link?: string; company?: string }): boolean {
     return isJobUpJob(job.source, job.link, job.company);

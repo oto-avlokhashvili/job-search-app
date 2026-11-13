@@ -15,7 +15,8 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 
 export interface WidgetChatMessage {
@@ -79,7 +80,7 @@ const PROMO_STATE_KEY = 'chat_widget_promos';
 @Component({
   selector: 'app-chat-widget',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './chat-widget.html',
   styleUrl: './chat-widget.scss',
 })
@@ -100,6 +101,11 @@ export class ChatWidget implements OnInit, AfterViewChecked {
   stateStore = inject(StateStore);
   dialog = inject(MatDialog);
   private router = inject(Router);
+
+  /** Suggested vacancies open on Job Up (imported postings carry no outside link). */
+  jobSlug(job: { id: number | string; vacancy?: string; company?: string }): string {
+    return generateJobSlug(job.vacancy, job.company, job.id);
+  }
 
   isLoggedIn = computed(() => this.authService.isLoggedIn());
   isChatOpen = signal<boolean>(false);

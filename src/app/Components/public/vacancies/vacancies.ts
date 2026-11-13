@@ -222,7 +222,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.seo.update({
       title: 'ვაკანსიები და სამსახური საქართველოში | Job Up',
-      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
+      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
       // Filtered views (?search, ?location, ?source) all consolidate onto the main list.
       path: '/vacancies',
     });
@@ -825,19 +825,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   toggleSalaryOnly() {
     this.salaryOnly.update((v) => !v);
     this.applyFilters();
-  }
-
-  /** Small attribution under the title; nothing for Job Up's own postings. */
-  readonly sourceIcons: Record<string, string> = {
-    'jobs.ge': '/icons/jobs.png',
-    'hr.ge': '/icons/hr.png',
-    'awork.ge': '/icons/awork.png',
-    'myjobs.ge': '/icons/myjobsge.png',
-    linkedin: '/icons/linkedin.png',
-  };
-
-  sourceLabel(source: string): string {
-    return source === 'linkedin' ? 'LinkedIn' : source;
   }
 
   getSelectedLocationLabel(): string {

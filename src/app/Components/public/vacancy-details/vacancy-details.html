@@ -28,15 +28,27 @@
         }
       </div>
 
-      @if (!stateStore.selectedJobLoading() && stateStore.selectedJob(); as j) {
-        @if (!isJobUp(j)) {
-          <button type="button" class="btn-nav-source" (click)="openOriginalSource(j.link)" title="ამ ვაკანსიაზე განაცხადის გაგზავნა / წყაროზე გადასვლა" aria-label="წყაროზე გადასვლა">
-            <span class="material-symbols-outlined">open_in_new</span>
-            <span>წყაროზე გადასვლა</span>
-          </button>
-        }
+      <!-- The apply button lives up here, sized like the back button (the card keeps favorite + share) -->
+      @if (!stateStore.selectedJobLoading() && stateStore.selectedJob() && showApply()) {
+        <button type="button" class="btn-nav-apply" [class.is-applied]="applied()" (click)="apply()"
+          [title]="applied() ? 'CV ამ ვაკანსიაზე უკვე გაგზავნილია' : 'CV-ის გაგზავნა დამსაქმებლისთვის'"
+          [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
+          <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
+          <span>{{ applied() ? 'გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
+        </button>
       }
     </nav>
+
+    <!-- Once the description card reaches the top: a second, small apply pill floating at the bottom,
+         centred so it clears the chat button, above the phone dock -->
+    @if (!stateStore.selectedJobLoading() && stateStore.selectedJob() && showApply()) {
+      <button type="button" class="btn-float-apply" [class.visible]="floatApplyVisible()" [class.is-applied]="applied()"
+        (click)="apply()" [attr.tabindex]="floatApplyVisible() ? null : -1" [attr.aria-hidden]="floatApplyVisible() ? null : 'true'"
+        [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
+        <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
+        <span>{{ applied() ? 'გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
+      </button>
+    }
 
     <!-- Loading State -->
     @if (stateStore.selectedJobLoading()) {
@@ -102,15 +114,13 @@
 
             <div class="hero-main-info">
               <!-- Meta Badges Row -->
-              <div class="meta-badges-row" [class.has-apply]="applyEmail()">
-                <span class="source-badge" [class.jobs-ge]="detectSource(j.source, j.link, j.company) === 'jobs.ge'" [class.hr-ge]="detectSource(j.source, j.link, j.company) === 'hr.ge'" [class.awork-ge]="detectSource(j.source, j.link, j.company) === 'awork.ge'" [class.myjobs-ge]="detectSource(j.source, j.link, j.company) === 'myjobs.ge'" [class.linkedin]="detectSource(j.source, j.link, j.company) === 'linkedin'" [class.jobup-ge]="isJobUp(j)">
-                  @if (isJobUp(j)) {
+              <div class="meta-badges-row">
+                @if (isJobUp(j)) {
+                  <span class="source-badge jobup-ge">
                     <img [src]="jobUpLogo" alt="Job Up" class="badge-logo">
-                  } @else {
-                    <span class="material-symbols-outlined badge-icon">language</span>
-                  }
-                  <span>{{ detectSource(j.source, j.link, j.company) }}</span>
-                </span>
+                    <span>Job Up</span>
+                  </span>
+                }
 
                 <span class="date-chip">
                   <span class="material-symbols-outlined badge-icon">calendar_today</span>
@@ -146,7 +156,8 @@
 
             <!-- Quick Action Buttons -->
             <div class="hero-actions-bar">
-              @if (applyEmail()) {
+              <!-- Desktop: apply sits here, before შენახვა (phones get it in the top bar instead) -->
+              @if (showApply()) {
                 <button type="button" class="btn-action-apply" [class.is-applied]="applied()" (click)="apply()"
                   [title]="applied() ? 'CV ამ ვაკანსიაზე უკვე გაგზავნილია' : 'CV-ის გაგზავნა დამსაქმებლისთვის'"
                   [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
@@ -190,43 +201,8 @@
                 <span class="material-symbols-outlined copy-icon">content_copy</span>
               </div>
             }
-
-            <div class="metric-card">
-              <span class="material-symbols-outlined metric-icon source">hub</span>
-              <div class="metric-content">
-                <span class="metric-label">წყარო</span>
-                <span class="metric-value">{{ detectSource(j.source, j.link, j.company) }}</span>
-              </div>
-            </div>
           </div>
 
-          <!-- კანდიდატთა ბაზა Hook Card (Job Header): only without quick apply, which saves the CV to the base anyway -->
-          @if (!applyEmail()) {
-          <div class="talent-pool-hook-card">
-            <div class="pool-card-content">
-              <div class="pool-icon-wrap">
-                <span class="material-symbols-outlined">folder_shared</span>
-              </div>
-              <div class="pool-text-wrap">
-                <div class="pool-title-badge-row">
-                  <h4>არ ერგებით ამ ვაკანსიას?</h4>
-                  <span class="pool-badge">კანდიდატთა ბაზა</span>
-                </div>
-                <p class="pool-desc">
-                  დატოვეთ თქვენი CV <strong>Job Up-ის საერთო ბაზაში</strong> — ჩვენი AI შეგირჩევთ სხვა შესაფერის შემოთავაზებებს.
-                </p>
-                <div class="pool-disclaimer-note">
-                  <span class="material-symbols-outlined">info</span>
-                  <span>შენიშვნა: CV ინახება Job Up-ის საერთო ბაზაში და არა ამ კონკრეტულ კომპანიაში.</span>
-                </div>
-              </div>
-            </div>
-            <button type="button" class="btn-pool-upload" (click)="openPublicCvModal()">
-              <span class="material-symbols-outlined">upload_file</span>
-              <span>CV-ის დატოვება ბაზაში</span>
-            </button>
-          </div>
-          }
         </header>
 
         <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (Between Hero & Description) -->
@@ -250,7 +226,7 @@
                   <span class="hook-highlight-badge">სულ {{ formattedTotalCount() }} ვაკანსია</span>
                 </div>
                 <p class="hook-subtitle">
-                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან
+                  იხილეთ მსგავსი პოზიციები და სხვა აქტიური ვაკანსიები
                 </p>
               </div>
             </div>
@@ -273,41 +249,6 @@
           >
               <div class="panel-inner-content">
                 
-                <!-- Source Distribution Bar -->
-                <div class="portal-distribution-row">
-                  <div class="distribution-label">
-                    <span class="material-symbols-outlined">hub</span>
-                    <span>პორტალების მიხედვით:</span>
-                  </div>
-                  <div class="portal-chips-list">
-                    <button type="button" class="portal-pill jobs-ge" (click)="navigateToSource('jobs.ge')" title="Jobs.ge ვაკანსიები">
-                      <span class="portal-dot"></span>
-                      <span class="portal-name">Jobs.ge</span>
-                      <span class="portal-count">{{ jobsGeCount() }}</span>
-                    </button>
-                    <button type="button" class="portal-pill hr-ge" (click)="navigateToSource('hr.ge')" title="HR.ge ვაკანსიები">
-                      <span class="portal-dot"></span>
-                      <span class="portal-name">HR.ge</span>
-                      <span class="portal-count">{{ hrGeCount() }}</span>
-                    </button>
-                    <button type="button" class="portal-pill awork-ge" (click)="navigateToSource('awork.ge')" title="Awork.ge ვაკანსიები">
-                      <span class="portal-dot"></span>
-                      <span class="portal-name">Awork.ge</span>
-                      <span class="portal-count">{{ aworkGeCount() }}</span>
-                    </button>
-                    <button type="button" class="portal-pill myjobs-ge" (click)="navigateToSource('myjobs.ge')" title="Myjobs.ge ვაკანსიები">
-                      <span class="portal-dot"></span>
-                      <span class="portal-name">Myjobs.ge</span>
-                      <span class="portal-count">{{ myjobsGeCount() }}</span>
-                    </button>
-                    <button type="button" class="portal-pill linkedin" (click)="navigateToSource('linkedin')" title="LinkedIn ვაკანსიები">
-                      <span class="portal-dot"></span>
-                      <span class="portal-name">LinkedIn</span>
-                      <span class="portal-count">{{ linkedinCount() }}</span>
-                    </button>
-                  </div>
-                </div>
-
                 <!-- Contextual Keywords / Smart Filters -->
                 @if (suggestedTags().length > 0) {
                   <div class="suggested-tags-row">
@@ -349,9 +290,6 @@
                       @for (item of similarJobs(); track item.id) {
                         <a [routerLink]="['/vacancies', getJobSlug(item)]" class="similar-job-card">
                           <div class="card-top">
-                            <span class="card-source-badge" [class.jobs-ge]="item.source === 'jobs.ge'" [class.hr-ge]="item.source === 'hr.ge'" [class.awork-ge]="item.source === 'awork.ge'" [class.myjobs-ge]="item.source === 'myjobs.ge'" [class.linkedin]="item.source === 'linkedin'">
-                              {{ item.source }}
-                            </span>
                             <span class="card-top-end">
                               <span class="card-date">{{ item.publishDate }}</span>
                               <app-favorite-button [jobId]="item.id" />
@@ -420,39 +358,21 @@
             } @else {
               <div class="empty-description-notice">
                 <span class="material-symbols-outlined notice-icon">info</span>
-                @if (isJobUp(j)) {
-                  <p>ვაკანსიის დეტალური აღწერა ჯერ არ არის დამატებული.</p>
-                } @else {
-                  <p>ვაკანსიის სრული დეტალების, მოთხოვნებისა და პირობების გასაცნობად გთხოვთ გადახვიდეთ განაცხადის პირდაპირ წყაროზე.</p>
-                  <button type="button" class="btn-action-apply" (click)="openOriginalSource(j.link)">
-                    <span>გადასვლა წყაროზე</span>
-                    <span class="material-symbols-outlined">open_in_new</span>
-                  </button>
-                }
+                <p>ვაკანსიის დეტალური აღწერა ჯერ არ არის დამატებული.</p>
               </div>
             }
           </div>
 
           <!-- Bottom Footer CTA -->
-          <footer class="vacancy-body-footer">
-            <div class="footer-left">
-              @if (isJobUp(j)) {
+          <!-- No apply button down here: the floating pill covers the description -->
+          @if (isJobUp(j)) {
+            <footer class="vacancy-body-footer">
+              <div class="footer-left">
                 <span class="material-symbols-outlined">verified</span>
                 <span>ვაკანსია გამოქვეყნებულია Job Up-ზე</span>
-              } @else {
-                <span class="material-symbols-outlined">sync</span>
-                <span>ვაკანსია სინქრონიზებულია ავტომატურად წყაროდან</span>
-              }
-            </div>
-            @if (applyEmail()) {
-              <div class="footer-right">
-                <button type="button" class="btn-action-apply" [class.is-applied]="applied()" (click)="apply()">
-                  <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
-                  <span>{{ applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
-                </button>
               </div>
-            }
-          </footer>
+            </footer>
+          }
         </section>
 
       </article>

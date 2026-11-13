@@ -179,7 +179,7 @@
                         }
                       </div>
                       <div class="job-card-actions">
-                        <a [href]="job.link" target="_blank" class="apply-inline-btn">გახსნა</a>
+                        <a [routerLink]="['/vacancies', jobSlug(job)]" class="apply-inline-btn">გახსნა</a>
                       </div>
                     </div>
                   }

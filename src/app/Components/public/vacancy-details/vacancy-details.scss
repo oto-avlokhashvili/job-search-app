@@ -141,50 +141,6 @@
     }
   }
 
-  // "Go to source" button, pinned to the right of the nav bar.
-  .btn-nav-source {
-    margin-left: auto;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    box-sizing: border-box;
-    line-height: 1;
-    padding: 0 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-    background: var(--surface-container-low, #ebf1ff);
-    border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
-    color: var(--primary, #0b6096);
-    transition: all 0.2s ease;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-    }
-
-    &:hover {
-      background: var(--primary, #0b6096);
-      color: #ffffff;
-      border-color: var(--primary, #0b6096);
-      box-shadow: 0 4px 12px rgba(11, 96, 150, 0.2);
-    }
-
-    @media (max-width: 576px) {
-      height: 30px;
-      padding: 0 10px;
-      font-size: 11.5px;
-      border-radius: 8px;
-      gap: 4px;
-
-      .material-symbols-outlined {
-        font-size: 16px;
-      }
-    }
-  }
 }
 
 // ── Glass Card Base ───────────────────────────────────────────
@@ -631,9 +587,7 @@
       gap: 8px;
     }
 
-    // Shared sizing so both buttons match.
-    .btn-action-copy,
-    .btn-action-apply {
+    .btn-action-copy {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -681,227 +635,43 @@
       }
     }
 
+    // Desktop: the page's main action, before შენახვა, the size of its neighbours (phones: top bar)
     .btn-action-apply {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 12px;
       background: linear-gradient(135deg, var(--primary, #0b6096) 0%, var(--primary-container, #5b9bd5) 100%);
       color: #ffffff;
-      border: 1px solid transparent;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      box-sizing: border-box;
       box-shadow: 0 4px 14px rgba(11, 96, 150, 0.2);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+      .material-symbols-outlined {
+        font-size: 18px;
+      }
 
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(11, 96, 150, 0.3);
         filter: brightness(1.05);
       }
+
+      @media (max-width: 640px) {
+        display: none;
+      }
     }
   }
 
-  // ── კანდიდატთა ბაზა Hook Card (Job Header) ──
-  .talent-pool-hook-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 13px 18px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(11, 96, 150, 0.05) 0%, rgba(91, 155, 213, 0.1) 100%);
-    border: 1px dashed rgba(11, 96, 150, 0.35);
-    margin-top: 4px;
-
-    [data-theme='dark'] & {
-      background: linear-gradient(135deg, rgba(11, 96, 150, 0.15) 0%, rgba(91, 155, 213, 0.08) 100%);
-      border-color: rgba(91, 155, 213, 0.3);
-    }
-
-    @media (max-width: 640px) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      margin-top: 2px;
-    }
-
-    .pool-card-content {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      flex: 1;
-
-      @media (max-width: 640px) {
-        gap: 9px;
-      }
-    }
-
-    .pool-icon-wrap {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--primary, #0b6096);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-
-      span.material-symbols-outlined {
-        font-size: 20px;
-      }
-
-      @media (max-width: 640px) {
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
-
-        span.material-symbols-outlined {
-          font-size: 17px;
-        }
-      }
-    }
-
-    .pool-text-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      flex: 1;
-      min-width: 0;
-
-      @media (max-width: 640px) {
-        gap: 2px;
-      }
-
-      .pool-title-badge-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-
-        @media (max-width: 640px) {
-          gap: 6px;
-        }
-
-        h4 {
-          margin: 0;
-          font-size: 13.5px;
-          font-weight: 800;
-          color: var(--on-surface, #162f50);
-
-          @media (max-width: 640px) {
-            font-size: 12px;
-            line-height: 1.3;
-          }
-        }
-
-        .pool-badge {
-          font-size: 10.5px;
-          font-weight: 800;
-          padding: 2px 7px;
-          border-radius: 5px;
-          background: rgba(16, 185, 129, 0.15);
-          color: #059669;
-          text-transform: uppercase;
-          letter-spacing: 0.4px;
-
-          @media (max-width: 640px) {
-            font-size: 9.5px;
-            padding: 1px 5px;
-            border-radius: 4px;
-          }
-
-          [data-theme='dark'] & {
-            background: rgba(16, 185, 129, 0.25);
-            color: #34d399;
-          }
-        }
-      }
-
-      .pool-desc {
-        margin: 0;
-        font-size: 12px;
-        line-height: 1.45;
-        color: var(--on-surface-variant, #455c7f);
-
-        @media (max-width: 640px) {
-          font-size: 11px;
-          line-height: 1.35;
-        }
-
-        strong {
-          color: var(--on-surface, #162f50);
-        }
-      }
-
-      .pool-disclaimer-note {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #d97706;
-        margin-top: 2px;
-        line-height: 1.35;
-
-        @media (max-width: 640px) {
-          font-size: 10px;
-          gap: 3px;
-          margin-top: 1px;
-          line-height: 1.3;
-        }
-
-        [data-theme='dark'] & {
-          color: #fbbf24;
-        }
-
-        span.material-symbols-outlined {
-          font-size: 13px;
-          flex-shrink: 0;
-
-          @media (max-width: 640px) {
-            font-size: 12px;
-          }
-        }
-      }
-    }
-
-    .btn-pool-upload {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 16px;
-      border-radius: 10px;
-      background: var(--primary, #0b6096);
-      color: #ffffff;
-      border: none;
-      font-size: 12.5px;
-      font-weight: 700;
-      white-space: nowrap;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-
-      @media (max-width: 640px) {
-        width: 100%;
-        justify-content: center;
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 9px;
-      }
-
-      span.material-symbols-outlined {
-        font-size: 17px;
-
-        @media (max-width: 640px) {
-          font-size: 16px;
-        }
-      }
-
-      &:hover {
-        background: var(--primary-container, #5b9bd5);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(11, 96, 150, 0.2);
-      }
-    }
-  }
 }
 
 // ── Vacancy Description Section ───────────────────────────────
@@ -1172,80 +942,6 @@
       }
     }
 
-    .footer-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      @media (max-width: 768px) {
-        flex-direction: column-reverse;
-        width: 100%;
-        gap: 8px;
-      }
-
-      .btn-action-cv-subtle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 11px 18px;
-        border-radius: 12px;
-        background: var(--surface-container-low, #ebf1ff);
-        color: var(--primary, #0b6096);
-        border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
-        font-weight: 700;
-        font-size: 13.5px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        @media (max-width: 768px) {
-          width: 100%;
-          justify-content: center;
-        }
-
-        [data-theme='dark'] & {
-          background: rgba(91, 155, 213, 0.12);
-          border-color: rgba(91, 155, 213, 0.25);
-          color: #7bb5e8;
-        }
-
-        span.material-symbols-outlined {
-          font-size: 18px;
-        }
-
-        &:hover {
-          background: var(--primary, #0b6096);
-          color: #ffffff;
-          border-color: var(--primary, #0b6096);
-          transform: translateY(-2px);
-        }
-      }
-
-      .btn-action-apply {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 28px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary, #0b6096) 0%, var(--primary-container, #5b9bd5) 100%);
-        color: #ffffff;
-        font-weight: 700;
-        font-size: 14px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 14px rgba(11, 96, 150, 0.2);
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(11, 96, 150, 0.3);
-        }
-
-        @media (max-width: 768px) {
-          width: 100%;
-          justify-content: center;
-        }
-      }
-    }
   }
 }
 
@@ -1628,110 +1324,6 @@
     }
   }
 
-  // ── Portal Breakdown Row ──
-  .portal-distribution-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-
-    @media (max-width: 640px) {
-      gap: 8px;
-    }
-
-    .distribution-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--on-surface-variant, #455c7f);
-
-      @media (max-width: 640px) {
-        font-size: 12px;
-      }
-
-      span.material-symbols-outlined {
-        font-size: 18px;
-        color: var(--primary, #0b6096);
-
-        @media (max-width: 640px) {
-          font-size: 16px;
-        }
-      }
-    }
-
-    .portal-chips-list {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-
-      @media (max-width: 640px) {
-        gap: 6px;
-      }
-    }
-
-    .portal-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border-color, rgba(151, 174, 213, 0.2));
-      background: var(--surface-container-low, #f4f7fc);
-      color: var(--on-surface, #162f50);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      @media (max-width: 640px) {
-        padding: 4px 9px;
-        font-size: 11px;
-      }
-
-      [data-theme='dark'] & {
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .portal-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #94a3b8;
-      }
-
-      &.jobs-ge .portal-dot { background: #2563eb; }
-      &.hr-ge .portal-dot { background: #ea580c; }
-      &.awork-ge .portal-dot { background: #16a34a; }
-      &.myjobs-ge .portal-dot { background: #9333ea; }
-      &.linkedin .portal-dot { background: #0a66c2; }
-
-      .portal-count {
-        font-size: 11px;
-        font-weight: 700;
-        opacity: 0.75;
-      }
-
-      &:hover {
-        border-color: var(--primary, #0b6096);
-        background: var(--primary, #0b6096);
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(11, 96, 150, 0.15);
-
-        .portal-dot {
-          background: #ffffff;
-        }
-
-        .portal-count {
-          opacity: 1;
-        }
-      }
-    }
-  }
-
   // ── Contextual Suggested Tags ──
   .suggested-tags-row {
     display: flex;
@@ -1931,6 +1523,7 @@
       }
 
       .card-top-end {
+        margin-left: auto;
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -2137,10 +1730,89 @@
 
 
 // ── Quick apply ──
-// Phones: the corner action bar holds three buttons when there's an apply button
-@media (max-width: 640px) {
-  :host .meta-badges-row.has-apply {
-    padding-right: 138px;
+// The apply button sits in the top bar, opposite the back button and looking just like it (same
+// colors, 36px; 30px on phones), with a soft pulsing ring so it's noticed
+:host .details-top-nav .btn-nav-apply {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  box-sizing: border-box;
+  line-height: 1;
+  padding: 0 14px;
+  // The back button's colors (.btn-back-nav)
+  border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
+  border-radius: 10px;
+  background: var(--surface-container-low, #ebf1ff);
+  color: var(--primary, #0b6096);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: nav-apply-glow 2.4s ease-in-out infinite;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  // Fills in on hover, like the back button
+  &:hover {
+    background: var(--primary, #0b6096);
+    border-color: var(--primary, #0b6096);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.2);
+    animation: none;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &.is-applied {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #10b981;
+    box-shadow: none;
+    animation: none;
+  }
+
+  // Desktop has it in the card's header, before შენახვა
+  @media (min-width: 641px) {
+    display: none;
+  }
+
+  @media (max-width: 576px) {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    border-radius: 8px;
+    gap: 4px;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+}
+
+// A soft ring spreading out so the main action is noticed; off for people who prefer less motion
+@keyframes nav-apply-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host .details-top-nav .btn-nav-apply {
+    animation: none;
   }
 }
 
@@ -2149,4 +1821,83 @@
   background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
   color: #ffffff;
+}
+
+// ── Floating apply pill ──
+// Shows once the description card reaches the top (floatApplyVisible): small and centred at the
+// bottom, so it clears the chat button and covers as little text as possible; above the phone dock
+// (64px) and its raised middle button
+:host .btn-float-apply {
+  position: fixed;
+  left: 50%;
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  z-index: 900; // under the header (1000) and dialogs, over the page
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary, #0b6096) 0%, #2563eb 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+  // Hidden until the top bar is out of view: slides up and fades in
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity 0.25s ease, transform 0.25s ease, filter 0.2s ease;
+
+  .material-symbols-outlined {
+    font-size: 17px;
+  }
+
+  &.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    transform: translate(-50%, 0) scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  &.is-applied {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+  }
+
+  // Phones and tablets: above the bottom dock, clear of its raised middle button
+  @media (max-width: 991px) {
+    bottom: calc(64px + 34px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 576px) {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity 0.2s ease;
+    transform: translate(-50%, 0);
+  }
 }

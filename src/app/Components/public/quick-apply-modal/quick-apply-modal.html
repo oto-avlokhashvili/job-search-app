@@ -17,7 +17,8 @@
         }
       </div>
 
-      <!-- Main path: we send it -->
+      <!-- Main path: we send it (with an email); else the employer's application page, else our candidate pool -->
+      @if (data.email) {
       <section class="qa-hero">
         <div class="qa-hero-top">
           <div class="qa-hero-icon">
@@ -41,16 +42,93 @@
         </button>
       </section>
 
-      <div class="qa-divider"><span>ან გაგზავნეთ თავად</span></div>
+        <div class="qa-divider"><span>ან გაგზავნეთ თავად</span></div>
 
-      <!-- Secondary path: their own mail app -->
-      <div class="qa-manual">
-        <span class="material-symbols-outlined qa-manual-icon">alternate_email</span>
-        <span class="qa-manual-email" [title]="data.email">{{ data.email }}</span>
-        <button type="button" class="qa-icon-btn" (click)="copyEmail()" [title]="copied() ? 'დაკოპირდა' : 'დაკოპირება'" [attr.aria-label]="copied() ? 'დაკოპირდა' : 'მისამართის დაკოპირება'">
-          <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
-        </button>
-      </div>
+        <!-- By hand: the vacancy's application page -->
+        @if (data.applyUrl) {
+          <div class="qa-manual">
+            <span class="material-symbols-outlined qa-manual-icon">link</span>
+            <span class="qa-manual-email" [title]="data.applyUrl">{{ applyProvider ?? 'კომპანიის საიტი' }}</span>
+            <a class="qa-manual-go" [href]="data.applyUrl" target="_blank" rel="noopener" (click)="close()">
+              <span>გადასვლა</span>
+              <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+          </div>
+        }
+
+        <!-- By hand: their own mail app -->
+        <div class="qa-manual" [class.qa-manual-stacked]="data.applyUrl">
+          <span class="material-symbols-outlined qa-manual-icon">alternate_email</span>
+          <span class="qa-manual-email" [title]="data.email">{{ data.email }}</span>
+          <button type="button" class="qa-icon-btn" (click)="copyEmail()" [title]="copied() ? 'დაკოპირდა' : 'დაკოპირება'" [attr.aria-label]="copied() ? 'დაკოპირდა' : 'მისამართის დაკოპირება'">
+            <span class="material-symbols-outlined">{{ copied() ? 'check' : 'content_copy' }}</span>
+          </button>
+        </div>
+      } @else if (data.applyUrl) {
+        <!-- No email: the employer takes applications on their own page (Helio, LinkedIn, a form...) -->
+        <section class="qa-hero">
+          <div class="qa-hero-top">
+            <div class="qa-hero-icon">
+              <span class="material-symbols-outlined">open_in_new</span>
+            </div>
+            <div>
+              @if (applyProvider; as provider) {
+                <h3>განაცხადი {{ provider }}-ზე</h3>
+                <p>დამსაქმებელი განაცხადებს იღებს {{ provider }}-ის გვერდზე</p>
+              } @else {
+                <h3>განაცხადი კომპანიის საიტზე</h3>
+                <p>CV-ს ატვირთავთ დამსაქმებლის საიტზე: <strong>{{ applyHost }}</strong></p>
+              }
+            </div>
+          </div>
+
+          <ul class="qa-perks">
+            <li><span class="material-symbols-outlined">check</span>განაცხადი პირდაპირ დამსაქმებელს მიდის</li>
+            <li><span class="material-symbols-outlined">check</span>გვერდი გაიხსნება ახალ ფანჯარაში</li>
+          </ul>
+
+          <a class="qa-hero-btn" [href]="data.applyUrl" target="_blank" rel="noopener" (click)="close()">
+            <span>{{ applyProvider ? 'გადასვლა ' + applyProvider + '-ზე' : 'კომპანიის საიტზე გადასვლა' }}</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </a>
+        </section>
+
+        <div class="qa-divider"><span>ან</span></div>
+
+        <!-- Secondary: leave the CV in our candidate pool -->
+        <div class="qa-manual">
+          <span class="material-symbols-outlined qa-manual-icon">upload_file</span>
+          <span class="qa-manual-email" title="CV ინახება Job Up-ის ბაზაში და არ ეგზავნება ამ კომპანიას">CV-ის დატოვება Job Up-ის ბაზაში</span>
+          <button type="button" class="qa-manual-go" (click)="chooseCvPool()">
+            <span>ატვირთვა</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      } @else {
+        <!-- Neither: the CV goes to our candidate pool -->
+        <section class="qa-hero">
+          <div class="qa-hero-top">
+            <div class="qa-hero-icon">
+              <span class="material-symbols-outlined">upload_file</span>
+            </div>
+            <div>
+              <h3>CV-ის ატვირთვა ბაზაში</h3>
+              <p>დატოვეთ CV Job Up-ის კანდიდატთა ბაზაში</p>
+            </div>
+          </div>
+
+          <ul class="qa-perks">
+            <li><span class="material-symbols-outlined">check</span>რეკრუტერები და დამსაქმებლები თავად დაგიკავშირდებიან</li>
+            <li><span class="material-symbols-outlined">check</span>AI შეგირჩევთ თქვენზე მორგებულ ვაკანსიებს</li>
+            <li><span class="material-symbols-outlined">info</span>CV ინახება Job Up-ის ბაზაში და არ ეგზავნება ამ კომპანიას</li>
+          </ul>
+
+          <button type="button" class="qa-hero-btn" (click)="chooseCvPool()">
+            <span>CV-ის ატვირთვა</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </section>
+      }
     }
 
     <!-- ── Quick apply form ── -->

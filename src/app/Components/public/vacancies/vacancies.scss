@@ -1366,30 +1366,6 @@ button.btn-search {
     }
   }
 
-  .btn-clear-source-filter {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: 12px;
-    padding: 4px 10px;
-    border-radius: 100px;
-    background: rgba(11, 96, 150, 0.1);
-    border: 1px solid var(--primary-container);
-    color: var(--primary);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    span.material-symbols-outlined {
-      font-size: 14px;
-    }
-
-    &:hover {
-      background: var(--primary);
-      color: #ffffff;
-    }
-  }
 
   // CV mode header: count + detected role, with the exit button wrapping under it on phones
   &.cv-results-meta {
@@ -1401,10 +1377,6 @@ button.btn-search {
       align-items: center;
       flex-wrap: wrap;
       gap: 6px;
-    }
-
-    .btn-clear-source-filter {
-      margin-left: 0;
     }
   }
 
@@ -2174,38 +2146,6 @@ tr.just-visited {
   .material-symbols-outlined {
     font-size: 14px;
   }
-}
-
-// Which portal the vacancy came from: a quiet hint, not a column
-.job-source {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-left: 2px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--on-surface-variant);
-  opacity: 0.7;
-  white-space: nowrap;
-
-  .meta-dot {
-    margin-right: 2px;
-  }
-
-  .job-source-icon {
-    width: 11px;
-    height: 11px;
-    object-fit: contain;
-    border-radius: 2px;
-
-    &.circular {
-      border-radius: 50%;
-    }
-  }
-}
-
-.job-card-bottom-pills .job-source {
-  margin-left: 0;
 }
 
 // ─── "Salary shown" filter ─────────────────────────────────────

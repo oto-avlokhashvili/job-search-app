@@ -137,6 +137,8 @@
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 700;
+  text-decoration: none; // also used as a link (apply on the employer's page)
+  box-sizing: border-box;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(11, 96, 150, 0.25);
   transition: all 0.2s ease;
@@ -197,6 +199,40 @@
     font-size: 0.86rem;
     font-weight: 600;
     color: var(--on-surface);
+  }
+}
+
+.qa-manual-stacked {
+  margin-top: 0.5rem;
+}
+
+// "Apply by hand" link: a compact pill in the row's corner
+.qa-manual-go {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0 0.8rem;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--primary, #0b6096);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter 0.2s ease, transform 0.2s ease;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
   }
 }
 
