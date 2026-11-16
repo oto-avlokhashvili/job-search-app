@@ -358,7 +358,85 @@
           </div>
 
           <div class="vacancy-description-content">
-            @if (formattedDescription(); as formatted) {
+            @if (descriptionView(); as view) {
+              <!-- Imported vacancy in our layout (the portal's wording, our arrangement) -->
+              <div class="structured-description">
+                @if (view.facts.length) {
+                  <div class="desc-facts" aria-label="მოკლედ ვაკანსიის შესახებ">
+                    @for (fact of view.facts; track fact.label) {
+                      <div class="desc-fact">
+                        <span class="material-symbols-outlined desc-fact-icon">{{ fact.icon }}</span>
+                        <div class="desc-fact-text">
+                          <span class="desc-fact-label">{{ fact.label }}</span>
+                          <span class="desc-fact-value">{{ fact.value }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @for (section of view.sections; track $index) {
+                  <section class="desc-section" [attr.data-kind]="section.kind">
+                    @if (section.title) {
+                      <h3 class="desc-heading">
+                        <span class="material-symbols-outlined desc-heading-icon">{{ section.icon }}</span>
+                        <span>{{ section.title }}</span>
+                      </h3>
+                    }
+                    <ng-container *ngTemplateOutlet="descBlocks; context: { $implicit: section.blocks }" />
+                  </section>
+                }
+
+                @if (view.apply.length) {
+                  <section class="desc-apply-card">
+                    <h3 class="desc-heading">
+                      <span class="material-symbols-outlined desc-heading-icon">send</span>
+                      <span>როგორ გავაგზავნოთ განაცხადი</span>
+                    </h3>
+                    <ng-container *ngTemplateOutlet="descBlocks; context: { $implicit: view.apply }" />
+                  </section>
+                }
+
+                @if (view.legal.length) {
+                  <details class="desc-legal">
+                    <summary>
+                      <span class="material-symbols-outlined">shield_person</span>
+                      <span>პერსონალური მონაცემების დამუშავება</span>
+                    </summary>
+                    @for (notice of view.legal; track $index) {
+                      <p [innerHTML]="notice"></p>
+                    }
+                  </details>
+                }
+              </div>
+
+              <ng-template #descBlocks let-blocks>
+                @for (block of blocks; track $index) {
+                  @switch (block.type) {
+                    @case ('paragraph') {
+                      <p class="desc-paragraph" [innerHTML]="block.html"></p>
+                    }
+                    @case ('list') {
+                      <ul class="desc-list">
+                        @for (item of block.items; track $index) {
+                          <li [innerHTML]="item"></li>
+                        }
+                      </ul>
+                    }
+                    @case ('details') {
+                      <dl class="desc-details">
+                        @for (row of block.rows; track $index) {
+                          <div class="desc-detail-row">
+                            <dt>{{ row.label }}</dt>
+                            <dd [innerHTML]="row.html"></dd>
+                          </div>
+                        }
+                      </dl>
+                    }
+                  }
+                }
+              </ng-template>
+            } @else if (formattedDescription(); as formatted) {
               <div class="rich-text-content" [innerHTML]="formatted"></div>
             } @else {
               <div class="empty-description-notice">
@@ -384,15 +462,15 @@
                 <span class="material-symbols-outlined">info</span>
                 <span>
                   @if (sourceName(); as source) {
-                    წყარო: <strong>{{ source }}</strong>. ნაჩვენებია აღწერის ნაწილი.
+                    წყარო: <strong>{{ source }}</strong>
                   } @else {
-                    ნაჩვენებია აღწერის ნაწილი.
+                    იმპორტირებული ვაკანსია
                   }
                 </span>
               </div>
               @if (originalLink(); as link) {
                 <a class="btn-original-posting" [href]="link" target="_blank" rel="noopener nofollow">
-                  <span>სრული განცხადება{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}</span>
+                  <span>ორიგინალი განცხადება{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}</span>
                   <span class="material-symbols-outlined">open_in_new</span>
                 </a>
               }

@@ -7,7 +7,28 @@ import { Job, VacancyItem } from '../../../Core/Interfaces/jobs';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { extractApplyUrl } from '../../../Core/Utils/apply-url';
-import { descriptionExcerpt } from '../../../Core/Utils/description-excerpt';
+import { DescriptionBlock, DescriptionFact, SectionKind, structureDescription } from '../../../Core/Utils/vacancy-description';
+
+type DescriptionBlockView =
+  | { type: 'paragraph'; html: string }
+  | { type: 'list'; items: string[] }
+  | { type: 'details'; rows: { label: string; html: string }[] };
+
+interface DescriptionView {
+  facts: DescriptionFact[];
+  sections: { kind: SectionKind; icon: string; title: string | null; blocks: DescriptionBlockView[] }[];
+  apply: DescriptionBlockView[];
+  legal: string[];
+}
+
+const SECTION_ICONS: Record<SectionKind, string> = {
+  about: 'apartment',
+  duties: 'task_alt',
+  requirements: 'checklist',
+  offer: 'redeem',
+  other: 'notes',
+  apply: 'send',
+};
 import { StateStore, detectJobSource, formatJobDate, isJobUpJob, JOBUP_LOGO } from '../../../Store/state.store';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
 import { generateJobSlug, extractJobIdFromSlug } from '../../../Core/Utils/slug-generator';
@@ -128,9 +149,52 @@ export class VacancyDetails implements OnInit {
 
     if (!raw) return null;
 
-    // Imported vacancies: an excerpt only, the full text is on the original posting (see the footer)
-    return this.formatDescriptionText(this.isJobUp(job) ? raw : descriptionExcerpt(raw));
+    return this.formatDescriptionText(raw);
   });
+
+  /**
+   * Imported vacancies in our own layout: a facts card, the sections in a fixed order, the "how to
+   * apply" part in its own card and the data-protection small print collapsed (see vacancy-description).
+   * The wording is the portal's; only the arrangement is ours. Job Up's own vacancies keep theirs.
+   */
+  descriptionView = computed<DescriptionView | null>(() => {
+    const job = this.stateStore.selectedJob();
+    if (!job || this.isJobUp(job)) return null;
+    const raw = job.description?.trim() ? job.description : job.requirements;
+    const doc = structureDescription(raw, this.hostOf(job.link));
+    if (!doc || (!doc.sections.length && !doc.apply.length)) return null;
+
+    // Escaped, then emails and links made clickable; [innerHTML] sanitizes on top
+    const html = (text: string) => this.linkifyAndCleanText(text, false);
+    const blocks = (list: DescriptionBlock[]): DescriptionBlockView[] =>
+      list.map((b) =>
+        b.type === 'paragraph'
+          ? { type: 'paragraph', html: html(b.text) }
+          : b.type === 'list'
+            ? { type: 'list', items: b.items.map(html) }
+            : { type: 'details', rows: b.rows.map((r) => ({ label: r.label, html: html(r.value) })) },
+      );
+
+    return {
+      facts: doc.facts,
+      sections: doc.sections.map((s) => ({
+        kind: s.kind,
+        icon: SECTION_ICONS[s.kind],
+        title: s.title,
+        blocks: blocks(s.blocks),
+      })),
+      apply: blocks(doc.apply),
+      legal: doc.legal.map(html),
+    };
+  });
+
+  private hostOf(link: string | undefined): string | null {
+    try {
+      return link ? new URL(link).hostname : null;
+    } catch {
+      return null;
+    }
+  }
 
   /** The portal an imported vacancy came from, for the credit line ('jobs.ge', 'LinkedIn', ...) */
   sourceName = computed(() => {
