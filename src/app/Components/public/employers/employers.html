@@ -1,0 +1,186 @@
+<main class="employers-main">
+  <!-- Same hero as the job seekers' page, on the employer side (green accent) -->
+  <section class="hero-section" id="features" data-audience="employer">
+    <div class="hero-copy">
+      <h1 class="hero-title">იპოვე სწორი კანდიდატი,<br><span class="accent">არა უბრალოდ CV</span></h1>
+      <p class="hero-lede">
+        <span class="lede-long">
+          აღწერე, ვის ეძებ — AI
+          @if (stats()?.uploadedCvs; as cvs) {
+            <strong>{{ cvs | number }} CV-დან</strong>
+          } @else {
+            <strong>ატვირთული CV-ებიდან</strong>
+          }
+          შეგირჩევს შესაფერისებს და შერჩევასაც ერთ სივრცეში მართავ.
+        </span>
+        <span class="lede-short">AI შეგირჩევს სწორ კანდიდატს</span>
+      </p>
+
+      <!-- Desktop: sign-up right under the lede (phones get it after the phone) -->
+      <div class="employer-cta-top">
+        <ng-container [ngTemplateOutlet]="employerCta" />
+      </div>
+
+      <ul class="hero-note">
+        <li><span class="material-symbols-outlined">auto_awesome</span>AI ძიება</li>
+        <li><span class="material-symbols-outlined">view_kanban</span>შერჩევა ეტაპებად</li>
+        <li><span class="material-symbols-outlined">videocam</span>გასაუბრება Google Meet-ით</li>
+      </ul>
+    </div>
+
+    <!-- Sign-up / login, defined once: under the lede on desktop, after the phone on phones -->
+    <ng-template #employerCta>
+      <div class="hero-cta-row">
+        @if (isEmployerAccount()) {
+          <a class="hero-btn primary" routerLink="/hr">
+            <span class="material-symbols-outlined">dashboard</span>
+            HR პანელი
+          </a>
+        } @else {
+          <button type="button" class="hero-btn primary" (click)="openEmployerPath()">
+            <span class="material-symbols-outlined">person_add</span>
+            დამსაქმებლად რეგისტრაცია
+          </button>
+          @if (!authService.isLoggedIn()) {
+            <button type="button" class="hero-btn ghost" (click)="authService.openAuthModal('login', '/hr')">შესვლა</button>
+          }
+        }
+      </div>
+    </ng-template>
+
+    <!-- The stage: an illustration of the HR panel (hidden from screen readers). Desktop: the phone
+         with cards around it; phones: one full-width phone with the cards inside its screen -->
+    <div class="hero-stage employer" aria-hidden="true">
+      <!-- Dashed connectors (desktop): S-curves stretched between the cards and the phone -->
+      <span class="stage-link l-left-top">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 0 C 50 0, 50 100, 100 100" /></svg>
+      </span>
+      <span class="stage-link l-right-top up">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
+      </span>
+      <span class="stage-link l-right-bottom up">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
+      </span>
+
+      <div class="stage-orb"><span></span></div>
+
+      <!-- The phone: the AI candidate search -->
+      <div class="phone">
+        <span class="phone-island"></span>
+        <div class="phone-screen">
+          <div class="phone-status">
+            <span>9:41</span>
+            <span class="status-icons">
+              <span class="material-symbols-outlined">signal_cellular_alt</span>
+              <span class="material-symbols-outlined">wifi</span>
+              <span class="material-symbols-outlined">battery_full</span>
+            </span>
+          </div>
+
+          <div class="app-bar">
+            <img [src]="jobUpLogo" alt="" class="app-logo">
+            <span class="app-title">კანდიდატები</span>
+            <span class="app-icon"><span class="material-symbols-outlined">tune</span></span>
+          </div>
+          <div class="ai-query">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span class="ai-query-text">ბუღალტერი 1C-ის ცოდნით, თბილისი</span>
+            <span class="caret"></span>
+          </div>
+
+          @if (candidatesLoading()) {
+            <div class="featured-card skeleton-pulse"></div>
+            @for (i of [1, 2]; track i) {
+              <div class="phone-row skeleton">
+                <span class="row-avatar skeleton-pulse"></span>
+                <span class="row-text">
+                  <span class="skeleton-line skeleton-pulse" style="width: 55%"></span>
+                  <span class="skeleton-line short skeleton-pulse" style="width: 70%"></span>
+                </span>
+              </div>
+            }
+          } @else {
+            @let top = sampleCandidates[0];
+            <div class="featured-card">
+              <span class="featured-top">
+                <span class="featured-company">საუკეთესო შესაბამისობა</span>
+                <span class="row-avatar light">{{ top.initials }}</span>
+              </span>
+              <span class="featured-title">{{ top.name }} — {{ top.role }}</span>
+              <span class="featured-tags">
+                <span>1C</span><span>IFRS</span><span>Excel</span>
+              </span>
+              <span class="featured-foot">
+                <span class="match-meter"><span [style.width.%]="top.match"></span></span>
+                <b>{{ top.match }}%</b>
+              </span>
+            </div>
+            <div class="phone-section-head"><span>სხვა კანდიდატები</span></div>
+            @for (c of sampleCandidates.slice(1); track c.initials) {
+              <div class="phone-row">
+                <span class="row-avatar" [style.background]="c.color">{{ c.initials }}</span>
+                <span class="row-text">
+                  <span class="row-title">{{ c.name }}</span>
+                  <span class="row-meta">{{ c.role }}</span>
+                </span>
+                <span class="row-match">{{ c.match }}%</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Cards around the phone (inside it on phones) -->
+      <div class="float-card f-left-top">
+        <span class="window-dots"><i></i><i></i><i></i></span>
+        <span class="fc-title">შერჩევის ეტაპები</span>
+        <span class="fc-pipeline">
+          <span><b>12</b>ახალი</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span><b>4</b>გასაუბრება</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span class="done"><b>1</b>შეთავაზება</span>
+        </span>
+      </div>
+
+      <div class="float-card f-left-bottom">
+        <span class="fc-icon"><span class="material-symbols-outlined">description</span></span>
+        <span class="fc-text">
+          <b>CV-ის AI ანალიზი</b>
+          <small>უნარები, გამოცდილება, შესაბამისობა</small>
+        </span>
+      </div>
+
+      <div class="float-card f-right-top fc-accent">
+        <span class="material-symbols-outlined fc-sparkle">auto_awesome</span>
+        @if (stats()?.uploadedCvs; as cvs) {
+          <b>{{ cvs | number }} CV</b>
+          <span>კანდიდატთა ბაზაში</span>
+        } @else {
+          <b>AI ძიება</b>
+          <span>კანდიდატები წამებში</span>
+        }
+      </div>
+
+      <div class="float-card f-right-bottom fc-agent">
+        <span class="window-dots"><i></i><i></i><i></i></span>
+        <span class="fc-agent-head">
+          <span class="fc-icon small green"><span class="material-symbols-outlined">event_available</span></span>
+          <span class="fc-text">
+            <b>გასაუბრება დაინიშნა</b>
+            <small>ხვალ 11:00 · Google Meet</small>
+          </span>
+        </span>
+        <span class="fc-steps">
+          <span><span class="material-symbols-outlined">check_circle</span>მოსაწვევი გაიგზავნა</span>
+          <span><span class="material-symbols-outlined">check_circle</span>Meet-ის ბმული შეიქმნა</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Phones: sign-up / login after the phone -->
+    <div class="hero-end">
+      <ng-container [ngTemplateOutlet]="employerCta" />
+    </div>
+  </section>
+</main>

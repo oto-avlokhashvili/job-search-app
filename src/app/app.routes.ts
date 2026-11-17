@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { RedirectFunction, Router, Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { CanActivateFn, RedirectFunction, Router, Routes, UrlMatcher, UrlSegment } from '@angular/router';
 import { authGuard } from './Core/Guards/auth-guard';
 import { hrGuard } from './Core/Guards/hr-guard';
 
@@ -19,6 +19,10 @@ const landingPageMatcher: UrlMatcher = (segments: UrlSegment[]) =>
 const toProfileNotifications: RedirectFunction = ({ queryParams }) =>
   inject(Router).createUrlTree(['/profile'], { queryParams });
 
+// The employers' side of the landing page used to be /home?for=employer; it's /employers now.
+const toEmployersFromOldLink: CanActivateFn = (route) =>
+  route.queryParamMap.get('for') === 'employer' ? inject(Router).createUrlTree(['/employers']) : true;
+
 export const routes: Routes = [
   {
     path: '',
@@ -27,8 +31,14 @@ export const routes: Routes = [
   },
   {
     path: 'home',
+    // Links sent to employers before /employers existed (/home?for=employer) land there
+    canActivate: [toEmployersFromOldLink],
     loadComponent: () => import('./Components/public/home/home').then((m) => m.Home),
     data: { showHeroSection: true }
+  },
+  {
+    path: 'employers',
+    loadComponent: () => import('./Components/public/employers/employers').then((m) => m.Employers),
   },
   {
     path: 'vacancies',

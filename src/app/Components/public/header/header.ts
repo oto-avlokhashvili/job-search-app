@@ -23,10 +23,15 @@ export class Header {
   favorites = inject(FavoritesService);
   router = inject(Router);
 
-  /** The landing page, whatever its query or fragment ("/home?for=employer" is still home) */
+  /** The job seekers' landing page, whatever its query or fragment */
   isHome(): boolean {
     const path = this.router.url.split(/[?#]/)[0];
     return path === '/home' || path === '/';
+  }
+
+  /** The employers' landing page is open (its nav links show as active) */
+  isEmployerSide(): boolean {
+    return this.router.url.split(/[?#]/)[0] === '/employers';
   }
   dialog = inject(MatDialog);
   private alertify = inject(AlertifyService);

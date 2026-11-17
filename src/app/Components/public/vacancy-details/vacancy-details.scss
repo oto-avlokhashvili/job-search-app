@@ -1959,19 +1959,22 @@
   }
 
   // At a glance
+  // One card, the facts split by thin dividers. Every fact draws a line on its left and top edge;
+  // the card clips the ones on its own outer edge (no padding, overflow hidden), so only the lines
+  // between facts show, however many fit in a row.
   .desc-facts {
+    --fact-divider: rgba(151, 174, 213, 0.28);
+
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 10px;
-    padding: 14px;
+    // auto-fit: a few facts share the whole width instead of leaving empty columns
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    overflow: hidden;
     border-radius: 16px;
     background: var(--surface-container-low, #ebf1ff);
     border: 1px solid var(--border-color, rgba(151, 174, 213, 0.2));
 
     @media (max-width: 576px) {
       grid-template-columns: 1fr 1fr;
-      padding: 10px;
-      gap: 8px;
     }
   }
 
@@ -1980,12 +1983,11 @@
     align-items: flex-start;
     gap: 10px;
     min-width: 0;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: var(--card-bg, #fff);
+    padding: 14px 18px;
+    box-shadow: -1px 0 0 var(--fact-divider), 0 -1px 0 var(--fact-divider);
 
     @media (max-width: 576px) {
-      padding: 8px 9px;
+      padding: 10px 12px;
       gap: 7px;
     }
   }

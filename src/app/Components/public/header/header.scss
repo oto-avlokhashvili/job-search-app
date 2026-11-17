@@ -265,14 +265,11 @@ $outline-variant-color: #97aed5;
 }
 
 // Looks like the theme switch (.icon-btn); phones sign in from the bottom nav
+// Shown on phones too: the dock's last slot is the employers' page, so this is where visitors log in
 .btn-auth {
   &:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
-  }
-
-  @media (max-width: 576px) {
-    display: none;
   }
 }
 

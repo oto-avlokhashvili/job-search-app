@@ -1,7 +1,5 @@
-import { Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, PLATFORM_ID, signal, untracked, ViewChild } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { PublicCvModal } from '../public-cv-modal/public-cv-modal';
 import { CompanyLogos } from '../../../Core/Utils/company-logos';
@@ -32,7 +30,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { environment } from '../../../../environments/environment';
-import { StateStore } from '../../../Store/state.store';
+import { JOBUP_LOGO, StateStore } from '../../../Store/state.store';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { WaitlistModal } from '../waitlist-modal/waitlist-modal';
@@ -61,15 +59,8 @@ export class Home implements OnInit {
   statsLoading = this.stateStore.statsLoading;
   dbTotalRecords = this.stateStore.publicDbTotal;
 
-  // ── Hero ──────────────────────────────────────────────────────
-  /** Which side of the hero is open; ?for=employer opens the employer side (for links sent to employers) */
-  audience = signal<'seeker' | 'employer'>('seeker');
+  // ── Hero (job seekers; employers have their own page, /employers) ──
   vacancyCount = computed(() => this.stats()?.activeVacancies || this.dbTotalRecords());
-  /** HR accounts and admins: the employer side offers the HR panel instead of sign-up */
-  isEmployerAccount = computed(() => {
-    const role = this.stateStore.profile().role;
-    return this.authService.isLoggedIn() && (role === 'HR' || role === 'ADMIN');
-  });
 
   searchQuery = new FormControl('', { nonNullable: true });
   /** Every category, as one scrollable row of chips */
@@ -81,7 +72,6 @@ export class Home implements OnInit {
   private quickTrackEl?: HTMLElement;
   private quickResizeObserver?: ResizeObserver;
   @ViewChild('quickTrack') set quickTrack(ref: ElementRef<HTMLElement> | undefined) {
-    // The row is re-created when switching sides; watch the current one
     this.quickResizeObserver?.disconnect();
     this.quickTrackEl = ref?.nativeElement;
     if (!this.quickTrackEl || typeof ResizeObserver === 'undefined') return;
@@ -106,49 +96,14 @@ export class Home implements OnInit {
   /** The newest vacancies, shown in the seeker preview */
   latestLoading = signal(true);
   latestJobs = signal<{ id: number; slug: string; title: string; company: string; location: string; logo: string | null; salary: string; age: string }[]>([]);
-
-  /** The employer preview is an illustration of the HR search, so its candidates are made up and anonymous */
-  readonly sampleCandidates = [
-    { initials: 'ნბ', name: 'ნ. ბ.', role: 'მთავარი ბუღალტერი · 6 წელი', match: 94, stage: 'ახალი', color: '#6366f1' },
-    { initials: 'გმ', name: 'გ. მ.', role: 'ბუღალტერი · 4 წელი', match: 89, stage: 'გასაუბრება', color: '#0ea5e9' },
-    { initials: 'ლკ', name: 'ლ. კ.', role: 'ბუღალტრის ასისტენტი · 2 წელი', match: 81, stage: '', color: '#f59e0b' },
-  ];
-
-  /** The employer preview "runs" the AI search: a short load before the candidates show, like the seeker side */
-  candidatesLoading = signal(false);
-  private candidatesTimer?: ReturnType<typeof setTimeout>;
+  /** The stage: the phone's highlighted vacancy, the card beside the phone, then the phone's list */
+  featuredJob = computed(() => this.latestJobs()[0] ?? null);
+  sideJob = computed(() => this.latestJobs()[1] ?? null);
+  phoneJobs = computed(() => this.latestJobs().slice(2, 5));
+  readonly jobUpLogo = JOBUP_LOGO;
 
   constructor() {
-    inject(ActivatedRoute).queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      this.audience.set(params.get('for') === 'employer' ? 'employer' : 'seeker');
-    });
-
-    // Browser only: the server renders the candidates straight away
-    if (isPlatformBrowser(inject(PLATFORM_ID))) {
-      effect(() => {
-        if (this.audience() !== 'employer') return;
-        untracked(() => {
-          clearTimeout(this.candidatesTimer);
-          this.candidatesLoading.set(true);
-          this.candidatesTimer = setTimeout(() => this.candidatesLoading.set(false), 900);
-        });
-      });
-      inject(DestroyRef).onDestroy(() => {
-        clearTimeout(this.candidatesTimer);
-        this.quickResizeObserver?.disconnect();
-      });
-    }
-  }
-
-  /** Keeps the side in the URL, so a shared link opens the same side; no history entry per click */
-  setAudience(audience: 'seeker' | 'employer') {
-    this.audience.set(audience);
-    this.router.navigate([], {
-      queryParams: { for: audience === 'employer' ? 'employer' : null },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-      scroll: 'manual',
-    });
+    inject(DestroyRef).onDestroy(() => this.quickResizeObserver?.disconnect());
   }
 
   search(event: Event) {
@@ -158,12 +113,12 @@ export class Home implements OnInit {
   }
 
   /**
-   * Hot vacancies for the seeker preview: the newest two from TBC and two from Bank of Georgia,
-   * alternating (their company pages use these keys). Falls back to the newest jobs.ge vacancies.
+   * Hot vacancies for the hero stage: the newest from TBC and Bank of Georgia, alternating (their
+   * company pages use these keys). Falls back to the newest jobs.ge vacancies.
    */
   private async loadLatestJobs() {
     const companyJobs = (key: string) =>
-      firstValueFrom(this.jobsService.getCompanyJobs(key, 1, 2)).then((res) => res.jobs || []).catch(() => [] as Job[]);
+      firstValueFrom(this.jobsService.getCompanyJobs(key, 1, 3)).then((res) => res.jobs || []).catch(() => [] as Job[]);
     try {
       const [tbcJobs, bogJobs] = await Promise.all([companyJobs('თიბისი'), companyJobs('საქართველოსბანკი')]);
       // The banks' own icons from /public/icons, sharper than the scraped logos
@@ -171,9 +126,9 @@ export class Home implements OnInit {
         ...tbcJobs.map((job): [number, string] => [job.id, '/icons/tbc.jpg']),
         ...bogJobs.map((job): [number, string] => [job.id, '/icons/bog.png']),
       ]);
-      let jobs: Job[] = [tbcJobs[0], bogJobs[0], tbcJobs[1], bogJobs[1]].filter((job): job is Job => !!job);
+      let jobs: Job[] = [0, 1, 2].flatMap((i) => [tbcJobs[i], bogJobs[i]]).filter((job): job is Job => !!job).slice(0, 5);
       if (jobs.length === 0) {
-        jobs = (await firstValueFrom(this.jobsService.getJobs('', 1, 'jobs.ge', 'all', '', 'all', 4))).jobs || [];
+        jobs = (await firstValueFrom(this.jobsService.getJobs('', 1, 'jobs.ge', 'all', '', 'all', 5))).jobs || [];
       }
       this.latestJobs.set(
         jobs.map((job) => {
@@ -195,6 +150,12 @@ export class Home implements OnInit {
     } finally {
       this.latestLoading.set(false);
     }
+  }
+
+  /** The AI agent card: the same notification setup as the AI agent banner */
+  async openAiAgent() {
+    const { openNotificationChannelsModal } = await import('../notification-channels-modal/notification-channels-modal');
+    openNotificationChannelsModal(this.dialog);
   }
 
   openPublicCvModal() {
@@ -222,24 +183,6 @@ export class Home implements OnInit {
       path: '/home',
     });
     this.loadLatestJobs();
-  }
-
-  /**
-   * "დაასაქმე": HR accounts (and admins) go to the HR panel; visitors get employer sign-up with the
-   * employer option already ticked. A job seeker's account can't hire, so they're told how instead.
-   */
-  async openEmployerPath() {
-    if (!this.authService.isLoggedIn()) {
-      this.authService.openAuthModal('register', '/hr', true);
-      return;
-    }
-    await this.stateStore.loadProfile();
-    const role = this.stateStore.profile().role;
-    if (role === 'HR' || role === 'ADMIN') {
-      this.router.navigate(['/hr']);
-    } else {
-      this.alertify.warning('დასაქმებისთვის საჭიროა დამსაქმებლის ანგარიში. გამოდით და დარეგისტრირდით როგორც დამსაქმებელი.');
-    }
   }
 
   joinProWaitlist() {

@@ -8,6 +8,7 @@
       <div class="nav-links-desktop">
         <a class="nav-link" [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
         <a class="nav-link" [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')">ვაკანსიები</a>
+        <a class="nav-link" [routerLink]="'/employers'" [class.active]="isEmployerSide()">დამსაქმებლებს</a>
         <a class="nav-link" [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
         <a class="nav-link" [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
@@ -97,6 +98,7 @@
   <div class="mobile-menu" [class.active]="menuOpen">
     <a [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
     <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
+    <a [routerLink]="'/employers'" [class.active]="isEmployerSide()" (click)="menuOpen = false">დამსაქმებლებს</a>
     <a [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
     <a [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
     @if (isAdmin()) {
@@ -170,11 +172,12 @@
         <span class="nav-label">პროფილი</span>
       </a>
     } @else {
-      <a class="bottom-nav-item" (click)="authService.openAuthModal('login')">
+      <!-- Visitors: the employers' page (login is the person icon in the header) -->
+      <a class="bottom-nav-item" [routerLink]="'/employers'" [class.active]="isEmployerSide()">
         <div class="nav-icon-wrap">
-          <span class="material-symbols-outlined nav-icon">login</span>
+          <span class="material-symbols-outlined nav-icon">group_add</span>
         </div>
-        <span class="nav-label">შესვლა</span>
+        <span class="nav-label">დამსაქმებლებს</span>
       </a>
     }
   </div>

@@ -1,141 +1,152 @@
 <main class="home-main">
-  <!-- Hero: one page, two audiences. The switch picks the side; the accent colour follows it. -->
-  <section class="hero-section" id="features" [attr.data-audience]="audience()">
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <div class="audience-switch" [class.employer]="audience() === 'employer'" role="tablist" aria-label="ვისთვის">
-          <span class="thumb" aria-hidden="true"></span>
-          <button type="button" role="tab" [class.active]="audience() === 'seeker'" [attr.aria-selected]="audience() === 'seeker'" (click)="setAudience('seeker')">
-            <span class="material-symbols-outlined">work</span>
-            დასაქმდი
-          </button>
-          <button type="button" role="tab" [class.active]="audience() === 'employer'" [attr.aria-selected]="audience() === 'employer'" (click)="setAudience('employer')">
-            <span class="material-symbols-outlined">group_add</span>
-            დაასაქმე
-          </button>
-        </div>
-
-        @if (audience() === 'seeker') {
-          <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ერთ სივრცეში</span></h1>
-          <p class="hero-lede">
-            @if (vacancyCount() > 0) {
-              <strong>{{ vacancyCount() | number }} აქტიური ვაკანსია</strong>
-            } @else {
-              <strong>ყველა აქტიური ვაკანსია</strong>
-            }
-            <span class="lede-long">jobs.ge, hr.ge, myjobs.ge, awork.ge და LinkedIn-დან, ყოველდღე განახლებული.</span>
-            <span class="lede-short">ყოველდღე განახლებული</span>
-          </p>
-
-          <!-- Same search as the vacancies page: keyword in, results there (city etc. are filtered there) -->
-          <form class="hero-search" role="search" (submit)="search($event)">
-            <label class="search-input-wrapper">
-              <span class="material-symbols-outlined search-icon">search</span>
-              <input type="search" enterkeyhint="search" class="filter-search-input" [formControl]="searchQuery" placeholder="მოძებნე პოზიცია/კომპანია" aria-label="ვაკანსიის ძებნა">
-            </label>
-            <button type="submit" class="btn-search" aria-label="ძიება">
-              <span class="material-symbols-outlined">search</span>
-              <span class="btn-search-label">ძიება</span>
-            </button>
-          </form>
-
-          <!-- Categories: one scrollable row, arrows scroll it smoothly (hidden when it all fits) -->
-          <div class="hero-quick" [class.scrollable]="quickCanScrollLeft() || quickCanScrollRight()">
-            <span class="quick-label">პოპულარული:</span>
-            <button type="button" class="quick-arrow left" [disabled]="!quickCanScrollLeft()" (click)="scrollQuick(-1)" aria-label="წინა კატეგორიები">
-              <span class="material-symbols-outlined">chevron_left</span>
-            </button>
-            <div #quickTrack class="quick-track" [class.fade-left]="quickCanScrollLeft()" [class.fade-right]="quickCanScrollRight()" (scroll)="updateQuickArrows()">
-              @for (cat of heroCategories; track cat.key) {
-                <a class="quick-chip" routerLink="/vacancies" [queryParams]="{ category: cat.key }">
-                  <span class="material-symbols-outlined">{{ cat.icon }}</span>
-                  {{ cat.short }}
-                </a>
-              }
-            </div>
-            <button type="button" class="quick-arrow right" [disabled]="!quickCanScrollRight()" (click)="scrollQuick(1)" aria-label="შემდეგი კატეგორიები">
-              <span class="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-
-          <!-- CV into the candidate pool: a quiet one-line alert in the hero's accent -->
-          <button type="button" class="cv-promo" (click)="openPublicCvModal()">
-            <span class="cv-promo-icon"><span class="material-symbols-outlined">upload_file</span></span>
-            <span class="cv-promo-title">ატვირთე CV და რეკრუტერი თავად გიპოვის</span>
-            <span class="material-symbols-outlined cv-promo-arrow">arrow_forward</span>
-          </button>
+  <!-- Hero for job seekers (the employers' side is its own page, /employers, with the same hero).
+       Centred copy on top, below it a "stage": a phone with the live product, product cards around it. -->
+  <section class="hero-section" id="features">
+    <div class="hero-copy">
+      <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ერთ სივრცეში</span></h1>
+      <p class="hero-lede">
+        @if (vacancyCount() > 0) {
+          <strong>{{ vacancyCount() | number }} აქტიური ვაკანსია</strong>
         } @else {
-          <h1 class="hero-title">იპოვე სწორი კანდიდატი,<br><span class="accent">არა უბრალოდ CV</span></h1>
-          <p class="hero-lede">
-            <span class="lede-long">
-              აღწერე, ვის ეძებ — AI
-              @if (stats()?.uploadedCvs; as cvs) {
-                <strong>{{ cvs | number }} CV-დან</strong>
-              } @else {
-                <strong>ატვირთული CV-ებიდან</strong>
-              }
-              შეგირჩევს შესაფერისებს და შერჩევასაც ერთ სივრცეში მართავ.
-            </span>
-            <span class="lede-short">AI შეგირჩევს სწორ კანდიდატს</span>
-          </p>
-
-          <ul class="hero-benefits">
-            <li>
-              <span class="benefit-icon"><span class="material-symbols-outlined">auto_awesome</span></span>
-              <span>AI ძიება<small>„ბუღალტერი 1C-ის ცოდნით, თბილისი" — და მზად არის</small></span>
-            </li>
-            <li>
-              <span class="benefit-icon"><span class="material-symbols-outlined">view_kanban</span></span>
-              <span>კანდიდატების შერჩევა ეტაპებად<small>ახალი → გასაუბრება → შეთავაზება, მთელი გუნდისთვის</small></span>
-            </li>
-            <li>
-              <span class="benefit-icon"><span class="material-symbols-outlined">videocam</span></span>
-              <span>გასაუბრება Google Meet-ით<small>მოსაწვევი და ბმული კანდიდატს ავტომატურად მიდის</small></span>
-            </li>
-          </ul>
-
-          <div class="hero-cta-row">
-            @if (isEmployerAccount()) {
-              <a class="hero-btn primary" routerLink="/hr">
-                <span class="material-symbols-outlined">dashboard</span>
-                HR პანელი
-              </a>
-            } @else {
-              <button type="button" class="hero-btn primary" (click)="openEmployerPath()">
-                <span class="material-symbols-outlined">person_add</span>
-                დამსაქმებლად რეგისტრაცია
-              </button>
-              @if (!authService.isLoggedIn()) {
-                <button type="button" class="hero-btn ghost" (click)="authService.openAuthModal('login', '/hr')">შესვლა</button>
-              }
-            }
-          </div>
+          <strong>ყველა აქტიური ვაკანსია</strong>
         }
-      </div>
+        <!-- The comma opens each span: Angular drops the whitespace between the elements -->
+        <span class="lede-long">, ყოველდღე განახლებული — AI კი შენს CV-ზე მორგებულს თავად შეგირჩევს.</span>
+        <span class="lede-short">, ყოველდღე ახალი</span>
+      </p>
 
-      <!-- Product previews: what each side actually gets -->
-      <div class="hero-visual" [class.employer]="audience() === 'employer'">
-        @if (audience() === 'seeker') {
-          <div class="preview-panel">
-            <div class="preview-head">
-              <span class="preview-title"><span class="material-symbols-outlined">local_fire_department</span>ცხელ-ცხელი ვაკანსიები</span>
-              <span class="live-pill"><i></i>Live</span>
-            </div>
-            @if (latestLoading()) {
-              <div class="preview-loading-bar"></div>
-              @for (i of [1, 2, 3, 4]; track i) {
-                <div class="preview-row skeleton">
-                  <span class="row-logo skeleton-pulse"></span>
-                  <span class="row-text">
-                    <span class="skeleton-line skeleton-pulse" [style.width]="i % 2 === 0 ? '62%' : '75%'"></span>
-                    <span class="skeleton-line short skeleton-pulse" [style.width]="i % 2 === 0 ? '40%' : '48%'"></span>
-                  </span>
-                  <span class="skeleton-line tiny skeleton-pulse"></span>
-                </div>
-              }
+      <!-- Same search as the vacancies page: keyword in, results there (city etc. are filtered there) -->
+      <form class="hero-search" role="search" (submit)="search($event)">
+        <label class="search-input-wrapper">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="search" enterkeyhint="search" class="filter-search-input" [formControl]="searchQuery" placeholder="მოძებნე პოზიცია/კომპანია" aria-label="ვაკანსიის ძებნა">
+        </label>
+        <button type="submit" class="btn-search" aria-label="ძიება">
+          <span class="material-symbols-outlined">search</span>
+          <span class="btn-search-label">ძიება</span>
+        </button>
+      </form>
+
+      <ul class="hero-note">
+        <li><span class="material-symbols-outlined">check</span>უფასოდ</li>
+        <li><span class="material-symbols-outlined">check</span>რეგისტრაციის გარეშე</li>
+        <li><span class="material-symbols-outlined">check</span>ახალი ვაკანსიები ყოველდღე</li>
+      </ul>
+
+      <!-- Categories: one scrollable row, arrows scroll it smoothly (hidden when it all fits) -->
+      <div class="hero-quick" [class.scrollable]="quickCanScrollLeft() || quickCanScrollRight()">
+        <button type="button" class="quick-arrow left" [disabled]="!quickCanScrollLeft()" (click)="scrollQuick(-1)" aria-label="წინა კატეგორიები">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <div #quickTrack class="quick-track" [class.fade-left]="quickCanScrollLeft()" [class.fade-right]="quickCanScrollRight()" (scroll)="updateQuickArrows()">
+          @for (cat of heroCategories; track cat.key) {
+            <a class="quick-chip" routerLink="/vacancies" [queryParams]="{ category: cat.key }">
+              <span class="material-symbols-outlined">{{ cat.icon }}</span>
+              {{ cat.short }}
+            </a>
+          }
+        </div>
+        <button type="button" class="quick-arrow right" [disabled]="!quickCanScrollRight()" (click)="scrollQuick(1)" aria-label="შემდეგი კატეგორიები">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- The stage. Desktop: a phone with cards around it; phones: one full-width phone with the
+         cards inside its screen -->
+    <div class="hero-stage">
+      <!-- Dashed connectors (desktop). Each one stretches across the gap between a card and the phone,
+           which grows with the screen: an S-curve in a 100×100 box, the arrowhead a CSS triangle. -->
+      <span class="stage-link l-left-top" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 0 C 50 0, 50 100, 100 100" /></svg>
+      </span>
+      <span class="stage-link l-right-top up" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
+      </span>
+      <span class="stage-link l-right-bottom up" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
+      </span>
+
+      <div class="stage-orb" aria-hidden="true"><span></span></div>
+
+      <!-- The phone: the newest vacancies (real links) -->
+      <div class="phone">
+        <span class="phone-island" aria-hidden="true"></span>
+        <div class="phone-screen">
+          <div class="phone-status" aria-hidden="true">
+            <span>9:41</span>
+            <span class="status-icons">
+              <span class="material-symbols-outlined">signal_cellular_alt</span>
+              <span class="material-symbols-outlined">wifi</span>
+              <span class="material-symbols-outlined">battery_full</span>
+            </span>
+          </div>
+
+          <div class="app-bar" aria-hidden="true">
+            <img [src]="jobUpLogo" alt="" class="app-logo">
+            <span class="app-title">ვაკანსიები</span>
+            <span class="app-icon"><span class="material-symbols-outlined">search</span></span>
+          </div>
+          <div class="app-chips" aria-hidden="true">
+            <span>თბილისი <span class="material-symbols-outlined">expand_more</span></span>
+            <span>დისტანციური <span class="material-symbols-outlined">expand_more</span></span>
+            <span class="icon-only"><span class="material-symbols-outlined">tune</span></span>
+          </div>
+
+          @if (latestLoading()) {
+            <div class="featured-card skeleton-pulse"></div>
+            @for (i of [1, 2]; track i) {
+              <div class="phone-row skeleton">
+                <span class="row-logo skeleton-pulse"></span>
+                <span class="row-text">
+                  <span class="skeleton-line skeleton-pulse" style="width: 70%"></span>
+                  <span class="skeleton-line short skeleton-pulse" style="width: 45%"></span>
+                </span>
+              </div>
             }
-            @for (job of latestJobs(); track job.id) {
-              <a class="preview-row" [routerLink]="['/vacancies', job.slug]">
+          } @else {
+            @if (featuredJob(); as job) {
+              <a class="featured-card" [routerLink]="['/vacancies', job.slug]">
+                <span class="featured-top">
+                  <span class="featured-company">{{ job.company }}</span>
+                  <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
+                    @if (logos.show(job.logo)) {
+                      <img [src]="job.logo" alt="" (error)="logos.broken(job.logo)">
+                    } @else {
+                      {{ job.company.charAt(0) }}
+                    }
+                  </span>
+                </span>
+                <span class="featured-title">{{ job.title }}</span>
+                <span class="featured-tags">
+                  @if (job.location) {
+                    <span>{{ job.location }}</span>
+                  }
+                  @if (job.salary) {
+                    <span>{{ job.salary }}</span>
+                  }
+                </span>
+                <span class="featured-foot">
+                  <span><span class="material-symbols-outlined">schedule</span>{{ job.age }}</span>
+                  <span class="featured-go">ნახვა <span class="material-symbols-outlined">arrow_forward</span></span>
+                </span>
+              </a>
+            }
+            <!-- The app's own "see all" button, under the highlighted vacancy -->
+            <a class="phone-cta" routerLink="/vacancies">
+              <span class="material-symbols-outlined">work</span>
+              @if (vacancyCount() > 0) {
+                ყველა {{ vacancyCount() | number }} ვაკანსია
+              } @else {
+                ყველა ვაკანსია
+              }
+              <span class="material-symbols-outlined phone-cta-arrow">arrow_forward</span>
+            </a>
+            <div class="phone-section-head">
+              <span>ახალი ვაკანსიები</span>
+            </div>
+            @for (job of phoneJobs(); track job.id) {
+              <a class="phone-row" [routerLink]="['/vacancies', job.slug]">
                 <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
                   @if (logos.show(job.logo)) {
                     <img [src]="job.logo" alt="" loading="lazy" (error)="logos.broken(job.logo)">
@@ -145,74 +156,88 @@
                 </span>
                 <span class="row-text">
                   <span class="row-title">{{ job.title }}</span>
-                  <span class="row-meta">{{ job.company }} · {{ job.location }}</span>
-                </span>
-                <span class="row-side">
-                  @if (job.salary) {
-                    <span class="salary-pill">{{ job.salary }}</span>
-                  }
-                  <span class="row-age">{{ job.age }}</span>
+                  <span class="row-meta">{{ job.company }} · {{ job.age }}</span>
                 </span>
               </a>
             }
-            <div class="preview-foot">
-              <a routerLink="/vacancies">ყველას ნახვა <span class="material-symbols-outlined">arrow_forward</span></a>
-            </div>
-          </div>
-        } @else {
-          <!-- An illustration of the HR search, not real candidates (hidden from screen readers) -->
-          <div class="preview-panel" aria-hidden="true">
-            <div class="preview-head">
-              <span class="preview-title"><span class="material-symbols-outlined">person_search</span>AI კანდიდატების ძიება</span>
-              @if (stats()?.uploadedCvs; as cvs) {
-                <span class="live-pill"><i></i>{{ cvs | number }} CV</span>
-              }
-            </div>
-            <div class="ai-query">
-              <span class="material-symbols-outlined">auto_awesome</span>
-              ბუღალტერი 1C-ის ცოდნით, თბილისი
-              <span class="caret"></span>
-            </div>
-            @if (candidatesLoading()) {
-              <div class="preview-loading-bar"></div>
-              @for (i of [1, 2, 3]; track i) {
-                <div class="preview-row skeleton">
-                  <span class="row-avatar skeleton-pulse"></span>
-                  <span class="row-text">
-                    <span class="skeleton-line skeleton-pulse" [style.width]="i % 2 === 0 ? '45%' : '55%'"></span>
-                    <span class="skeleton-line short skeleton-pulse" [style.width]="i % 2 === 0 ? '60%' : '70%'"></span>
-                  </span>
-                  <span class="skeleton-line tiny skeleton-pulse"></span>
-                </div>
-              }
-            } @else {
-            @for (c of sampleCandidates; track c.initials) {
-              <div class="preview-row">
-                <span class="row-avatar" [style.background]="c.color">{{ c.initials }}</span>
-                <span class="row-text">
-                  <span class="row-title">
-                    {{ c.name }}
-                    @if (c.stage) {
-                      <span class="stage-pill">{{ c.stage }}</span>
-                    }
-                  </span>
-                  <span class="row-meta">{{ c.role }}</span>
-                </span>
-                <span class="match">
-                  <b>{{ c.match }}%</b>
-                  <span class="bar" style="display: block"><span [style.width.%]="c.match"></span></span>
-                </span>
-              </div>
-            }
-            }
-          </div>
-          <div class="preview-float bottom-right" aria-hidden="true">
-            <span class="float-icon green"><span class="material-symbols-outlined">event_available</span></span>
-            <span><b>გასაუბრება დაინიშნა</b><small>ხვალ 11:00 · Google Meet</small></span>
-          </div>
-        }
+          }
+        </div>
       </div>
+
+      <!-- Cards around the phone (inside it on phones) -->
+      <!-- A real vacancy -->
+      @if (sideJob(); as job) {
+        <a class="float-card f-left-top" [routerLink]="['/vacancies', job.slug]">
+          <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="fc-job-head">
+            <span class="fc-job-title">{{ job.title }}</span>
+            <span class="material-symbols-outlined fc-bookmark" aria-hidden="true">bookmark</span>
+          </span>
+          <span class="fc-job-meta">
+            <span class="material-symbols-outlined">location_on</span>{{ job.location || 'საქართველო' }} · {{ job.age }}
+          </span>
+          <span class="fc-job-foot">
+            <span class="row-logo small" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
+              @if (logos.show(job.logo)) {
+                <img [src]="job.logo" alt="" (error)="logos.broken(job.logo)">
+              } @else {
+                {{ job.company.charAt(0) }}
+              }
+            </span>
+            <span class="fc-company">{{ job.company }}</span>
+            <span class="fc-pill">ნახვა</span>
+          </span>
+        </a>
+      } @else {
+        <div class="float-card f-left-top fc-skeleton" aria-hidden="true">
+          <span class="skeleton-line skeleton-pulse" style="width: 80%"></span>
+          <span class="skeleton-line short skeleton-pulse" style="width: 55%"></span>
+          <span class="skeleton-line short skeleton-pulse" style="width: 65%"></span>
+        </div>
+      }
+
+      <button type="button" class="float-card f-left-bottom fc-action" (click)="openPublicCvModal()">
+        <span class="fc-icon"><span class="material-symbols-outlined">upload_file</span></span>
+        <span class="fc-text">
+          <b>ატვირთე CV</b>
+          <small>რეკრუტერი თავად გიპოვის</small>
+        </span>
+        <span class="material-symbols-outlined fc-arrow">arrow_forward</span>
+      </button>
+
+      <a class="float-card f-right-top fc-accent" routerLink="/vacancies">
+        <span class="material-symbols-outlined fc-sparkle" aria-hidden="true">auto_awesome</span>
+        @if (vacancyCount() > 0) {
+          <b>{{ vacancyCount() | number }}</b>
+          <span>აქტიური ვაკანსია ერთ სივრცეში</span>
+        } @else {
+          <b>5 წყარო</b>
+          <span>ყველა ვაკანსია ერთ სივრცეში</span>
+        }
+      </a>
+
+      <!-- The AI agent's day, as a checklist; opens the notification setup -->
+      <button type="button" class="float-card f-right-bottom fc-agent" (click)="openAiAgent()">
+        <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="fc-agent-head">
+          <span class="fc-icon small"><span class="material-symbols-outlined">smart_toy</span></span>
+          <span class="fc-text">
+            <b>AI აგენტი</b>
+            <small>ეძებს შენს მაგივრად, 24/7</small>
+          </span>
+          <span class="live-pill"><i></i>აქტიური</span>
+        </span>
+        <span class="fc-steps">
+          <span><span class="material-symbols-outlined">check_circle</span>CV გაანალიზდა</span>
+          <span><span class="material-symbols-outlined">check_circle</span>შესაფერისი ვაკანსიები შეირჩა</span>
+          <span><span class="material-symbols-outlined">check_circle</span>გამოიგზავნა Telegram-ზე</span>
+        </span>
+        <span class="fc-agent-cta">ჩართე AI აგენტი <span class="material-symbols-outlined">arrow_forward</span></span>
+      </button>
     </div>
+
+    <!-- Phones: the space after the phone, before the next section -->
+    <div class="hero-end"></div>
   </section>
 
   <!-- Pricing Section -->
