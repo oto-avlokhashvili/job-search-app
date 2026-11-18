@@ -1681,3 +1681,112 @@
     animation: none !important;
   }
 }
+
+// ── The footer, in the hero's bottom corners ──
+// The hero keeps an 84px strip at its bottom for it, so the cards end above the footer; the phone runs
+// on through the strip (it is between the two footer columns) and fades out at the screen's edge.
+.hero-section {
+  --foot-h: 0px;
+
+  @media (min-width: 1180px) {
+    --foot-h: 84px;
+    padding-bottom: var(--foot-h);
+  }
+}
+
+.hero-stage .phone {
+  @media (min-width: 1180px) {
+    height: calc(540px + var(--foot-h));
+    // Faded out by the screen's edge (the 60px below it are clipped), as before the footer strip
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 200px), transparent calc(100% - 60px));
+  }
+}
+// Wide screens: the empty space left and right of the phone, at the bottom of the screen. Each side
+// stays clear of the searched phone (half of it is at most 320px, plus a gap).
+.hero-foot {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 22px 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+
+  @media (min-width: 1180px) {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 16px;
+    width: auto;
+    padding: 0;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    pointer-events: none; // the phone between the two sides stays clickable
+  }
+}
+
+.foot-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 18px;
+  pointer-events: auto;
+  background: transparent;
+
+  @media (min-width: 1180px) {
+    max-width: calc(50% - 360px);
+  }
+
+  a,
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+}
+
+// Left: logo, name and copyright on one line, like the site footer's brand
+.foot-brand {
+  align-items: center;
+  gap: 8px;
+
+  @media (min-width: 1180px) {
+    justify-content: flex-start;
+  }
+
+  .foot-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .foot-name {
+    font-weight: 800;
+    color: var(--on-surface);
+  }
+}
+
+.foot-meta {
+  @media (min-width: 1180px) {
+    justify-content: flex-end;
+    text-align: right;
+  }
+}
+
+.foot-copy {
+  opacity: 0.75;
+}

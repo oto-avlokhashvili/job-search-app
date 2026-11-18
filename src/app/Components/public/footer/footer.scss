@@ -1,31 +1,34 @@
-.tonal-footer {
-  background-color: var(--surface-container-low);
-  border-radius: 1.5rem 1.5rem 0 0;
-  padding: 24px 0;
+// Same look as the footer in the home / employers hero corners: small brand line on the left,
+// plain text links on the right, no panel.
+.site-footer {
   margin-top: 40px;
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--border-color);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
 
+  // Phones: room for the fixed bottom navigation and the chat button above it
   @media (max-width: 991px) {
     &.has-bottom-nav {
-      padding-bottom: calc(24px + 64px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(22px + 64px + 72px + env(safe-area-inset-bottom, 0px));
     }
   }
 }
 
-.footer-container {
+.footer-row {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 48px;
+  // Right side clear of the floating chat button
+  padding: 0 112px 0 48px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px 24px;
 
   @media (max-width: 991px) {
     padding: 0 20px;
-  }
-
-  @media (max-width: 768px) {
     flex-direction: column;
     text-align: center;
   }
@@ -35,110 +38,49 @@
   }
 }
 
-.footer-brand {
+.foot-brand {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  @media (max-width: 768px) {
-    align-items: center;
-  }
-
-  .logo-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .footer-logo {
-    height: 36px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  .logo-text {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--primary);
-    margin: 0;
-  }
-  
-  .copyright {
-    font-size: 14px;
-    color: var(--on-surface-variant);
-    margin: 0;
-  }
-}
-
-.footer-links-group {
-  display: flex;
-  gap: 32px;
+  align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 2px 8px;
 
-  a {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--on-surface-variant);
-    text-decoration: none;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--primary);
-      text-decoration: underline;
-      text-underline-offset: 4px;
-    }
-  }
-}
-
-.footer-seo-links {
-  max-width: 1440px;
-  margin: 0 auto 24px;
-  padding: 0 48px 24px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  border-bottom: 1px solid var(--border-color);
-
-  @media (max-width: 991px) {
-    padding: 0 20px 20px;
+  .foot-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
   }
 
-  @media (max-width: 768px) {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-
-  @media (max-width: 576px) {
-    padding: 0 14px 18px;
-  }
-
-  h3 {
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 700;
+  .foot-name {
+    font-weight: 800;
     color: var(--on-surface);
   }
 
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 16px;
+  .foot-copy {
+    opacity: 0.75;
   }
+}
 
-  a {
-    font-size: 13px;
-    color: var(--on-surface-variant);
+.foot-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 18px;
+
+  a,
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
     text-decoration: none;
+    cursor: pointer;
     transition: color 0.2s ease;
 
-    &:hover {
+    &:hover,
+    &.active {
       color: var(--primary);
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
   }
 }

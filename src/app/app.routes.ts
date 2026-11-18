@@ -47,6 +47,8 @@ export const routes: Routes = [
   {
     path: 'employers',
     loadComponent: () => import('./Components/public/employers/employers').then((m) => m.Employers),
+    // Like home: the footer's links are in the hero's bottom corners
+    data: { hideFooter: true },
   },
   {
     path: 'vacancies',

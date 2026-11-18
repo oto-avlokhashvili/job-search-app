@@ -185,5 +185,20 @@
     <div class="hero-end">
       <ng-container [ngTemplateOutlet]="employerCta" />
     </div>
+
+    <!-- The page's footer, in the hero's bottom corners beside the phone, as on Home -->
+    <footer class="hero-foot">
+      <div class="foot-group foot-brand">
+        <img [src]="jobUpLogo" alt="" class="foot-logo">
+        <span class="foot-name">Job Up</span>
+        <span class="foot-copy">© {{ year }} Job Up. ყველა უფლება დაცულია.</span>
+      </div>
+      <nav class="foot-group foot-meta" aria-label="Job Up">
+        <a routerLink="/about">ჩვენ შესახებ</a>
+        <button type="button" (click)="modals.openContact()">კონტაქტი</button>
+        <a routerLink="/privacy">კონფიდენციალურობა</a>
+        <a routerLink="/terms">წესები და პირობები</a>
+      </nav>
+    </footer>
   </section>
 </main>

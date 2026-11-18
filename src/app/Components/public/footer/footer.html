@@ -1,48 +1,17 @@
-<footer class="tonal-footer has-bottom-nav">
-  @if (!isEmployerSide()) {
-    <nav class="footer-seo-links" aria-label="პოპულარული ძიებები">
-      <div class="seo-group">
-        <h3>ვაკანსიები ქალაქების მიხედვით</h3>
-        <ul>
-          @for (p of cityLinks; track p.slug) {
-            <li><a routerLink="/home" [queryParams]="searchParams(p)">{{ p.h1 }}</a></li>
-          }
-        </ul>
-      </div>
-      <div class="seo-group">
-        <h3>პოპულარული პროფესიები</h3>
-        <ul>
-          @for (p of categoryLinks; track p.slug) {
-            <li><a routerLink="/home" [queryParams]="searchParams(p)">{{ p.h1 }}</a></li>
-          }
-        </ul>
-      </div>
-      <div class="seo-group">
-        <h3>სამუშაოს ტიპი</h3>
-        <ul>
-          @for (p of typeLinks; track p.slug) {
-            <li><a routerLink="/home" [queryParams]="searchParams(p)">{{ p.h1 }}</a></li>
-          }
-          <li><a routerLink="/home">ვაკანსიების ძიება</a></li>
-        </ul>
-      </div>
-    </nav>
-  }
+<!-- The site footer: one quiet row, the same as the footer in the home / employers hero corners -->
+<footer class="site-footer has-bottom-nav">
+  <div class="footer-row">
+    <div class="foot-brand">
+      <img [src]="jobUpLogo" alt="" class="foot-logo">
+      <span class="foot-name">Job Up</span>
+      <span class="foot-copy">© {{ year }} Job Up. ყველა უფლება დაცულია.</span>
+    </div>
 
-  <div class="footer-container">
-    <div class="footer-brand">
-      <div class="logo-container">
-        <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo" class="footer-logo">
-        <span class="logo-text">Job Up</span>
-      </div>
-      <p class="copyright">© 2026 Job Up. ყველა უფლება დაცულია.</p>
-    </div>
-    
-    <div class="footer-links-group">
-      <a routerLink="/about">ჩვენ შესახებ</a>
-      <a routerLink="/contact">კონტაქტი</a>
-      <a routerLink="/privacy">კონფიდენციალურობა</a>
-      <a routerLink="/terms">წესები და პირობები</a>
-    </div>
+    <nav class="foot-meta" aria-label="Job Up">
+      <a routerLink="/about" routerLinkActive="active">ჩვენ შესახებ</a>
+      <button type="button" (click)="modals.openContact()">კონტაქტი</button>
+      <a routerLink="/privacy" routerLinkActive="active">კონფიდენციალურობა</a>
+      <a routerLink="/terms" routerLinkActive="active">წესები და პირობები</a>
+    </nav>
   </div>
 </footer>

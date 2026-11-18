@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { SeoService } from '../../../Core/Services/seo.service';
+import { SiteModalsService } from '../../../Core/Services/site-modals.service';
 import { JOBUP_LOGO, StateStore } from '../../../Store/state.store';
 
 /**
@@ -28,6 +29,8 @@ export class Employers implements OnInit {
 
   stats = this.stateStore.stats;
   readonly jobUpLogo = JOBUP_LOGO;
+  modals = inject(SiteModalsService);
+  readonly year = new Date().getFullYear();
 
   /** HR accounts and admins get the HR panel instead of sign-up */
   isEmployerAccount = computed(() => {

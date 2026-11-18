@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { ThemeService } from '../../../Core/Services/theme.service';
-import { AuthService } from '../../../Core/Services/auth-service';
+import { RouterModule } from '@angular/router';
+import { SiteModalsService } from '../../../Core/Services/site-modals.service';
+import { JOBUP_LOGO } from '../../../Store/state.store';
 
-import { Router, RouterModule } from '@angular/router';
-import { LANDING_PAGES, landingSearchParams } from '../../../Core/Utils/landing-pages';
-
-// Site-wide links into common searches (each opens the home search with its filters).
-const FOOTER_CATEGORIES = ['it', 'developer', 'sales', 'accountant', 'finance', 'marketing', 'manager', 'driver', 'operator'];
-
+/**
+ * The site footer (about, privacy, terms and the other inner pages). Home and /employers hide it and
+ * show the same row in their hero's bottom corners instead.
+ */
 @Component({
   selector: 'app-footer',
   imports: [RouterModule],
@@ -15,15 +14,7 @@ const FOOTER_CATEGORIES = ['it', 'developer', 'sales', 'accountant', 'finance', 
   styleUrl: './footer.scss',
 })
 export class Footer {
-  themeService = inject(ThemeService);
-  authService = inject(AuthService);
-  router = inject(Router);
-
-  isEmployerSide = () => this.router.url.startsWith('/employers');
-
-  cityLinks = LANDING_PAGES.filter((p) => p.kind === 'city');
-  categoryLinks = LANDING_PAGES.filter((p) => FOOTER_CATEGORIES.includes(p.slug));
-  typeLinks = LANDING_PAGES.filter((p) => p.kind === 'type');
-
-  searchParams = landingSearchParams;
+  modals = inject(SiteModalsService);
+  readonly jobUpLogo = JOBUP_LOGO;
+  readonly year = new Date().getFullYear();
 }
