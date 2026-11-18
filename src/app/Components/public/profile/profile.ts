@@ -12,7 +12,7 @@ import { SwalService } from '../../../Core/Services/swal.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { NotificationChannel, openNotificationChannelsModal } from '../notification-channels-modal/notification-channels-modal';
-import { generateJobSlug } from '../../../Core/Utils/slug-generator';
+import { JobModalService } from '../../../Core/Services/job-modal.service';
 
 @Component({
   selector: 'app-profile',
@@ -31,6 +31,7 @@ export class Profile {
   private swal = inject(SwalService);
   dialog = inject(MatDialog);
   private router = inject(Router);
+  private jobModal = inject(JobModalService);
   keywordInputValue = signal<string>('');
 
   // Sent jobs ("შეტყობინებების ისტორია" accordion; this used to be the /notifications page)
@@ -284,7 +285,7 @@ export class Profile {
   openVacancyDetails(item: any) {
     const jobId = item?.jobId || item?.id;
     if (!jobId) return;
-    this.router.navigate(['/vacancies', generateJobSlug(item.vacancy || item.title, item.company, jobId)]);
+    this.jobModal.open(jobId);
   }
 
   deleteCv() {

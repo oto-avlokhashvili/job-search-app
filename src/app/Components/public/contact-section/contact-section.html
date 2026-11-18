@@ -7,7 +7,7 @@
         } @else {
           <h2 class="display-sm">მოგვწერეთ შეტყობინება</h2>
         }
-        <p class="body-lg">გაქვთ კითხვები ან თანამშრომლობის წინადადებები? გამოგვიგზავნეთ შეტყობინება და ჩვენი გუნდი მალე გიპასუხებთ.</p>
+        <p class="body-lg">შეამჩნიეთ ხარვეზი, გაქვთ კითხვა, იდეა ან თანამშრომლობის წინადადება? მოგვწერეთ და ჩვენი გუნდი მალე გიპასუხებთ.</p>
 
         <div class="contact-details">
           <div class="contact-card">
@@ -19,12 +19,30 @@
               <a href="mailto:jobup.ge@gmail.com" class="contact-value">jobup.ge@gmail.com</a>
             </div>
           </div>
+
+          <!-- What the form is for: people kept sending CVs and job offers here -->
+          <div class="contact-card purpose-card">
+            <div class="icon-wrapper">
+              <span class="material-symbols-outlined">info</span>
+            </div>
+            <div class="contact-text">
+              <span class="contact-label">რისთვის არის ეს ფორმა</span>
+              <ul class="purpose-list">
+                <li><span class="material-symbols-outlined ok">check</span>საიტის ხარვეზები და შეცდომები</li>
+                <li><span class="material-symbols-outlined ok">check</span>კითხვები, იდეები და შენიშვნები</li>
+                <li><span class="material-symbols-outlined ok">check</span>თანამშრომლობის წინადადებები</li>
+                <li><span class="material-symbols-outlined no">close</span>CV-ის გამოგზავნა ან ვაკანსიაზე განაცხადი</li>
+                <li><span class="material-symbols-outlined no">close</span>ვაკანსიების და სამუშაო შეთავაზებების გამოგზავნა</li>
+              </ul>
+              <span class="purpose-note">Job Up დამსაქმებელი არ არის: ვაკანსიაზე განაცხადს თავად ვაკანსიის გვერდიდან აგზავნით, ჩვენ კი ასეთ წერილებს ვერ გადავუგზავნით კომპანიებს.</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="subscribe-form">
-        <input type="email" [formControl]="contactEmail" placeholder="შეიყვანეთ ელ-ფოსტა" aria-label="ელ-ფოსტა" autocomplete="email" class="email-input" [class.is-invalid]="contactEmail.invalid && contactEmail.touched">
-        <textarea [formControl]="contactComment" placeholder="დაწერეთ თქვენი შეტყობინება..." aria-label="შეტყობინება" class="comment-textarea" [class.is-invalid]="contactComment.invalid && contactComment.touched"></textarea>
+        <input type="email" [formControl]="contactEmail" placeholder="შეიყვანეთ თქვენი ელ-ფოსტა" aria-label="ელ-ფოსტა" autocomplete="email" class="email-input" [class.is-invalid]="contactEmail.invalid && contactEmail.touched">
+        <textarea [formControl]="contactComment" placeholder="აღწერეთ ხარვეზი, კითხვა ან იდეა..." aria-label="შეტყობინება" class="comment-textarea" [class.is-invalid]="contactComment.invalid && contactComment.touched"></textarea>
         <button class="btn-fluid primary" (click)="sendContactEmail()" [disabled]="contactEmail.invalid || contactComment.invalid || sending()">
           {{ sending() ? 'იგზავნება...' : 'გაგზავნა' }}
         </button>

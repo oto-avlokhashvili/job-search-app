@@ -1,31 +1,35 @@
 <main class="home-main">
   <!-- Hero for job seekers (the employers' side is its own page, /employers, with the same hero).
        Centred copy on top, below it a "stage": a phone with the live product, product cards around it. -->
-  <section class="hero-section" id="features">
+  <section #heroSection class="hero-section" id="features" [class.has-results]="!!resultsMode()" [style.--hero-zoom]="heroZoom()">
     <div class="hero-copy">
-      <h1 class="hero-title">იპოვე სამსახური<br><span class="accent">ერთ სივრცეში</span></h1>
+      <h1 class="hero-title">სამსახურის ძებნის<br><span class="accent">ჭკვიანი გზა</span></h1>
       <p class="hero-lede">
-        @if (vacancyCount() > 0) {
-          <strong>{{ vacancyCount() | number }} აქტიური ვაკანსია</strong>
-        } @else {
-          <strong>ყველა აქტიური ვაკანსია</strong>
-        }
+        <strong>{{ vacancyTotal }} აქტიური ვაკანსიაა საქართველოში</strong>
         <!-- The comma opens each span: Angular drops the whitespace between the elements -->
-        <span class="lede-long">, ყოველდღე განახლებული — AI კი შენს CV-ზე მორგებულს თავად შეგირჩევს.</span>
-        <span class="lede-short">, ყოველდღე ახალი</span>
+        <span class="lede-long">, AI კი გიპოვნის შესაბამის ვაკანსიებს საძიებო სიტყვებით ან CV-ით</span>
+        
       </p>
 
-      <!-- Same search as the vacancies page: keyword in, results there (city etc. are filtered there) -->
+      <!-- AI search right here: a keyword or a whole sentence, or the CV; the results replace the phone below -->
       <form class="hero-search" role="search" (submit)="search($event)">
         <label class="search-input-wrapper">
           <span class="material-symbols-outlined search-icon">search</span>
-          <input type="search" enterkeyhint="search" class="filter-search-input" [formControl]="searchQuery" placeholder="მოძებნე პოზიცია/კომპანია" aria-label="ვაკანსიის ძებნა">
+          <input type="search" enterkeyhint="search" class="filter-search-input" [formControl]="searchQuery" [placeholder]="searchPlaceholder()" aria-label="ვაკანსიის ძებნა">
         </label>
+        <button type="button" class="btn-cv-search" (click)="searchWithCv()" title="AI შეგირჩევს ვაკანსიებს შენი CV-ის მიხედვით" aria-label="CV-ით ძიება">
+          <span class="material-symbols-outlined cv-icon">description</span>
+          <span class="btn-search-label">CV ძიება</span>
+          <span class="ai-badge" aria-hidden="true">AI</span>
+        </button>
         <button type="submit" class="btn-search" aria-label="ძიება">
           <span class="material-symbols-outlined">search</span>
           <span class="btn-search-label">ძიება</span>
         </button>
       </form>
+
+      <!-- Frequently searched, desktop (on phones it's inside the phone, under the filters) -->
+      <ng-container *ngTemplateOutlet="popularTpl; context: { $implicit: popularRow, where: 'hero-popular popular-desktop' }" />
 
       <ul class="hero-note">
         <li><span class="material-symbols-outlined">check</span>უფასოდ</li>
@@ -33,32 +37,163 @@
         <li><span class="material-symbols-outlined">check</span>ახალი ვაკანსიები ყოველდღე</li>
       </ul>
 
-      <!-- Categories: one scrollable row, arrows scroll it smoothly (hidden when it all fits) -->
-      <div class="hero-quick" [class.scrollable]="quickCanScrollLeft() || quickCanScrollRight()">
-        <button type="button" class="quick-arrow left" [disabled]="!quickCanScrollLeft()" (click)="scrollQuick(-1)" aria-label="წინა კატეგორიები">
+      <!-- Filters: the categories (one scrollable row, arrows scroll it, hidden when it all fits), then the
+           city and "salary only". Each one searches right away; together with the search bar they narrow it. -->
+      <div class="hero-quick" [class.scrollable]="quickRow.scrollable()">
+        <button type="button" class="quick-arrow left" [disabled]="!quickRow.canLeft()" (click)="quickRow.scroll(-1)" aria-label="წინა კატეგორიები">
           <span class="material-symbols-outlined">chevron_left</span>
         </button>
-        <div #quickTrack class="quick-track" [class.fade-left]="quickCanScrollLeft()" [class.fade-right]="quickCanScrollRight()" (scroll)="updateQuickArrows()">
+        <div #quickTrack class="quick-track" [class.fade-left]="quickRow.canLeft()" [class.fade-right]="quickRow.canRight()" (scroll)="quickRow.update()">
           @for (cat of heroCategories; track cat.key) {
-            <a class="quick-chip" routerLink="/vacancies" [queryParams]="{ category: cat.key }">
+            <button type="button" class="quick-chip" [class.active]="category() === cat.key" [attr.aria-pressed]="category() === cat.key" (click)="toggleCategory(cat.key)">
               <span class="material-symbols-outlined">{{ cat.icon }}</span>
               {{ cat.short }}
-            </a>
+            </button>
           }
         </div>
-        <button type="button" class="quick-arrow right" [disabled]="!quickCanScrollRight()" (click)="scrollQuick(1)" aria-label="შემდეგი კატეგორიები">
+        <button type="button" class="quick-arrow right" [disabled]="!quickRow.canRight()" (click)="quickRow.scroll(1)" aria-label="შემდეგი კატეგორიები">
           <span class="material-symbols-outlined">chevron_right</span>
         </button>
       </div>
+
+      <!-- Desktop: the city and "salary only" under the categories (on phones they're inside the phone) -->
+      <div class="hero-filters filters-desktop">
+        <ng-container *ngTemplateOutlet="filtersTpl" />
+      </div>
     </div>
+
+      <!-- Frequently searched: what visitors look for most (one tap runs the search). One line that
+           scrolls sideways, arrows at both ends once it overflows. `row` keeps each copy's arrows. -->
+      <ng-template #popularTpl let-row let-where="where">
+        @if (popularSearches().length) {
+          <div [class]="where" aria-label="ხშირად ეძებენ">
+            <span class="popular-label">
+              <span class="material-symbols-outlined">trending_up</span>
+              ხშირად ეძებენ:
+            </span>
+            <div class="popular-row" [class.scrollable]="row.scrollable()">
+              <button type="button" class="quick-arrow small left" [disabled]="!row.canLeft()" (click)="row.scroll(-1)" aria-label="წინა ძიებები">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <div #popularTrack class="popular-track quick-track" [class.fade-left]="row.canLeft()" [class.fade-right]="row.canRight()" (scroll)="row.update()">
+                @for (term of popularSearches(); track term) {
+                  <button type="button" class="popular-chip"
+                    [class.active]="resultsMode() === 'keyword' && resultsQuery() === term"
+                    (click)="searchPopular(term)">{{ term }}</button>
+                }
+              </div>
+              <button type="button" class="quick-arrow small right" [disabled]="!row.canRight()" (click)="row.scroll(1)" aria-label="შემდეგი ძიებები">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        }
+      </ng-template>
+
+      <!-- The city and "salary only": under the search on desktop, at the top of the phone's screen on phones -->
+      <ng-template #filtersTpl>
+        <!-- City: a pill that opens a list (closes on a click outside, Esc, or a pick) -->
+        <div class="city-picker">
+          <button type="button" class="city-trigger" [class.active]="city() !== 'all'" [class.open]="cityMenuOpen()"
+            (click)="toggleCityMenu()" aria-haspopup="listbox" [attr.aria-expanded]="cityMenuOpen()" aria-label="ქალაქი">
+            <span class="material-symbols-outlined pin">location_on</span>
+            <span class="city-trigger-label">{{ city() === 'all' ? 'ყველა ქალაქი' : city() }}</span>
+            <span class="material-symbols-outlined chevron">expand_more</span>
+          </button>
+          @if (cityMenuOpen()) {
+            <div class="city-menu" role="listbox" aria-label="ქალაქი">
+              <button type="button" class="city-option" role="option" [class.selected]="city() === 'all'" [attr.aria-selected]="city() === 'all'" (click)="pickCity('all')">
+                <span class="material-symbols-outlined option-icon">public</span>
+                <span class="option-label">ყველა ქალაქი</span>
+                @if (city() === 'all') {
+                  <span class="material-symbols-outlined option-check">check</span>
+                }
+              </button>
+              <span class="city-menu-divider" aria-hidden="true"></span>
+              @for (name of cities; track name) {
+                <button type="button" class="city-option" role="option" [class.selected]="city() === name" [attr.aria-selected]="city() === name" (click)="pickCity(name)">
+                  <span class="material-symbols-outlined option-icon">location_city</span>
+                  <span class="option-label">{{ name }}</span>
+                  @if (city() === name) {
+                    <span class="material-symbols-outlined option-check">check</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <button type="button" class="filter-toggle" [class.active]="salaryOnly()" [attr.aria-pressed]="salaryOnly()" (click)="toggleSalaryOnly()">
+          <span class="toggle-switch"><span></span></span>
+          <span class="toggle-long">მხოლოდ&nbsp;</span>ხელფასით
+        </button>
+        @if (hasFilters()) {
+          <button type="button" class="filter-clear" (click)="clearFilters()">
+            <span class="material-symbols-outlined">close</span>
+            ფილტრების გასუფთავება
+          </button>
+        }
+      </ng-template>
+
+      <!-- In the phone's results, laid out like a vacancy card. 'promo': no CV here yet, upload it and HR
+           specialists find you. 'uploaded': the CV is in the candidate pool already. -->
+      <ng-template #cvCardTpl let-kind let-empty="empty">
+        <div class="cv-card" [class.promo]="kind === 'promo'" [class.uploaded]="kind === 'uploaded'" [class.wide]="empty">
+          @if (empty) {
+            <p class="cv-card-note">
+              <span class="material-symbols-outlined">search_off</span>
+              ამ ძიებით ვაკანსია ვერ მოიძებნა. ატვირთე CV და შესაფერისი გამოჩენისთანავე HR-ები თავად გიპოვიან.
+            </p>
+          }
+          <div class="cv-card-top">
+            <span class="cv-card-avatar" aria-hidden="true">
+              <span class="material-symbols-outlined">{{ kind === 'promo' ? 'person_search' : 'task_alt' }}</span>
+            </span>
+            <div class="cv-card-info">
+              @if (kind === 'promo') {
+                <h4 class="cv-card-title">HR-ები თავად გიპოვიან</h4>
+                <span class="cv-card-sub">ატვირთე CV კანდიდატთა ბაზაში</span>
+              } @else {
+                <h4 class="cv-card-title">შენი CV ატვირთულია</h4>
+                <span class="cv-card-sub">{{ cvFileName() || 'HR-ები ხედავენ შენს პროფილს' }}</span>
+              }
+            </div>
+          </div>
+          <div class="cv-card-bottom">
+            @if (kind === 'promo') {
+              <span class="cv-card-pill">
+                <span class="material-symbols-outlined">verified</span>
+                უფასოდ
+              </span>
+              <button type="button" class="cv-card-btn" (click)="openPublicCvModal()">
+                <span class="material-symbols-outlined">upload_file</span>
+                ატვირთვა
+              </button>
+            } @else {
+              <span class="cv-card-pill">
+                <span class="material-symbols-outlined">visibility</span>
+                HR-ები გხედავენ
+              </span>
+              @if (resultsMode() === 'keyword') {
+                <button type="button" class="cv-card-btn" (click)="searchWithCv()">
+                  <span class="material-symbols-outlined">auto_awesome</span>
+                  CV-ით ძიება
+                </button>
+              }
+            }
+          </div>
+        </div>
+      </ng-template>
 
     <!-- The stage. Desktop: a phone with cards around it; phones: one full-width phone with the
          cards inside its screen -->
-    <div class="hero-stage">
+    <div #heroStage class="hero-stage" [class.searching]="!!resultsMode()" [style.--search-phone-h.px]="searchPhoneHeight()">
       <!-- Dashed connectors (desktop). Each one stretches across the gap between a card and the phone,
            which grows with the screen: an S-curve in a 100×100 box, the arrowhead a CSS triangle. -->
       <span class="stage-link l-left-top" aria-hidden="true">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 0 C 50 0, 50 100, 100 100" /></svg>
+      </span>
+      <span class="stage-link l-left-bottom up" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
       </span>
       <span class="stage-link l-right-top up" aria-hidden="true">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 50 100, 50 0, 100 0" /></svg>
@@ -82,84 +217,200 @@
             </span>
           </div>
 
-          <div class="app-bar" aria-hidden="true">
-            <img [src]="jobUpLogo" alt="" class="app-logo">
-            <span class="app-title">ვაკანსიები</span>
-            <span class="app-icon"><span class="material-symbols-outlined">search</span></span>
-          </div>
-          <div class="app-chips" aria-hidden="true">
-            <span>თბილისი <span class="material-symbols-outlined">expand_more</span></span>
-            <span>დისტანციური <span class="material-symbols-outlined">expand_more</span></span>
-            <span class="icon-only"><span class="material-symbols-outlined">tune</span></span>
-          </div>
-
-          @if (latestLoading()) {
-            <div class="featured-card skeleton-pulse"></div>
-            @for (i of [1, 2]; track i) {
-              <div class="phone-row skeleton">
-                <span class="row-logo skeleton-pulse"></span>
-                <span class="row-text">
-                  <span class="skeleton-line skeleton-pulse" style="width: 70%"></span>
-                  <span class="skeleton-line short skeleton-pulse" style="width: 45%"></span>
-                </span>
+          @if (!resultsMode()) {
+            <!-- The app as it is: the newest vacancies -->
+            <div class="screen-home" animate.enter="screen-enter" animate.leave="screen-leave">
+            <div class="app-bar" aria-hidden="true">
+              <img [src]="jobUpLogo" alt="" class="app-logo">
+              <span class="app-title">ვაკანსიები</span>
+              <span class="app-icon"><span class="material-symbols-outlined">search</span></span>
+            </div>
+            <!-- Phones: the real filters; desktop: the picture of them -->
+            <div class="hero-filters phone-filters">
+              <ng-container *ngTemplateOutlet="filtersTpl" />
+            </div>
+            <div class="app-chips" aria-hidden="true">
+              <span>თბილისი <span class="material-symbols-outlined">expand_more</span></span>
+              <span>დისტანციური <span class="material-symbols-outlined">expand_more</span></span>
+              <span class="icon-only"><span class="material-symbols-outlined">tune</span></span>
+            </div>
+  
+            @if (latestLoading()) {
+              <div class="featured-card skeleton-pulse"></div>
+              <ng-container *ngTemplateOutlet="popularTpl; context: { $implicit: popularPhoneRow, where: 'hero-popular popular-phone' }" />
+              @for (i of [1, 2]; track i) {
+                <div class="phone-row skeleton">
+                  <span class="row-logo skeleton-pulse"></span>
+                  <span class="row-text">
+                    <span class="skeleton-line skeleton-pulse" style="width: 70%"></span>
+                    <span class="skeleton-line short skeleton-pulse" style="width: 45%"></span>
+                  </span>
+                </div>
+              }
+            } @else {
+              @if (featuredJob(); as job) {
+                <a class="featured-card" [appJobLink]="job.id">
+                  <span class="featured-top">
+                    <span class="featured-company">{{ job.company }}</span>
+                    <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
+                      @if (logos.show(job.logo)) {
+                        <img [src]="job.logo" alt="" (error)="logos.broken(job.logo)">
+                      } @else {
+                        {{ job.company.charAt(0) }}
+                      }
+                    </span>
+                  </span>
+                  <span class="featured-title">{{ job.title }}</span>
+                  <span class="featured-tags">
+                    @if (job.location) {
+                      <span>{{ job.location }}</span>
+                    }
+                    @if (job.salary) {
+                      <span>{{ job.salary }}</span>
+                    }
+                  </span>
+                  <span class="featured-foot">
+                    <span><span class="material-symbols-outlined">schedule</span>{{ job.age }}</span>
+                    <span class="featured-go">ნახვა <span class="material-symbols-outlined">arrow_forward</span></span>
+                  </span>
+                </a>
+              }
+              <!-- Phones: frequently searched, under the highlighted vacancy -->
+              <ng-container *ngTemplateOutlet="popularTpl; context: { $implicit: popularPhoneRow, where: 'hero-popular popular-phone' }" />
+              <div class="phone-section-head">
+                <span>ახალი ვაკანსიები</span>
               </div>
-            }
-          } @else {
-            @if (featuredJob(); as job) {
-              <a class="featured-card" [routerLink]="['/vacancies', job.slug]">
-                <span class="featured-top">
-                  <span class="featured-company">{{ job.company }}</span>
+              @for (job of phoneJobs(); track job.id) {
+                <a class="phone-row" [appJobLink]="job.id">
                   <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
                     @if (logos.show(job.logo)) {
-                      <img [src]="job.logo" alt="" (error)="logos.broken(job.logo)">
+                      <img [src]="job.logo" alt="" loading="lazy" (error)="logos.broken(job.logo)">
                     } @else {
                       {{ job.company.charAt(0) }}
                     }
                   </span>
-                </span>
-                <span class="featured-title">{{ job.title }}</span>
-                <span class="featured-tags">
-                  @if (job.location) {
-                    <span>{{ job.location }}</span>
-                  }
-                  @if (job.salary) {
-                    <span>{{ job.salary }}</span>
-                  }
-                </span>
-                <span class="featured-foot">
-                  <span><span class="material-symbols-outlined">schedule</span>{{ job.age }}</span>
-                  <span class="featured-go">ნახვა <span class="material-symbols-outlined">arrow_forward</span></span>
-                </span>
-              </a>
-            }
-            <!-- The app's own "see all" button, under the highlighted vacancy -->
-            <a class="phone-cta" routerLink="/vacancies">
-              <span class="material-symbols-outlined">work</span>
-              @if (vacancyCount() > 0) {
-                ყველა {{ vacancyCount() | number }} ვაკანსია
-              } @else {
-                ყველა ვაკანსია
+                  <span class="row-text">
+                    <span class="row-title">{{ job.title }}</span>
+                    <span class="row-meta">{{ job.company }} · {{ job.age }}</span>
+                  </span>
+                </a>
               }
-              <span class="material-symbols-outlined phone-cta-arrow">arrow_forward</span>
-            </a>
-            <div class="phone-section-head">
-              <span>ახალი ვაკანსიები</span>
+            }
             </div>
-            @for (job of phoneJobs(); track job.id) {
-              <a class="phone-row" [routerLink]="['/vacancies', job.slug]">
-                <span class="row-logo" [class.letter]="!logos.show(job.logo)" [class.full]="job.logo?.startsWith('/icons/')">
-                  @if (logos.show(job.logo)) {
-                    <img [src]="job.logo" alt="" loading="lazy" (error)="logos.broken(job.logo)">
+          } @else {
+            <!-- A search: the AI at work, then what it found -->
+            <div class="screen-search" animate.enter="screen-enter" aria-live="polite">
+              <div class="app-bar search-bar">
+                <img [src]="jobUpLogo" alt="" class="app-logo">
+                <span class="app-title">
+                  @if (resultsMode() === 'cv') {
+                    CV ძიება
+                  } @else if (resultsQuery()) {
+                    „{{ resultsQuery() }}“
                   } @else {
-                    {{ job.company.charAt(0) }}
+                    ძიება
                   }
                 </span>
-                <span class="row-text">
-                  <span class="row-title">{{ job.title }}</span>
-                  <span class="row-meta">{{ job.company }} · {{ job.age }}</span>
-                </span>
-              </a>
-            }
+                <button type="button" class="app-icon close" (click)="clearResults()" title="დახურვა" aria-label="ძიების დახურვა">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="hero-filters phone-filters">
+                <ng-container *ngTemplateOutlet="filtersTpl" />
+              </div>
+
+              <div class="search-meta">
+                @if (resultsLoading()) {
+                  <span class="meta-text"><span class="material-symbols-outlined spin">progress_activity</span>AI ეძებს…</span>
+                } @else if (resultsMode() === 'cv') {
+                  @if (cvProfile(); as profile) {
+                    <span class="results-chip">{{ profile.detectedRole }} · {{ profile.seniorityLevel }}</span>
+                  }
+                } @else if (!resultsError()) {
+                  <span class="meta-text"><strong>{{ resultsTotal() | number }}</strong> ვაკანსია</span>
+                  @if (aiSummary(); as summary) {
+                    <span class="results-chip" title="AI-მ ასე გაიგო შენი ძიება">
+                      <span class="material-symbols-outlined">auto_awesome</span>{{ summary }}
+                    </span>
+                  }
+                }
+              </div>
+
+              <div class="screen-body">
+                @if (resultsLoading()) {
+                  <div class="screen-loading" animate.enter="screen-enter">
+                    <app-ai-search-steps [mode]="resultsMode()!" />
+                  </div>
+                } @else {
+                  <div class="screen-results" animate.enter="screen-enter">
+                    @if (resultsError()) {
+                      <div class="results-empty">
+                        <span class="material-symbols-outlined">error</span>
+                        <p>{{ resultsError() }}</p>
+                        @if (cvMissing()) {
+                          <button type="button" class="results-action" (click)="reuploadCv()">CV-ის ატვირთვა</button>
+                        } @else {
+                          <button type="button" class="results-action" (click)="resultsMode() === 'cv' ? searchWithCv() : search($event)">თავიდან ცდა</button>
+                        }
+                      </div>
+                    } @else if (results().length === 0 && cvCard() === 'promo') {
+                      <div class="results-list">
+                        <ng-container *ngTemplateOutlet="cvCardTpl; context: { $implicit: 'promo', empty: true }" />
+                      </div>
+                    } @else if (results().length === 0) {
+                      <div class="results-empty">
+                        <span class="material-symbols-outlined">search_off</span>
+                        @if (resultsMode() === 'cv') {
+                          <p>შენს CV-ს შესაბამისი ვაკანსიები ამ მომენტში ვერ მოიძებნა. ახალი ვაკანსიები ყოველდღე ემატება.</p>
+                        } @else {
+                          <p>ვაკანსიები ვერ მოიძებნა. სცადე სხვა სიტყვა, დაწერე წინადადებით (მაგ. „მძღოლი თბილისში“) ან შეცვალე ფილტრები.</p>
+                          @if (hasFilters()) {
+                            <button type="button" class="results-action" (click)="clearFilters()">ფილტრების გასუფთავება</button>
+                          }
+                        }
+                      </div>
+                      @if (cvCard() === 'uploaded') {
+                        <div class="results-list">
+                          <ng-container *ngTemplateOutlet="cvCardTpl; context: { $implicit: 'uploaded' }" />
+                        </div>
+                      }
+                    } @else {
+                      <!-- One after another: each card's entrance waits a little longer than the last -->
+                      <div class="results-list">
+                        @for (r of results(); track r.item.id; let i = $index) {
+                          @if (i === cvCardSlot && cvCard(); as kind) {
+                            <div class="result-item" [style.--i]="i">
+                              <ng-container *ngTemplateOutlet="cvCardTpl; context: { $implicit: kind }" />
+                            </div>
+                          }
+                          <app-vacancy-card class="result-item" [style.--i]="i % pageSize" [job]="r.item" [logos]="logos" [match]="r.match" />
+                        }
+                        @if (results().length <= cvCardSlot && cvCard(); as kind) {
+                          <div class="result-item" [style.--i]="results().length">
+                            <ng-container *ngTemplateOutlet="cvCardTpl; context: { $implicit: kind }" />
+                          </div>
+                        }
+                      </div>
+                      <!-- Infinite scroll: coming into view loads the next page -->
+                      @if (hasMore()) {
+                        <div #moreSentinel class="results-more" aria-live="polite">
+                          @if (loadMoreFailed()) {
+                            <span>მეტის ჩატვირთვა ვერ მოხერხდა</span>
+                            <button type="button" class="results-action" (click)="retryLoadMore()">თავიდან ცდა</button>
+                          } @else {
+                            <span class="material-symbols-outlined spin">progress_activity</span>
+                            <span>იტვირთება…</span>
+                          }
+                        </div>
+                      } @else if (results().length >= 60) {
+                        <p class="results-cap">ნაჩვენებია 60 საუკეთესო შედეგი. მეტი სიზუსტისთვის დააზუსტე ძიება ან ფილტრები.</p>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
           }
         </div>
       </div>
@@ -167,7 +418,7 @@
       <!-- Cards around the phone (inside it on phones) -->
       <!-- A real vacancy -->
       @if (sideJob(); as job) {
-        <a class="float-card f-left-top" [routerLink]="['/vacancies', job.slug]">
+        <a class="float-card f-left-top" [appJobLink]="job.id">
           <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="fc-job-head">
             <span class="fc-job-title">{{ job.title }}</span>
@@ -205,15 +456,10 @@
         <span class="material-symbols-outlined fc-arrow">arrow_forward</span>
       </button>
 
-      <a class="float-card f-right-top fc-accent" routerLink="/vacancies">
+      <a class="float-card f-right-top fc-accent" href="#" (click)="focusSearch($event)">
         <span class="material-symbols-outlined fc-sparkle" aria-hidden="true">auto_awesome</span>
-        @if (vacancyCount() > 0) {
-          <b>{{ vacancyCount() | number }}</b>
-          <span>აქტიური ვაკანსია ერთ სივრცეში</span>
-        } @else {
-          <b>5 წყარო</b>
-          <span>ყველა ვაკანსია ერთ სივრცეში</span>
-        }
+        <b>{{ vacancyTotal }}</b>
+        <span>აქტიური ვაკანსია, AI-ს ნაპოვნი</span>
       </a>
 
       <!-- The AI agent's day, as a checklist; opens the notification setup -->
@@ -236,142 +482,25 @@
       </button>
     </div>
 
+    <!-- The page's footer, in the hero's bottom corners beside the phone (the home page is this one
+         screen). Under the phone on smaller screens. -->
+    <footer class="hero-foot">
+      <!-- Left corner: the brand and the copyright, as in the site footer -->
+      <div class="foot-group foot-brand">
+        <img [src]="jobUpLogo" alt="" class="foot-logo">
+        <span class="foot-name">Job Up</span>
+        <span class="foot-copy">© {{ year }} Job Up. ყველა უფლება დაცულია.</span>
+      </div>
+      <!-- Right corner: the site footer's links -->
+      <nav class="foot-group foot-meta" aria-label="Job Up">
+        <a routerLink="/about">ჩვენ შესახებ</a>
+        <button type="button" (click)="modals.openContact()">კონტაქტი</button>
+        <a routerLink="/privacy">კონფიდენციალურობა</a>
+        <a routerLink="/terms">წესები და პირობები</a>
+      </nav>
+    </footer>
+
     <!-- Phones: the space after the phone, before the next section -->
     <div class="hero-end"></div>
-  </section>
-
-  <!-- Pricing Section -->
-  <section class="pricing-section" id="pricing">
-    <div class="pricing-container">
-      <div class="section-header text-center">
-        <h2 class="display-sm">აირჩიე შენი გეგმა</h2>
-        <p class="body-lg text-on-surface-variant">აიმაღლე შენი კარიერული ძიება პროფესიონალური ხელსაწყოებით</p>
-      </div>
-
-      <div class="pricing-grid">
-        <!-- Basic Plan -->
-        <div class="pricing-card glass-card" (click)="handlePlanClick('BASIC')">
-          <div class="card-header">
-            <div class="plan-title-badge-row">
-              <h3 class="plan-name">Basic პაკეტი</h3>
-              <span class="plan-badge starter-badge">უფასო</span>
-            </div>
-            <div class="price">
-              <span class="currency">₾</span>
-              <span class="amount">0</span>
-              <span class="period">/სამუდამოდ</span>
-            </div>
-            <p class="enterprise-sub">სრული ძირითადი ფუნქციონალი უფასოდ</p>
-          </div>
-          <ul class="features">
-            <li><span class="material-symbols-outlined">check_circle</span> CV-ს ატვირთვა და ვაკანსიების ძიება</li>
-            <li><span class="material-symbols-outlined">check_circle</span> ვაკანსიებისა და CV-ს AI ანალიზი</li>
-            <li><span class="material-symbols-outlined">check_circle</span> CV-ზე მორგებული ვაკანსიების მიღება</li>
-            <li><span class="material-symbols-outlined">check_circle</span> საძიებო სიტყვების AI გენერაცია</li>
-            <li><span class="material-symbols-outlined">check_circle</span> შეტყობინებების მიღება Telegram-ზე</li>
-          </ul>
-
-          @if (authService.isLoggedIn()) {
-            <button class="btn-fluid secondary" [disabled]="true" (click)="$event.stopPropagation()">
-              {{ stateStore.profile().subscription === 'BASIC' ? 'მიმდინარე გეგმა' : 'Basic პაკეტი' }}
-            </button>
-          } @else {
-            <button class="btn-fluid secondary" (click)="$event.stopPropagation(); handlePlanClick('BASIC')">დაწყება</button>
-          }
-        </div>
-
-        <!-- Pro Plan (Featured) -->
-        <div class="pricing-card glass-card featured" (click)="joinProWaitlist()">
-          <div class="featured-badge">წინასწარი რეგისტრაცია</div>
-          <div class="card-header">
-            <div class="plan-title-badge-row">
-              <h3 class="plan-name">Pro პაკეტი</h3>
-              <span class="plan-badge pro-badge">Waitlist</span>
-            </div>
-            <div class="price">
-              <span class="currency">₾</span>
-              <span class="amount">8</span>
-              <span class="period">/თვე</span>
-            </div>
-            <p class="enterprise-sub">ხელოვნური ინტელექტი & AI ანალიზი</p>
-          </div>
-          <ul class="features">
-            <li><span class="material-symbols-outlined">check_circle</span> ყველაფერი Basic-დან + შეუზღუდავი ძიება</li>
-            <li><span class="material-symbols-outlined">check_circle</span> სიღრმისეული AI ანალიზი უფრო ძლიერი მოდელით</li>
-            <li><span class="material-symbols-outlined">check_circle</span> უფრო ზუსტად მორგებული და შეფასებული ვაკანსიები</li>
-            <li><span class="material-symbols-outlined">check_circle</span> უფრო ჭკვიანი საძიებო სიტყვების AI გენერაცია</li>
-            <li><span class="material-symbols-outlined">check_circle</span> შეტყობინებების მიღება Email-ზე და Telegram-ზე</li>
-          </ul>
-
-          <button class="btn-fluid primary" 
-                  [disabled]="waitlistService.isEnrolled('PRO')" 
-                  (click)="$event.stopPropagation(); joinProWaitlist()">
-            {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე (Waitlist)' }}
-          </button>
-        </div>
-
-        <!-- Enterprise Plan -->
-        <div class="pricing-card glass-card" (click)="joinEnterpriseWaitlist()">
-          <div class="featured-badge enterprise-top-badge">წინასწარი რეგისტრაცია</div>
-          <div class="card-header">
-            <div class="plan-title-badge-row">
-              <h3 class="plan-name">Enterprise (კომპანიებისთვის)</h3>
-              <span class="plan-badge enterprise-badge">HR & კომპანიები</span>
-            </div>
-            <div class="price price-custom">
-              <span class="amount custom-amount">შეთანხმებით</span>
-            </div>
-            <p class="enterprise-sub">HR მენეჯერებისა და კომპანიებისთვის</p>
-          </div>
-
-          <ul class="features">
-            <li><span class="material-symbols-outlined">check_circle</span> HR & რეკრუტერების პანელი</li>
-            <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე</li>
-            <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების CV-ების AI ანალიზი & Match Score</li>
-            <li><span class="material-symbols-outlined">check_circle</span> ვაკანსიების მართვა & პირდაპირი კონტაქტი</li>
-            <li><span class="material-symbols-outlined">check_circle</span> API ინტეგრაცია & პერსონალური მენეჯერი</li>
-          </ul>
-          <button class="btn-fluid secondary" 
-                  [disabled]="waitlistService.isEnrolled('ENTERPRISE')" 
-                  (click)="$event.stopPropagation(); joinEnterpriseWaitlist()">
-            {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'Demo-ს დაჯავშნა' }}
-          </button>
-        </div>
-      </div>
-
-
-    </div>
-  </section>
-
-
-
-  <!-- Contact Us Section -->
-  <section class="newsletter-section" id="contact">
-    <div class="newsletter-card">
-      <div class="newsletter-grid">
-        <div class="newsletter-info">
-          <h2 class="display-sm">მოგვწერეთ შეტყობინება</h2>
-          <p class="body-lg">გაქვთ კითხვები ან თანამშრომლობის წინადადებები? გამოგვიგზავნეთ შეტყობინება და ჩვენი გუნდი მალე გიპასუხებთ.</p>
-          
-          <div class="contact-details">
-            <div class="contact-card">
-              <div class="icon-wrapper">
-                <span class="material-symbols-outlined">mail</span>
-              </div>
-              <div class="contact-text">
-                <span class="contact-label">ელ-ფოსტა</span>
-                <a href="mailto:jobup.ge@gmail.com" class="contact-value">jobup.ge@gmail.com</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="subscribe-form">
-          <input type="email" [formControl]="contactEmail" placeholder="შეიყვანეთ ელ-ფოსტა" class="email-input" [class.is-invalid]="contactEmail.invalid && contactEmail.touched">
-          <textarea [formControl]="contactComment" placeholder="დაწერეთ თქვენი შეტყობინება..." class="comment-textarea" [class.is-invalid]="contactComment.invalid && contactComment.touched"></textarea>
-          <button class="btn-fluid primary" (click)="sendContactEmail()" [disabled]="contactEmail.invalid || contactComment.invalid">გაგზავნა</button>
-        </div>
-      </div>
-    </div>
   </section>
 </main>

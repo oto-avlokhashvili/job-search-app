@@ -143,6 +143,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; // stays a circle next to long text
     width: 48px;
     height: 48px;
     background-color: rgba(11, 96, 150, 0.08);
@@ -270,5 +271,47 @@
 
   @media (max-width: 576px) {
     min-height: 95px;
+  }
+}
+
+// What the form is for (and what it isn't), under the e-mail card
+.purpose-card {
+  margin-top: 12px;
+  align-items: flex-start;
+
+  .purpose-list {
+    margin: 6px 0 8px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 3px;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: var(--on-surface);
+    }
+
+    .material-symbols-outlined {
+      font-size: 17px;
+
+      &.ok {
+        color: var(--success-text);
+      }
+
+      &.no {
+        color: #ef4444;
+      }
+    }
+  }
+
+  .purpose-note {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-muted);
   }
 }

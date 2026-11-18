@@ -1,5 +1,5 @@
 @let j = job();
-<a class="job-row" [routerLink]="['/vacancies', j.slug]">
+<a class="job-row" [appJobLink]="j.id">
   <div class="logo-avatar" [class.has-logo]="j.source === jobUpSource || logos().show(j.companyLogo)" [class.brand-logo]="j.source !== jobUpSource && logos().show(j.companyLogo) && logos().isBrand(j.companyLogo)">
     @if (j.source === jobUpSource) {
       <img [src]="jobUpLogo" alt="Job Up">

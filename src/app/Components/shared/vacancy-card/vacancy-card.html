@@ -1,0 +1,55 @@
+@let j = job();
+@let logo = logos().of(j);
+<a class="compact-job-card" [appJobLink]="j.id" [attr.data-job-id]="j.id">
+  <div class="job-card-top">
+    <div class="company-logo-avatar" [class.jobup-logo]="j.source === jobUpSource || logos().show(logo)" [class.wide-logo]="j.source !== jobUpSource && logos().isWide(logo)" [class.brand-logo]="j.source !== jobUpSource && logos().show(logo) && logos().isBrand(logo)">
+      @if (j.source === jobUpSource) {
+        <img [src]="jobUpLogo" alt="Job Up">
+      } @else if (logos().show(logo)) {
+        <img [src]="logo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos().loaded($event, logo)" (error)="logos().broken(logo)">
+      } @else {
+        {{ j.company.charAt(0) }}
+      }
+    </div>
+    <div class="job-header-info">
+      <h4 class="card-vacancy-title" [title]="j.vacancy">{{ j.vacancy }}</h4>
+      <div class="job-sub-info">
+        <span class="card-company-name">{{ j.company }}</span>
+        <span class="meta-dot">•</span>
+        <span class="card-location">
+          <span class="material-symbols-outlined mini-icon">location_on</span>
+          {{ j.location }}
+        </span>
+      </div>
+    </div>
+    <app-favorite-button class="card-fav" [jobId]="j.id" />
+    <div class="card-chevron-wrap">
+      <span class="material-symbols-outlined">chevron_right</span>
+    </div>
+  </div>
+
+  <div class="job-card-bottom-pills">
+    @if (match(); as m) {
+      <span class="cv-match-badge">{{ m }}%</span>
+    }
+    @if (hasSalary(j.salaryRange)) {
+      <span class="salary-pill">
+        <span class="material-symbols-outlined">payments</span>
+        {{ j.salaryRange }}
+      </span>
+    }
+    @if (sourceIcons[j.source]) {
+      <span class="job-source">
+        <img [src]="sourceIcons[j.source]" alt="" class="job-source-icon" [class.circular]="j.source === 'myjobs.ge'">
+        {{ sourceLabel(j.source) }}
+      </span>
+    }
+    @let s = status();
+    <span class="deadline-tag mini" [ngClass]="s.class">
+      <span class="deadline-date">{{ s.text }}</span>
+      @if (s.class !== 'none') {
+        <span class="deadline-bar"><span [style.width.%]="s.progress"></span></span>
+      }
+    </span>
+  </div>
+</a>

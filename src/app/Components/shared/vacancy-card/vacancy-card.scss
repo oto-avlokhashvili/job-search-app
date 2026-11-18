@@ -1,0 +1,301 @@
+// The vacancies page's card (copied from vacancies.scss, which keeps its own copy for the table
+// and the loading skeletons). Shared by the vacancies page's card list and the home search results.
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// In a grid, every card in a row is as tall as the tallest (the bottom row stays at the bottom)
+:host > .compact-job-card {
+  height: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+
+.compact-job-card {
+  color: inherit;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .job-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .company-logo-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      &.jobup-logo {
+        background: #ffffff;
+        border: 1px solid var(--outline-variant, rgba(11, 96, 150, 0.2));
+        // Logos are trimmed server-side; wide ones need every pixel of the tile
+        padding: 2px;
+
+        img { width: 100%; height: 100%; object-fit: contain; }
+      }
+
+      &.wide-logo {
+        width: 64px;
+        padding: 3px 5px;
+      }
+
+      // A company's own icon (/public/icons): edge to edge, as on the home page's hot vacancies
+      &.brand-logo {
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        img { object-fit: cover; border-radius: inherit; }
+      }
+    }
+
+    .job-header-info {
+      flex: 1;
+      min-width: 0;
+
+      .card-vacancy-title {
+        margin: 0 0 1px 0;
+        font-size: 13.5px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: var(--on-surface);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .job-sub-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        line-height: 1.35;
+        color: var(--on-surface-variant);
+
+        .card-company-name {
+          font-weight: 600;
+        }
+
+        .meta-dot {
+          opacity: 0.5;
+        }
+
+        .card-location {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+
+          .mini-icon {
+            font-size: 13px;
+            color: var(--primary);
+          }
+        }
+      }
+    }
+
+    .card-chevron-wrap {
+      color: var(--on-surface-variant);
+      opacity: 0.6;
+    }
+
+    .card-fav {
+      flex-shrink: 0;
+      align-self: center;
+    }
+  }
+
+  .job-card-bottom-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    .deadline-tag.mini {
+      font-size: 11px;
+      min-width: 64px;
+      margin-left: auto;
+
+      .deadline-bar {
+        height: 3px;
+      }
+    }
+  }
+
+  &:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+}
+
+.deadline-tag {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 72px;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  // Track tint / fill per status
+  --deadline-track: rgba(100, 116, 139, 0.15);
+  --deadline-fill: #64748b;
+
+  &.fresh {
+    color: #16a34a;
+    --deadline-track: rgba(34, 197, 94, 0.15);
+    --deadline-fill: #22c55e;
+  }
+
+  &.warning {
+    color: #d97706;
+    --deadline-track: rgba(245, 158, 11, 0.15);
+    --deadline-fill: #f59e0b;
+  }
+
+  &.urgent {
+    color: #ef4444;
+    --deadline-track: rgba(239, 68, 68, 0.15);
+    --deadline-fill: #ef4444;
+  }
+
+  &.expired {
+    color: #64748b;
+
+    .deadline-date {
+      text-decoration: line-through;
+    }
+  }
+
+  .deadline-bar {
+    display: block;
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--deadline-track);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--deadline-fill);
+      transition: width 0.4s ease;
+    }
+  }
+}
+
+.salary-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 7px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  .material-symbols-outlined {
+    font-size: 14px;
+  }
+}
+
+// Which portal the vacancy came from: a quiet hint, not a column
+.job-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  opacity: 0.7;
+  white-space: nowrap;
+
+  .meta-dot {
+    margin-right: 2px;
+  }
+
+  .job-source-icon {
+    width: 11px;
+    height: 11px;
+    object-fit: contain;
+    border-radius: 2px;
+
+    &.circular {
+      border-radius: 50%;
+    }
+  }
+}
+
+.job-card-bottom-pills .job-source {
+  margin-left: 0;
+}
+
+.cv-match-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 100px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  .job-card-bottom-pills & {
+    margin-left: 0;
+  }
+}
+
+// The title wraps to two lines instead of being cut off
+.compact-job-card .job-card-top .job-header-info .card-vacancy-title {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+// Company • city on one line: a long company name gives way ("…") so the city always shows
+.compact-job-card .job-card-top .job-header-info .job-sub-info {
+  min-width: 0;
+  white-space: nowrap;
+
+  .card-company-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meta-dot,
+  .card-location {
+    flex-shrink: 0;
+  }
+}

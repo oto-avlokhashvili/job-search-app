@@ -14,6 +14,7 @@ import { Auth } from './Components/public/auth/auth';
 import { StateStore } from './Store/state.store';
 import { ChatWidget } from './Components/public/chat-widget/chat-widget';
 import { AlertifyService } from './Core/Services/alertify.service';
+import { JobModalService } from './Core/Services/job-modal.service';
 
 declare let gtag: Function;
 
@@ -41,6 +42,8 @@ export class App {
   standalonePage = signal(typeof window !== 'undefined' && /^\/interview\//.test(window.location.pathname));
   constructor(private router: Router, private route: ActivatedRoute){
     this.themeService.init();
+    // ?job=<id> on any page opens that vacancy in a modal
+    inject(JobModalService).init();
     this.isAuthorized.set(this.authService.isLoggedIn());
     if (this.authService.isLoggedIn()) {
       this.stateStore.ensureDataLoaded();

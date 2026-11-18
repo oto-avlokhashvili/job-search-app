@@ -1,54 +1,12 @@
-<main class="vacancy-details-page">
+<main class="vacancy-details-page in-modal">
+  <!-- Pinned to the top-right while the vacancy scrolls; takes no room, like in the other modals -->
+  <div class="modal-close-row">
+    <button type="button" class="btn-close-modal" (click)="close()" title="დახურვა" aria-label="დახურვა">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
   <div class="details-page-container">
-    
-    <!-- Top Navigation & Breadcrumb Bar -->
-    <nav class="details-top-nav">
-      <div class="nav-left">
-        <button type="button" class="btn-back-nav" (click)="goBack()" title="ვაკანსიების სიაზე დაბრუნება">
-          <span class="material-symbols-outlined">arrow_back</span>
-          <span>ყველა ვაკანსია</span>
-        </button>
-
-        @if (stateStore.selectedJob(); as j) {
-          <div class="breadcrumbs-trail">
-            <a routerLink="/vacancies" class="breadcrumb-link">ვაკანსიები</a>
-            <span class="breadcrumb-separator">/</span>
-            @if (cityLanding(); as city) {
-              <a [routerLink]="['/vacancies', city.slug]" class="breadcrumb-link">{{ city.label }}</a>
-              <span class="breadcrumb-separator">/</span>
-            }
-            @if (j.companyKey) {
-              <a [routerLink]="['/companies', j.companyKey]" class="breadcrumb-link company-item">{{ j.company }}</a>
-            } @else {
-              <span class="breadcrumb-item company-item">{{ j.company }}</span>
-            }
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-item current-item">{{ j.vacancy }}</span>
-          </div>
-        }
-      </div>
-
-      <!-- The apply button lives up here, sized like the back button (the card keeps favorite + share) -->
-      @if (!stateStore.selectedJobLoading() && stateStore.selectedJob() && showApply()) {
-        <button type="button" class="btn-nav-apply" [class.is-applied]="applied()" (click)="apply()"
-          [title]="applied() ? 'CV ამ ვაკანსიაზე უკვე გაგზავნილია' : 'CV-ის გაგზავნა დამსაქმებლისთვის'"
-          [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
-          <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
-          <span>{{ applied() ? 'გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
-        </button>
-      }
-    </nav>
-
-    <!-- Once the description card reaches the top: a second, small apply pill floating at the bottom,
-         centred so it clears the chat button, above the phone dock -->
-    @if (!stateStore.selectedJobLoading() && stateStore.selectedJob() && showApply()) {
-      <button type="button" class="btn-float-apply" [class.visible]="floatApplyVisible()" [class.is-applied]="applied()"
-        (click)="apply()" [attr.tabindex]="floatApplyVisible() ? null : -1" [attr.aria-hidden]="floatApplyVisible() ? null : 'true'"
-        [attr.aria-label]="applied() ? 'CV გაგზავნილია' : 'განაცხადის გაგზავნა'">
-        <span class="material-symbols-outlined">{{ applied() ? 'check_circle' : 'bolt' }}</span>
-        <span>{{ applied() ? 'გაგზავნილია' : 'განაცხადის გაგზავნა' }}</span>
-      </button>
-    }
 
     <!-- Loading State -->
     @if (stateStore.selectedJobLoading()) {
@@ -86,10 +44,10 @@
         <h2>ვაკანსია ვერ მოიძებნა</h2>
         <p>{{ stateStore.selectedJobError() }}</p>
         <div class="error-action">
-          <a routerLink="/vacancies" class="btn-primary-action">
-            <span class="material-symbols-outlined">arrow_back</span>
-            <span>ვაკანსიების სიაზე დაბრუნება</span>
-          </a>
+          <button type="button" class="btn-primary-action" (click)="close()">
+            <span class="material-symbols-outlined">close</span>
+            <span>დახურვა</span>
+          </button>
         </div>
       </div>
     }
@@ -144,18 +102,10 @@
               <h1 class="vacancy-page-title">{{ j.vacancy }}</h1>
 
               <div class="company-details-row">
-                @if (j.companyKey) {
-                  <a class="company-name-block company-link" [routerLink]="['/companies', j.companyKey]" title="კომპანიის ყველა ვაკანსია">
-                    <span class="material-symbols-outlined">domain</span>
-                    <span class="company-name">{{ j.company }}</span>
-                    <span class="material-symbols-outlined company-link-arrow">chevron_right</span>
-                  </a>
-                } @else {
-                  <div class="company-name-block">
-                    <span class="material-symbols-outlined">domain</span>
-                    <span class="company-name">{{ j.company }}</span>
-                  </div>
-                }
+                <div class="company-name-block">
+                  <span class="material-symbols-outlined">domain</span>
+                  <span class="company-name">{{ j.company }}</span>
+                </div>
               </div>
             </div>
 
@@ -210,150 +160,13 @@
 
         </header>
 
-        <!-- Combined Hook Accordion: Total Jobs + Smart Similar Opportunities (Between Hero & Description) -->
-        <section class="discovery-accordion-section glass-card" [class.is-expanded]="isAccordionOpen()">
-          <!-- Accordion Header Hook -->
-          <button 
-            type="button" 
-            class="accordion-hook-header" 
-            (click)="toggleAccordion()"
-            [attr.aria-expanded]="isAccordionOpen()"
-            aria-controls="discovery-accordion-panel"
-            title="დააჭირეთ სხვა ვაკანსიების სანახავად"
-          >
-            <div class="hook-header-left">
-              <div class="hook-pulse-icon">
-                <span class="material-symbols-outlined">rocket_launch</span>
-              </div>
-              <div class="hook-text-group">
-                <div class="hook-main-title">
-                  <span>ეძებთ სხვა შესაძლებლობებს?</span>
-                  <span class="hook-highlight-badge">სულ {{ formattedTotalCount() }} ვაკანსია</span>
-                </div>
-                <p class="hook-subtitle">
-                  იხილეთ მსგავსი პოზიციები და აქტიური ვაკანსიები Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან
-                </p>
-              </div>
-            </div>
-
-            <div class="hook-header-right">
-              <span class="hook-expand-label">{{ isAccordionOpen() ? 'დახურვა' : 'შეთავაზებების ნახვა' }}</span>
-              <div class="hook-chevron-circle" [class.rotated]="isAccordionOpen()">
-                <span class="material-symbols-outlined">expand_more</span>
-              </div>
-            </div>
-          </button>
-
-          <!-- Accordion Collapsible Panel: always rendered (hidden when closed) so the
-               similar-job links are in the server HTML for crawlers -->
-          <div
-            id="discovery-accordion-panel"
-            class="accordion-collapsible-panel"
-            [class.open]="isAccordionOpen()"
-            [hidden]="!isAccordionOpen()"
-          >
-              <div class="panel-inner-content">
-                
-                <!-- Contextual Keywords / Smart Filters -->
-                @if (suggestedTags().length > 0) {
-                  <div class="suggested-tags-row">
-                    <div class="tags-label">
-                      <span class="material-symbols-outlined">filter_alt</span>
-                      <span>სწრაფი ძიება:</span>
-                    </div>
-                    <div class="tag-buttons-list">
-                      @for (tag of suggestedTags(); track tag.label) {
-                        <button type="button" class="filter-tag-chip" (click)="navigateToTag(tag)">
-                          <span>{{ tag.label }}</span>
-                        </button>
-                      }
-                    </div>
-                  </div>
-                }
-
-                <!-- Similar Jobs Preview Grid -->
-                <div class="similar-jobs-container">
-                  <div class="similar-jobs-header">
-                    <div class="header-title">
-                      <span class="material-symbols-outlined">work_outline</span>
-                      <h3>მსგავსი აქტიური ვაკანსიები</h3>
-                    </div>
-                    <button type="button" class="btn-link-all" (click)="navigateToAllVacancies()">
-                      <span>ყველა ვაკანსიის ნახვა ({{ formattedTotalCount() }})</span>
-                      <span class="material-symbols-outlined">arrow_forward</span>
-                    </button>
-                  </div>
-
-                  @if (similarJobsLoading()) {
-                    <div class="similar-jobs-grid skeleton">
-                      <div class="similar-skeleton-card skeleton-pulse"></div>
-                      <div class="similar-skeleton-card skeleton-pulse"></div>
-                      <div class="similar-skeleton-card skeleton-pulse"></div>
-                    </div>
-                  } @else if (similarJobs().length > 0) {
-                    <div class="similar-jobs-grid">
-                      @for (item of similarJobs(); track item.id) {
-                        <a [routerLink]="['/vacancies', getJobSlug(item)]" class="similar-job-card">
-                          <div class="card-top">
-                            <span class="card-top-end">
-                              <span class="card-date">{{ item.publishDate }}</span>
-                              <app-favorite-button [jobId]="item.id" />
-                            </span>
-                          </div>
-                          <h4 class="card-vacancy-title" [title]="item.vacancy">{{ item.vacancy }}</h4>
-                          <div class="card-company-row">
-                            @if (logos.show(logos.of(item))) {
-                              <img class="mini-logo" [src]="logos.of(item)" alt="" width="20" height="20" loading="lazy" (error)="logos.broken(logos.of(item))">
-                            } @else {
-                              <span class="material-symbols-outlined">domain</span>
-                            }
-                            <span class="card-company-name">{{ item.company }}</span>
-                          </div>
-                          <div class="card-bottom">
-                            <span class="card-location">
-                              <span class="material-symbols-outlined">location_on</span>
-                              {{ item.location }}
-                            </span>
-                            @if (item.salaryRange && item.salaryRange !== 'მითითებული არ არის') {
-                              <span class="card-salary">{{ item.salaryRange }}</span>
-                            }
-                          </div>
-                        </a>
-                      }
-                    </div>
-                  } @else {
-                    <div class="empty-similar-jobs">
-                      <p>კონკრეტული მსგავსი ვაკანსია ამ მომენტში ვერ მოიძებნა, თუმცა ბაზაში ხელმისაწვდომია <strong>{{ formattedTotalCount() }}</strong> სხვა პოზიცია.</p>
-                      <button type="button" class="btn-primary-explore" (click)="navigateToAllVacancies()">
-                        <span class="material-symbols-outlined">search</span>
-                        <span>ვაკანსიების სრულ კატალოგში გადასვლა</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-
-                <!-- Accordion Footer Actions -->
-                <div class="accordion-footer-actions">
-                  <button type="button" class="btn-primary-explore" (click)="navigateToAllVacancies()">
-                    <span class="material-symbols-outlined">apps</span>
-                    <span>ყველა ვაკანსიის კატალოგი ({{ formattedTotalCount() }})</span>
-                  </button>
-                  <button type="button" class="btn-secondary-collapse" (click)="toggleAccordion()">
-                    <span class="material-symbols-outlined">expand_less</span>
-                    <span>აკორდეონის დახურვა</span>
-                  </button>
-                </div>
-
-              </div>
-          </div>
-        </section>
 
         <!-- Description & Detailed Requirements Body -->
         <section class="vacancy-body-section glass-card">
           <div class="section-title-bar">
             <div class="title-left">
               <span class="material-symbols-outlined section-icon">description</span>
-              <h2>ვაკანსიის აღწერა და მოთხოვნები</h2>
+              <h2>მოკლედ ვაკანსიის შესახებ</h2>
             </div>
           </div>
 
@@ -375,17 +188,6 @@
                   </div>
                 }
 
-                @for (section of view.sections; track $index) {
-                  <section class="desc-section" [attr.data-kind]="section.kind">
-                    @if (section.title) {
-                      <h3 class="desc-heading">
-                        <span class="material-symbols-outlined desc-heading-icon">{{ section.icon }}</span>
-                        <span>{{ section.title }}</span>
-                      </h3>
-                    }
-                    <ng-container *ngTemplateOutlet="descBlocks; context: { $implicit: section.blocks }" />
-                  </section>
-                }
 
                 @if (view.apply.length) {
                   <section class="desc-apply-card">
@@ -397,17 +199,6 @@
                   </section>
                 }
 
-                @if (view.legal.length) {
-                  <details class="desc-legal">
-                    <summary>
-                      <span class="material-symbols-outlined">shield_person</span>
-                      <span>პერსონალური მონაცემების დამუშავება</span>
-                    </summary>
-                    @for (notice of view.legal; track $index) {
-                      <p [innerHTML]="notice"></p>
-                    }
-                  </details>
-                }
               </div>
 
               <ng-template #descBlocks let-blocks>
@@ -436,12 +227,20 @@
                   }
                 }
               </ng-template>
-            } @else if (formattedDescription(); as formatted) {
+            } @else if (jobUpDescription(); as formatted) {
+              <!-- Job Up's own vacancy: our content, shown in full -->
               <div class="rich-text-content" [innerHTML]="formatted"></div>
-            } @else {
+            } @else if (isJobUp(j)) {
               <div class="empty-description-notice">
                 <span class="material-symbols-outlined notice-icon">info</span>
                 <p>ვაკანსიის დეტალური აღწერა ჯერ არ არის დამატებული.</p>
+              </div>
+            }
+            @if (!isJobUp(j)) {
+              <!-- Imported vacancy: the short version here, the full text on the source site -->
+              <div class="empty-description-notice full-description-note">
+                <span class="material-symbols-outlined notice-icon">open_in_new</span>
+                <p>სრული აღწერა, მოვალეობები და მოთხოვნები იხილეთ ორიგინალ განცხადებაში{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}.</p>
               </div>
             }
           </div>
@@ -468,9 +267,9 @@
                   }
                 </span>
               </div>
-              @if (originalLink(); as link) {
-                <a class="btn-original-posting" [href]="link" target="_blank" rel="noopener nofollow">
-                  <span>ორიგინალი განცხადება{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}</span>
+              @if (originalLink() && clickOutUrl(); as url) {
+                <a class="btn-original-posting" [href]="url" target="_blank" rel="noopener nofollow">
+                  <span>სრული განცხადება{{ sourceName() ? ' ' + sourceName() + '-ზე' : '' }}</span>
                   <span class="material-symbols-outlined">open_in_new</span>
                 </a>
               }

@@ -1,16 +1,15 @@
 <nav class="glass-nav fixed-header">
   <div class="header-container">
     <div class="logo-group">
-      <div class="logo-container" (click)="scroll('features')">
+      <div class="logo-container" (click)="goHome()">
         <img [src]="themeService.isDarkMode() ? '/icons/logo-dark.png' : '/icons/logo-light.png'" alt="Job Up Logo" class="nav-logo">
         <span class="logo-text">Job Up</span>
       </div>
       <div class="nav-links-desktop">
         <a class="nav-link" [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
-        <a class="nav-link" [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')">ვაკანსიები</a>
         <a class="nav-link" [routerLink]="'/employers'" [class.active]="isEmployerSide()">დამსაქმებლებს</a>
-        <a class="nav-link" [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing')">ფასები</a>
-        <a class="nav-link" [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact')">დაგვიკავშირდი</a>
+        <a class="nav-link" (click)="modals.openPricing()">ფასები</a>
+        <a class="nav-link" (click)="modals.openContact()">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
           <a class="nav-link" [routerLink]="'/profile'" [class.active]="router.url.startsWith('/profile')">პროფილი</a>
         }
@@ -97,10 +96,9 @@
 
   <div class="mobile-menu" [class.active]="menuOpen">
     <a [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
-    <a [routerLink]="'/vacancies'" [class.active]="router.url.startsWith('/vacancies')" (click)="menuOpen = false">ვაკანსიები</a>
     <a [routerLink]="'/employers'" [class.active]="isEmployerSide()" (click)="menuOpen = false">დამსაქმებლებს</a>
-    <a [class.active]="isHome() && activeSection() === 'pricing'" (click)="scroll('pricing'); menuOpen = false">ფასები</a>
-    <a [class.active]="isHome() && activeSection() === 'contact'" (click)="scroll('contact'); menuOpen = false">დაგვიკავშირდი</a>
+    <a (click)="modals.openPricing(); menuOpen = false">ფასები</a>
+    <a (click)="modals.openContact(); menuOpen = false">დაგვიკავშირდი</a>
     @if (isAdmin()) {
       <a [routerLink]="'/hr'" (click)="menuOpen = false">HR პანელი</a>
     }
@@ -126,16 +124,6 @@
         <span class="material-symbols-outlined nav-icon">home</span>
       </div>
       <span class="nav-label">მთავარი</span>
-    </a>
-
-    <!-- 2. ვაკანსიები -->
-    <a class="bottom-nav-item"
-       [routerLink]="'/vacancies'"
-       [class.active]="router.url.startsWith('/vacancies')">
-      <div class="nav-icon-wrap">
-        <span class="material-symbols-outlined nav-icon">work</span>
-      </div>
-      <span class="nav-label">ვაკანსიები</span>
     </a>
 
     <!-- 3. შენახული -->

@@ -179,7 +179,7 @@
                         }
                       </div>
                       <div class="job-card-actions">
-                        <a [routerLink]="['/vacancies', jobSlug(job)]" class="apply-inline-btn">გახსნა</a>
+                        <a [appJobLink]="job.id" class="apply-inline-btn">გახსნა</a>
                       </div>
                     </div>
                   }

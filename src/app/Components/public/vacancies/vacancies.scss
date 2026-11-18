@@ -2300,3 +2300,62 @@ tr.just-visited {
     color: inherit;
   }
 }
+
+// ── AI search ──────────────────────────────────────────────────
+// What the AI understood from a sentence, next to the result count
+.ai-understood {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+}
+
+// A search shows at most 60 vacancies: say so at the end of the list
+.results-cap-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--primary);
+  }
+}
+
+// Before the first search: the popular searches under the prompt
+.search-start {
+  p {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-fluid .material-symbols-outlined {
+    font-size: 18px;
+    margin-right: 6px;
+  }
+}
+
+.search-start-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}

@@ -16,7 +16,7 @@ export const hrGuard: CanActivateChildFn = async (route, state) => {
   if (role === 'ADMIN' || (role === 'HR' && hrApproved)) hrStore.loadUsage();
 
   if (role === 'ADMIN') return true;
-  if (role !== 'HR') return router.createUrlTree(['/vacancies']);
+  if (role !== 'HR') return router.createUrlTree(['/home']);
   if (route.data['adminOnly']) return router.createUrlTree(['/hr']);
 
   const onPendingPage = state.url.startsWith('/hr/pending');

@@ -9,9 +9,7 @@
         <div class="section-header text-center">
           <h1 class="display-sm">
             აქტიური ვაკანსიები
-            @if (dbTotalRecords() > 0) {
-              <span class="total-vacancies-badge">{{ dbTotalRecords() | number }}</span>
-            }
+            <span class="total-vacancies-badge">{{ vacancyTotal }}</span>
           </h1>
           <p class="body-lg text-on-surface-variant">იპოვე შენთვის შესაფერისი — გაფილტრე ქალაქით, კატეგორიით და ხელფასით. ახალი ვაკანსიები ყოველდღე ემატება.</p>
         </div>
@@ -77,9 +75,6 @@
               >
                 <span class="material-symbols-outlined">{{ cat.icon }}</span>
                 <span>{{ cat.short }}</span>
-                @if (cat.count > 0) {
-                  <span class="source-chip-count">{{ cat.count | number }}</span>
-                }
               </button>
             }
           </div>
@@ -168,9 +163,6 @@
                               <span class="option-label">{{ cat.label }}</span>
                             </div>
                             <div class="option-right-content">
-                              @if (cat.count > 0) {
-                                <span class="option-count-badge">{{ cat.count | number }}</span>
-                              }
                               @if (cat.key === categoryFilter.value) {
                                 <span class="material-symbols-outlined check-icon">check</span>
                               }
@@ -280,15 +272,11 @@
                         {{ cat.short }}
                       </button>
                     }
-                    <!-- Companies open the company's own page with all its vacancies -->
-                    @for (company of popularCompanies; track company.key) {
-                      <a class="popular-tag company-tag" [routerLink]="['/companies', company.key]" (click)="closeFilterModal()">
-                        @if (logos.show(company.logo)) {
-                          <img [src]="company.logo" [alt]="company.label" class="tag-icon" loading="lazy" (error)="logos.broken(company.logo)">
-                        } @else {
-                          <span class="tag-icon tag-letter">{{ company.label.charAt(0) }}</span>
-                        }
-                        {{ company.label }}
+                    <!-- Popular searches open their keyword page -->
+                    @for (search of popularSearches; track search.slug) {
+                      <a class="popular-tag category-tag" [routerLink]="['/vacancies', search.slug]" (click)="closeFilterModal()">
+                        <span class="material-symbols-outlined tag-symbol">{{ search.icon }}</span>
+                        {{ search.label }}
                       </a>
                     }
                   </div>
@@ -372,6 +360,12 @@
           <div class="results-meta" [class.unfiltered]="!(searchFilter.value || locationFilter.value !== 'all' || sourceFilter.value !== 'all' || categoryFilter.value !== 'all' || dateRangeFilter.value !== 'all' || salaryOnly())">
             <span class="results-count">
               <strong>{{ totalRecords() | number }}</strong> ვაკანსია
+              @if (aiSummary(); as summary) {
+                <span class="ai-understood" title="AI-მ ასე გაიგო შენი ძიება">
+                  <span class="material-symbols-outlined">auto_awesome</span>
+                  {{ summary }}
+                </span>
+              }
               @if (sourceFilter.value !== 'all') {
                 <button type="button" class="btn-clear-source-filter" (click)="setSource('all')">
                   <span>ყველა პორტალზე დაბრუნება</span>
@@ -386,6 +380,8 @@
         }
 
         @if (listLoading()) {
+          <!-- What the search is doing, above the skeleton list -->
+          <app-ai-search-steps [mode]="cvMode() ? 'cv' : 'keyword'" />
           <!-- Desktop Table Skeleton View -->
           <div class="vacancies-table-container loading-table">
             <div class="table-loading-bar"></div>
@@ -472,7 +468,7 @@
                           <div class="job-title-line">
                             <a
                               class="job-vacancy-link"
-                              [routerLink]="['/vacancies', getJobSlug(job)]"
+                              [appJobLink]="job.id"
                               [matTooltip]="job.vacancy"
                               matTooltipPosition="above"
                               [matTooltipShowDelay]="150"
@@ -489,11 +485,7 @@
                             }
                           </div>
                           <span class="job-company" [title]="job.company">
-                            @if (job.companyKey) {
-                              <a class="job-company-link" [routerLink]="['/companies', job.companyKey]">{{ job.company }}</a>
-                            } @else {
-                              {{ job.company }}
-                            }
+                            {{ job.company }}
                             @if (sourceIcons[job.source]) {
                               <span class="job-source">
                                 <span class="meta-dot">·</span>
@@ -529,7 +521,7 @@
                     <td class="col-action">
                       <div class="row-actions">
                         <app-favorite-button [jobId]="job.id" />
-                        <a class="btn-fluid btn-sm primary apply-btn" [routerLink]="['/vacancies', getJobSlug(job)]" tabindex="-1" aria-hidden="true">
+                        <a class="btn-fluid btn-sm primary apply-btn" [appJobLink]="job.id" tabindex="-1" aria-hidden="true">
                           ნახვა
                         </a>
                       </div>
@@ -560,62 +552,7 @@
           <!-- Mobile Compact Cards View -->
           <div class="vacancies-cards-container">
             @for (job of displayedJobs(); track job.id) {
-              <a class="vacancy-card glass-card compact-job-card" [routerLink]="['/vacancies', getJobSlug(job)]" [attr.data-job-id]="job.id">
-                <div class="job-card-top">
-                  @let logo = logos.of(job);
-                  <div class="company-logo-avatar" [class.jobup-logo]="job.source === jobUpSource || logos.show(logo)" [class.wide-logo]="job.source !== jobUpSource && logos.isWide(logo)" [class.brand-logo]="job.source !== jobUpSource && logos.show(logo) && logos.isBrand(logo)">
-                    @if (job.source === jobUpSource) {
-                      <img [src]="jobUpLogo" alt="Job Up">
-                    } @else if (logos.show(logo)) {
-                      <img [src]="logo" alt="" width="40" height="40" loading="lazy" decoding="async" (load)="logos.loaded($event, logo)" (error)="logos.broken(logo)">
-                    } @else {
-                      {{ job.company.charAt(0) }}
-                    }
-                  </div>
-                  <div class="job-header-info">
-                    <h4 class="card-vacancy-title">{{ job.vacancy }}</h4>
-                    <div class="job-sub-info">
-                      <span class="card-company-name">{{ job.company }}</span>
-                      <span class="meta-dot">•</span>
-                      <span class="card-location">
-                        <span class="material-symbols-outlined mini-icon">location_on</span>
-                        {{ job.location }}
-                      </span>
-                    </div>
-                  </div>
-                  <app-favorite-button class="card-fav" [jobId]="job.id" />
-                  <div class="card-chevron-wrap">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                  </div>
-                </div>
-
-                <div class="job-card-bottom-pills">
-                  @if (cvMode()) {
-                    <span class="cv-match-badge">{{ job.matchScore }}%</span>
-                  }
-                  @if (hasSalary(job.salaryRange)) {
-                    <span class="salary-pill">
-                      <span class="material-symbols-outlined">payments</span>
-                      {{ job.salaryRange }}
-                    </span>
-                  }
-
-                  @if (sourceIcons[job.source]) {
-                    <span class="job-source">
-                      <img [src]="sourceIcons[job.source]" alt="" class="job-source-icon" [class.circular]="job.source === 'myjobs.ge'">
-                      {{ sourceLabel(job.source) }}
-                    </span>
-                  }
-
-                  @let mStatus = getDeadlineStatus(job.deadline, job.publishDate);
-                  <span class="deadline-tag mini" [ngClass]="mStatus.class">
-                    <span class="deadline-date">{{ mStatus.text }}</span>
-                    @if (mStatus.class !== 'none') {
-                      <span class="deadline-bar"><span [style.width.%]="mStatus.progress"></span></span>
-                    }
-                  </span>
-                </div>
-              </a>
+              <app-vacancy-card [job]="job" [logos]="logos" [match]="cvMode() ? job.matchScore : null" />
             }
             @if (isAppending()) {
               @for (i of [1,2,3]; track i) {
@@ -645,15 +582,18 @@
                 @if (isAppending()) {
                   <span class="btn-spinner" style="border-top-color: var(--primary); margin-right: 8px;"></span>
                   იტვირთება...
-                } @else if (currentPage >= 5 && !authService.isLoggedIn()) {
-                  <span class="material-symbols-outlined">lock</span>
-                  მეტის ჩატვირთვა (საჭიროებს ავტორიზაციას)
                 } @else {
                   <span class="material-symbols-outlined">expand_more</span>
                   მეტის ჩატვირთვა
                 }
               </button>
             </div>
+          }
+          @if (!cvMode() && !hasMoreJobs() && filteredJobs().length >= maxResults) {
+            <p class="results-cap-note">
+              <span class="material-symbols-outlined">tune</span>
+              ნაჩვენებია {{ maxResults }} საუკეთესო შედეგი. მეტი სიზუსტისთვის დააზუსტე ძიება: ქალაქი, სფერო ან თანამდებობა.
+            </p>
           }
         } @else if (cvMode()) {
           <div class="empty-state glass-card">
@@ -686,6 +626,27 @@
                 CV-ის ხელახლა ატვირთვა
               </button>
             }
+          </div>
+        } @else if (!hasSearch()) {
+          <!-- Before the first search: Job Up is a search, there is no list to browse -->
+          <div class="empty-state glass-card search-start">
+            <div class="empty-icon-wrap">
+              <span class="material-symbols-outlined">auto_awesome</span>
+            </div>
+            <h3>რა სამსახურს ეძებ?</h3>
+            <p>დაწერე თანამდებობა ან უბრალოდ წინადადება, მაგალითად „მინდა ბუღალტრად ვიმუშაო ბათუმში“, ან ატვირთე CV და AI შეგირჩევს შესაბამის ვაკანსიებს hr.ge, jobs.ge, myjobs.ge, awork.ge და LinkedIn-იდან.</p>
+            <button class="btn-fluid primary btn-sm" (click)="setSearchMode('cv')">
+              <span class="material-symbols-outlined">description</span>
+              CV-ით ძიება
+            </button>
+            <div class="search-start-chips">
+              @for (search of popularSearches; track search.slug) {
+                <a class="popular-tag category-tag" [routerLink]="['/vacancies', search.slug]">
+                  <span class="material-symbols-outlined tag-symbol">{{ search.icon }}</span>
+                  {{ search.label }}
+                </a>
+              }
+            </div>
           </div>
         } @else {
           <!-- Empty State -->

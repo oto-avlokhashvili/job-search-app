@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SeoService } from '../../../Core/Services/seo.service';
 import { StateStore } from '../../../Store/state.store';
+import { VACANCY_TOTAL_PHRASE } from '../../../Core/Constants/vacancy-total';
 
 @Component({
   selector: 'app-about',
@@ -15,11 +16,12 @@ import { StateStore } from '../../../Store/state.store';
 export class About implements OnInit {
   private seo = inject(SeoService);
   stateStore = inject(StateStore);
+  readonly vacancyTotalPhrase = VACANCY_TOTAL_PHRASE;
 
   ngOnInit() {
     this.seo.update({
-      title: 'ჩვენ შესახებ | Job Up',
-      description: 'Job Up აერთიანებს საქართველოს წამყვანი სამსახურის პორტალების ვაკანსიებს ერთ სივრცეში და AI აგენტის დახმარებით გეხმარება შესაფერისი სამსახურის პოვნაში.',
+      title: 'ჩვენ შესახებ — AI, რომელიც ვაკანსიებს ეძებს | Job Up',
+      description: 'Job Up-ის AI მთელ ინტერნეტში ეძებს ვაკანსიებს საქართველოში და თქვენს CV-ზე მორგებულ შეთავაზებებს თავად გიგზავნით.',
       path: '/about',
     });
     if (typeof window !== 'undefined') {

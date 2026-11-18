@@ -38,7 +38,9 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   position: relative;
-  overflow: hidden;
+  // clip, not hidden: clips the glows the same, but leaves position: sticky working inside (the
+  // phone's search bar on phones, see home.scss)
+  overflow: clip;
   max-width: 1440px;
   min-height: 100svh;
   margin: 0 auto;
@@ -74,7 +76,7 @@
   }
 
   // Accent glow behind the stage. It sits fully inside the section and fades out before the bottom:
-  // the section clips (overflow: hidden), and a glow cut off mid-fade shows as a hard edge.
+  // the section clips (overflow: clip), and a glow cut off mid-fade shows as a hard edge.
   &::after {
     content: '';
     position: absolute;
@@ -333,15 +335,10 @@
   align-items: center;
   gap: 6px;
 
-  // Phones: swiped, not clicked. No arrows; the row stays inside the gutter like everything else,
-  // its fade showing there's more.
+  // Phones: swiped or scrolled with the arrows; the row stays inside the gutter like everything else
   @media (max-width: 991px) {
     margin-top: 16px;
     max-width: none;
-
-    .quick-arrow {
-      display: none !important;
-    }
   }
 }
 
@@ -747,6 +744,14 @@
     height: 98px;
   }
 
+  // Lower left card (CV upload / its employer twin) → phone, rising to the phone's edge
+  &.l-left-bottom {
+    left: 332px;
+    right: calc(50% + 162px);
+    top: 344px;
+    height: 34px;
+  }
+
   // Phone → right cards
   &.l-right-top {
     left: calc(50% + 162px);
@@ -804,25 +809,13 @@
     border: 1px solid rgba(var(--accent-rgb), 0.25);
   }
 
-  // Outer dashed ring, slowly turning, with a dot riding it
+  // Outer dashed ring, slowly turning
   span {
     position: absolute;
     inset: 0;
     border-radius: 50%;
     border: 1px dashed rgba(var(--accent-rgb), 0.3);
     animation: orbit 40s linear infinite;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: -5px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.18);
-    }
   }
 }
 
@@ -838,7 +831,7 @@
   left: calc(50% - 150px);
   top: 0;
   width: 300px;
-  height: 600px;
+  height: 540px;
   padding: 11px;
   border-radius: 48px;
   background: linear-gradient(145deg, #2b3242, #0d111a);
@@ -1076,63 +1069,6 @@
     height: 100%;
     border-radius: inherit;
     background: #ffffff;
-  }
-}
-
-// "See all": an app-style button under the highlighted vacancy
-.phone-cta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  margin-top: 10px;
-  padding: 0 12px;
-  border-radius: 12px;
-  background: rgba(var(--accent-rgb), 0.12);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  color: var(--accent);
-  font-size: 12.5px;
-  font-weight: 800;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-
-  .material-symbols-outlined {
-    font-size: 17px;
-  }
-
-  .phone-cta-arrow {
-    margin-left: auto;
-    transition: translate 0.2s ease;
-  }
-
-  &:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #ffffff;
-
-    .phone-cta-arrow {
-      translate: 3px 0;
-    }
-
-    .phone-cta-count {
-      background: rgba(255, 255, 255, 0.22);
-      color: #ffffff;
-    }
-  }
-}
-
-// The vacancy count, pushed to the right next to the arrow
-.phone-cta-count {
-  margin-left: auto;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(var(--accent-rgb), 0.15);
-  font-size: 11.5px;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  + .phone-cta-arrow {
-    margin-left: 0;
   }
 }
 

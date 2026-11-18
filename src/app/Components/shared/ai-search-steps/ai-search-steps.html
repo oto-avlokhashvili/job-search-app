@@ -1,0 +1,14 @@
+<div class="ai-steps glass-card" role="status" aria-live="polite">
+  <div class="ai-steps-head">
+    <span class="ai-orb" aria-hidden="true"><span class="material-symbols-outlined">auto_awesome</span></span>
+    <span class="ai-steps-title">AI ძიება</span>
+  </div>
+  <ol class="ai-steps-list">
+    @for (step of steps(); track step.text; let i = $index) {
+      <li class="ai-step" [class.done]="i < current()" [class.active]="i === current()" [class.pending]="i > current()">
+        <span class="material-symbols-outlined ai-step-icon">{{ i < current() ? 'check_circle' : step.icon }}</span>
+        <span class="ai-step-text">{{ step.text }}</span>
+      </li>
+    }
+  </ol>
+</div>

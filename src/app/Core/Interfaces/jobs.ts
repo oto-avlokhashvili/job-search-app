@@ -15,6 +15,18 @@ export interface JobsResponse {
   jobs: Job[];
   counts: JobCounts;
 }
+
+/** What the AI understood from a sentence typed into the search ('' = nothing for that part). */
+export interface SearchIntent {
+  keywords: string;
+  city: string;
+  category: string;
+}
+
+export interface SearchResponse extends JobsResponse {
+  /** null when the search was short enough to use as keywords as-is */
+  interpreted?: SearchIntent | null;
+}
 export interface Job {
   id: number;
   matchId?: number;

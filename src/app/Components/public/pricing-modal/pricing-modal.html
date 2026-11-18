@@ -1,0 +1,106 @@
+<!-- The plans, in a dialog (header "ფასები", the home page's footer) -->
+<!-- Pinned to the top while the plans scroll; takes no room, so the plans stay centred -->
+<div class="modal-close-row">
+  <button type="button" class="modal-close" (click)="close()" aria-label="დახურვა">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+</div>
+<section class="pricing-section" aria-labelledby="pricing-title">
+  <div class="pricing-container">
+    <div class="section-header text-center">
+      <h2 class="display-sm" id="pricing-title">აირჩიე შენი გეგმა</h2>
+      <p class="body-lg text-on-surface-variant">აიმაღლე შენი კარიერული ძიება პროფესიონალური ხელსაწყოებით</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Basic Plan -->
+      <div class="pricing-card glass-card" (click)="handlePlanClick('BASIC')">
+        <div class="card-header">
+          <div class="plan-title-badge-row">
+            <h3 class="plan-name">Basic პაკეტი</h3>
+            <span class="plan-badge starter-badge">უფასო</span>
+          </div>
+          <div class="price">
+            <span class="currency">₾</span>
+            <span class="amount">0</span>
+            <span class="period">/სამუდამოდ</span>
+          </div>
+          <p class="enterprise-sub">სრული ძირითადი ფუნქციონალი უფასოდ</p>
+        </div>
+        <ul class="features">
+          <li><span class="material-symbols-outlined">check_circle</span> CV-ს ატვირთვა და ვაკანსიების ძიება</li>
+          <li><span class="material-symbols-outlined">check_circle</span> ვაკანსიებისა და CV-ს AI ანალიზი</li>
+          <li><span class="material-symbols-outlined">check_circle</span> CV-ზე მორგებული ვაკანსიების მიღება</li>
+          <li><span class="material-symbols-outlined">check_circle</span> საძიებო სიტყვების AI გენერაცია</li>
+          <li><span class="material-symbols-outlined">check_circle</span> შეტყობინებების მიღება Telegram-ზე</li>
+        </ul>
+
+        @if (authService.isLoggedIn()) {
+          <button class="btn-fluid secondary" [disabled]="true" (click)="$event.stopPropagation()">
+            {{ stateStore.profile().subscription === 'BASIC' ? 'მიმდინარე გეგმა' : 'Basic პაკეტი' }}
+          </button>
+        } @else {
+          <button class="btn-fluid secondary" (click)="$event.stopPropagation(); handlePlanClick('BASIC')">დაწყება</button>
+        }
+      </div>
+
+      <!-- Pro Plan (Featured) -->
+      <div class="pricing-card glass-card featured" (click)="joinProWaitlist()">
+        <div class="featured-badge">წინასწარი რეგისტრაცია</div>
+        <div class="card-header">
+          <div class="plan-title-badge-row">
+            <h3 class="plan-name">Pro პაკეტი</h3>
+            <span class="plan-badge pro-badge">Waitlist</span>
+          </div>
+          <div class="price">
+            <span class="currency">₾</span>
+            <span class="amount">8</span>
+            <span class="period">/თვე</span>
+          </div>
+          <p class="enterprise-sub">ხელოვნური ინტელექტი & AI ანალიზი</p>
+        </div>
+        <ul class="features">
+          <li><span class="material-symbols-outlined">check_circle</span> ყველაფერი Basic-დან + შეუზღუდავი ძიება</li>
+          <li><span class="material-symbols-outlined">check_circle</span> სიღრმისეული AI ანალიზი უფრო ძლიერი მოდელით</li>
+          <li><span class="material-symbols-outlined">check_circle</span> უფრო ზუსტად მორგებული და შეფასებული ვაკანსიები</li>
+          <li><span class="material-symbols-outlined">check_circle</span> უფრო ჭკვიანი საძიებო სიტყვების AI გენერაცია</li>
+          <li><span class="material-symbols-outlined">check_circle</span> შეტყობინებების მიღება Email-ზე და Telegram-ზე</li>
+        </ul>
+
+        <button class="btn-fluid primary" 
+                [disabled]="waitlistService.isEnrolled('PRO')" 
+                (click)="$event.stopPropagation(); joinProWaitlist()">
+          {{ waitlistService.isEnrolled('PRO') ? 'Waitlist-ში ხართ ✓' : 'შემატყობინე (Waitlist)' }}
+        </button>
+      </div>
+
+      <!-- Enterprise Plan -->
+      <div class="pricing-card glass-card" (click)="joinEnterpriseWaitlist()">
+        <div class="featured-badge enterprise-top-badge">წინასწარი რეგისტრაცია</div>
+        <div class="card-header">
+          <div class="plan-title-badge-row">
+            <h3 class="plan-name">Enterprise (კომპანიებისთვის)</h3>
+            <span class="plan-badge enterprise-badge">HR & კომპანიები</span>
+          </div>
+          <div class="price price-custom">
+            <span class="amount custom-amount">შეთანხმებით</span>
+          </div>
+          <p class="enterprise-sub">HR მენეჯერებისა და კომპანიებისთვის</p>
+        </div>
+
+        <ul class="features">
+          <li><span class="material-symbols-outlined">check_circle</span> HR & რეკრუტერების პანელი</li>
+          <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების AI მოძიება კონკრეტულ ვაკანსიებზე</li>
+          <li><span class="material-symbols-outlined">check_circle</span> კანდიდატების CV-ების AI ანალიზი & Match Score</li>
+          <li><span class="material-symbols-outlined">check_circle</span> ვაკანსიების მართვა & პირდაპირი კონტაქტი</li>
+          <li><span class="material-symbols-outlined">check_circle</span> API ინტეგრაცია & პერსონალური მენეჯერი</li>
+        </ul>
+        <button class="btn-fluid secondary" 
+                [disabled]="waitlistService.isEnrolled('ENTERPRISE')" 
+                (click)="$event.stopPropagation(); joinEnterpriseWaitlist()">
+          {{ waitlistService.isEnrolled('ENTERPRISE') ? 'Waitlist-ში ხართ ✓' : 'Demo-ს დაჯავშნა' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

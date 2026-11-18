@@ -4,7 +4,7 @@ import { JobsService } from '../Core/Services/jobs-service';
 import { AuthService } from '../Core/Services/auth-service';
 import { User, SubscriptionPlan, SubscriptionDetails } from '../Core/Interfaces/user';
 import { firstValueFrom } from 'rxjs';
-import { AiMatchedJobsResponse, Job, SentJobsResponse, VacancyItem } from '../Core/Interfaces/jobs';
+import { AiMatchedJobsResponse, Job, SearchIntent, SentJobsResponse, VacancyItem } from '../Core/Interfaces/jobs';
 import { SystemStats } from '../Core/Interfaces/stats';
 import { Users } from '../Core/Services/users';
 import { Ai } from '../Core/Services/ai';
@@ -109,6 +109,8 @@ type State = {
     publicJobsDateRange: string;
     publicJobsSalaryOnly: boolean;
     publicJobsCategory: string;
+    /** What the AI read from the last search sentence; null for keyword searches */
+    publicJobsInterpreted: SearchIntent | null;
 
     stats: SystemStats | null;
     statsLoaded: boolean;
@@ -168,6 +170,7 @@ const initialState: State = {
     publicJobsDateRange: 'all',
     publicJobsSalaryOnly: false,
     publicJobsCategory: 'all',
+    publicJobsInterpreted: null,
 
     stats: null,
     statsLoaded: false,
@@ -771,7 +774,7 @@ export const StateStore = signalStore(
                         res = await new Promise((resolve, reject) => {
                             // Unsubscribing aborts the underlying fetch.
                             const sub = jobsService
-                                .getJobs(query, page, source, location, '', publishDateParam, limit, salaryOnly, category)
+                                .search({ query, page, limit, source, location, publishDate: publishDateParam, salaryOnly, category })
                                 .subscribe({ next: resolve, error: reject });
                             abort = () => {
                                 sub.unsubscribe();
@@ -828,6 +831,8 @@ export const StateStore = signalStore(
                         publicJobsDateRange: dateRange,
                         publicJobsSalaryOnly: salaryOnly,
                         publicJobsCategory: category,
+                        // "load more" pages carry the same reading as the first one
+                        ...(append ? {} : { publicJobsInterpreted: res.interpreted ?? null }),
                     });
                 } catch (err) {
                     if (isStale()) {

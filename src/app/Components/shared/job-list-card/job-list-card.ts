@@ -3,9 +3,9 @@ import { RouterModule } from '@angular/router';
 import { Job } from '../../../Core/Interfaces/jobs';
 import { brandIcon, CompanyLogos } from '../../../Core/Utils/company-logos';
 import { extractSalary } from '../../../Core/Utils/salary-extractor';
-import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { detectJobSource, formatJobDate, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
 import { FavoriteButton } from '../favorite-button/favorite-button';
+import { JobLink } from '../../../Core/Directives/job-link.directive';
 
 export interface JobCardItem {
   id: number;
@@ -15,7 +15,6 @@ export interface JobCardItem {
   source: string;
   salaryRange?: string;
   deadline: string;
-  slug: string;
   companyLogo: string | null;
 }
 
@@ -28,7 +27,6 @@ export function toJobCardItem(job: Job): JobCardItem {
     source: detectJobSource(job.source || '', job.link || '', job.company),
     salaryRange: extractSalary(job),
     deadline: job.deadline ? formatJobDate(job.deadline) : '',
-    slug: generateJobSlug(job.vacancy, job.company, job.id),
     companyLogo: brandIcon(job.companyKey) || job.companyLogo || null,
   };
 }
@@ -37,7 +35,7 @@ export function toJobCardItem(job: Job): JobCardItem {
 @Component({
   selector: 'app-job-list-card',
   standalone: true,
-  imports: [RouterModule, FavoriteButton],
+  imports: [JobLink, RouterModule, FavoriteButton],
   templateUrl: './job-list-card.html',
   styleUrl: './job-list-card.scss',
 })

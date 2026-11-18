@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
-import { Job, JobsResponse, SentJobsResponse } from '../Interfaces/jobs';
+import { Job, JobsResponse, SearchResponse, SentJobsResponse } from '../Interfaces/jobs';
 import { SystemStats } from '../Interfaces/stats';
 import { environment } from '../../../environments/environment';
 import { skipLoading } from '../loading/skip-loading.component';
@@ -63,10 +63,48 @@ export class JobsService {
     });
   }
 
-  /** One company's vacancies, matched exactly on its normalized name. */
-  getCompanyJobs(companyKey: string, page: number = 1, limit: number = 30): Observable<JobsResponse> {
-    const params = new HttpParams().set('companyKey', companyKey).set('page', page).set('limit', limit);
-    return this.http.get<JobsResponse>(`${this.url}/job/all`, { params, context: new HttpContext().set(skipLoading, true) });
+  /**
+   * The AI search: a sentence ("მინდა ბუღალტრად ვიმუშაო ბათუმში") is read into keywords, city and
+   * category on the API; short searches are keywords as-is. Nothing comes back without a query, city,
+   * category or salaryOnly, and a search shows at most 60 vacancies.
+   */
+  search(params: {
+    query?: string;
+    page?: number;
+    limit?: number;
+    source?: string;
+    location?: string;
+    publishDate?: string;
+    salaryOnly?: boolean;
+    category?: string;
+  }): Observable<SearchResponse> {
+    let httpParams = new HttpParams().set('page', params.page ?? 1).set('limit', params.limit ?? 10);
+    const set = (name: string, value?: string) => {
+      if (value && value.trim() && value !== 'all') httpParams = httpParams.set(name, value.trim());
+    };
+    set('query', params.query);
+    set('source', params.source);
+    set('location', params.location);
+    set('publishDate', params.publishDate);
+    set('category', params.category);
+    if (params.salaryOnly) httpParams = httpParams.set('salary', 'true');
+    return this.http.get<SearchResponse>(`${this.url}/search`, {
+      params: httpParams,
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
+  /** What visitors search for most (anonymous, recent, only searches that found vacancies) */
+  getPopularSearches(limit = 10): Observable<{ queries: string[] }> {
+    return this.http.get<{ queries: string[] }>(`${this.url}/search/popular`, {
+      params: new HttpParams().set('limit', limit),
+      context: new HttpContext().set(skipLoading, true),
+    });
+  }
+
+  /** "Open the original": counts the click on the API, which redirects to the source site. */
+  clickOutUrl(jobId: number | string): string {
+    return `${this.url}/search/go/${encodeURIComponent(String(jobId))}`;
   }
 
   getUserSentJobs(page: number = 1, limit: number = 10): Observable<SentJobsResponse> {

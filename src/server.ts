@@ -11,11 +11,9 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { BlockList, isIP } from 'node:net';
 import { join } from 'node:path';
 import { API_TARGET } from './environments/api-target';
-import { INTERNAL_API_KEY, PROXY_SHARED_SECRET } from './environments/server-secrets';
-import { generateJobSlug } from './app/Core/Utils/slug-generator';
-import { parseJobDate, toIsoDate } from './app/Core/Utils/date-parse';
-import { LANDING_PAGES } from './app/Core/Utils/landing-pages';
-import { startIndexingNotifier } from './seo-indexing';
+import { PROXY_SHARED_SECRET } from './environments/server-secrets';
+import { extractJobIdFromSlug } from './app/Core/Utils/slug-generator';
+import { findCityLanding, getLandingPage, landingSearchParams, type LandingPage } from './app/Core/Utils/landing-pages';
 
 const SITE_URL = 'https://jobup.ge';
 
@@ -142,64 +140,80 @@ const withQuery = (req: express.Request, path: string) => {
   const i = req.originalUrl.indexOf('?');
   return i === -1 ? path : path + req.originalUrl.slice(i);
 };
-app.get('/', (req, res) => res.redirect(301, withQuery(req, '/vacancies')));
-app.get('/home/vacancies', (req, res) => res.redirect(301, withQuery(req, '/vacancies')));
+// Home is the search; the old vacancies page isn't used any more (its search parameters work on home)
+app.get('/', (req, res) => res.redirect(301, withQuery(req, '/home')));
+app.get('/vacancies', (req, res) => res.redirect(301, withQuery(req, '/home')));
+app.get('/home/vacancies', (req, res) => res.redirect(301, withQuery(req, '/home')));
 app.get('/home/vacancies/:slug', (req, res) =>
   res.redirect(301, withQuery(req, `/vacancies/${encodeURIComponent(req.params.slug)}`)),
 );
 app.get('/privacy-policy', (req, res) => res.redirect(301, '/privacy'));
 app.get('/terms-and-conditions', (req, res) => res.redirect(301, '/terms'));
 
+/** The home search filtered the way a keyword search was: /home?location=თბილისი&search=IT */
+const homeSearchUrl = (page: LandingPage) => '/home?' + new URLSearchParams(landingSearchParams(page)).toString();
+
 /**
- * Dynamic sitemap of every active vacancy. Fetched from the backend's internal
- * /job/sitemap endpoint (the public list is capped) and cached in memory for an hour.
+ * Neither vacancies nor keyword searches have pages of their own any more; their old URLs (from
+ * Google or shared links) move permanently to the home search, so the ranking they earned stays
+ * with Job Up. A keyword (/vacancies/tbilisi) opens the search with its filters; a vacancy, the
+ * search in its city, or plain home when the city isn't known or the job is gone.
+ */
+app.get('/vacancies/:slug', async (req, res) => {
+  const slug = req.params.slug;
+  const landing = getLandingPage(slug);
+  if (landing) return res.redirect(301, homeSearchUrl(landing));
+
+  let target = '/home';
+  const id = extractJobIdFromSlug(slug);
+  if (id && /^\d+$/.test(id)) {
+    try {
+      const response = await fetch(`${API_TARGET}/job/${id}`, { signal: AbortSignal.timeout(3000) });
+      if (response.ok) {
+        const city = findCityLanding(((await response.json()) as { location?: string })?.location);
+        if (city) target = homeSearchUrl(city);
+      }
+    } catch {
+      // Backend slow or down: the search is still a fine place to land
+    }
+  }
+  res.redirect(301, target);
+});
+
+/**
+ * Company pages are gone for good: they were what a company found when it searched its own name.
+ * 410 (not 404) tells search engines to drop them quickly.
+ */
+app.get('/companies/:key', (_req, res) => {
+  res
+    .status(410)
+    .set('X-Robots-Tag', 'noindex')
+    .type('html')
+    .send(
+      '<!doctype html><html lang="ka"><head><meta charset="utf-8"><meta name="robots" content="noindex">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1"><title>გვერდი აღარ არსებობს | Job Up</title></head>' +
+        '<body style="font-family:Arial,sans-serif;text-align:center;padding:64px 16px;color:#1f2937">' +
+        '<h1 style="font-size:22px">ეს გვერდი აღარ არსებობს</h1>' +
+        '<p><a href="/home" style="color:#0e6094">მოძებნე ვაკანსიები Job Up-ზე →</a></p></body></html>',
+    );
+});
+
+/**
+ * Sitemap: the site's own pages. Never single vacancies, companies or the old keyword addresses (they redirect).
  */
 const SITEMAP_TTL_MS = 60 * 60 * 1000;
 let sitemapCache: { xml: string; expiresAt: number } | null = null;
-let sitemapInFlight: Promise<string> | null = null;
 
-const xmlEscape = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-async function buildSitemap(): Promise<string> {
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-
-  const todayIso = today.toISOString().slice(0, 10);
+function buildSitemap(): string {
+  const todayIso = new Date().toISOString().slice(0, 10);
   const urls: string[] = [
-    `<url><loc>${SITE_URL}/vacancies</loc><lastmod>${todayIso}</lastmod><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
-    `<url><loc>${SITE_URL}/home</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`,
+    `<url><loc>${SITE_URL}/home</loc><lastmod>${todayIso}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`,
     `<url><loc>${SITE_URL}/employers</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`,
     `<url><loc>${SITE_URL}/about</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
     `<url><loc>${SITE_URL}/contact</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>`,
     `<url><loc>${SITE_URL}/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
     `<url><loc>${SITE_URL}/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>`,
-    ...LANDING_PAGES.map(
-      (p) => `<url><loc>${SITE_URL}/vacancies/${p.slug}</loc><lastmod>${todayIso}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`,
-    ),
   ];
-  const seen = new Set<string>();
-
-  const response = await fetch(`${API_TARGET}/job/sitemap`, {
-    headers: { 'X-Internal-Key': INTERNAL_API_KEY },
-  });
-  if (!response.ok) throw new Error(`Backend responded ${response.status} for /job/sitemap`);
-  const { jobs = [] } = (await response.json()) as {
-    jobs?: { id: number; vacancy?: string; company?: string; publishDate?: string; deadline?: string }[];
-  };
-
-  for (const job of jobs) {
-    if (!job?.id || seen.has(String(job.id))) continue;
-    const deadline = parseJobDate(job.deadline);
-    if (deadline && deadline < today) continue; // expired
-    seen.add(String(job.id));
-
-    const loc = `${SITE_URL}/vacancies/${generateJobSlug(job.vacancy, job.company, job.id)}`;
-    const lastmod = toIsoDate(job.publishDate);
-    urls.push(
-      `<url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>daily</changefreq><priority>0.7</priority></url>`,
-    );
-  }
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -210,19 +224,10 @@ async function buildSitemap(): Promise<string> {
   ].join('\n');
 }
 
-app.get('/sitemap.xml', async (_req, res) => {
+app.get('/sitemap.xml', (_req, res) => {
+  // Rebuilt hourly so <lastmod> stays current
   if (!sitemapCache || sitemapCache.expiresAt < Date.now()) {
-    try {
-      sitemapInFlight ??= buildSitemap().finally(() => (sitemapInFlight = null));
-      sitemapCache = { xml: await sitemapInFlight, expiresAt: Date.now() + SITEMAP_TTL_MS };
-    } catch (err) {
-      console.error('Sitemap generation failed:', err);
-      if (!sitemapCache) {
-        res.status(503).set('Retry-After', '300').send('Sitemap temporarily unavailable');
-        return;
-      }
-      // Otherwise fall through and serve the stale copy.
-    }
+    sitemapCache = { xml: buildSitemap(), expiresAt: Date.now() + SITEMAP_TTL_MS };
   }
   res.type('application/xml').set('Cache-Control', 'public, max-age=3600').send(sitemapCache.xml);
 });
@@ -263,8 +268,6 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
 
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
-
-  startIndexingNotifier({ apiTarget: API_TARGET, siteUrl: SITE_URL, internalApiKey: INTERNAL_API_KEY });
 }
 
 /**

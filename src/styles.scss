@@ -485,6 +485,12 @@ body.modal-open {
 // The mobile bottom nav (z-index 1040) sits above the dialog layer (1000) and would cover the
 // bottom of any sheet; Material marks the page with this class while a dialog is open.
 // Pages opened from a personal link (interview invitation) don't need it either.
+// The vacancy modal scrolls on its own: hide the page's scrollbar behind it (the CDK keeps it
+// showing to avoid a layout shift, which left two scrollbars side by side)
+html.cdk-global-scrollblock:has(.job-details-dialog) {
+  overflow-y: hidden;
+}
+
 .cdk-global-scrollblock .mobile-bottom-nav,
 .standalone-page .mobile-bottom-nav {
   display: none !important;
@@ -917,5 +923,27 @@ body.modal-open {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
+  }
+}
+
+// The vacancy modal (JobModalService): the card draws its own rounded background and scrolls inside
+.job-details-dialog {
+  .mat-mdc-dialog-surface,
+  .mdc-dialog__surface {
+    background: transparent !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28) !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+  }
+}
+
+// Pricing and contact (SiteModalsService): the component is the card
+.site-modal {
+  .mat-mdc-dialog-surface,
+  .mdc-dialog__surface {
+    background: transparent !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28) !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
   }
 }

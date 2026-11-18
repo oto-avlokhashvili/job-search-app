@@ -1,6 +1,6 @@
 import { CompanyLogos } from '../../../Core/Utils/company-logos';
 import { Component, ElementRef, inject, Injector, OnInit, signal, computed, effect, ViewChild, AfterViewInit, OnDestroy, NgZone, HostListener, afterNextRender, untracked } from '@angular/core';
-import { Router, RouterModule, ActivatedRoute, NavigationStart } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../Core/Services/auth-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -8,16 +8,19 @@ import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { StateStore, detectJobSource, formatJobDate, JOBUP_LOGO, JOBUP_SOURCE } from '../../../Store/state.store';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import type { SavedCvSubmission } from '../public-cv-modal/public-cv-modal';
-import { PUBLIC_CV_STORAGE_KEY } from '../../../Core/Utils/public-cv-storage';
+import { CvSearchService } from '../../../Core/Services/cv-search.service';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs';
-import { Cv, PublicCvSearchResult } from '../../../Core/Services/cv';
+import { PublicCvSearchResult } from '../../../Core/Services/cv';
 import { JobsService } from '../../../Core/Services/jobs-service';
 import { extractSalary, hasSalary } from '../../../Core/Utils/salary-extractor';
-import { generateJobSlug } from '../../../Core/Utils/slug-generator';
 import { SeoService } from '../../../Core/Services/seo.service';
 import { FavoriteButton } from '../../shared/favorite-button/favorite-button';
 import { findJobCategory, JOB_CATEGORIES } from '../../../Core/Utils/job-categories';
+import { JobLink } from '../../../Core/Directives/job-link.directive';
+import { AiSearchSteps } from '../../shared/ai-search-steps/ai-search-steps';
+import { VacancyCard } from '../../shared/vacancy-card/vacancy-card';
+import { getLandingPage } from '../../../Core/Utils/landing-pages';
+import { VACANCY_TOTAL } from '../../../Core/Constants/vacancy-total';
 
 export interface VacancyItem {
   id: number;
@@ -34,16 +37,10 @@ export interface VacancyItem {
   companyKey?: string | null;
 }
 
-/**
- * The job last opened from the list and where its row sat on screen, so going back from the
- * job puts that row in the same spot. Lives outside the component, which is destroyed meanwhile.
- */
-let lastOpenedJob: { url: string; jobId: number; viewportTop: number; scrollY: number } | null = null;
-
 @Component({
   selector: 'app-vacancies',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule, FavoriteButton],
+  imports: [JobLink, AiSearchSteps, VacancyCard, RouterModule, CommonModule, ReactiveFormsModule, MatTooltipModule, FavoriteButton],
   templateUrl: './vacancies.html',
   styleUrl: './vacancies.scss',
 })
@@ -58,7 +55,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   private alertify = inject(AlertifyService);
   private seo = inject(SeoService);
   private dialog = inject(MatDialog);
-  private cvService = inject(Cv);
 
   @ViewChild('particleCanvas') particleCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('searchContainer') searchContainerRef!: ElementRef;
@@ -77,6 +73,8 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
   totalRecords = this.stateStore.publicJobsTotal;
   dbTotalRecords = this.stateStore.publicDbTotal;
+  /** The header says "10,000+", never the exact number (see vacancy-total.ts) */
+  readonly vacancyTotal = VACANCY_TOTAL;
   hasMoreJobs = this.stateStore.publicHasMore;
 
   // Filter Form Controls
@@ -109,32 +107,17 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   chipsCanScrollLeft = signal(false);
   chipsCanScrollRight = signal(true);
 
-  // "Popular" row under the filters. Categories filter the list in place; companies open the
-  // company's page (/companies/:key, like the company names in the list).
+  // "Popular" row under the filters. Categories filter the list in place; popular searches open
+  // their keyword page (/vacancies/tbilisi, ...), the pages search engines index.
   readonly popularCategories = ['it', 'sales', 'finance', 'medicine', 'hospitality']
     .map((key) => findJobCategory(key)!)
     .filter(Boolean);
 
-  /**
-   * The biggest employers on the site (live data, Nov 2026), busiest first. `key` is the company's
-   * companyKey (the page shows that one key's vacancies); `logo` is its logo on logos.jobup.ge.
-   */
-  readonly popularCompanies: { label: string; key: string; logo?: string }[] = [
-    { label: 'კრედო ბანკი', key: 'კრედობანკი', logo: 'https://logos.jobup.ge/logos/6-851a1ee7bd15-128.webp' },
-    { label: 'ლიბერთი', key: 'ლიბერთიბაზისბანკჯგუფი', logo: 'https://logos.jobup.ge/logos/97-ed480a47cd29-128.webp' },
-    { label: 'TBC ბანკი', key: 'თიბისი', logo: '/icons/tbc.jpg' },
-    { label: 'საქართველოს ბანკი', key: 'საქართველოსბანკი', logo: '/icons/bog.png' },
-    { label: 'აჭარა ჯგუფი', key: 'აჭარაჯგუფი', logo: 'https://logos.jobup.ge/logos/371-3c9e3a49800e-128.webp' },
-    { label: 'მზიური', key: 'მზიური', logo: 'https://logos.jobup.ge/logos/19-6e80d63d8194-128.webp' },
-    { label: 'ლაზიკა კაპიტალი', key: 'ლაზიკაკაპიტალი', logo: 'https://logos.jobup.ge/logos/280-16f2c1d6adf5-128.webp' },
-    { label: 'ავერსის კლინიკა', key: 'ავერსისკლინიკა', logo: 'https://logos.jobup.ge/logos/1109-fb315f54ccd6-128.webp' },
-    { label: 'ელიტი', key: 'ელიტი', logo: 'https://logos.jobup.ge/logos/1081-7ca1298eec25-128.webp' },
-    { label: 'Domino', key: 'ჰიპერმარკეტიdomino', logo: 'https://logos.jobup.ge/logos/158-8ecabc54c5e1-128.webp' },
-    { label: 'Concentrix', key: 'concentrix', logo: 'https://logos.jobup.ge/logos/1000-b66ab90e8e43-128.webp' },
-    { label: 'ზუმერი', key: 'ზუმერი', logo: 'https://logos.jobup.ge/logos/253-bb0965bc38c5-128.webp' },
-    { label: 'ევექსი', key: 'ევექსი', logo: 'https://logos.jobup.ge/logos/22-9348c9f52291-128.webp' },
-    { label: 'იბერია სტარ გრუპი', key: 'იბერიასტარგრუპი', logo: 'https://logos.jobup.ge/logos/311-f38ea57ebaef-128.webp' },
-  ];
+  /** The searches people make most, each with its own keyword page */
+  readonly popularSearches = ['tbilisi', 'batumi', 'kutaisi', 'tbilisi-it', 'tbilisi-sales', 'batumi-sales', 'remote', 'part-time', 'internship', 'abroad']
+    .map((slug) => getLandingPage(slug)!)
+    .filter(Boolean)
+    .map((page) => ({ slug: page.slug, label: page.h1, icon: page.kind === 'city' ? 'location_on' : 'search' }));
 
   /** Bottom of the list: scrolling near it loads the next page (see setupInfiniteScroll). */
   @ViewChild('loadMoreSentinel') set loadMoreSentinel(ref: ElementRef<HTMLElement> | undefined) {
@@ -153,12 +136,12 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
   }
   isFilterModalOpen = signal<boolean>(false);
-  uploadedCv = signal<SavedCvSubmission | null>(null);
-  // Signed-in users can search with the CV saved on their account (uploaded on the profile page).
-  accountCv = computed(() => (this.authService.isLoggedIn() ? this.stateStore.userCv() : null));
-  /** A CV this page can search with; the browser's own upload wins over the account CV. */
-  hasCv = computed(() => !!this.uploadedCv() || !!this.accountCv());
-  cvFileName = computed(() => this.uploadedCv()?.fileName || this.accountCv()?.originalName || '');
+  // The CV to search with: this browser's upload, else the account's (shared with the home hero)
+  private cvSearch = inject(CvSearchService);
+  uploadedCv = this.cvSearch.uploadedCv;
+  accountCv = this.cvSearch.accountCv;
+  hasCv = this.cvSearch.hasCv;
+  cvFileName = this.cvSearch.cvFileName;
   // CV mode: the list shows vacancies matched to the uploaded CV instead of the filtered feed.
   cvMode = signal(false);
   cvLoading = signal(false);
@@ -212,17 +195,32 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   allJobs = this.stateStore.publicJobs;
   filteredJobs = this.stateStore.publicJobs;
 
+  /** The most one search shows (the API's MAX_SEARCH_RESULTS) */
+  readonly maxResults = 60;
+  /** What the AI read from the last search sentence (null for keyword searches) */
+  aiSummary = computed(() => {
+    const ai = this.stateStore.publicJobsInterpreted();
+    return ai ? [ai.keywords, ai.city].filter(Boolean).join(' · ') || 'შენი მოთხოვნით' : null;
+  });
+  /** The last search had something to search for: Job Up shows nothing until it does */
+  hasSearch = computed(
+    () =>
+      !!this.stateStore.publicJobsQuery().trim() ||
+      this.stateStore.publicJobsLocation() !== 'all' ||
+      this.stateStore.publicJobsCategory() !== 'all' ||
+      this.stateStore.publicJobsSalaryOnly(),
+  );
+
   private searchSub?: any;
   private liveSearchSub?: any;
   private queryParamsSub?: any;
-  private navigationSub?: any;
   // Live search while typing must not scroll the input out of view; explicit filter changes do.
   private scrollToResults = true;
 
   ngOnInit() {
     this.seo.update({
       title: 'ვაკანსიები და სამსახური საქართველოში | Job Up',
-      description: 'იპოვე სამსახური მარტივად — ყველა აქტიური ვაკანსია საქართველოში Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში. ახალი ვაკანსიები ყოველდღე.',
+      description: 'ეძებ სამსახურს? Job Up აერთიანებს საქართველოს ყველა ვაკანსიას ერთ სივრცეში. ატვირთე CV ან დაწერე რას ეძებ — AI იპოვის საუკეთესო ვარიანტებს.',
       // Filtered views (?search, ?location, ?source) all consolidate onto the main list.
       path: '/vacancies',
     });
@@ -262,10 +260,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       // loadJobs is a no-op when the same filters are already loaded.
       this.loadJobs();
     });
-
-    this.navigationSub = this.router.events
-      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
-      .subscribe(e => this.rememberOpenedJob(e.url));
   }
 
   /** Writes the current filter controls to the URL; the queryParamMap subscription loads them. */
@@ -296,7 +290,9 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     afterNextRender(() => {
-      this.loadUploadedCv();
+      this.cvSearch.loadUploadedCv();
+      // ?mode=cv (the home hero's "all CV results"): open straight into CV search
+      if (this.route.snapshot.queryParamMap.get('mode') === 'cv') this.setSearchMode('cv');
       this.loadCategoryCounts();
       this.setupInfiniteScroll();
       if (this.authService.isLoggedIn()) this.stateStore.getCv();
@@ -323,7 +319,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     if (this.queryParamsSub) {
       this.queryParamsSub.unsubscribe();
     }
-    this.navigationSub?.unsubscribe();
     if (typeof document !== 'undefined') {
       document.body.classList.remove('modal-open');
     }
@@ -531,80 +526,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       }
       previousLoggedIn = loggedIn;
     });
-
-    // Coming back from the job that was opened from this list (Back, the job page's back
-    // button, its breadcrumb): put that job where it was. While this runs, the previous
-    // navigation is still the job page's.
-    const cameFrom = this.router.lastSuccessfulNavigation()?.finalUrl?.toString() ?? '';
-    if (lastOpenedJob && cameFrom.startsWith('/vacancies/')) {
-      afterNextRender(() => this.holdOpenedJob(), { injector: this.injector });
-    }
-  }
-
-  /**
-   * The router scrolls to the top after the page renders, and a smooth scroll still running
-   * from the job page can land even later, so keep the job in place for a moment instead of
-   * scrolling once. Any scrolling by the user ends it.
-   */
-  private holdOpenedJob() {
-    const until = performance.now() + 1500;
-    let stopped = false;
-    const stop = () => (stopped = true);
-    const userEvents = ['wheel', 'touchstart', 'keydown', 'mousedown'];
-    userEvents.forEach(type => window.addEventListener(type, stop, { once: true, passive: true }));
-
-    const row = this.restoreOpenedJob();
-    row?.classList.add('just-visited');
-    setTimeout(() => row?.classList.remove('just-visited'), 1600);
-
-    const tick = () => {
-      if (stopped || performance.now() > until) {
-        userEvents.forEach(type => window.removeEventListener(type, stop));
-        lastOpenedJob = null;
-        return;
-      }
-      this.restoreOpenedJob();
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }
-
-  /**
-   * Runs as navigation leaves the list, while its rows are still on screen. A (click) on the
-   * rows isn't enough: on rows hydrated from the server render it doesn't fire.
-   */
-  private rememberOpenedJob(url: string) {
-    lastOpenedJob = null;
-    // CV results aren't kept when leaving the page, so there is nothing to return to.
-    if (this.cvMode()) return;
-    const path = decodeURIComponent(url.split(/[?#]/)[0]);
-    const job = this.displayedJobs().find(j => `/vacancies/${this.getJobSlug(j)}` === path);
-    if (!job) return;
-    const row = Array.from(document.querySelectorAll<HTMLElement>(`[data-job-id="${job.id}"]`))
-      .find(el => el.offsetParent !== null);
-    if (!row) return;
-    lastOpenedJob = {
-      url: this.router.url,
-      jobId: job.id,
-      viewportTop: row.getBoundingClientRect().top,
-      scrollY: window.scrollY,
-    };
-  }
-
-  /** Scrolls the opened job back to where it sat on screen; returns its row, if it is listed. */
-  private restoreOpenedJob(): HTMLElement | undefined {
-    const saved = lastOpenedJob;
-    if (!saved || saved.url !== this.router.url) return;
-    // The table (desktop) and the cards (mobile) are both rendered; use whichever is visible.
-    const row = Array.from(document.querySelectorAll<HTMLElement>(`[data-job-id="${saved.jobId}"]`))
-      .find(el => el.offsetParent !== null);
-    if (!row) {
-      if (Math.abs(window.scrollY - saved.scrollY) > 1) window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
-      return;
-    }
-    const offset = row.getBoundingClientRect().top - saved.viewportTop;
-    if (Math.abs(offset) > 1) window.scrollBy({ top: offset, behavior: 'instant' });
-    return row;
   }
 
   async loadJobs(query?: string, append: boolean = false, force: boolean = false) {
@@ -680,11 +601,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadMore() {
-    if (this.currentPage >= 5 && !this.authService.isLoggedIn()) {
-      this.alertify.warning('გთხოვთ გაიაროთ ავტორიზაცია დამატებითი ვაკანსიების სანახავად');
-      this.authService.openAuthModal('register');
-      return;
-    }
     this.loadJobs(this.searchFilter.value, true);
   }
 
@@ -958,23 +874,11 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async openCvSearchModal(reupload = false) {
-    // Loaded on demand, like the chat widget: most visitors never open it.
-    const { PublicCvModal } = await import('../public-cv-modal/public-cv-modal');
-    const ref = this.dialog.open(PublicCvModal, {
-      width: '520px',
-      maxWidth: '95vw',
-      panelClass: 'public-cv-dialog',
-      autoFocus: false,
-      data: { mode: 'search', reupload },
-    });
-    ref.afterClosed().subscribe((result) => {
-      this.loadUploadedCv();
-      // 'search' = the modal's search button; true = closed after a successful upload.
-      if (result === 'search' || (result === true && this.cvMode())) {
-        this.cvMode.set(true);
-        this.searchByCv();
-      }
-    });
+    // The modal's search button, or a finished upload while CV mode is on
+    if (await this.cvSearch.openUploadModal({ reupload, searchAfterUpload: this.cvMode() })) {
+      this.cvMode.set(true);
+      this.searchByCv();
+    }
   }
 
   /** The search switch: manual filters (default) or CV search, never both at once. */
@@ -986,17 +890,6 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     if (this.cvMode()) return;
     this.cvMode.set(true);
     this.searchByCv();
-  }
-
-  /** The public CV modal records the last upload in localStorage; mirror it in the banner. */
-  private loadUploadedCv() {
-    try {
-      const stored = localStorage.getItem(PUBLIC_CV_STORAGE_KEY);
-      const parsed: SavedCvSubmission | null = stored ? JSON.parse(stored) : null;
-      this.uploadedCv.set(parsed?.email ? parsed : null);
-    } catch {
-      this.uploadedCv.set(null);
-    }
   }
 
   /**
@@ -1015,7 +908,7 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.searchState = 'searching';
     try {
       // CV only: the manual filters are hidden in CV mode and don't narrow the results.
-      const res = await this.fetchCvMatches();
+      const res = await this.cvSearch.search();
       this.cvProfile.set(res.profile);
       this.cvJobs.set(
         res.jobs.map((job) => ({
@@ -1037,55 +930,11 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
       this.scroll('results-container');
     } catch (err: any) {
       this.searchState = 'idle';
-      if (err?.status === 410 && !this.hasCv()) {
-        // The saved CV is gone from the database: the empty state asks for a new upload.
-      } else if (err?.status === 429) {
-        const minutes = Math.ceil((err.error?.retryAfter || 3600) / 60);
-        this.cvError.set(`ძიების ლიმიტი ამოიწურა, სცადეთ ${minutes} წუთში`);
-      } else {
-        this.cvError.set(err?.error?.message || 'CV-ით ძიება ვერ მოხერხდა, სცადეთ თავიდან');
-      }
+      // '' when the saved CV is gone: the empty state then asks for a new upload
+      this.cvError.set(this.cvSearch.errorMessage(err));
     } finally {
       this.cvLoading.set(false);
     }
-  }
-
-  /**
-   * The browser that uploaded the CV stays trusted: an upload saved without a token (from before
-   * CV search) or whose token was replaced from another device is reconnected silently instead
-   * of asking for the file again.
-   */
-  private async fetchCvMatches(): Promise<PublicCvSearchResult> {
-    const saved = this.uploadedCv();
-    if (saved) {
-      try {
-        const token = saved.searchToken || (await this.reconnectSavedCv(saved));
-        try {
-          return await firstValueFrom(this.cvService.searchPublicCv(token));
-        } catch (err: any) {
-          if (err?.status !== 401 || !saved.searchToken) throw err;
-          return await firstValueFrom(this.cvService.searchPublicCv(await this.reconnectSavedCv(saved)));
-        }
-      } catch (err: any) {
-        // 410 = no such CV in the database any more (a 404 is just an API without this route); fall back to the account CV if there is one.
-        if (err?.status !== 410) throw err;
-        this.dropSavedCv();
-        if (!this.accountCv()) throw err;
-      }
-    }
-    return firstValueFrom(this.cvService.searchMyCv());
-  }
-
-  /** Gets a fresh search token for the saved upload and stores it, so this happens only once. */
-  private async reconnectSavedCv(saved: SavedCvSubmission): Promise<string> {
-    if (!saved.fileName) throw { status: 410 };
-    const res = await firstValueFrom(this.cvService.reconnectPublicCv(saved.email, saved.fileName));
-    const updated: SavedCvSubmission = { ...saved, searchToken: res.searchToken, searchAvailable: res.searchAvailable };
-    try {
-      localStorage.setItem(PUBLIC_CV_STORAGE_KEY, JSON.stringify(updated));
-    } catch {}
-    this.uploadedCv.set(updated);
-    return res.searchToken;
   }
 
   exitCvMode() {
@@ -1095,23 +944,12 @@ export class Vacancies implements OnInit, AfterViewInit, OnDestroy {
     this.cvError.set('');
   }
 
-  private dropSavedCv() {
-    try {
-      localStorage.removeItem(PUBLIC_CV_STORAGE_KEY);
-    } catch {}
-    this.uploadedCv.set(null);
-  }
-
   scrollToFilters() {
     if (window.innerWidth <= 991) {
       this.openFilterModal();
     } else {
       this.searchContainerRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }
-
-  getJobSlug(job: { id: number | string; vacancy?: string; company?: string }): string {
-    return generateJobSlug(job.vacancy, job.company, job.id);
   }
 
   updateChipsArrows() {

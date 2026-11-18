@@ -8,6 +8,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { SubscriptionModal } from '../subscription-modal/subscription-modal';
 import { AlertifyService } from '../../../Core/Services/alertify.service';
 import { FavoritesService } from '../../../Core/Services/favorites.service';
+import { HomeResetService } from '../../../Core/Services/home-reset.service';
+import { SiteModalsService } from '../../../Core/Services/site-modals.service';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +18,9 @@ import { FavoritesService } from '../../../Core/Services/favorites.service';
   styleUrl: './header.scss',
 })
 export class Header {
+  private homeReset = inject(HomeResetService);
+  /** Pricing and contact are dialogs now */
+  modals = inject(SiteModalsService);
   menuOpen = false;
   authService = inject(AuthService);
   themeService = inject(ThemeService);
@@ -102,6 +107,15 @@ export class Header {
   }
   private isScrolling = false;
   private scrollTimeout: any;
+
+  /** The logo: a clean home page, at the top (the search, filters and results are dropped) */
+  goHome() {
+    if (this.isHome()) this.homeReset.request();
+    void this.router.navigate(['/home']).then(() => {
+      this.activeSection.set('features');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 
   scroll(target: string) {
     if (!this.isHome()) {

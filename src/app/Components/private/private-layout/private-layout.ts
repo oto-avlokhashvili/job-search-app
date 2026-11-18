@@ -111,6 +111,6 @@ export class PrivateLayout {
   }
 
   logout() {
-    this.authService.logOut().then(() => this.router.navigate(['/vacancies']));
+    this.authService.logOut().then(() => this.router.navigate(['/home']));
   }
 }

@@ -1,28 +1,18 @@
 # Job Up (jobup.ge)
 
-> Job Up is a Georgian-language job search platform for Georgia. It aggregates active vacancies from Jobs.ge, HR.ge, Awork.ge, Myjobs.ge and LinkedIn in one place, updated daily, and offers an AI agent that matches a user's CV to new vacancies and notifies them via Telegram or email.
+> Job Up's AI searches the whole internet for job vacancies in Georgia ("სამსახურის ძებნის ჭკვიანი გზა"), so job seekers don't need to know where a job was posted. Describe the job you want or upload a CV: the AI finds the vacancies that fit and sends new matches via Telegram or email. Employers use the same AI to search and shortlist candidates.
 
 Language: Georgian (ka). Coverage: Georgia (Tbilisi, Batumi, Kutaisi, Rustavi and other cities, plus remote and abroad roles).
 
 ## Main pages
-- [All vacancies](https://jobup.ge/vacancies): searchable list of all active vacancies with filters for city, category and work type.
-- [About Job Up and the AI job agent](https://jobup.ge/home): how CV matching and notifications work.
+- [AI job search](https://jobup.ge/home): describe the job you want or upload a CV, and the AI finds matching vacancies. Filters for city, category, salary and work type.
+- [For employers](https://jobup.ge/employers): AI candidate search and shortlisting.
+- [About Job Up](https://jobup.ge/about)
 
-## Browse by city
-- [Jobs in Tbilisi](https://jobup.ge/vacancies/tbilisi)
-- [Jobs in Batumi](https://jobup.ge/vacancies/batumi)
-- [Jobs in Kutaisi](https://jobup.ge/vacancies/kutaisi)
-- [Jobs in Rustavi](https://jobup.ge/vacancies/rustavi)
-- [Jobs abroad](https://jobup.ge/vacancies/abroad)
-
-## Browse by work type
-- [Remote work](https://jobup.ge/vacancies/remote)
-- [Part-time work](https://jobup.ge/vacancies/part-time)
-- [Internships](https://jobup.ge/vacancies/internship)
-
-## Vacancy pages
-Each vacancy has its own page at https://jobup.ge/vacancies/<title-company-id> with the role, company, location, deadline, salary when published, and a link to apply. Vacancies carry schema.org JobPosting markup. The full list of current vacancy URLs is in https://jobup.ge/sitemap.xml.
+## Searches
+The search takes its filters from the address: `https://jobup.ge/home?location=<city>&search=<words>`, for example [jobs in Tbilisi](https://jobup.ge/home?location=%E1%83%97%E1%83%91%E1%83%98%E1%83%9A%E1%83%98%E1%83%A1%E1%83%98). Each vacancy opens over the search at `https://jobup.ge/home?job=<id>`, with a link to apply on the original source.
 
 ## Optional
+- [Contact](https://jobup.ge/contact)
 - [Privacy policy](https://jobup.ge/privacy)
 - [Terms and conditions](https://jobup.ge/terms)

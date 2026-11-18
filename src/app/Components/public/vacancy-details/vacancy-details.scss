@@ -1759,10 +1759,9 @@
 
 
 // ── Quick apply ──
-// The apply button sits in the top bar, opposite the back button and looking just like it (same
-// colors, 36px; 30px on phones), with a soft pulsing ring so it's noticed
+// The apply button sits at the left of the modal's top bar (the ✕ is at the right), 36px; 30px on
+// phones, with a soft pulsing ring so it's noticed
 :host .details-top-nav .btn-nav-apply {
-  margin-left: auto;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -1771,7 +1770,7 @@
   box-sizing: border-box;
   line-height: 1;
   padding: 0 14px;
-  // The back button's colors (.btn-back-nav)
+  // Soft tint, filled in on hover
   border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
   border-radius: 10px;
   background: var(--surface-container-low, #ebf1ff);
@@ -1788,7 +1787,7 @@
     font-size: 18px;
   }
 
-  // Fills in on hover, like the back button
+  // Fills in on hover
   &:hover {
     background: var(--primary, #0b6096);
     border-color: var(--primary, #0b6096);
@@ -1961,24 +1960,22 @@
   // At a glance
   // One card, the facts split by thin dividers. Every fact draws a line on its left and top edge;
   // the card clips the ones on its own outer edge (no padding, overflow hidden), so only the lines
-  // between facts show, however many fit in a row.
+  // between facts show. Facts wrap as a flex row and grow to fill it, so a last row with fewer facts
+  // is split evenly too (no half-empty row with broken lines).
   .desc-facts {
     --fact-divider: rgba(151, 174, 213, 0.28);
 
-    display: grid;
-    // auto-fit: a few facts share the whole width instead of leaving empty columns
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     overflow: hidden;
     border-radius: 16px;
     background: var(--surface-container-low, #ebf1ff);
     border: 1px solid var(--border-color, rgba(151, 174, 213, 0.2));
-
-    @media (max-width: 576px) {
-      grid-template-columns: 1fr 1fr;
-    }
   }
 
   .desc-fact {
+    // Up to three per row on wide screens, two on phones
+    flex: 1 1 max(190px, calc(100% / 3 - 1px));
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -1987,6 +1984,7 @@
     box-shadow: -1px 0 0 var(--fact-divider), 0 -1px 0 var(--fact-divider);
 
     @media (max-width: 576px) {
+      flex-basis: calc(50% - 1px);
       padding: 10px 12px;
       gap: 7px;
     }
@@ -2197,6 +2195,138 @@
     p {
       margin: 8px 0 0;
       line-height: 1.6;
+    }
+  }
+}
+
+// ── In the modal (JobModalService) ─────────────────────────────
+// The same design as the old page, minus the room the page left for the site header
+.vacancy-details-page.in-modal {
+  min-height: 0;
+  padding: 0;
+  background: var(--surface, #f4f6ff);
+  border-radius: 24px;
+  max-height: 92svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(151, 174, 213, 0.45) transparent;
+
+  // Zero-height sticky row so only the ✕ button floats at the top-right corner while scrolling
+  .modal-close-row {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 0;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none;
+  }
+
+  .btn-close-modal {
+    pointer-events: auto;
+    flex-shrink: 0;
+    margin: 14px 14px 0 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border-color, rgba(151, 174, 213, 0.3));
+    background: var(--card-bg, #ffffff);
+    color: var(--on-surface, #162f50);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(11, 96, 150, 0.1);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover {
+      border-color: var(--primary, #0b6096);
+      color: var(--primary, #0b6096);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary, #0b6096);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 576px) {
+      margin: 10px 10px 0 0;
+      width: 34px;
+      height: 34px;
+    }
+  }
+
+  .details-page-container {
+    max-width: none;
+    padding: 16px 20px 22px;
+
+    @media (max-width: 576px) {
+      padding: 12px 10px 16px;
+    }
+  }
+
+  // "Full description on the original posting": a quiet one-line notice, not an empty-state block
+  .vacancy-description-content .empty-description-notice.full-description-note {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: var(--surface-container-low, #ebf1ff);
+    border: 1px dashed var(--border-color, rgba(151, 174, 213, 0.35));
+
+    .notice-icon {
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+
+    p {
+      max-width: none;
+      font-size: 13.5px;
+    }
+  }
+
+  // Narrower than the page: the action buttons go under the title instead of beside it,
+  // leaving the top-right corner clear for the floating close button
+  .hero-top-section {
+    flex-wrap: wrap;
+
+    .hero-main-info {
+      flex: 1 1 0;
+      min-width: 0;
+
+      .meta-badges-row {
+        padding-right: 36px;
+      }
+    }
+
+    .hero-actions-bar {
+      position: static;
+      flex-basis: 100%;
+      justify-content: flex-start;
+      padding-left: 78px; // under the title, past the logo
+
+      @media (max-width: 576px) {
+        padding-left: 0;
+      }
+
+      .btn-action-apply {
+        display: inline-flex;
+
+        @media (max-width: 640px) {
+          height: 38px;
+          padding: 0 14px;
+          border-radius: 10px;
+          font-size: 12.5px;
+        }
+      }
     }
   }
 }

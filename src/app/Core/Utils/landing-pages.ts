@@ -1,16 +1,16 @@
 /**
- * SEO landing pages served at /vacancies/:slug (e.g. /vacancies/tbilisi, /vacancies/it).
+ * Keyword searches with their old addresses (/vacancies/tbilisi, /vacancies/it, ...). Those used to
+ * be landing pages of their own; now each address redirects to the home search with its filters
+ * (see landingSearchParams), and the list feeds the footer's and home's search links.
  *
- * Job detail slugs always end in "-<id>", so landing slugs must never end in digits.
+ * Job detail slugs always end in "-<id>", so these slugs must never end in digits.
  *
  * Filters map onto the public /job/all API:
  * - `location` is a reliable substring match on the job's city.
- * - `query` also searches descriptions and treats multiple words as OR, so every
- *   query here is a single word stem that was checked to match job titles well.
- *   Its total count is inflated by description matches, which is why only city
- *   pages show a count.
+ * - `query` is matched as a phrase in the title, company and location, so every query here is a
+ *   single word stem that was checked to match job titles well.
  */
-export type LandingKind = 'city' | 'category' | 'type';
+export type LandingKind = 'city' | 'category' | 'type' | 'combo';
 
 export interface LandingPage {
   slug: string;
@@ -23,8 +23,10 @@ export interface LandingPage {
   /** Page-specific paragraph shown above the job list. */
   intro: string;
   filter: { location?: string; query?: string };
-  /** Locative city name ("თბილისში"), city pages only. */
+  /** Locative city name ("თბილისში"), city and combo pages. */
   inCity?: string;
+  /** Combo pages: the city and profession pages they combine */
+  parents?: { city: string; topic: string };
 }
 
 const city = (slug: string, name: string, inCity: string, intro: string): LandingPage => ({
@@ -33,7 +35,7 @@ const city = (slug: string, name: string, inCity: string, intro: string): Landin
   label: name,
   h1: `ვაკანსიები ${inCity}`,
   title: `ვაკანსიები ${inCity} — სამსახური ${inCity} | Job Up`,
-  description: `აქტიური ვაკანსიები ${inCity}: იპოვე სამსახური ${inCity} მარტივად. ყველა ახალი ვაკანსია Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან ერთ სივრცეში, ყოველდღიური განახლებით.`,
+  description: `აქტიური ვაკანსიები ${inCity}: იპოვე სამსახური ${inCity} მარტივად. ახალ ვაკანსიებს AI ყოველდღე ეძებს მთელ ინტერნეტში.`,
   intro,
   filter: { location: name },
   inCity,
@@ -74,7 +76,7 @@ export const LANDING_PAGES: LandingPage[] = [
     label: 'საზღვარგარეთ',
     h1: 'ვაკანსიები საზღვარგარეთ',
     title: 'სამსახური საზღვარგარეთ — ვაკანსიები უცხოეთში | Job Up',
-    description: 'სამსახური საზღვარგარეთ: აქტიური ვაკანსიები უცხოეთში და საერთაშორისო კომპანიებში, თავმოყრილი Jobs.ge, HR.ge, Awork.ge, Myjobs.ge და LinkedIn-დან.',
+    description: 'სამსახური საზღვარგარეთ: აქტიური ვაკანსიები უცხოეთში და საერთაშორისო კომპანიებში, რომლებსაც AI მთელ ინტერნეტში ეძებს.',
     intro: 'აქ თავმოყრილია ვაკანსიები, რომლებიც სამუშაოს საზღვარგარეთ ან უცხოურ კომპანიებთან თანამშრომლობას გულისხმობს. განაცხადის გაგზავნამდე ყურადღებით გაეცანით დამსაქმებლის ინფორმაციას და სამუშაო პირობებს.',
     filter: { location: 'საზღვარგარეთ' },
     inCity: 'საზღვარგარეთ',
@@ -173,16 +175,68 @@ export const LANDING_PAGES: LandingPage[] = [
     'სტაჟირება კარიერის დაწყების საუკეთესო გზაა სტუდენტებისა და კურსდამთავრებულებისთვის — ბანკები, IT და აუდიტორული კომპანიები რეგულარულად აცხადებენ ანაზღაურებად სტაჟირების პროგრამებს.'),
 ];
 
+/**
+ * City × profession pages, only where there are enough vacancies to be worth a page (live counts,
+ * Nov 2026: each had 15+).
+ */
+const COMBOS: Record<string, string[]> = {
+  tbilisi: [
+    'manager', 'sales', 'consultant', 'operator', 'cashier', 'driver', 'warehouse', 'cook', 'accountant',
+    'it', 'engineer', 'marketing', 'doctor', 'teacher', 'finance', 'nurse', 'lawyer', 'designer', 'developer',
+  ],
+  batumi: ['manager', 'sales', 'consultant', 'cashier', 'operator', 'warehouse', 'driver'],
+  kutaisi: ['manager', 'sales', 'consultant', 'operator', 'cashier'],
+  rustavi: ['sales', 'manager', 'consultant'],
+};
+
+function combo(cityPage: LandingPage, topicPage: LandingPage): LandingPage {
+  const h1 = `${topicPage.h1} ${cityPage.inCity}`;
+  return {
+    slug: `${cityPage.slug}-${topicPage.slug}`,
+    kind: 'combo',
+    label: h1,
+    h1,
+    title: `${h1} — სამსახური ${cityPage.inCity} | Job Up`,
+    description: `${h1}: აქტიური ვაკანსიები, რომლებსაც AI ყოველდღე ეძებს მთელ ინტერნეტში. ატვირთე CV და AI შეგირჩევს შესაბამისს.`,
+    // The profession page's own paragraph: what the work is, not another "we collect from portals"
+    intro: topicPage.intro,
+    filter: { location: cityPage.filter.location, query: topicPage.filter.query },
+    inCity: cityPage.inCity,
+    parents: { city: cityPage.slug, topic: topicPage.slug },
+  };
+}
+
+for (const [citySlug, topics] of Object.entries(COMBOS)) {
+  const cityPage = LANDING_PAGES.find((p) => p.slug === citySlug)!;
+  for (const topicSlug of topics) {
+    LANDING_PAGES.push(combo(cityPage, LANDING_PAGES.find((p) => p.slug === topicSlug)!));
+  }
+}
+
 const BY_SLUG = new Map(LANDING_PAGES.map((p) => [p.slug, p]));
 
 export function getLandingPage(slug: string | null | undefined): LandingPage | undefined {
   return slug ? BY_SLUG.get(slug) : undefined;
 }
 
-/** City landing page for a job's location, e.g. "თბილისი" → /vacancies/tbilisi. */
+/** The home search's query parameters for a keyword search: /home?location=თბილისი&search=IT */
+export function landingSearchParams(page: LandingPage): Record<string, string> {
+  return {
+    ...(page.filter.location ? { location: page.filter.location } : {}),
+    ...(page.filter.query ? { search: page.filter.query } : {}),
+  };
+}
+
+/**
+ * City keyword search for a job's location: "თბილისი" → /vacancies/tbilisi. LinkedIn writes cities in
+ * English ("Kutaisi, Georgia"), which the slug matches as a whole word.
+ */
 export function findCityLanding(location: string | null | undefined): LandingPage | undefined {
   if (!location) return undefined;
+  const latin = location.toLowerCase();
   return LANDING_PAGES.find(
-    (p) => p.kind === 'city' && p.filter.location && location.includes(p.filter.location),
+    (p) =>
+      p.kind === 'city' &&
+      ((p.filter.location && location.includes(p.filter.location)) || new RegExp(`\\b${p.slug}\\b`).test(latin)),
   );
 }
