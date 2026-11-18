@@ -321,28 +321,82 @@ $outline-variant-color: #97aed5;
   }
 }
 
+// A soft red pill: how many filters are on, the label, an × that turns on hover
 .filter-clear {
+  --clear-rgb: 220, 38, 38;
+
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 7px;
   height: 34px;
-  padding: 0 10px;
-  border: none;
+  padding: 0 8px 0 5px;
+  border: 1px solid rgba(var(--clear-rgb), 0.22);
   border-radius: 999px;
-  background: transparent;
-  color: var(--on-surface-variant);
+  background: rgba(var(--clear-rgb), 0.07);
+  color: rgb(var(--clear-rgb));
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  text-decoration: underline;
+  white-space: nowrap;
   cursor: pointer;
+  animation: clearIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
-  .material-symbols-outlined {
-    font-size: 16px;
+  .clear-count {
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgb(var(--clear-rgb));
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1;
   }
 
-  &:hover {
-    color: var(--accent);
+  .clear-x {
+    font-size: 17px;
+    transition: rotate 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(var(--clear-rgb), 0.12);
+    border-color: rgba(var(--clear-rgb), 0.45);
+    box-shadow: 0 4px 14px rgba(var(--clear-rgb), 0.15);
+
+    .clear-x {
+      rotate: 90deg;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--clear-rgb));
+    outline-offset: 2px;
+  }
+}
+
+// In the phone (and on small screens): just "გასუფთავება"
+.phone-filters .clear-long {
+  display: none;
+}
+
+:host-context([data-theme='dark']) .filter-clear {
+  --clear-rgb: 248, 113, 113;
+}
+
+@keyframes clearIn {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-clear {
+    animation: none;
   }
 }
 
@@ -475,17 +529,50 @@ button.results-all {
   }
 }
 
-// ── Phones: the city, "salary only" and "frequently searched" move into the phone's screen, so the
-// phone starts higher up the page ──
-.phone-filters,
-.popular-phone {
+// ── The city and "salary only": desktop shows them under the categories until a search, then in the
+// phone's screen (more room for the results). Phones always have them, and "frequently searched", in
+// the phone. ──
+.popular-phone,
+.screen-home .phone-filters {
   display: none;
+}
+
+@media (min-width: 992px) {
+  .hero-section.has-results .filters-desktop {
+    display: none;
+  }
+}
+
+.hero-filters.phone-filters {
+  justify-content: flex-start;
+  gap: 6px;
+  margin: 0 0 10px;
+
+  .toggle-long {
+    display: none;
+  }
+}
+
+// Desktop: the screen clips, so the city list stays short enough to fit in it
+@media (min-width: 992px) {
+  .phone-filters .city-menu {
+    max-height: 240px;
+  }
 }
 
 @media (max-width: 991px) {
   .filters-desktop,
   .popular-desktop {
     display: none;
+  }
+
+  // The picture of the filters makes way for the real ones
+  .screen-home .app-chips {
+    display: none;
+  }
+
+  .screen-home .hero-filters.phone-filters {
+    display: flex;
   }
 
   // The reassurance line under the search: the lede and the phone already say it
@@ -501,28 +588,10 @@ button.results-all {
     margin-top: 16px;
   }
 
-  // City and salary on one line: "მხოლოდ" goes
-  .hero-filters.phone-filters {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 6px;
-    margin: 0 0 10px;
-  }
-
-  .phone-filters .toggle-long {
-    display: none;
-  }
-
   // Under the highlighted vacancy card
   .hero-popular.popular-phone {
     display: flex;
     margin: 12px 0 4px;
-  }
-
-  // The picture of the filters makes way for the real ones
-  .screen-home .app-chips {
-    display: none;
   }
 
   // The city menu opens over the cards below the phone, not clipped by the screen
@@ -931,6 +1000,7 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
       width 0.7s $ease-smooth,
       height 0.7s $ease-smooth,
       left 0.7s $ease-smooth,
+      top 0.7s $ease-smooth,
       box-shadow 0.7s ease;
   }
 
@@ -1077,6 +1147,29 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 16px;
     color: var(--accent);
     animation: spin 1s linear infinite;
+  }
+
+  // Up/down beside the count, once the list is longer than the phone (desktop only: phones scroll the page)
+  .scroll-arrows {
+    display: none;
+    gap: 4px;
+    margin-left: auto;
+
+    .quick-arrow {
+      display: flex;
+      width: 28px;
+      height: 28px;
+
+      .material-symbols-outlined {
+        font-size: 20px;
+      }
+    }
+
+    @media (min-width: 992px) {
+      &.shown {
+        display: inline-flex;
+      }
+    }
   }
 }
 
@@ -1287,5 +1380,25 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     &.l-right-bottom {
       top: 268px;
     }
+  }
+}
+
+// ── Desktop search: the phone also rises ──
+// Before a search the phone stays put. A search grows it and lifts it into the gap above the stage
+// (--phone-lift, up to 10px under the filters), animated with the width and height; its bottom
+// stays where it was. Closing the search plays it back.
+@media (min-width: 1180px) {
+  .hero-stage {
+    --phone-lift: 46px;
+
+    // Short screens: the stage's gap is 24px there
+    @media (max-height: 1000px) {
+      --phone-lift: 14px;
+    }
+  }
+
+  .hero-stage.searching .phone {
+    top: calc(-1 * var(--phone-lift));
+    height: calc(var(--search-phone-h, 640px) + var(--foot-h, 0px) + 110px + var(--phone-lift));
   }
 }

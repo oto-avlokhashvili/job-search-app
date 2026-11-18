@@ -74,6 +74,55 @@ class ScrollRow {
   }
 }
 
+/** The same for a list that scrolls up and down (the results in the phone); it also watches the list grow */
+class VerticalScroll {
+  canUp = signal(false);
+  canDown = signal(false);
+  scrollable = computed(() => this.canUp() || this.canDown());
+  private el?: HTMLElement;
+  private resizeObserver?: ResizeObserver;
+  private mutationObserver?: MutationObserver;
+
+  attach(el: HTMLElement | undefined) {
+    this.destroy();
+    this.el = el;
+    if (!el) {
+      queueMicrotask(() => {
+        this.canUp.set(false);
+        this.canDown.set(false);
+      });
+      return;
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.update());
+      this.resizeObserver.observe(el);
+    }
+    if (typeof MutationObserver !== 'undefined') {
+      this.mutationObserver = new MutationObserver(() => this.update());
+      this.mutationObserver.observe(el, { childList: true, subtree: true });
+    }
+    // The ResizeObserver's first call sets the arrows (not now: this runs during change detection)
+  }
+
+  update() {
+    const el = this.el;
+    if (!el) return;
+    // The bottom padding lets the list's end rise out of the phone's fade; it isn't content to scroll to
+    const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+    this.canUp.set(el.scrollTop > 2);
+    this.canDown.set(el.scrollTop + el.clientHeight < el.scrollHeight - Math.max(2, pad - 40));
+  }
+
+  scroll(direction: 1 | -1) {
+    this.el?.scrollBy({ top: direction * this.el.clientHeight * 0.6, behavior: 'smooth' });
+  }
+
+  destroy() {
+    this.resizeObserver?.disconnect();
+    this.mutationObserver?.disconnect();
+  }
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -124,6 +173,12 @@ export class Home implements OnInit {
     this.popularPhoneRow.attach(els.find((el) => !!el.closest('.phone')));
   }
 
+  /** The results inside the phone: up/down arrows beside the count (desktop) */
+  readonly resultsScroll = new VerticalScroll();
+  @ViewChild('screenBody') set screenBody(ref: ElementRef<HTMLElement> | undefined) {
+    this.resultsScroll.attach(ref?.nativeElement);
+  }
+
   readonly logos = new CompanyLogos();
   /** The newest vacancies, shown in the seeker preview */
   latestLoading = signal(true);
@@ -139,6 +194,7 @@ export class Home implements OnInit {
       this.quickRow.destroy();
       this.popularRow.destroy();
       this.popularPhoneRow.destroy();
+      this.resultsScroll.destroy();
       this.moreObserver?.disconnect();
     });
     inject(HomeResetService).resets.pipe(takeUntilDestroyed()).subscribe(() => this.resetSearch());
@@ -191,6 +247,8 @@ export class Home implements OnInit {
   salaryOnly = signal(false);
   readonly cities = LANDING_PAGES.filter((p) => p.kind === 'city').map((p) => p.filter.location!);
   hasFilters = computed(() => this.category() !== 'all' || this.city() !== 'all' || this.salaryOnly());
+  /** How many filters are on (the badge on "clear filters") */
+  activeFilterCount = computed(() => [this.category() !== 'all', this.city() !== 'all', this.salaryOnly()].filter(Boolean).length);
   /** A keyword search shows at most 60 (the API's limit), whatever the count says */
   hasMore = computed(() => this.results().length < Math.min(this.resultsTotal(), this.resultsMode() === 'keyword' ? 60 : Infinity));
   /** The last automatic "load more" failed: a retry button instead of loading again and again */
@@ -292,7 +350,10 @@ export class Home implements OnInit {
   }
 
   toggleCategory(key: string) {
-    this.category.set(this.category() === key ? 'all' : key);
+    const selecting = this.category() !== key;
+    this.category.set(selecting ? key : 'all');
+    // Picking a category starts a fresh search: the typed keyword would only narrow it
+    if (selecting) this.searchQuery.setValue('');
     this.runSearch();
   }
 
@@ -378,6 +439,15 @@ export class Home implements OnInit {
   }
 
   /** Back to the phone */
+  /** The phone's ✕: back to the phone, the filters off too (they'd only narrow the next search) */
+  closeSearch() {
+    this.category.set('all');
+    this.city.set('all');
+    this.salaryOnly.set(false);
+    this.cityMenuOpen.set(false);
+    this.clearResults();
+  }
+
   clearResults() {
     this.searchRun++;
     this.resultsMode.set(null);
@@ -473,7 +543,7 @@ export class Home implements OnInit {
     }
   }
 
-  /** The room the searched phone has: from under the search controls to the bottom of the window (460–900px) */
+  /** The room the searched phone has: from under the search controls to the bottom of the window (520–1200px) */
   searchPhoneHeight = signal(640);
   @ViewChild('heroStage') private heroStage?: ElementRef<HTMLElement>;
 
@@ -493,7 +563,7 @@ export class Home implements OnInit {
     // The stage's top margin and the footer's strip (home.scss --foot-h), on screen
     const gaps = (parseFloat(getComputedStyle(stage).marginTop) + (parseFloat(section.getPropertyValue('--foot-h')) || 0)) * this.heroZoom();
     const room = (window.innerHeight - aboveBottom - gaps) / zoom;
-    this.searchPhoneHeight.set(Math.round(Math.min(900, Math.max(460, room))));
+    this.searchPhoneHeight.set(Math.round(Math.min(1200, Math.max(520, room))));
   }
 
   /**
@@ -540,6 +610,8 @@ export class Home implements OnInit {
 
   private startResults(mode: 'keyword' | 'cv'): number {
     this.fitPhoneToScreen();
+    // Desktop: the city and salary filters move from above into the phone, so there's more room to measure
+    if (this.isBrowser) setTimeout(() => this.fitPhoneToScreen());
     this.resultsMode.set(mode);
     this.resultsLoading.set(true);
     this.results.set([]);

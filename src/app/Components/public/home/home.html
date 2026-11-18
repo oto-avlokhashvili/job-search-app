@@ -56,7 +56,8 @@
         </button>
       </div>
 
-      <!-- Desktop: the city and "salary only" under the categories (on phones they're inside the phone) -->
+      <!-- Desktop before a search: the city and "salary only" under the categories. A search moves them
+           into the phone (phones: always in the phone) -->
       <div class="hero-filters filters-desktop">
         <ng-container *ngTemplateOutlet="filtersTpl" />
       </div>
@@ -90,7 +91,7 @@
         }
       </ng-template>
 
-      <!-- The city and "salary only": under the search on desktop, at the top of the phone's screen on phones -->
+      <!-- The city and "salary only": under the categories, or at the top of the phone's screen -->
       <ng-template #filtersTpl>
         <!-- City: a pill that opens a list (closes on a click outside, Esc, or a pick) -->
         <div class="city-picker">
@@ -127,9 +128,10 @@
           <span class="toggle-long">მხოლოდ&nbsp;</span>ხელფასით
         </button>
         @if (hasFilters()) {
-          <button type="button" class="filter-clear" (click)="clearFilters()">
-            <span class="material-symbols-outlined">close</span>
-            ფილტრების გასუფთავება
+          <button type="button" class="filter-clear" (click)="clearFilters()" title="ფილტრების გასუფთავება">
+            <span class="clear-count" aria-hidden="true">{{ activeFilterCount() }}</span>
+            <span class="clear-label"><span class="clear-long">ფილტრების </span>გასუფთავება</span>
+            <span class="material-symbols-outlined clear-x" aria-hidden="true">close</span>
           </button>
         }
       </ng-template>
@@ -225,7 +227,7 @@
               <span class="app-title">ვაკანსიები</span>
               <span class="app-icon"><span class="material-symbols-outlined">search</span></span>
             </div>
-            <!-- Phones: the real filters; desktop: the picture of them -->
+            <!-- Phones: the real filters; desktop: the picture of them (the real ones are above the phone) -->
             <div class="hero-filters phone-filters">
               <ng-container *ngTemplateOutlet="filtersTpl" />
             </div>
@@ -311,7 +313,7 @@
                     ძიება
                   }
                 </span>
-                <button type="button" class="app-icon close" (click)="clearResults()" title="დახურვა" aria-label="ძიების დახურვა">
+                <button type="button" class="app-icon close" (click)="closeSearch()" title="დახურვა" aria-label="ძიების დახურვა">
                   <span class="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -335,9 +337,18 @@
                     </span>
                   }
                 }
+                <!-- Desktop: the list scrolls inside the phone; up and down a screenful at a time -->
+                <span class="scroll-arrows" [class.shown]="resultsScroll.scrollable()">
+                  <button type="button" class="quick-arrow small" [disabled]="!resultsScroll.canUp()" (click)="resultsScroll.scroll(-1)" aria-label="ზემოთ">
+                    <span class="material-symbols-outlined">keyboard_arrow_up</span>
+                  </button>
+                  <button type="button" class="quick-arrow small" [disabled]="!resultsScroll.canDown()" (click)="resultsScroll.scroll(1)" aria-label="ქვემოთ">
+                    <span class="material-symbols-outlined">keyboard_arrow_down</span>
+                  </button>
+                </span>
               </div>
 
-              <div class="screen-body">
+              <div #screenBody class="screen-body" (scroll)="resultsScroll.update()">
                 @if (resultsLoading()) {
                   <div class="screen-loading" animate.enter="screen-enter">
                     <app-ai-search-steps [mode]="resultsMode()!" />
