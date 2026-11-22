@@ -1433,40 +1433,40 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   // Bigger text, on these screens only (the hero is zoomed down here, so the same px look smaller).
   // Search bar, filters, "most searched" chips
   .home-main {
-    .hero-search .filter-search-input { font-size: 17px; }
+    .hero-search .filter-search-input { font-size: 19px; }
     .hero-search .btn-cv-search,
-    .hero-search .btn-search { font-size: 17px; }
-    .hero-quick .quick-chip { font-size: 17px; }
+    .hero-search .btn-search { font-size: 19px; }
+    .hero-quick .quick-chip { font-size: 19px; }
     .hero-filters .filter-toggle,
-    .hero-filters .city-trigger { font-size: 17px; }
-    .popular-label { font-size: 17px; }
-    .popular-chip { font-size: 16px; }
+    .hero-filters .city-trigger { font-size: 19px; }
+    .popular-label { font-size: 19px; }
+    .popular-chip { font-size: 18px; }
 
     // The four cards around the phone
     .float-card {
-      .fc-title { font-size: 16px; }
-      .fc-job-title { font-size: 16.5px; }
-      .fc-job-meta { font-size: 16px; }
-      .fc-company { font-size: 14.5px; }
-      .fc-pill { font-size: 15.5px; }
+      .fc-title { font-size: 18px; }
+      .fc-job-title { font-size: 18.5px; }
+      .fc-job-meta { font-size: 18px; }
+      .fc-company { font-size: 16.5px; }
+      .fc-pill { font-size: 17.5px; }
       .fc-text b,
-      .fc-text small { font-size: 16px; }
-      .fc-steps > span { font-size: 14.5px; }
-      .fc-agent-cta { font-size: 17px; }
-      &.fc-accent span:last-child { font-size: 17px; }
+      .fc-text small { font-size: 18px; }
+      .fc-steps > span { font-size: 16.5px; }
+      .fc-agent-cta { font-size: 19px; }
+      &.fc-accent span:last-child { font-size: 19px; }
     }
 
     // Inside the phone
     .phone {
-      .featured-company { font-size: 13.5px; }
-      .featured-title { font-size: 17px; }
-      .featured-foot { font-size: 14.5px; }
-      .phone-section-head { font-size: 17px; }
-      .row-title { font-size: 17px; }
-      .row-meta { font-size: 13.5px; }
-      .row-match { font-size: 16px; }
-      .live-pill { font-size: 14.5px; }
-      .ai-query { font-size: 16px; }
+      .featured-company { font-size: 15.5px; }
+      .featured-title { font-size: 19px; }
+      .featured-foot { font-size: 16.5px; }
+      .phone-section-head { font-size: 19px; }
+      .row-title { font-size: 19px; }
+      .row-meta { font-size: 15.5px; }
+      .row-match { font-size: 18px; }
+      .live-pill { font-size: 16.5px; }
+      .ai-query { font-size: 18px; }
     }
   }
 
