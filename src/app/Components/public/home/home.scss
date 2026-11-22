@@ -1389,8 +1389,9 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 // ── Desktop search: the title and description fold away ──
-// A search collapses them (height, fade, slide) and the padding above the hero shrinks, so the search
-// bar, filters and the phone glide up and the phone gets more room. Closing the search plays it back.
+// Before a search they show. A search collapses them (height, fade, slide) and the padding above the
+// hero shrinks, so the search bar, filters and the phone glide up and the phone gets more room.
+// Closing the search plays it back.
 @media (min-width: 992px) {
   .hero-section {
     transition: padding-top 0.7s $ease-smooth;

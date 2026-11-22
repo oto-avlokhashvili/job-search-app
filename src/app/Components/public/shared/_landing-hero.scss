@@ -1725,8 +1725,8 @@
   gap: 10px;
   width: 100%;
   padding: 22px 0 8px;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--on-surface-variant);
 
   @media (min-width: 1180px) {
@@ -1752,7 +1752,9 @@
   background: transparent;
 
   @media (min-width: 1180px) {
-    max-width: calc(50% - 360px);
+    // Each side stops short of the phone (190px = half its width, plus a gap), so the text stays on
+    // one or two lines and never grows taller than the strip the hero keeps for it
+    max-width: calc(50% - 230px);
   }
 
   a,
@@ -1773,6 +1775,13 @@
 }
 
 // Left: logo, name and copyright on one line, like the site footer's brand
+// While a search is open the phone is up to 640px wide, so each side keeps further away from it
+@media (min-width: 1180px) {
+  .hero-section.has-results .foot-group {
+    max-width: calc(50% - 350px);
+  }
+}
+
 .foot-brand {
   align-items: center;
   gap: 8px;
