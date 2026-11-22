@@ -91,6 +91,10 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'faq',
+    loadComponent: () => import('./Components/public/faq/faq').then((m) => m.Faq),
+  },
+  {
     path: 'about',
     loadComponent: () => import('./Components/public/about/about').then((m) => m.About),
   },

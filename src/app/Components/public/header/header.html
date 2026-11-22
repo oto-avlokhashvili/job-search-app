@@ -9,6 +9,7 @@
         <a class="nav-link" [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features')">მთავარი</a>
         <a class="nav-link" [routerLink]="'/employers'" [class.active]="isEmployerSide()">დამსაქმებლებს</a>
         <a class="nav-link" (click)="modals.openPricing()">ფასები</a>
+        <a class="nav-link" [routerLink]="'/faq'" [class.active]="router.url.startsWith('/faq')">FAQ</a>
         <a class="nav-link" (click)="modals.openContact()">დაგვიკავშირდი</a>
         @if (authService.isLoggedIn()) {
           <a class="nav-link" [routerLink]="'/profile'" [class.active]="router.url.startsWith('/profile')">პროფილი</a>
@@ -98,6 +99,7 @@
     <a [class.active]="isHome() && activeSection() === 'features'" (click)="scroll('features'); menuOpen = false">მთავარი</a>
     <a [routerLink]="'/employers'" [class.active]="isEmployerSide()" (click)="menuOpen = false">დამსაქმებლებს</a>
     <a (click)="modals.openPricing(); menuOpen = false">ფასები</a>
+    <a [routerLink]="'/faq'" (click)="menuOpen = false">FAQ</a>
     <a (click)="modals.openContact(); menuOpen = false">დაგვიკავშირდი</a>
     @if (isAdmin()) {
       <a [routerLink]="'/hr'" (click)="menuOpen = false">HR პანელი</a>

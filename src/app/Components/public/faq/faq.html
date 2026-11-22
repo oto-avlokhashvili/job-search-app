@@ -1,0 +1,59 @@
+<main class="legal-page-wrapper">
+  <div class="legal-container">
+    <div class="legal-header-nav">
+      <a routerLink="/home" class="btn-back-home">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>მთავარ გვერდზე დაბრუნება</span>
+      </a>
+    </div>
+
+    <header class="legal-hero-card glass-card animate-fade">
+      <div class="hero-icon-badge">
+        <span class="material-symbols-outlined">help</span>
+      </div>
+      <h1 class="legal-title">ხშირად დასმული კითხვები</h1>
+      <p class="legal-subtitle">გაიგე, როგორ დაგეხმარება JobUp სამსახურის ძიებასა და კანდიდატების შერჩევაში.</p>
+    </header>
+
+    <section class="sources-card glass-card animate-fade" aria-labelledby="sources-title">
+      <div class="sources-icon"><span class="material-symbols-outlined">travel_explore</span></div>
+      <div class="sources-text">
+        <h2 id="sources-title">ვაკანსიები არ არის „მოპარული“ — AI მათ ინტერნეტში პოულობს</h2>
+        <p>
+          JobUp არ აკოპირებს და არ ასაღებს სხვის განცხადებებს საკუთარად. ჩვენი AI ინტერნეტში ეძებს ვაკანსიებს, რომლებიც მათმა გამომქვეყნებლებმა
+          <strong>საჯაროდ, ყველასთვის ხელმისაწვდომად</strong> განათავსეს, და გიჩვენებს ძიების შედეგს — ისევე, როგორც საძიებო სისტემა.
+        </p>
+        <ul>
+          <li><span class="material-symbols-outlined">link</span><span>თითოეულ ვაკანსიაზე ჩანს წყარო და ბმული ორიგინალ განცხადებაზე, სადაც სრული აღწერაა.</span></li>
+          <li><span class="material-symbols-outlined">verified_user</span><span>ვაკანსია, მისი ტექსტი და ლოგო რჩება გამომქვეყნებლის საკუთრება; JobUp არ აქვეყნებს მათ დამსაქმებლის სახელით და არ ყიდის.</span></li>
+          <li><span class="material-symbols-outlined">send</span><span>განაცხადს აგზავნი დამსაქმებელთან ან მის თავდაპირველ გვერდზე — ვაკანსიის შინაარსზე პასუხისმგებელი გამომქვეყნებელია.</span></li>
+        </ul>
+        <a routerLink="/terms" fragment="search-and-sources" class="sources-link">დეტალურად — წესები და პირობები</a>
+      </div>
+    </section>
+
+    <div class="legal-content-card glass-card animate-fade">
+      <div class="faq-list">
+        @for (item of items; track item.q; let i = $index) {
+          <div class="faq-item" [class.open]="openIndex() === i">
+            <button type="button" class="faq-summary" [attr.aria-expanded]="openIndex() === i" (click)="toggle(i)">
+              <span class="faq-num">{{ i + 1 }}</span>
+              <span class="faq-q">{{ item.q }}</span>
+              <span class="material-symbols-outlined faq-chevron">expand_more</span>
+            </button>
+            <div class="faq-body">
+              <div class="faq-body-inner">
+                <p class="faq-a">{{ item.a }}</p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="faq-more">
+        <span>პასუხი ვერ იპოვე? მოგვწერე — დაგეხმარებით.</span>
+        <button type="button" (click)="modals.openContact()">დაგვიკავშირდი</button>
+      </div>
+    </div>
+  </div>
+</main>
