@@ -1310,7 +1310,9 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 // edge (faded) instead of making the page scroll
 @media (min-width: 1180px) {
   .hero-section {
-    height: calc(100svh / var(--hero-zoom, 1));
+    // min-height, not height: on short screens the zoom stops at 0.9 (readable), so the hero can be
+    // taller than the window and the page scrolls
+    min-height: calc(100svh / var(--hero-zoom, 1));
   }
 }
 

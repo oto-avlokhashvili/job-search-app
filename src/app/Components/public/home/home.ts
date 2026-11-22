@@ -599,7 +599,7 @@ export class Home implements OnInit {
       cards + 16 +
       (parseFloat(styles.getPropertyValue('--foot-h')) || 0);
     const fit = (window.innerHeight - header) / natural;
-    this.heroZoom.set(Math.round(Math.min(1, Math.max(0.6, fit)) * 1000) / 1000);
+    this.heroZoom.set(Math.round(Math.min(1, Math.max(0.9, fit)) * 1000) / 1000);
   }
 
   @HostListener('window:resize')
