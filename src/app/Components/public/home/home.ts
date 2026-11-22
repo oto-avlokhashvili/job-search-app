@@ -611,7 +611,13 @@ export class Home implements OnInit {
   private startResults(mode: 'keyword' | 'cv'): number {
     this.fitPhoneToScreen();
     // Desktop: the city and salary filters move from above into the phone, so there's more room to measure
-    if (this.isBrowser) setTimeout(() => this.fitPhoneToScreen());
+    if (this.isBrowser) {
+      setTimeout(() => this.fitPhoneToScreen());
+      // The title folds away over 0.7s, which moves the controls up: measure again as it settles, so
+      // the phone grows into the freed space (the stage's height transition keeps it smooth)
+      setTimeout(() => this.fitPhoneToScreen(), 350);
+      setTimeout(() => this.fitPhoneToScreen(), 800);
+    }
     this.resultsMode.set(mode);
     this.resultsLoading.set(true);
     this.results.set([]);

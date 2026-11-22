@@ -108,7 +108,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 780px;
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,8 +128,21 @@
 
 .hero-title {
   margin: 0; // first thing in the hero
-  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  font-size: clamp(2.2rem, 3.8vw, 3.4rem);
   line-height: 1.12;
+
+  // Desktop: one line, so the hero is shorter and the phone gets the room
+  @media (min-width: 992px) {
+    white-space: nowrap;
+
+    br {
+      display: none;
+    }
+
+    .accent {
+      margin-left: 0.25em;
+    }
+  }
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--on-surface);
@@ -184,7 +197,7 @@
 .hero-search {
   margin-top: 30px;
   width: 100%;
-  max-width: 720px;
+  max-width: 820px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -299,7 +312,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px 18px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--on-surface-variant);
 
@@ -427,7 +440,7 @@
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   color: var(--on-surface);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
   transition: border-color 0.2s ease, color 0.2s ease;
@@ -739,7 +752,7 @@
   // Left card → phone (the phone is 300px wide in the centre; 12px gaps at both ends)
   &.l-left-top {
     left: 282px;
-    right: calc(50% + 162px);
+    right: calc(50% + 202px);
     top: 124px;
     height: 98px;
   }
@@ -747,21 +760,21 @@
   // Lower left card (CV upload / its employer twin) → phone, rising to the phone's edge
   &.l-left-bottom {
     left: 332px;
-    right: calc(50% + 162px);
+    right: calc(50% + 202px);
     top: 344px;
     height: 34px;
   }
 
   // Phone → right cards
   &.l-right-top {
-    left: calc(50% + 162px);
+    left: calc(50% + 202px);
     right: 262px;
     top: 96px;
     height: 72px;
   }
 
   &.l-right-bottom {
-    left: calc(50% + 162px);
+    left: calc(50% + 202px);
     right: 302px;
     top: 352px;
     height: 28px;
@@ -828,10 +841,10 @@
 // ── The phone ──
 .phone {
   position: absolute;
-  left: calc(50% - 150px);
+  left: calc(50% - 190px);
   top: 0;
-  width: 300px;
-  height: 540px;
+  width: 380px;
+  height: 660px;
   padding: 11px;
   border-radius: 48px;
   background: linear-gradient(145deg, #2b3242, #0d111a);
@@ -870,7 +883,7 @@
   justify-content: space-between;
   height: 46px;
   padding: 4px 12px 0 18px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--on-surface);
 
@@ -1028,7 +1041,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 600;
 
   > span:first-child {
@@ -1074,7 +1087,7 @@
 
 .phone-section-head {
   margin: 16px 2px 8px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--on-surface);
 }
@@ -1108,13 +1121,13 @@
   .row-avatar {
     width: 36px;
     height: 36px;
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 
 .row-match {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--accent);
 }
@@ -1129,7 +1142,7 @@
   border-radius: 14px;
   background: var(--card-bg);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--on-surface);
   white-space: nowrap;
 
@@ -1185,7 +1198,7 @@
     width: 30px;
     height: 30px;
     border-radius: 9px;
-    font-size: 13px;
+    font-size: 15px;
   }
 
   &.letter {
@@ -1223,7 +1236,7 @@
   &.light {
     width: 32px;
     height: 32px;
-    font-size: 12px;
+    font-size: 14px;
     background: rgba(255, 255, 255, 0.25);
   }
 }
@@ -1235,7 +1248,7 @@
 
 .row-title {
   display: block;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--on-surface);
   white-space: nowrap;
@@ -1262,7 +1275,7 @@
   border-radius: 999px;
   background: var(--success-bg);
   color: var(--success-text);
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
 
   i {
@@ -1441,7 +1454,7 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--on-surface-variant);
 
   .material-symbols-outlined {
@@ -1474,7 +1487,7 @@
   border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1527,7 +1540,7 @@
 
   small {
     margin-top: 1px;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--on-surface-variant);
   }
 }
@@ -1566,7 +1579,7 @@
   }
 
   span:last-child {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     line-height: 1.35;
     opacity: 0.92;
@@ -1617,7 +1630,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--accent);
 
@@ -1712,7 +1725,7 @@
   gap: 10px;
   width: 100%;
   padding: 22px 0 8px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--on-surface-variant);
 
