@@ -108,7 +108,8 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 960px;
+  max-width: 780px;
+  @media (min-width: 1180px) and (max-height: 880px) { max-width: 960px; }
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,11 +129,12 @@
 
 .hero-title {
   margin: 0; // first thing in the hero
-  font-size: clamp(2.2rem, 3.8vw, 3.4rem);
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
   line-height: 1.12;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: clamp(2.2rem, 3.8vw, 3.4rem); }
 
-  // Desktop: one line, so the hero is shorter and the phone gets the room
-  @media (min-width: 992px) {
+  // Low-res laptops: one line, so the hero is shorter and the phone gets the room
+  @media (min-width: 1180px) and (max-height: 880px) {
     white-space: nowrap;
 
     br {
@@ -197,7 +199,8 @@
 .hero-search {
   margin-top: 30px;
   width: 100%;
-  max-width: 820px;
+  max-width: 600px;
+  @media (min-width: 1180px) and (max-height: 880px) { max-width: 820px; }
   display: flex;
   align-items: center;
   gap: 8px;
@@ -312,7 +315,8 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px 18px;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 600;
   color: var(--on-surface-variant);
 
@@ -440,7 +444,8 @@
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   color: var(--on-surface);
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 600;
   text-decoration: none;
   transition: border-color 0.2s ease, color 0.2s ease;
@@ -752,31 +757,31 @@
   // Left card → phone (the phone is 300px wide in the centre; 12px gaps at both ends)
   &.l-left-top {
     left: 282px;
-    right: calc(50% + var(--phone-half, 190px) + 12px);
-    top: 124px;
+    right: calc(50% + var(--phone-half, 150px) + 12px);
+    top: 24px;
     height: 98px;
   }
 
   // Lower left card (CV upload / its employer twin) → phone, rising to the phone's edge
   &.l-left-bottom {
     left: 332px;
-    right: calc(50% + var(--phone-half, 190px) + 12px);
-    top: 344px;
+    right: calc(50% + var(--phone-half, 150px) + 12px);
+    top: 244px;
     height: 34px;
   }
 
   // Phone → right cards
   &.l-right-top {
-    left: calc(50% + var(--phone-half, 190px) + 12px);
+    left: calc(50% + var(--phone-half, 150px) + 12px);
     right: 262px;
-    top: 96px;
+    top: -4px;
     height: 72px;
   }
 
   &.l-right-bottom {
-    left: calc(50% + var(--phone-half, 190px) + 12px);
+    left: calc(50% + var(--phone-half, 150px) + 12px);
     right: 302px;
-    top: 352px;
+    top: 252px;
     height: 28px;
   }
 }
@@ -841,10 +846,11 @@
 // ── The phone ──
 .phone {
   position: absolute;
-  left: calc(50% - var(--phone-half, 190px));
+  left: calc(50% - var(--phone-half, 150px));
   top: 0;
-  width: calc(var(--phone-half, 190px) * 2);
-  height: 660px;
+  width: calc(var(--phone-half, 150px) * 2);
+  height: 540px;
+  @media (min-width: 1180px) and (max-height: 880px) { height: 660px; }
   padding: 11px;
   border-radius: 48px;
   background: linear-gradient(145deg, #2b3242, #0d111a);
@@ -883,7 +889,8 @@
   justify-content: space-between;
   height: 46px;
   padding: 4px 12px 0 18px;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 700;
   color: var(--on-surface);
 
@@ -1041,7 +1048,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 12.5px;
+  font-size: 11px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 12.5px; }
   font-weight: 600;
 
   > span:first-child {
@@ -1087,7 +1095,8 @@
 
 .phone-section-head {
   margin: 16px 2px 8px;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 800;
   color: var(--on-surface);
 }
@@ -1121,13 +1130,15 @@
   .row-avatar {
     width: 36px;
     height: 36px;
-    font-size: 15px;
+    font-size: 13px;
+    @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   }
 }
 
 .row-match {
   flex-shrink: 0;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 800;
   color: var(--accent);
 }
@@ -1142,7 +1153,8 @@
   border-radius: 14px;
   background: var(--card-bg);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
-  font-size: 14px;
+  font-size: 12px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 14px; }
   color: var(--on-surface);
   white-space: nowrap;
 
@@ -1198,7 +1210,8 @@
     width: 30px;
     height: 30px;
     border-radius: 9px;
-    font-size: 15px;
+    font-size: 13px;
+    @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   }
 
   &.letter {
@@ -1236,7 +1249,8 @@
   &.light {
     width: 32px;
     height: 32px;
-    font-size: 14px;
+    font-size: 12px;
+    @media (min-width: 1180px) and (max-height: 880px) { font-size: 14px; }
     background: rgba(255, 255, 255, 0.25);
   }
 }
@@ -1248,7 +1262,8 @@
 
 .row-title {
   display: block;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 700;
   color: var(--on-surface);
   white-space: nowrap;
@@ -1275,7 +1290,8 @@
   border-radius: 999px;
   background: var(--success-bg);
   color: var(--success-text);
-  font-size: 12.5px;
+  font-size: 11px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 12.5px; }
   font-weight: 700;
 
   i {
@@ -1352,14 +1368,14 @@
   &.f-left-top {
     --delay: 0.35s;
     left: 0;
-    top: 54px;
+    top: -46px;
     width: 270px;
   }
 
   &.f-left-bottom {
     --delay: 0.55s;
     left: 70px;
-    top: 330px;
+    top: 230px;
     width: 250px;
     flex-direction: row;
     align-items: center;
@@ -1369,14 +1385,14 @@
   &.f-right-top {
     --delay: 0.45s;
     right: 50px;
-    top: 40px;
+    top: -60px;
     width: 200px;
   }
 
   &.f-right-bottom {
     --delay: 0.65s;
     right: 0;
-    top: 262px;
+    top: 162px;
     width: 290px;
   }
 }
@@ -1454,7 +1470,8 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 14px;
+  font-size: 12px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 14px; }
   color: var(--on-surface-variant);
 
   .material-symbols-outlined {
@@ -1487,7 +1504,8 @@
   border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 14px; }
   font-weight: 700;
 }
 
@@ -1540,7 +1558,8 @@
 
   small {
     margin-top: 1px;
-    font-size: 14px;
+    font-size: 12px;
+    @media (min-width: 1180px) and (max-height: 880px) { font-size: 14px; }
     color: var(--on-surface-variant);
   }
 }
@@ -1579,7 +1598,8 @@
   }
 
   span:last-child {
-    font-size: 15px;
+    font-size: 13px;
+    @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
     font-weight: 600;
     line-height: 1.35;
     opacity: 0.92;
@@ -1630,7 +1650,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 15px;
+  font-size: 13px;
+  @media (min-width: 1180px) and (max-height: 880px) { font-size: 15px; }
   font-weight: 800;
   color: var(--accent);
 
@@ -1726,7 +1747,8 @@
   width: 100%;
   padding: 22px 0 8px;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
+  @media (min-width: 1180px) and (max-height: 880px) { line-height: 1.5; }
   color: var(--on-surface-variant);
 
   @media (min-width: 1180px) {
@@ -1754,7 +1776,7 @@
   @media (min-width: 1180px) {
     // Each side stops short of the phone (190px = half its width, plus a gap), so the text stays on
     // one or two lines and never grows taller than the strip the hero keeps for it
-    max-width: calc(50% - 230px);
+    max-width: calc(50% - 360px);
   }
 
   a,
@@ -1775,12 +1797,6 @@
 }
 
 // Left: logo, name and copyright on one line, like the site footer's brand
-// While a search is open the phone is up to 640px wide, so each side keeps further away from it
-@media (min-width: 1180px) {
-  .hero-section.has-results .foot-group {
-    max-width: calc(50% - 350px);
-  }
-}
 
 .foot-brand {
   align-items: center;
