@@ -752,7 +752,7 @@
   // Left card → phone (the phone is 300px wide in the centre; 12px gaps at both ends)
   &.l-left-top {
     left: 282px;
-    right: calc(50% + 202px);
+    right: calc(50% + var(--phone-half, 190px) + 12px);
     top: 124px;
     height: 98px;
   }
@@ -760,21 +760,21 @@
   // Lower left card (CV upload / its employer twin) → phone, rising to the phone's edge
   &.l-left-bottom {
     left: 332px;
-    right: calc(50% + 202px);
+    right: calc(50% + var(--phone-half, 190px) + 12px);
     top: 344px;
     height: 34px;
   }
 
   // Phone → right cards
   &.l-right-top {
-    left: calc(50% + 202px);
+    left: calc(50% + var(--phone-half, 190px) + 12px);
     right: 262px;
     top: 96px;
     height: 72px;
   }
 
   &.l-right-bottom {
-    left: calc(50% + 202px);
+    left: calc(50% + var(--phone-half, 190px) + 12px);
     right: 302px;
     top: 352px;
     height: 28px;
@@ -841,9 +841,9 @@
 // ── The phone ──
 .phone {
   position: absolute;
-  left: calc(50% - 190px);
+  left: calc(50% - var(--phone-half, 190px));
   top: 0;
-  width: 380px;
+  width: calc(var(--phone-half, 190px) * 2);
   height: 660px;
   padding: 11px;
   border-radius: 48px;

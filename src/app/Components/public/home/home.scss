@@ -1388,6 +1388,47 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+// ── 13" laptops (HP Envy 13: 1920×1080, about 1900×830 of page) ──
+// Wide but short. Height is the limit, so the hero spends less of it (no "free / no registration" row,
+// tighter gaps and footer strip): the fit-to-screen zoom then stays higher and the text is bigger.
+// The width goes to the phone: wider idle (up to 480px) and wider while searching (up to 720px).
+@media (min-width: 1180px) and (max-height: 900px) {
+  .home-main .hero-section {
+    --foot-h: 52px;
+    padding-top: calc(72px / var(--hero-zoom, 1) + 20px);
+  }
+
+  .home-main .hero-note {
+    display: none;
+  }
+
+  .home-main .hero-search {
+    margin-top: 14px;
+  }
+
+  .home-main .hero-quick {
+    margin-top: 8px;
+  }
+
+  .home-main .hero-stage {
+    --phone-half: min(240px, calc(50% - 340px));
+    margin-top: 16px;
+
+    &.searching {
+      --search-phone-half: min(360px, calc((100% - 688px) / 2));
+    }
+  }
+
+  // The footer's two sides stay clear of the wider phone
+  .home-main .foot-group {
+    max-width: calc(50% - 290px);
+  }
+
+  .home-main .hero-section.has-results .foot-group {
+    max-width: calc(50% - 400px);
+  }
+}
+
 // ── Desktop search: the title and description fold away ──
 // Before a search they show. A search collapses them (height, fade, slide) and the padding above the
 // hero shrinks, so the search bar, filters and the phone glide up and the phone gets more room.
