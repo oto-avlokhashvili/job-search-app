@@ -1388,6 +1388,25 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+// Very short windows: still exactly one screen (no scroll). The cards rise into the empty space
+// beside the search bar and the filters, so the hero is much shorter and the zoom stays higher.
+// (Before a search; a search sends the cards away anyway.) The connector lines are hidden: the cards
+// no longer sit level with the phone.
+@media (min-width: 1180px) and (max-height: 759px) {
+  .home-main .hero-stage:not(.searching) {
+    .float-card {
+      &.f-left-top { top: -160px; }
+      &.f-left-bottom { top: 20px; }
+      &.f-right-top { top: -175px; }
+      &.f-right-bottom { top: 20px; }
+    }
+
+    .stage-link {
+      display: none;
+    }
+  }
+}
+
 // Desktop first load: hidden until the fit-to-screen zoom is measured (Home.heroReady), then it fades in
 @media (min-width: 992px) {
   .hero-section {
@@ -1404,8 +1423,25 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 // tighter gaps and footer strip): the fit-to-screen zoom then stays higher and the text is bigger.
 // The width goes to the phone: wider idle (up to 480px) and wider while searching (up to 720px).
 @media (min-width: 1180px) and (max-height: 1000px) {
+  // Cards sit higher (the bigger text made them taller), the right ones a little wider so the AI agent
+  // card doesn't wrap into a cut-off block. Connectors follow their cards.
+  .home-main .hero-stage .float-card {
+    &.f-left-top { top: 12px; }
+    &.f-left-bottom { top: 215px; }
+    &.f-right-top { top: 0; width: 220px; }
+    &.f-right-bottom { top: 140px; width: 310px; }
+  }
+
+  .home-main .hero-stage .stage-link {
+    &.l-left-top { top: 82px; }
+    &.l-left-bottom { top: 229px; }
+    &.l-right-top { top: 56px; }
+    &.l-right-bottom { top: 230px; }
+  }
+
   .home-main .hero-section {
-    --foot-h: 52px;
+    // Room for a two-line footer (13px text) plus its 16px offset: it no longer reaches the cards
+    --foot-h: 68px;
     padding-top: calc(72px / var(--hero-zoom, 1) + 20px);
   }
 
