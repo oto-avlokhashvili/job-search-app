@@ -201,9 +201,18 @@ export class Home implements OnInit {
     afterNextRender(() => {
       if (window.matchMedia('(max-width: 991px)').matches) this.searchPlaceholder.set('რას ეძებ?');
       this.fitHeroToScreen();
+      // The hero stays hidden (opacity) until its zoom is final, so it doesn't visibly jump from full
+      // size to the fitted size. A timer makes sure it always shows.
+      const reveal = () => this.heroReady.set(true);
+      setTimeout(reveal, 1200);
       // Once more when the web fonts are in: they change the title's height
       void document.fonts?.ready.then(() => {
         this.fitHeroToScreen();
+        // A second pass settles it: the first one measured at the previous zoom
+        requestAnimationFrame(() => {
+          this.fitHeroToScreen();
+          requestAnimationFrame(reveal);
+        });
         this.quickRow.update();
         this.popularRow.update();
         this.popularPhoneRow.update();
@@ -572,6 +581,8 @@ export class Home implements OnInit {
    * Phones scroll as usual.
    */
   heroZoom = signal(1);
+  /** False until the first fit is done: the hero is hidden meanwhile (no jump on load) */
+  heroReady = signal(false);
   @ViewChild('heroSection') private heroSection?: ElementRef<HTMLElement>;
 
   private fitHeroToScreen() {

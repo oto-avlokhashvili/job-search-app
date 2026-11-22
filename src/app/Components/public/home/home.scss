@@ -1388,6 +1388,17 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+// Desktop first load: hidden until the fit-to-screen zoom is measured (Home.heroReady), then it fades in
+@media (min-width: 992px) {
+  .hero-section {
+    transition: padding-top 0.7s $ease-smooth, opacity 0.35s ease;
+
+    &.hero-pending {
+      opacity: 0;
+    }
+  }
+}
+
 // ── 13" laptops (HP Envy 13: 1920×1080, about 1900×830 of page) ──
 // Wide but short. Height is the limit, so the hero spends less of it (no "free / no registration" row,
 // tighter gaps and footer strip): the fit-to-screen zoom then stays higher and the text is bigger.
@@ -1419,6 +1430,46 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     }
   }
 
+  // Bigger text, on these screens only (the hero is zoomed down here, so the same px look smaller).
+  // Search bar, filters, "most searched" chips
+  .home-main {
+    .hero-search .filter-search-input { font-size: 17px; }
+    .hero-search .btn-cv-search,
+    .hero-search .btn-search { font-size: 17px; }
+    .hero-quick .quick-chip { font-size: 17px; }
+    .hero-filters .filter-toggle,
+    .hero-filters .city-trigger { font-size: 17px; }
+    .popular-label { font-size: 17px; }
+    .popular-chip { font-size: 16px; }
+
+    // The four cards around the phone
+    .float-card {
+      .fc-title { font-size: 16px; }
+      .fc-job-title { font-size: 16.5px; }
+      .fc-job-meta { font-size: 16px; }
+      .fc-company { font-size: 14.5px; }
+      .fc-pill { font-size: 15.5px; }
+      .fc-text b,
+      .fc-text small { font-size: 16px; }
+      .fc-steps > span { font-size: 14.5px; }
+      .fc-agent-cta { font-size: 17px; }
+      &.fc-accent span:last-child { font-size: 17px; }
+    }
+
+    // Inside the phone
+    .phone {
+      .featured-company { font-size: 13.5px; }
+      .featured-title { font-size: 17px; }
+      .featured-foot { font-size: 14.5px; }
+      .phone-section-head { font-size: 17px; }
+      .row-title { font-size: 17px; }
+      .row-meta { font-size: 13.5px; }
+      .row-match { font-size: 16px; }
+      .live-pill { font-size: 14.5px; }
+      .ai-query { font-size: 16px; }
+    }
+  }
+
   // The footer's two sides stay clear of the wider phone
   .home-main .foot-group {
     max-width: calc(50% - 290px);
@@ -1435,7 +1486,7 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 // Closing the search plays it back.
 @media (min-width: 992px) {
   .hero-section {
-    transition: padding-top 0.7s $ease-smooth;
+    transition: padding-top 0.7s $ease-smooth, opacity 0.35s ease;
   }
 
   .hero-title,

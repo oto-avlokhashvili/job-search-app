@@ -1,7 +1,7 @@
 <main class="home-main">
   <!-- Hero for job seekers (the employers' side is its own page, /employers, with the same hero).
        Centred copy on top, below it a "stage": a phone with the live product, product cards around it. -->
-  <section #heroSection class="hero-section" id="features" [class.has-results]="!!resultsMode()" [style.--hero-zoom]="heroZoom()">
+  <section #heroSection class="hero-section" id="features" [class.has-results]="!!resultsMode()" [class.hero-pending]="!heroReady()" [style.--hero-zoom]="heroZoom()">
     <div class="hero-copy">
       <h1 class="hero-title">სამსახურის ძებნის<br><span class="accent">ჭკვიანი გზა</span></h1>
       <p class="hero-lede">
