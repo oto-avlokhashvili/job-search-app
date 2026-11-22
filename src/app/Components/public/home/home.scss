@@ -1296,6 +1296,11 @@ $ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 @media (min-width: 992px) {
   .hero-section {
     zoom: var(--hero-zoom, 1);
+    // zoom also scales the max width and side padding; divide it back out so the stage's edges
+    // stay under the header's logo and profile icon (header: 1440px column, 48px gutters)
+    max-width: calc(1440px / var(--hero-zoom, 1));
+    padding-left: calc(48px / var(--hero-zoom, 1));
+    padding-right: calc(48px / var(--hero-zoom, 1));
     min-height: calc(100svh / var(--hero-zoom, 1));
     padding-top: calc(72px / var(--hero-zoom, 1) + 64px);
   }
